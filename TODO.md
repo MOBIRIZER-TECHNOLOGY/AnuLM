@@ -45,12 +45,7 @@ marked **(no GPU)** can be done on a laptop.
    corpus is the open match and needs a Software Heritage download per
    file. Adding it and re-running the 250k-step probe would be a clean
    experiment.
-7. **HumanEval and MBPP as a training-free eval harness (no GPU).**
-   `eval_code.py` executes model output in a subprocess with a timeout.
-   Hardening it (resource limits, a temp working directory per problem,
-   Windows and Linux parity) would make it safe to run on untrusted
-   checkpoints.
-8. **Less noisy validation.** Val loss is read on 20 windows and carries
+7. **Less noisy validation.** Val loss is read on 20 windows and carries
    about ±0.03 of noise (`docs/RESULTS.md` §25, "A review of the
    training loop"). Raising `--eval-iters` costs time at every eval; a
    fixed, larger, cached validation set would make small differences
@@ -58,19 +53,26 @@ marked **(no GPU)** can be done on a laptop.
 
 ## Tooling
 
-9. **A GGUF conversion.** llama.cpp has no loader for this architecture;
+8. **A GGUF conversion.** llama.cpp has no loader for this architecture;
     the MoE with sigmoid routing and QK-norm would need a new arch entry.
     Large, but it would put the models on phones.
 
 ## Documentation
 
-10. **Translate the tutorial into Hindi (no GPU).** `docs/TUTORIAL.md` in
+9. **Translate the tutorial into Hindi (no GPU).** `docs/TUTORIAL.md` in
     Hindi would match the project's audience.
-11. **Diagrams for `docs/ARCHITECTURE.md` (no GPU).** The MLA / GQA
+10. **Diagrams for `docs/ARCHITECTURE.md` (no GPU).** The MLA / GQA
     comparison and the MoE routing are explained in prose; two figures
     would help.
 
 ## Done
+
+- 2026-09-19: `eval_code.py` sandboxing (old item 7). A fresh directory per
+  problem, the process tree killed on timeout, output to a capped file
+  rather than a pipe, and `setrlimit` caps on address space, CPU, file size
+  and process count on Linux and macOS. Windows has no rlimits and the
+  module says so. Tested against an infinite loop, an orphaned grandchild
+  and a program that shadows the standard library.
 
 - 2026-09-18: the four released checkpoints load with
   `AutoModelForCausalLM.from_pretrained(..., trust_remote_code=True)` and

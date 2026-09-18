@@ -841,6 +841,58 @@ def bpe_documents_get_eos_and_the_vocab_is_exact():
 
 
 @test
+def eval_code_sandbox_contains_generated_code():
+    """eval_code.py runs a language model's unreviewed output. These are the
+    containment promises its docstring makes, and the ones that broke before:
+    a program cannot leave anything behind for the next one, cannot outlive
+    its timeout, and cannot leave a child running after it is killed."""
+    import os, tempfile, time
+    from eval_code import POSIX, run_program
+
+    with tempfile.TemporaryDirectory() as wd:
+        assert run_program("print('ok')", wd, timeout=20) is True
+        assert run_program("raise SystemExit(1)", wd, timeout=20) is False
+        assert run_program("assert 1 == 2", wd, timeout=20) is False
+
+        # stdin is closed, not inherited: reading it ends rather than hangs.
+        assert run_program("import sys; assert sys.stdin.read() == ''", wd, timeout=20) is True
+
+        # A runaway program is killed, and does not take the run with it.
+        t0 = time.time()
+        assert run_program("while True: pass", wd, timeout=3) is False
+        assert time.time() - t0 < 25, "the timeout did not fire"
+
+        # Each program gets its own directory. Without that, a generated file
+        # called random.py shadows the standard library for everything after
+        # it -- a silent, one-directional corruption of the benchmark.
+        run_program("open('random.py','w').write('raise RuntimeError()')", wd, timeout=20)
+        assert run_program("import random; random.randint(1, 2)", wd, timeout=20) is True
+        assert os.listdir(wd) == [], f"scratch left behind: {os.listdir(wd)}"
+
+    # A child started by the program must not outlive the kill. The marker is
+    # written outside the scratch directory, so its absence is the evidence.
+    with tempfile.TemporaryDirectory() as outside:
+        marker = os.path.join(outside, "survived.txt").replace("\\", "\\\\")
+        src = ("import subprocess, sys, time\n"
+               f"subprocess.Popen([sys.executable, '-c', \"import time; time.sleep(3);"
+               f" open(r'{marker}','w').write('x')\"])\n"
+               "time.sleep(60)\n")
+        with tempfile.TemporaryDirectory() as wd:
+            assert run_program(src, wd, timeout=2) is False
+        time.sleep(5)
+        assert not os.path.exists(os.path.join(outside, "survived.txt")), \
+            "a grandchild outlived the timeout kill"
+
+    if POSIX:
+        # setrlimit exists here, so the memory cap is real. On Windows it is
+        # not, which the module docstring says plainly.
+        with tempfile.TemporaryDirectory() as wd:
+            hog = f"x = bytearray({1024 * 1024 * 1024} * 8)"      # 8 GB
+            assert run_program(hog, wd, timeout=30) is False, \
+                "RLIMIT_AS did not stop an 8 GB allocation"
+
+
+@test
 def transformers_wrapper_matches_the_native_model():
     """modeling_anulm.py must produce this repository's numbers, not its own.
 

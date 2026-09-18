@@ -5,7 +5,7 @@
 ```bash
 python quickstart.py                   # what this machine can run, and how to fix what it cannot
 pip install -r requirements.txt        # torch, safetensors; pyarrow for the parquet converters
-python test_model.py                   # 49 tests, ~2 min — run this first
+python test_model.py                   # 50 tests, ~2 min — run this first
 ```
 
 Everything runs from the repository root (this file lives in `docs/`, the
@@ -48,7 +48,7 @@ pip install --index-url https://download.pytorch.org/whl/cpu torch
 ├── quickstart.py     environment check, then --train a small model or --demo a released one
 ├── bpe.py            byte-level BPE, DOC_SEP / EOS, the .bin encoder (train / encode / stats)
 ├── muon.py           Muon optimizer (+ AdamW companion)
-├── test_model.py     49 tests, plain asserts, no pytest
+├── test_model.py     50 tests, plain asserts, no pytest
 │
 │   corpora
 ├── fetch_hindi.py    streams a Wikimedia dump into data/, one document per article (any language)
@@ -289,9 +289,19 @@ JSONL file with `prefix`, `answer`, `choices` and `answer_idx`, and the scorer
 handles BPE and byte checkpoints through one `Codec`. The three task scorers
 that followed each own their format: `eval_qa.py` (question-answer pairs,
 per language), `eval_translate.py` (FLORES pairs, chrF) and `eval_code.py`
-(HumanEval / MBPP, which executes what the model wrote — in a subprocess
-with a timeout and a scratch directory, but it is still the model's own
-code running on your machine, so point it only at checkpoints you trained).
+(HumanEval / MBPP, which executes what the model wrote). That last one is
+the only place this project runs unreviewed model output, so it is worth
+knowing what holds it: a fresh directory per problem, deleted afterwards,
+so nothing one program writes can shadow an import for the next; `-I -B`
+with no inherited environment and stdin closed; output to a size-capped
+file rather than a pipe; the whole process *tree* killed when the timeout
+fires; and on Linux and macOS `setrlimit` caps on address space, CPU time,
+file size and process count. **Windows has no rlimits**, so memory and
+process count are bounded only by the timeout there. Note what is
+deliberately absent: `-S`, which would drop site-packages and fail any
+solution importing numpy, changing the pass@1 being measured. None of this
+is a boundary against code that is trying to escape — point it only at
+checkpoints you trained.
 
 ## GPU setup
 

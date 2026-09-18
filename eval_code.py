@@ -16,10 +16,32 @@ Two prompting modes, chosen automatically:
   question  fine-tuned checkpoints (those carrying qa_templates) are asked
             in the QA format and produce the whole function, ended by EOS.
 
-Generated code is executed. It is the model's own output on a fixed public
-test set, run in a subprocess with a timeout and no inherited environment,
-in a scratch directory -- but it is still arbitrary code; do not point this
-at a checkpoint you do not trust.
+Generated code is executed. That is the only way to score it, and it means
+this script runs a language model's unreviewed output on your machine. What
+contains it -- see `run_program` for the detail:
+
+  * a fresh empty directory per problem, deleted afterwards, so nothing one
+    program writes can be imported or read by the next (a generated file
+    called `random.py` in a shared directory would shadow the standard
+    library for every problem after it);
+  * `python -I -B`: no environment variables, no user site-packages, no
+    bytecode written. Not `-S`: dropping site-packages would fail any
+    solution that imports numpy, changing the pass@1 this script exists to
+    measure, and a sandbox that moves the number it guards is a bad trade;
+  * an environment holding only PATH and SystemRoot, and no network setup;
+  * a wall-clock timeout, and the whole process *tree* killed when it
+    expires, so a spawned child cannot outlive it;
+  * on Linux and macOS, address space, CPU time, file size, process count
+    and core dumps are capped with `setrlimit`.
+
+**On Windows there are no resource limits** -- `resource.setrlimit` does not
+exist there, so a program can still exhaust memory or spawn processes until
+the timeout kills the tree. The isolation, the per-problem directory and the
+tree kill all work; the limits do not. Run untrusted checkpoints on Linux.
+
+None of this is a security boundary against code that is trying to escape.
+It is enough for a small model's attempts at `is_prime`, which is what this
+script is for; do not point it at a checkpoint someone else trained.
 """
 
 from __future__ import annotations
@@ -27,6 +49,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -61,15 +84,92 @@ def load_problems(bench: str) -> list[dict]:
     return out
 
 
-def run_program(src: str, workdir: str, timeout: float = 10.0) -> bool:
-    path = os.path.join(workdir, "prog.py")
-    Path(path).write_text(src, encoding="utf-8")
+POSIX = os.name == "posix"
+MEMORY_MB = 2048            # generated code has no business needing more
+FILE_CAP = 16 * 1024 * 1024  # anything it writes, including its own output
+MAX_PROCS = 64              # enough for a subprocess, not for a fork bomb
+
+
+def _rlimits(timeout: float):
+    """Applied in the child between fork and exec. POSIX only."""
+    import resource
+
+    def apply():
+        os.setsid()                       # its own process group, so we can kill the tree
+        b = MEMORY_MB * 1024 * 1024
+        for what, limit in ((resource.RLIMIT_AS, b),
+                            (resource.RLIMIT_DATA, b),
+                            (resource.RLIMIT_CPU, int(timeout) + 1),
+                            (resource.RLIMIT_FSIZE, FILE_CAP),
+                            (resource.RLIMIT_NPROC, MAX_PROCS),
+                            (resource.RLIMIT_CORE, 0)):
+            try:
+                resource.setrlimit(what, (limit, limit))
+            except (ValueError, OSError):
+                pass                      # a limit the platform will not set is not fatal
+    return apply
+
+
+def _kill_tree(proc: subprocess.Popen) -> None:
+    """Kill the process and anything it started. A bare proc.kill() leaves
+    grandchildren running, which on a benchmark of 257 problems is how a
+    machine ends up with a hundred orphaned interpreters."""
+    if POSIX:
+        import signal
+        try:
+            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+            return
+        except (ProcessLookupError, PermissionError):
+            pass
+    else:
+        subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+                       capture_output=True, check=False)
     try:
-        r = subprocess.run([sys.executable, "-I", path], capture_output=True, timeout=timeout,
-                           cwd=workdir, env={"PATH": os.environ.get("PATH", "")})
-        return r.returncode == 0
-    except subprocess.TimeoutExpired:
-        return False
+        proc.kill()
+    except ProcessLookupError:
+        pass
+
+
+def run_program(src: str, workdir: str, timeout: float = 10.0) -> bool:
+    """Run `src` in a throwaway directory and say whether it exited 0.
+
+    `workdir` is the parent; each call gets a fresh child directory inside it
+    which is removed afterwards, so programs cannot see each other's files.
+    """
+    cell = tempfile.mkdtemp(dir=workdir)
+    try:
+        path = os.path.join(cell, "prog.py")
+        Path(path).write_text(src, encoding="utf-8")
+        # Output goes to a file, not a pipe: a program that prints in a loop
+        # would otherwise fill this process's memory rather than its own, and
+        # on POSIX the file is capped by RLIMIT_FSIZE.
+        out_path = os.path.join(cell, "out.txt")
+        env = {"PATH": os.environ.get("PATH", "")}
+        if not POSIX:                       # Windows needs this to start python at all
+            env["SYSTEMROOT"] = os.environ.get("SYSTEMROOT", r"C:\Windows")
+        kw = {}
+        if POSIX:
+            kw["preexec_fn"] = _rlimits(timeout)
+        else:
+            kw["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
+        with open(out_path, "wb") as sink:
+            # -I (no environment, no user site) and -B (no .pyc left behind),
+            # but deliberately NOT -S: that would drop site-packages, so a
+            # solution importing numpy would fail here and pass everywhere
+            # else. The published pass@1 numbers were measured without it, and
+            # a sandbox that quietly changes the score it is guarding is worse
+            # than the isolation it buys.
+            proc = subprocess.Popen([sys.executable, "-I", "-B", "prog.py"],
+                                    cwd=cell, env=env, stdin=subprocess.DEVNULL,
+                                    stdout=sink, stderr=subprocess.STDOUT, **kw)
+            try:
+                return proc.wait(timeout=timeout) == 0
+            except subprocess.TimeoutExpired:
+                _kill_tree(proc)
+                proc.wait(timeout=5)
+                return False
+    finally:
+        shutil.rmtree(cell, ignore_errors=True)
 
 
 def cut_at_stops(text: str) -> str:

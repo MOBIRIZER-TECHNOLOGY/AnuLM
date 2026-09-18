@@ -54,7 +54,7 @@ experiments/<script>.sh`) or from a Git Bash terminal.
 
 ```bash
 python quickstart.py        # checks Python, torch, CUDA, the optional packages and the tokenizers
-python test_model.py        # 49 tests: routing math, attention, tokenizer, data loaders, loss masks
+python test_model.py        # 50 tests: routing math, attention, tokenizer, data loaders, loss masks
 python model.py             # builds both reference presets, forward + backward, prints parameter tables
 ```
 
