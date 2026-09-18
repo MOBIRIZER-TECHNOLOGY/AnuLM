@@ -77,7 +77,7 @@ python quickstart.py --train         # ... or just trains a 17M model now (~30 s
 python quickstart.py --demo          # ... or downloads a released 400M model and serves it
 
 pip install -r requirements.txt      # torch, safetensors; pyarrow only for the parquet converters
-python test_model.py                 # 52 tests, ~2 min, no pytest needed
+python test_model.py                 # 53 tests, ~2 min, no pytest needed
 python model.py                      # shape + param sanity check, no data needed
 python train.py --preset 30b         # GQA, high rope_theta  (Sarvam 30B's shape); downloads tinyshakespeare
 python train.py --preset 105b        # MLA, YaRN-ready       (Sarvam 105B's shape)
@@ -492,7 +492,7 @@ set is a builder away.
 ## Tests
 
 ```bash
-python test_model.py        # 52 tests, ~2 min, no pytest needed
+python test_model.py        # 53 tests, ~2 min, no pytest needed
 ```
 
 They target what training would not catch. A leaky causal mask still converges,

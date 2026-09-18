@@ -5,7 +5,7 @@
 ```bash
 python quickstart.py                   # what this machine can run, and how to fix what it cannot
 pip install -r requirements.txt        # torch, safetensors; pyarrow for the parquet converters
-python test_model.py                   # 52 tests, ~2 min — run this first
+python test_model.py                   # 53 tests, ~2 min — run this first
 ```
 
 Everything runs from the repository root (this file lives in `docs/`, the
@@ -48,7 +48,7 @@ pip install --index-url https://download.pytorch.org/whl/cpu torch
 ├── quickstart.py     environment check, then --train a small model or --demo a released one
 ├── bpe.py            byte-level BPE, DOC_SEP / EOS, the .bin encoder (train / encode / stats)
 ├── muon.py           Muon optimizer (+ AdamW companion)
-├── test_model.py     52 tests, plain asserts, no pytest
+├── test_model.py     53 tests, plain asserts, no pytest
 │
 │   corpora
 ├── fetch_hindi.py    streams a Wikimedia dump into data/, one document per article (any language)

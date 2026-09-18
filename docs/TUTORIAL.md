@@ -54,7 +54,7 @@ experiments/<script>.sh`) or from a Git Bash terminal.
 
 ```bash
 python quickstart.py        # checks Python, torch, CUDA, the optional packages and the tokenizers
-python test_model.py        # 52 tests: routing math, attention, tokenizer, data loaders, loss masks
+python test_model.py        # 53 tests: routing math, attention, tokenizer, data loaders, loss masks
 python model.py             # builds both reference presets, forward + backward, prints parameter tables
 ```
 
@@ -193,9 +193,16 @@ For a Gradio interface:
 
 ```bash
 pip install gradio huggingface_hub
-python app.py --ckpt ckpt_coder_sft.pt                     # local Gradio UI on http://127.0.0.1:7860
-ANULM_REPO=toonist/AnuLM-Coder-400M python app.py       # downloads the weights from the Hub first
+python app.py                                              # the picker: all four, loaded on demand
+python app.py --ckpt ckpt_coder_sft.pt                     # or preselect your own checkpoint
+ANULM_REPO=toonist/AnuLM-Coder-400M python app.py       # or preselect one from the Hub
 ```
+
+The page holds the four released checkpoints in a dropdown and loads one at
+a time, evicting the previous one -- four of them in float32 is 6.4 GB and
+Colab's free tier has 12. The modes, examples and defaults follow whichever
+is loaded, so switching from the coder to the translator changes the page,
+not just the weights.
 
 **Without installing anything**, `demo_colab.ipynb` does the same three
 steps in Colab — clone, download a checkpoint, launch `app.py` with a

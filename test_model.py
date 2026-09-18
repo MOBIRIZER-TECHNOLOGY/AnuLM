@@ -842,6 +842,45 @@ def bpe_documents_get_eos_and_the_vocab_is_exact():
 
 
 @test
+def the_demo_page_offers_the_right_modes_for_each_checkpoint():
+    """app.py's dropdown reshapes the page around whichever checkpoint is
+    loaded. The reshaping is pure functions of the checkpoint's own info dict,
+    so it can be checked without weights, a browser or gradio running -- which
+    is the point of keeping them out of the UI callbacks."""
+    try:
+        import gradio  # noqa: F401
+    except ImportError:
+        print("    (skipped: gradio not installed)", end="")
+        return
+    import app
+
+    # The four kinds serve.py distinguishes, as /info reports them.
+    infos = {
+        "coder": {"coder": True, "translate": False, "qa_template": "Question: {q}"},
+        "translate": {"coder": False, "translate": True, "qa_template": "English: {q}"},
+        "qa": {"coder": False, "translate": False, "qa_template": "प्रश्न: {q}"},
+        "base": {"coder": False, "translate": False, "qa_template": None},
+    }
+    for want, info in infos.items():
+        assert app.kind_of(info) == want, (want, app.kind_of(info))
+
+    assert list(app.labels_for("coder").values()) == ["write a function", "continue the code"]
+    assert list(app.labels_for("translate").values()) == ["translate", "continue the text"]
+    assert list(app.labels_for("base").values()) == ["continue the text"],         "a base model must not be offered a mode it has no template for"
+    for kind in ("coder", "translate", "qa", "base"):
+        ex = app.examples_for(kind)
+        assert ex and all(len(row) == 2 for row in ex), kind
+        labels = set(app.labels_for(kind).values())
+        assert {row[1] for row in ex} <= labels, f"{kind}: an example names a missing mode"
+        assert 0.1 <= app.default_temp(kind) <= 1.5
+
+    # Every entry in the picker is a Hub repo id, and the loader holds one model.
+    assert all("/" in repo for repo in app.MODELS.values()), app.MODELS
+    loader = app.Loader("cpu")
+    assert loader.engine is None and loader.source is None
+
+
+@test
 def an_exported_folder_loads_everywhere_a_pt_does():
     """docs/TUTORIAL.md section 11 and every model card say the same thing:
     "Every script accepts an exported folder wherever it accepts a .pt".

@@ -15,9 +15,7 @@ marked **(no GPU)** can be done on a laptop.
    to host Gradio Spaces even on the free CPU tier (the API returns 402),
    so no Space is up; `app.py` and `space/` are ready for anyone with
    PRO or ZeroGPU access, and `demo_colab.ipynb` is the free way to try
-   the models today. Also wanted: a dropdown in `app.py` that switches
-   between the four checkpoints, loading each on first use (1.6 GB per
-   model on CPU).
+   the models today. The checkpoint dropdown is done.
 3. **Linux reproduction report (no GPU for the small parts).** CI now
    runs the tests and a 50-step training run on Ubuntu for every push, so
    the small path is covered; nobody has yet run the *tutorial* end to end
@@ -61,6 +59,11 @@ marked **(no GPU)** can be done on a laptop.
     would help.
 
 ## Done
+
+- 2026-09-19: `app.py` holds all four checkpoints in a dropdown and loads one
+  on demand, evicting the previous one so the page stays inside Colab's free
+  tier. The modes, examples and defaults follow whatever is loaded, and
+  `demo_colab.ipynb` is two cells now instead of three.
 
 - 2026-09-19: val loss reports its own standard error, and `--eval-windows N`
   spreads N windows evenly over the split instead of drawing random batches
