@@ -157,10 +157,38 @@ def make_batch(data: torch.Tensor, ix: torch.Tensor, block_size: int, device: st
 def eval_windows(data: torch.Tensor, batch_size: int, block_size: int, iters: int, seed: int = 0):
     """The SAME windows every evaluation: a private generator, reseeded on each
     call. Two evals then differ only by the model, and evaluation no longer
-    consumes the global RNG the training data order depends on."""
+    consumes the global RNG the training data order depends on.
+
+    Kept exactly as it was, because every val loss in docs/RESULTS.md was read
+    through it and changing which windows it returns would silently move all of
+    them. `--eval-windows N` selects `strided_windows` instead."""
     g = torch.Generator().manual_seed(seed)
     return [torch.randint(len(data) - block_size - 1, (batch_size,), generator=g)
             for _ in range(iters)]
+
+
+def strided_windows(data: torch.Tensor, batch_size: int, block_size: int, n: int):
+    """`n` windows spread evenly across the whole split, in batches.
+
+    Two things this fixes about the random set above. It **covers** the split
+    instead of sampling it, so the same number of windows carries less
+    variance -- random draws clump, and a clump of one register (all code, or
+    all headings) is exactly the accident that moves a small estimate. And it
+    does not depend on `batch_size`: the random set redraws when the batch
+    size changes, so two runs that differ only in `--batch-size` cannot be
+    compared. Here `n` windows are `n` windows.
+
+    Deterministic by construction, so there is nothing to cache: the same
+    corpus and the same `n` give the same windows on any machine.
+    """
+    span = len(data) - block_size - 1
+    assert span > 0, "validation split is shorter than one window"
+    n = min(n, span)
+    step = span / n
+    # round-half-down on the midpoint of each cell: evenly spaced, no duplicates
+    # until n approaches span, and independent of how they are then batched.
+    idx = torch.tensor([int(i * step + step / 2) for i in range(n)], dtype=torch.long)
+    return [idx[i:i + batch_size] for i in range(0, n, batch_size)]
 
 
 def lr_at(step: int, args, start_step: int = 0) -> float:
@@ -265,17 +293,43 @@ def evaluate(model, data, args, iters: int | None = None) -> float:
     less than the sampling error of the estimate. Use `--eval-iters 200`
     on a new run; it costs ~30 s per eval, under 2% of a 33-minute eval
     interval. It is not changed mid-run, because adding windows shifts the
-    mean and breaks comparability with the run's earlier points."""
-    iters = iters if iters is not None else getattr(args, "eval_iters", 20)
+    mean and breaks comparability with the run's earlier points.
+
+    **Returns `(mean, standard_error)`,** and the log prints both, so the
+    size of the delta you are reading is on the screen beside it rather
+    than in this docstring. The error is the standard error of the mean
+    across batches -- it describes how much this estimate would move if it
+    had drawn different windows, which is the question being asked when two
+    checkpoints are 0.01 apart. It does not describe how much the model
+    would move on a different corpus.
+
+    `--eval-windows N` swaps the random set for `strided_windows`, which
+    covers the split evenly and does not change when the batch size does.
+    """
     model.eval()
-    losses = torch.zeros(iters)
-    for i, ix in enumerate(eval_windows(data, args.batch_size, args.block_size, iters)):
+    fixed = getattr(args, "eval_windows", 0)
+    if fixed:
+        batches = strided_windows(data, args.batch_size, args.block_size, fixed)
+    else:
+        iters = iters if iters is not None else getattr(args, "eval_iters", 20)
+        batches = eval_windows(data, args.batch_size, args.block_size, iters)
+    losses = torch.zeros(len(batches))
+    counts = torch.zeros(len(batches))
+    for i, ix in enumerate(batches):
         x, y = make_batch(data, ix, args.block_size, args.device)
         with args.autocast:
             _, loss = model(x, y)
         losses[i] = loss.item()
+        counts[i] = len(ix)
     model.train()
-    return losses.mean().item()
+    # Weighted by windows, because a strided set can end in a short batch.
+    mean = float((losses * counts).sum() / counts.sum())
+    if len(batches) > 1:
+        var = float((counts * (losses - mean) ** 2).sum() / counts.sum())
+        sem = (var / len(batches)) ** 0.5
+    else:
+        sem = float("nan")
+    return mean, sem
 
 
 def main():
@@ -294,6 +348,12 @@ def main():
     p.add_argument("--weight-decay", type=float, default=0.1)
     p.add_argument("--grad-clip", type=float, default=1.0)
     p.add_argument("--eval-every", type=int, default=250)
+    p.add_argument("--eval-windows", type=int, default=0,
+                   help="evaluate on N windows spread evenly over the split instead of "
+                        "--eval-iters random batches. Deterministic, independent of "
+                        "--batch-size, and lower variance for the same N. Off by default "
+                        "so existing runs keep reading the same number; 400 is a good "
+                        "value on a large split")
     p.add_argument("--eval-iters", type=int, default=20,
                    help="batches of --batch-size windows per evaluation. The "
                         "default 20 is cheap and NOISY: +/-0.125 on the coder "
@@ -446,6 +506,15 @@ def main():
     # best-val checkpoint (what you sample from); `<out>.last` holds the most
     # recent step with optimizer state, which is what resuming actually needs --
     # AdamW's moments matter as much as the weights.
+    # How the val loss is measured. Recorded in every checkpoint, because a
+    # curve read on one window set cannot be compared with a curve read on
+    # another -- and the random set silently changes when --batch-size does.
+    eval_spec = ({"mode": "strided", "windows": args.eval_windows,
+                  "block_size": args.block_size}
+                 if args.eval_windows else
+                 {"mode": "random-seed0", "iters": args.eval_iters,
+                  "batch_size": args.batch_size, "block_size": args.block_size})
+
     start_step, best_val = 0, float("inf")
     last_path = Path(str(args.out) + ".last")
     if args.resume and last_path.exists():
@@ -482,6 +551,11 @@ def main():
         best_val = ck.get("best_val", float("inf"))
         if "sampler" in ck:
             sampler.load_state(ck["sampler"])
+        prev = ck.get("eval_spec")
+        if prev and prev != eval_spec:
+            print(f"  NOTE: this run measures val loss differently from the one it "
+                  f"resumes ({prev} -> {eval_spec}). The curve's earlier points are "
+                  f"not comparable with the ones from here.")
         print(f"resuming from {last_path} at step {start_step} "
               f"(best val so far {best_val:.4f}, epoch {sampler.epochs_done:.2f})")
         del ck
@@ -532,20 +606,22 @@ def main():
                   f"{(time.time()-t_step)*1e3:5.0f} ms/step | epoch {sampler.epochs_done:.2f}")
 
         if (step + 1) % args.eval_every == 0 or step == end - 1:
-            val = evaluate(raw_model, val_data, args)
+            val, val_sem = evaluate(raw_model, val_data, args)
             flag = ""
             if val < best_val:
                 best_val = val
                 atomic_save({"model": raw_model.state_dict(), "cfg": cfg,
-                             "step": step, "val_loss": val}, args.out)
+                             "step": step, "val_loss": val, "val_sem": val_sem,
+                             "eval_spec": eval_spec}, args.out)
                 flag = "  <- saved"
             # Always write the resume point, best or not: it exists to recover
             # from a kill, and the newest step is what we want to continue from.
             atomic_save({"model": raw_model.state_dict(), "opt": opt.state_dict(),
-                         "cfg": cfg, "step": step, "val_loss": val,
-                         "best_val": best_val, "sampler": sampler.state()}, last_path)
+                         "cfg": cfg, "step": step, "val_loss": val, "val_sem": val_sem,
+                         "eval_spec": eval_spec, "best_val": best_val,
+                         "sampler": sampler.state()}, last_path)
             bpb = val / math.log(2) / args.bytes_per_token
-            print(f"  eval @ {step:5d} | val loss {val:6.4f} | "
+            print(f"  eval @ {step:5d} | val loss {val:6.4f} +/- {val_sem:.4f} | "
                   f"bits/byte {bpb:5.3f}{flag}")
 
     if end < args.steps:

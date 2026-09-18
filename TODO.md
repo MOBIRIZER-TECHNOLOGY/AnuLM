@@ -45,27 +45,29 @@ marked **(no GPU)** can be done on a laptop.
    corpus is the open match and needs a Software Heritage download per
    file. Adding it and re-running the 250k-step probe would be a clean
    experiment.
-7. **Less noisy validation.** Val loss is read on 20 windows and carries
-   about ±0.03 of noise (`docs/RESULTS.md` §25, "A review of the
-   training loop"). Raising `--eval-iters` costs time at every eval; a
-   fixed, larger, cached validation set would make small differences
-   readable.
 
 ## Tooling
 
-8. **A GGUF conversion.** llama.cpp has no loader for this architecture;
+7. **A GGUF conversion.** llama.cpp has no loader for this architecture;
     the MoE with sigmoid routing and QK-norm would need a new arch entry.
     Large, but it would put the models on phones.
 
 ## Documentation
 
-9. **Translate the tutorial into Hindi (no GPU).** `docs/TUTORIAL.md` in
+8. **Translate the tutorial into Hindi (no GPU).** `docs/TUTORIAL.md` in
     Hindi would match the project's audience.
-10. **Diagrams for `docs/ARCHITECTURE.md` (no GPU).** The MLA / GQA
+9. **Diagrams for `docs/ARCHITECTURE.md` (no GPU).** The MLA / GQA
     comparison and the MoE routing are explained in prose; two figures
     would help.
 
 ## Done
+
+- 2026-09-19: val loss reports its own standard error, and `--eval-windows N`
+  spreads N windows evenly over the split instead of drawing random batches
+  (old item 7). Measured 4-11x closer to the true mean for the same number of
+  windows, and unlike the random set it does not change when `--batch-size`
+  does. `docs/RESULTS.md` §26. The default is untouched, so every number
+  already in that file still reproduces.
 
 - 2026-09-19: `eval_code.py` sandboxing (old item 7). A fresh directory per
   problem, the process tree killed on timeout, output to a capped file

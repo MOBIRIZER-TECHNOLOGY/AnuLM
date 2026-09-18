@@ -5,7 +5,7 @@
 ```bash
 python quickstart.py                   # what this machine can run, and how to fix what it cannot
 pip install -r requirements.txt        # torch, safetensors; pyarrow for the parquet converters
-python test_model.py                   # 50 tests, ~2 min — run this first
+python test_model.py                   # 51 tests, ~2 min — run this first
 ```
 
 Everything runs from the repository root (this file lives in `docs/`, the
@@ -48,7 +48,7 @@ pip install --index-url https://download.pytorch.org/whl/cpu torch
 ├── quickstart.py     environment check, then --train a small model or --demo a released one
 ├── bpe.py            byte-level BPE, DOC_SEP / EOS, the .bin encoder (train / encode / stats)
 ├── muon.py           Muon optimizer (+ AdamW companion)
-├── test_model.py     50 tests, plain asserts, no pytest
+├── test_model.py     51 tests, plain asserts, no pytest
 │
 │   corpora
 ├── fetch_hindi.py    streams a Wikimedia dump into data/, one document per article (any language)
@@ -174,6 +174,17 @@ in phases between which the machine may sleep), `--optimizer
 `--lr`), `--lr` / `--min-lr` / `--warmup` / `--weight-decay` / `--grad-clip`,
 `--eval-every` / `--log-every`, `--seed`, `--out`. The log prints the LM loss
 and the regulariser `aux` separately, plus ms/step and the epoch position.
+
+**Reading the val loss.** It is an estimate, and the log now prints its
+standard error beside it (`val loss 1.8597 +/- 0.0058`) so you can see
+whether a difference you are about to act on is larger than the noise. The
+default draws `--eval-iters` random batches, which is what every number in
+`docs/RESULTS.md` was measured with and is therefore left alone;
+`--eval-windows N` instead spreads N windows evenly over the split, which
+lands 4-11x closer to the true mean for the same N (§26) and does not change
+when `--batch-size` does. Use it on new runs. The method is recorded in each
+checkpoint as `eval_spec`, and a `--resume` that changes it warns, because
+two halves of a curve measured differently are not one curve.
 
 **Checkpoints.** Two files are written:
 

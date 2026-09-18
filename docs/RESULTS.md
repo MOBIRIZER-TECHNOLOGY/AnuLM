@@ -44,6 +44,7 @@ models.
 | [23](#23-questions-in-three-languages) | the QA recipe in all three languages at once | `ckpt_multi_qa`, **AnuLM-Hindi-QA-400M** |
 | [24](#24-english--hindi-translation) | 2M sentence pairs, one pass, chrF on FLORES-200 | **41.5 / 43.4**, `ckpt_translate`, **AnuLM-Translate-400M** |
 | [25](#25-a-python-coder-700000-steps-then-instruction-tuning) | 700k steps on 2.87B tokens, then instruction tuning | **MBPP 12.5%**, HumanEval 4.9%, **AnuLM-Coder-400M** |
+| [26](#26-reading-the-val-loss-what-the-numbers-own-error-is) | what the four quoted decimals are actually worth | the log prints its own error; strided windows land 4-11x closer |
 
 ---
 
@@ -1882,3 +1883,59 @@ and it killed the run twice — phase 1 at step 10,000, phase 2 at step
 105,000, 2 h 51 min of idle GPU between them. The wrapper now launches the
 trainer through `start`, which gives it a console of its own; nothing in
 the interactive console can signal it. `TASKS.md` holds the commands.
+
+---
+
+## 26. Reading the val loss: what the number's own error is
+
+Every section above quotes a val loss to four decimals. This one asks what
+those decimals are worth, because §25 had already found the answer
+uncomfortable: six different window sets of the default size, on the same
+`ckpt_coder.pt` at step 265,000, gave 3.11, 3.22, 3.26, 3.32, 3.37, 3.48 --
+a spread of 0.36, standard deviation 0.125. The curve was internally
+consistent, because the seed is fixed and every eval sees the same windows,
+so its large moves are real. But a 0.01-0.03 difference read off it says
+nothing about the model, and best-checkpoint selection was choosing between
+numbers that differ by less than the error of the estimate.
+
+Two changes, neither of which moves an existing number.
+
+**The log now prints the error beside the number.** `evaluate()` returns the
+mean and the standard error of that mean across batches, and the training log
+reads `val loss 1.8597 +/- 0.0058`. Nothing about the estimate changed; it
+just stopped hiding how precise it is.
+
+**`--eval-windows N` evaluates on N windows spread evenly over the split**
+instead of `--eval-iters` random batches. The random set has two faults
+beyond its variance: draws clump, so a set can land disproportionately in one
+register of a mixed corpus, and it is drawn `batch_size` at a time, so
+changing `--batch-size` silently changes which windows the number is measured
+on and two runs stop being comparable. A strided set is N windows whatever the
+batch size, and needs no cache: the same corpus and the same N give the same
+windows on any machine.
+
+Measured on tinyshakespeare with the 200-step `nano_30b` (val split 111,540
+bytes; ground truth is the mean over **all 435** non-overlapping windows,
+1.8661):
+
+| windows | random, 25 seeds | strided |
+| --- | --- | --- |
+| 320 | mean 1.8647, sd 0.0081, worst error **0.0197** | 1.8611, error **0.0049** |
+| 960 | mean 1.8646, sd 0.0051, worst error **0.0105** | 1.8669, error **0.0009** |
+
+Four times closer at 320 windows, eleven times at 960. Read that as a floor
+rather than a headline: tinyshakespeare is one author in one register, which
+is the case where covering the split and sampling it differ least. The
+corpus where the random estimator was worst -- sd 0.125 -- is the coder's
+13.7 GB of interleaved Python, English and Hindi, and that is exactly the
+shape stratification is for. That measurement was not repeated here because
+the corpus is rebuilt from public sources rather than kept (`docs/DATASETS.md`),
+and the run it belonged to is finished.
+
+**What was deliberately left alone.** `eval_windows` returns the same indices
+it always has, and the default is still `--eval-iters 20`, because every val
+loss in this file was read through it; a "better" default would silently
+restate every number in the log. New runs should pass `--eval-windows 400`.
+Each checkpoint now records how its number was measured (`eval_spec`), and a
+`--resume` that changes the method says so, because a curve measured one way
+cannot be continued by a curve measured another.

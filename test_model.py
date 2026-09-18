@@ -11,6 +11,7 @@ Loss going down proves almost nothing about correctness.
 
 from __future__ import annotations
 
+import contextlib
 import math
 import sys
 import traceback
@@ -838,6 +839,56 @@ def bpe_documents_get_eos_and_the_vocab_is_exact():
     assert tok.eos_id not in tok.encode(docs[0]), "plain encode must never emit EOS"
     # a document-less corpus is one document
     assert tok.encode_documents("कुछ पाठ").count(tok.eos_id) == 1
+
+
+@test
+def eval_windows_are_frozen_and_strided_windows_cover_the_split():
+    """Two contracts about how val loss is measured.
+
+    The first is a regression guard with teeth: every val loss in
+    docs/RESULTS.md was read through `eval_windows`, so if it ever returns
+    different indices, every number in that file silently stops meaning what
+    it says. These are the indices it has always returned.
+
+    The second is what `--eval-windows` promises instead: the same N windows
+    whatever the batch size, spread over the whole split, no duplicates.
+    """
+    import argparse
+    from train import eval_windows, strided_windows, evaluate
+
+    data = torch.arange(100_000)
+    w = eval_windows(data, 8, 512, 20)
+    assert len(w) == 20 and all(len(b) == 8 for b in w)
+    assert w[0][:4].tolist() == [90040, 77448, 53808, 91071], w[0][:4].tolist()
+    assert w[-1][:4].tolist() == [9859, 87228, 2271, 62460], w[-1][:4].tolist()
+
+    flat = lambda bs: [int(i) for b in bs for i in b]
+    a, b = strided_windows(data, 8, 512, 100), strided_windows(data, 16, 512, 100)
+    assert flat(a) == flat(b), "the window set must not depend on batch size"
+    assert len(set(flat(a))) == 100, "strided windows must not repeat"
+    assert all(len(x) == 8 for x in a[:-1]) and len(flat(a)) == 100
+    span = len(data) - 512 - 1
+    assert min(flat(a)) < span * 0.02 and max(flat(a)) > span * 0.98, "must cover the split"
+    assert flat(strided_windows(data, 8, 512, 100)) == flat(a), "must be deterministic"
+    # asking for more windows than exist is clamped, not an error
+    assert len(flat(strided_windows(torch.arange(600), 8, 512, 1000))) <= 600
+
+    # evaluate() reports the mean and the standard error of that mean.
+    cfg = tiny()
+    torch.manual_seed(0)
+    m = AnuLM(cfg).eval()
+    d = torch.randint(0, cfg.vocab_size, (4000,))
+    args = argparse.Namespace(batch_size=4, block_size=cfg.block_size, device="cpu",
+                              autocast=contextlib.nullcontext(), eval_iters=6, eval_windows=0)
+    mean, sem = evaluate(m, d, args)
+    assert math.isfinite(mean) and 0.0 < sem < 1.0, (mean, sem)
+    args.eval_windows = 24
+    mean2, sem2 = evaluate(m, d, args)
+    assert math.isfinite(mean2) and math.isfinite(sem2)
+    # one batch cannot have a spread, and must say so rather than claim zero
+    args.eval_windows, args.batch_size = 4, 4
+    _, sem1 = evaluate(m, d, args)
+    assert math.isnan(sem1), sem1
 
 
 @test
