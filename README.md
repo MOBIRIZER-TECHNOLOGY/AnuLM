@@ -17,6 +17,12 @@ answerer. `docs/MODEL_CARD.md` is the one-page summary of the coder;
 | Hindi / English question answerer | [toonist/AnuLM-Hindi-QA-400M](https://huggingface.co/toonist/AnuLM-Hindi-QA-400M) | CC BY-SA 4.0 |
 | three-language base | [toonist/AnuLM-Base-400M](https://huggingface.co/toonist/AnuLM-Base-400M) | CC BY-SA 4.0 |
 
+Try the coder in the browser without installing anything: the Space at
+[huggingface.co/spaces/toonist/AnuLM](https://huggingface.co/spaces/toonist/AnuLM)
+(free CPU tier, a few tokens per second). Want to help? [TODO.md](TODO.md)
+lists the open work, several items need no GPU, and [CONTRIBUTING.md](CONTRIBUTING.md)
+says how; each item is also a GitHub issue.
+
 > Independent academic project, released for research and teaching. Not
 > affiliated with or endorsed by Sarvam AI, BharatGen, AI4Bharat or the
 > Government of India. The project was called *nanosarvam* until
@@ -64,6 +70,7 @@ CPU wheel silently reports cuda unavailable.
 | [docs/TUTORIAL.md](docs/TUTORIAL.md) | From a fresh machine to your own AnuLM: install, a first model in 20 min on CPU, then every real run in order with the time, disk, GPU and expected number for each. Start here. |
 | [docs/DATASETS.md](docs/DATASETS.md) | Every data source with its link, licence, size, the script that fetches it and the checkpoint that used it; which licence each released checkpoint inherits. |
 | [docs/DEVELOPING.md](docs/DEVELOPING.md) | Setup, layout, testing, how to extend, known gaps and gotchas. |
+| [TODO.md](TODO.md), [CONTRIBUTING.md](CONTRIBUTING.md) | Open work, ordered by usefulness and labelled by whether it needs a GPU, and how to contribute a measured change. |
 | [docs/PUBLISHING.md](docs/PUBLISHING.md) | How this is released: licences per artefact, weight export to safetensors, Hugging Face upload, Zenodo DOI, the Space. |
 | [docs/TRANSLATE_PLAN.md](docs/TRANSLATE_PLAN.md), [docs/CODER_PLAN.md](docs/CODER_PLAN.md) | The two demo plans, with status: both finished. Translation is scored on FLORES-200; the coder ran its 700k steps, was instruction-tuned, and is served by `serve.py`. |
 | [experiments/README.md](experiments/README.md) | One script per results section from §9 on, and how to resume the long ones. |
