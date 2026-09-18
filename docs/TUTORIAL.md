@@ -262,6 +262,17 @@ noise; the benchmark numbers score whole files or whole test sets and are
 stable. If yours land within that of the table, you have reproduced the
 run.
 
+**How much does the machine matter?** Less than the noise. The 50-step
+`--preset 30b` run that CI does on every push lands at val **2.7868** on
+Ubuntu (python 3.12, torch 2.14.0+cpu), **2.7867** on Windows with the same
+wheel, and **2.7865** on the RTX 5070 Ti this project was built on (torch
+2.11.0+cu128, bf16 autocast, `--moe-impl grouped`). Three operating
+systems, two torch versions, CPU against GPU, fp32 against bf16: a spread
+of 3e-4, two orders of magnitude under the ±0.03 an eval carries. Parameter
+counts are identical everywhere (17,440,384 total, 6,602,368 active). So if
+your number is off by more than the noise, suspect the data or the flags,
+not the hardware.
+
 ## Troubleshooting
 
 - **`torch.cuda.is_available()` is False** with an NVIDIA card: you have

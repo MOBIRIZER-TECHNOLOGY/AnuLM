@@ -125,6 +125,14 @@ The ones that earn their keep:
 Add tests to `test_model.py` by decorating with `@test` — the runner collects
 them automatically. Use the `tiny()` helper for a fast config.
 
+`.github/workflows/tests.yml` runs all of it on Ubuntu and Windows for every
+push and pull request, from the CPU wheel, plus a 50-step training run, a
+sample, a checkpoint reload and a load of all eight shipped tokenizers — the
+pipeline breakages a unit test cannot see. The first run of it (2026-09-18)
+was the first time this project had executed on Linux at all; everything
+passed unchanged, and `docs/TUTORIAL.md` §13 records how closely the
+platforms agree.
+
 **Two tests assert current *limitations* on purpose.**
 `sparse_moe_breaks_the_graph_as_documented` fails if a future torch stops
 breaking on `nonzero`, and `param_count_matches_analysis` fails if preset shapes
