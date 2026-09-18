@@ -1,5 +1,14 @@
 # Task list
 
+> **For readers who are not the operator of this machine:** this file is
+> the operations log of the Windows PC with one RTX 5070 Ti on which every
+> run in `docs/RESULTS.md` was done: which scheduled task owned which run,
+> how a killed run was resumed, and the mistakes that cost idle GPU hours.
+> It is kept because the *process* is part of what is being published.
+> Nothing in it is needed to use the repository; `docs/TUTORIAL.md` is the
+> place to start, and the "Running for days without a terminal" section
+> there gives the Linux equivalents of the Task Scheduler pattern below.
+
 The running to-do list for the two demos, with the command to resume each
 step. Kept current by `update_tasks.py`, which rewrites the *Live status*
 block below every hour while a run is in flight (`python update_tasks.py

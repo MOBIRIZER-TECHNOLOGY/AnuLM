@@ -196,7 +196,7 @@ tokens per second.
 
 ```bash
 pip install huggingface_hub
-hf download <hf-owner>/AnuLM-Coder-400M --local-dir AnuLM-Coder-400M
+hf download <hf-owner>/AnuLM-Coder-400M --local-dir AnuLM-Coder-400M   # `hf` is installed by huggingface_hub
 python serve.py  --ckpt AnuLM-Coder-400M
 python sample.py --ckpt AnuLM-Coder-400M --prompt "def is_prime(n):"
 python eval_code.py AnuLM-Coder-400M --bench mbpp --device cuda      # reproduces 12.5%
@@ -208,8 +208,13 @@ checkpoint; `docs/PUBLISHING.md` covers uploading it.
 
 ## 12. Fine-tune a released model on your own data
 
-`finetune.py` takes JSONL with `q` and `a` fields (and an optional `lang`
-of `hi`, `en` or `py` that picks the prompt template):
+`finetune.py` takes JSONL with one object per line, fields `question` and
+`answer`, plus an optional `lang` of `hi`, `en` or `py` that picks the
+prompt template (Hindi is the default):
+
+```json
+{"question": "What does len() return?", "answer": "The number of items in a container.", "lang": "en"}
+```
 
 ```bash
 python finetune.py --ckpt AnuLM-Base-400M --qa my_pairs.jsonl --heldout my_heldout.jsonl \

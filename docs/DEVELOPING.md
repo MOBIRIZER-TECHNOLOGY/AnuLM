@@ -3,17 +3,21 @@
 ## Setup
 
 ```bash
-pip install -r requirements.txt        # torch, plus pyarrow for the parquet converters
+pip install -r requirements.txt        # torch, safetensors; pyarrow for the parquet converters
 python test_model.py                   # 46 tests, ~2 min — run this first
 ```
 
 Everything runs from the repository root (this file lives in `docs/`, the
 annotated Sarvam code in `sarvam/`, the model beside them). One third-party
 dependency for the model, training, sampling, serving and every evaluation:
-**torch**. No transformers, no datasets, no numpy. The only other package is
-**pyarrow**, and only three scripts import it — `convert_parquet.py`,
-`convert_translate.py` and `eval_code.py` — to read Hugging Face parquet
-shards; the fetchers themselves are plain `urllib`. Developed on torch
+**torch**. No transformers, no datasets, no numpy. **safetensors** is used
+only to read and write the exported checkpoint folders (`export_hf.py`,
+and `load_checkpoint()` when handed a folder instead of a `.pt`). The only
+other package is **pyarrow**, and only three scripts import it —
+`convert_parquet.py`, `convert_translate.py` and `eval_code.py` — to read
+Hugging Face parquet shards; the fetchers themselves are plain `urllib`.
+`app.py`, the optional Gradio demo, additionally needs `gradio` and
+`huggingface_hub`. New here? `docs/TUTORIAL.md` is the guided path. Developed on torch
 2.14.0+cpu / Python 3.14.5 / Windows, later on torch 2.11.0+cu128 / Python
 3.14.7 with an RTX 5070 Ti (RESULTS.md §9 onward).
 `torch>=2.1` is the floor — both attention paths pass `scale=` to
