@@ -11,11 +11,13 @@ marked **(no GPU)** can be done on a laptop.
    under GitHub settings, and publishes a `v0.1.1` release; Zenodo mints
    the DOI. Then add the DOI badge to `README.md` and the `doi:` field to
    `CITATION.cff`. Only the account owner can do the first step.
-2. **Space with a model selector (no GPU).** The Space
-   (`toonist/AnuLM`, `app.py`) serves one checkpoint chosen by the
-   `ANULM_REPO` variable. A dropdown that switches between the four
-   checkpoints, loading each on first use, would let visitors compare
-   them without four Spaces. Memory: 1.6 GB per loaded model on CPU.
+2. **Hosted demo (no GPU).** Hugging Face requires a PRO subscription
+   to host Gradio Spaces even on the free CPU tier (the API returns 402),
+   so no Space is up; `app.py` and `space/` are ready for anyone with
+   PRO or ZeroGPU access, and `demo_colab.ipynb` is the free way to try
+   the models today. Also wanted: a dropdown in `app.py` that switches
+   between the four checkpoints, loading each on first use (1.6 GB per
+   model on CPU).
 3. **Continuous integration (no GPU).** A GitHub Actions workflow that
    runs `python test_model.py` on Ubuntu and Windows with the CPU torch
    wheel, and a 200-step `--preset 30b` smoke run, on every PR.
@@ -80,5 +82,5 @@ marked **(no GPU)** can be done on a laptop.
 ## Done
 
 - 2026-09-18: code, docs, recipes on GitHub (v0.1.0); four checkpoints on
-  Hugging Face; Gradio Space; tutorial, dataset table, model cards,
-  contributor guide.
+  Hugging Face; Colab demo notebook; tutorial, dataset table, model cards,
+  contributor guide; one GitHub issue per item above.

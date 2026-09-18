@@ -17,9 +17,12 @@ answerer. `docs/MODEL_CARD.md` is the one-page summary of the coder;
 | Hindi / English question answerer | [toonist/AnuLM-Hindi-QA-400M](https://huggingface.co/toonist/AnuLM-Hindi-QA-400M) | CC BY-SA 4.0 |
 | three-language base | [toonist/AnuLM-Base-400M](https://huggingface.co/toonist/AnuLM-Base-400M) | CC BY-SA 4.0 |
 
-Try the coder in the browser without installing anything: the Space at
-[huggingface.co/spaces/toonist/AnuLM](https://huggingface.co/spaces/toonist/AnuLM)
-(free CPU tier, a few tokens per second). Want to help? [TODO.md](TODO.md)
+Try it without installing anything: open
+[demo_colab.ipynb in Colab](https://colab.research.google.com/github/MOBIRIZER-TECHNOLOGY/AnuLM/blob/main/demo_colab.ipynb),
+run the three cells, pick a checkpoint, and a public link to the demo
+appears (the free tier is enough). A Hugging Face Space would be the
+same app, `app.py`, but Hugging Face now charges for hosting Gradio
+Spaces, so none is up; the files are ready in `space/`. Want to help? [TODO.md](TODO.md)
 lists the open work, several items need no GPU, and [CONTRIBUTING.md](CONTRIBUTING.md)
 says how; each item is also a GitHub issue.
 

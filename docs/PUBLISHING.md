@@ -15,7 +15,7 @@ by itself.
 | weights on Hugging Face | **done**: toonist/AnuLM-Coder-400M, -Translate-400M, -Hindi-QA-400M, -Base-400M, each with its model card |
 | training data | **not uploaded, by design**: every corpus is re-fetched from its public source by the scripts; `docs/DATASETS.md` links each one with its licence |
 | Zenodo DOI | open: enable the repository at https://zenodo.org/account/settings/github/ and re-publish the release, or publish v0.1.1 |
-| Hugging Face Space | open: `app.py` is ready; create a Gradio Space and set `ANULM_REPO` (section 6) |
+| hosted demo | Gradio Spaces need a PRO subscription (API returns 402 on free cpu-basic, 2026-09); `app.py` + `space/` are ready if that changes. `demo_colab.ipynb` is the free hosted route and is linked from the README |
 | hygiene | any Hugging Face token that was ever pasted into a chat or a terminal history should be revoked at https://huggingface.co/settings/tokens; the CLI login used here is a browser OAuth token that refreshes itself |
 
 Local layout: `C:\workspace\AnuLM` is the release checkout that is pushed;
@@ -125,9 +125,11 @@ file automatically.
 
 ## 6. Optional: a public demo
 
-A Gradio Space on the free CPU tier runs the 174M-active model at a few
-tokens per second, enough for the coder and the translator. `app.py` is
-that Space: it imports `Engine` from `serve.py`, shows the modes the
+As of 2026-09 Hugging Face requires a PRO subscription to host Gradio
+Spaces even on the free CPU tier, so this is not deployed; the free
+alternative is `demo_colab.ipynb`, which clones the repo, downloads a
+checkpoint and launches `app.py` with a public link. If a PRO or ZeroGPU
+account becomes available, `app.py` is the Space: it imports `Engine` from `serve.py`, shows the modes the
 loaded checkpoint supports, and downloads the weights from the Hub when
 the Space variable `ANULM_REPO` is set. Create a Gradio Space, add
 `app.py`, `serve.py`, `model.py`, `bpe.py`, `make_qa.py` and a
