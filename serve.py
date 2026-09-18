@@ -1,12 +1,15 @@
 """
-A tiny web UI for talking to a AnuLM checkpoint.
+A tiny web UI for talking to an AnuLM checkpoint.
 
     python serve.py --ckpt ckpt_hindi_mixed18k.pt
     # then open http://localhost:8000
 
-Stdlib only (http.server + json), no Flask. Loads the checkpoint once, serves
-web/index.html at /, model facts at /info, and generation at POST /generate
-with a JSON body {prompt, max_tokens, temperature, top_k, seed}.
+Stdlib only (http.server + json), no Flask. Loads the checkpoint once (a .pt
+or a folder from export_hf.py), serves web/index.html at /, model facts at
+/info, and generation at POST /generate with a JSON body
+{prompt, max_tokens, temperature, top_k, seed, mode, repetition_penalty};
+mode is "continue", "question" or "translate", and one the checkpoint has no
+template for falls back to "continue" and says so in the reply.
 
 What to expect depends on the checkpoint, and the page adapts from /info:
 

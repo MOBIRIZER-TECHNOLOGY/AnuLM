@@ -53,7 +53,7 @@ experiments/<script>.sh`) or from a Git Bash terminal.
 ## 2. Verify the code (2 minutes, CPU)
 
 ```bash
-python test_model.py        # 46 tests: routing math, attention, tokenizer, data loaders, loss masks
+python test_model.py        # 47 tests: routing math, attention, tokenizer, data loaders, loss masks
 python model.py             # builds both reference presets, forward + backward, prints parameter tables
 ```
 
@@ -178,7 +178,11 @@ The page adapts to the checkpoint: the coder offers *write a function*
 and *continue the code*, the translator *translate*, the Q&A model
 *answer a question*. Stdlib only, nothing to install.
 
-For a Gradio interface, or to run on a Hugging Face Space:
+`serve.py` picks the MoE dispatch from the device it is given — the
+grouped GEMM on CUDA, the portable `sparse` path on CPU — so the same
+checkpoint serves on a laptop and on a GPU box.
+
+For a Gradio interface:
 
 ```bash
 pip install gradio huggingface_hub
@@ -186,11 +190,20 @@ python app.py --ckpt ckpt_coder_sft.pt                     # local Gradio UI on 
 ANULM_REPO=toonist/AnuLM-Coder-400M python app.py       # downloads the weights from the Hub first
 ```
 
-To publish as a Space: create a Gradio Space, add `app.py`, `serve.py`,
-`model.py`, `bpe.py`, `make_qa.py`, `requirements.txt` plus
+**Without installing anything**, `demo_colab.ipynb` does the same three
+steps in Colab — clone, download a checkpoint, launch `app.py` with a
+public link — and the free tier is enough:
+[open it in Colab](https://colab.research.google.com/github/MOBIRIZER-TECHNOLOGY/AnuLM/blob/main/demo_colab.ipynb).
+
+To publish as a Hugging Face Space: create a Gradio Space, add `app.py`,
+`serve.py`, `model.py`, `bpe.py`, `make_qa.py`, `requirements.txt` plus
 `gradio` and `huggingface_hub`, and set the Space variable `ANULM_REPO`
-to the model repo. The free CPU tier runs the 174M-active model at a few
-tokens per second.
+to the model repo; `space/` holds the front matter and the requirements
+file to copy. The free CPU tier runs the 174M-active model at a few tokens
+per second — but as of 2026-09 Hugging Face requires a PRO subscription to
+*host* a Gradio Space at all (the API returns 402 on free `cpu-basic`),
+which is why no Space is up for this project and Colab is the hosted
+route. `docs/PUBLISHING.md` §6 has the detail.
 
 ## 11. Use the released weights instead of training
 

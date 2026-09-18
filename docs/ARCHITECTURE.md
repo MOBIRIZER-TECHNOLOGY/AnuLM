@@ -286,7 +286,9 @@ single lever in the whole experiment log, ahead of anything in §2–§5.
 ## 10. Rebuilt at 1/1000th scale: what held up
 
 AnuLM (`model.py` and friends at the repository root) re-implements §2–§5 as trainable pure PyTorch (no HuggingFace)
-and trains it, mostly on Hindi Wikipedia and Wikisource. The presets keep each
+and trains it: first on Hindi Wikipedia and Wikisource, where the ablations
+below were run, then on Hindi + English + Python and on a 2.78B-token Python
+corpus for the released checkpoints. The presets keep each
 real model's *ratios* — `moe_intermediate_size` as a fraction of hidden, the
 dense-layer FFN, the KV-to-query ratio, `n_group`, `rope_theta` — not its size.
 `nano_350m` is the GPU workhorse (sized to an 8 GB card, RESULTS §6); the
@@ -323,7 +325,7 @@ The repository `README.md` has the full list and the module-to-line mapping.
 
 Every row is a measurement in `RESULTS.md`; the section numbers below
 refer to that file. Read the deltas as rankings, not as absolute quality —
-these are 17M–386M models.
+these are 17M–398M models.
 
 | design choice (above) | what AnuLM measured | RESULTS |
 | --- | --- | --- |
@@ -341,6 +343,7 @@ these are 17M–386M models.
 | **Data over architecture** | Best model: the combo configuration on Wikipedia + Wikisource for 36k steps, 0.588 / 0.648 bits/byte on the two benchmarks. Mixing in a second register was worth 0.042 averaged over both; 3× steps on mostly-unseen data 0.089; doubling the steps again, warm-restarted from the finished run, another 0.030. | §17, §18, §21 |
 | **Accuracy, not just compression** | On a 600-item Hindi cloze golden set built from the held-out text, the best model picks the right word from four 85.8% of the time (chance 25%) and reproduces the exact word 11.2%; the Wikipedia-only model 76.7% / 6.3%, with the whole gap on literature. Fluent, not factual: every date and figure in its samples is invented. | §19 |
 | **Post-training** (§1: SFT then GRPO) | The SFT half, at nano scale: 56k question-answer pairs mined from the corpus's own lead sentences, loss on answers only, 15–20 minutes. The model learns the format completely (names the subject asked about 86% of the time, from 12%) and learns few new facts (answer-recognition 43% → 51% against a 25% floor). Doubling the pretraining underneath it moved compression by 0.03 bits/byte and recognition by one point: instruction tuning reveals what pretraining put in, and what pretraining puts in about any one subject is bounded by how often the corpus mentions it. | §20, §21 |
+| **The same configuration, three scripts and a task** (§2–§5 unchanged) | Nothing in the architecture needed changing to carry it past Hindi. The same 398M shape with a 32k three-script tokenizer learns Hindi, English and Python on one 148M-token budget (1.54 bits/byte on English, 1.08 on Python, against 2.30 and 3.77 for the Hindi-only model read through its own tokenizer), and the price is paid in Hindi alone — 0.645 against 0.588 — because the budget is now shared. Fine-tuned from that one base: chrF 41.5 / 43.4 on FLORES-200, and a question answerer in all three. Scaled to 700,000 steps on a 2.87B-token Python corpus it reaches MBPP 12.5% pass@1. The architecture is not the limit at this scale; the token budget is. | §22, §23, §24, §25 |
 
 The ledger, largest lever first: tokenizer 0.162, more steps on new data
 0.089, 20× scale 0.110 (on one benchmark), corpus cleaning 0.054, a second

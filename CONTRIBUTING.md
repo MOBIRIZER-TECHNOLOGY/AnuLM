@@ -12,7 +12,7 @@ it on more machines, or extend it in a measured way. Open items are in
 git clone https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM.git && cd AnuLM
 pip install --index-url https://download.pytorch.org/whl/cpu torch   # or the CUDA wheel for your driver
 pip install -r requirements.txt
-python test_model.py          # 46 tests, ~2 min, must pass before and after your change
+python test_model.py          # 47 tests, ~2 min, must pass before and after your change
 ```
 
 `docs/DEVELOPING.md` explains the layout; `docs/TUTORIAL.md` runs the

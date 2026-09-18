@@ -25,7 +25,7 @@ from pathlib import Path
 from bpe import DOC_SEP
 
 BASE = "https://huggingface.co/datasets/allenai/c4/resolve/main/en/"
-UA = "nanosarvam-corpus-builder/0.1 (educational; local LLM training)"
+UA = "anulm-corpus-builder/0.1 (educational; local LLM training)"
 _BLANKS = re.compile(r"\n{3,}")
 
 

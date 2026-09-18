@@ -12,6 +12,39 @@ torch 2.14.0+cu130, bf16 autocast, fused AdamW).
 Read the numbers as *relative* evidence about architecture choices, not as
 absolute quality. These are 17M and 47M parameter models.
 
+## What is in here
+
+Sections 1–8 are the two reference presets on CPU, then the first GPU
+sizing and the tokenizer; 9–16 are the recipe and architecture ablations
+that produced the configuration every released checkpoint uses; 17–21 are
+the Hindi ladder that configuration was scaled on; 22–25 are the released
+models.
+
+| § | what it measures | the number it produced |
+| --- | --- | --- |
+| [1](#1-english-tinyshakespeare-112-mb), [2](#2-hindi) | MLA vs GQA at matched steps and at matched wall clock | MLA +0.034 bits/byte per step, GQA ahead per second |
+| [3](#3-does-yarn-earn-its-place) | YaRN against a wide `rope_theta`, 2× and 4× the training length | θ=1e4 collapses without YaRN (1.54 → 3.03), is flat with it |
+| [4](#4-moe-dispatch-sparse-vs-dense) | the three `moe_impl` paths: speed, Dynamo graphs, equivalence | `dense` bit-identical and 1 graph; `grouped` 1.48× on GPU |
+| [5](#5-load-balancing-behaviour) | the aux-loss-free bias rule | imbalance rises before it falls; the `sign()` rule oscillates |
+| [6](#6-scaling-to-the-gpu-sizing-nano_350m) | sizing a 350M preset to an 8 GB card; AdamW vs Muon | `--grad-ckpt` 6.34 GB vs 15.75; Muon 2.6× slower here |
+| [7](#7-the-tokenizer-experiment-bytes-vs-bpe-at-matched-compute) | a 16k Hindi BPE against bytes at matched compute | −0.162 bits/byte — the largest single lever in the project |
+| [8](#8-corpus-cleaning-v2) | scrubbing wikitext out of the dump | −0.054 bits/byte |
+| [9](#9-the-v4-recipe-ab-at-matched-compute-on-a-shared-benchmark) | documents + sampling without replacement + regularisers | −0.022 bits/byte at matched compute |
+| [10](#10-architecture-ablations-on-the-v4-recipe) | shared expert, fine-grained experts, top-k, the window | fine-grained −0.008; the shared expert costs more than it gives |
+| [11](#11-the-data-lever-the-whole-dump-at-the-same-compute) | 3.3× unique text at fixed compute | −0.007 |
+| [12](#12-the-ablation-winners-together) | the winners combined — the configuration every checkpoint uses | same loss at 76% of the active compute |
+| [13](#13-prose-filtering-a-clean-negative) | dropping list-shaped articles | +0.023: a clean negative |
+| [14](#14-out-of-register-hindi-wikisource) | scoring on literature instead of Wikipedia | the ranking transfers; the register gap is a flat 0.24 |
+| [15](#15-what-the-sliding-window-costs-past-the-training-length) | the sliding window past the training length | nothing — it extrapolates *better* |
+| [16](#16-bias_update_rate-for-fine-grained-experts) | `bias_update_rate` with 24 experts | 3e-3; 1e-2 makes balance worse; imbalance costs no loss |
+| [17](#17-closing-the-register-gap-wikisource-as-training-data), [18](#18-more-steps-on-more-data-the-mixed-corpus-at-3-the-budget), [21](#21-twice-the-steps-18k--36k-and-what-reaches-the-answers) | Wikisource in the mix, then 3× and 6× the steps | the best Hindi model: 0.588 / 0.648 bits/byte |
+| [19](#19-accuracy-a-golden-set) | 600 Hindi cloze items: exact match and 4-way choice | 11.2% / 85.8%, the whole gap on literature |
+| [20](#20-fine-tuning-to-answer-questions) | SFT on 56k mined question-answer pairs | names the subject 86% of the time, from 12% |
+| [22](#22-three-scripts-one-budget-hindi--english--python-with-a-32k-tokenizer) | Hindi + English + Python on one budget, 32k tokenizer | `ckpt_multi36k`, **AnuLM-Base-400M** |
+| [23](#23-questions-in-three-languages) | the QA recipe in all three languages at once | `ckpt_multi_qa`, **AnuLM-Hindi-QA-400M** |
+| [24](#24-english--hindi-translation) | 2M sentence pairs, one pass, chrF on FLORES-200 | **41.5 / 43.4**, `ckpt_translate`, **AnuLM-Translate-400M** |
+| [25](#25-a-python-coder-700000-steps-then-instruction-tuning) | 700k steps on 2.87B tokens, then instruction tuning | **MBPP 12.5%**, HumanEval 4.9%, **AnuLM-Coder-400M** |
+
 ---
 
 ## The two presets

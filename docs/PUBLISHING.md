@@ -16,15 +16,20 @@ by itself.
 | training data | **not uploaded, by design**: every corpus is re-fetched from its public source by the scripts; `docs/DATASETS.md` links each one with its licence |
 | Zenodo DOI | open: enable the repository at https://zenodo.org/account/settings/github/ and re-publish the release, or publish v0.1.1 |
 | hosted demo | Gradio Spaces need a PRO subscription (API returns 402 on free cpu-basic, 2026-09); `app.py` + `space/` are ready if that changes. `demo_colab.ipynb` is the free hosted route and is linked from the README |
+| release pipeline tested end to end | **done 2026-09-18**: a 200-step tinyshakespeare checkpoint trained, exported, uploaded, downloaded and generated from, as [toonist/AnuLM-Smoke-30B](https://huggingface.co/toonist/AnuLM-Smoke-30B) (`docs/MODEL_CARD_SMOKE.md`). It is a deliberately useless 17M model whose card says so in its first line; it exists so this machinery is exercised without touching a released repo |
 | hygiene | any Hugging Face token that was ever pasted into a chat or a terminal history should be revoked at https://huggingface.co/settings/tokens; the CLI login used here is a browser OAuth token that refreshes itself |
 
-Local layout: `C:\workspace\AnuLM` is the release checkout that is pushed;
-`C:\workspace
-anosarvam` is the training rig (checkpoints, data, logs,
-scheduled tasks) and the place where edits are made and tested. To
-publish a change: edit and test in the rig, `git add -A` there, then
-`git checkout-index -a -f --prefix=C:/workspace/AnuLM/`, then commit and
-push from `C:\workspace\AnuLM`.
+Local layout: `C:\workspace\AnuLM` is the only checkout, and the one that is
+pushed. Until 2026-09-18 there were two — this one and a separate training
+rig holding the checkpoints, corpora, logs and scheduled tasks, from which
+changes were copied across with `git checkout-index -a -f
+--prefix=C:/workspace/AnuLM/`. That rig has been deleted along with its
+scheduled tasks, so edit, test, commit and push here. What it held that
+still matters was published before it went: the four exported checkpoints
+(Hugging Face and `release/`), the tokenizers under `data/`,
+`coder_curve.csv` and the numbers in `docs/RESULTS.md`. The corpora are
+re-fetchable by the scripts; the `.pt` training checkpoints, with their
+optimizer state, are not — `TASKS.md` records what that means.
 
 ## 1. What is released, under which licence
 
@@ -45,7 +50,17 @@ full provenance table; keep it in sync with this one.
 
 - Project renamed from nanosarvam to AnuLM. Class names `NanoSarvam` and
   `NanoSarvamConfig` remain as aliases in `model.py` so existing
-  checkpoints, which pickle the config class by name, still load.
+  checkpoints, which pickle the config class by name, still load, and
+  `BPE.load` still accepts the old `"nanosarvam-bpe"` format id, which the
+  tokenizers uploaded with the weights carry; `bpe.py` writes `"anulm-bpe"`
+  now and the committed tokenizers under `data/` were migrated in place
+  (only the type string changed — the merges are byte-for-byte identical,
+  so re-uploading the Hub copies is optional). Everything else carrying the
+  old name was renamed with the project: the corpus fetchers'
+  User-Agent, the scheduled tasks (`anulm_*`) and the paths in `TASKS.md`
+  and `update_tasks.py`. The old working directory and its five scheduled
+  tasks were deleted on 2026-09-18; `TASKS.md` records what that took with
+  it and what had already been published.
 - Local machine specifics removed from anything that ships: the Windows
   wrappers use `%LOCALAPPDATA%`, no user names, e-mails or host names remain
   outside `data/` and the logs. Logs, guard markers, editor backups and the
@@ -53,7 +68,8 @@ full provenance table; keep it in sync with this one.
   are the one thing kept from `data/`.
 - `CITATION.cff` added. `README.md` opens with what the project is and the
   affiliation disclaimer.
-- `python test_model.py`: 46 tests pass after the rename.
+- `python test_model.py`: 46 tests passed after the rename; 47 since a
+  test was added for the tokenizer format id below.
 
 Before the first commit, decide the identity that will appear in history.
 GitHub offers a no-reply address (`<id>+<user>@users.noreply.github.com`)
@@ -91,6 +107,22 @@ python export_hf.py ckpt_multi36k.pt release/AnuLM-Base-400M \
     --license cc-by-sa-4.0 --card docs/MODEL_CARD_BASE.md --repo toonist/AnuLM-Base-400M
 python serve.py --ckpt release/AnuLM-Coder-400M      # check an export loads and answers before uploading
 ```
+
+To rehearse all of it without risking a released repo, train a throwaway
+and push it to a separate model id — 29 seconds on a GPU, five minutes on
+a CPU, and it exercises every step above plus the download:
+
+```bash
+python train.py --preset 30b --steps 200 --eval-every 50 --out ckpt_smoke.pt
+python export_hf.py ckpt_smoke.pt release/AnuLM-Smoke-30B \
+    --license mit --card docs/MODEL_CARD_SMOKE.md --repo toonist/AnuLM-Smoke-30B
+python sample.py --ckpt release/AnuLM-Smoke-30B --prompt "KING RICHARD II:" --tokens 100
+# then create_repo + upload_folder, and load it back from the Hub copy
+```
+
+**Never point a rehearsal at a released repo id.** The four above are the
+only copies of those weights outside the Hub; the training rig that held
+their `.pt` files is gone.
 
 The four cards are `docs/MODEL_CARD.md` (coder), `MODEL_CARD_TRANSLATE.md`,
 `MODEL_CARD_HINDI_QA.md` and `MODEL_CARD_BASE.md`. All four exports were

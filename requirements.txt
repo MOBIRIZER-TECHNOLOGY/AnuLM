@@ -1,5 +1,8 @@
 # AnuLM's model, training, sampling, serving and every evaluation need
-# exactly one third-party package: torch.
+# exactly one third-party package: torch. safetensors is needed only to read
+# or write an exported checkpoint folder, pyarrow only to read Hugging Face
+# parquet shards; both are listed below and neither is imported by the
+# training path. docs/DEVELOPING.md "Setup" says which script needs what.
 #
 # CPU-only (what sections 1-5 of docs/RESULTS.md ran on):
 #   pip install --index-url https://download.pytorch.org/whl/cpu torch
@@ -22,6 +25,8 @@ safetensors>=0.4
 # test file). The fetchers, the tokenizer, training and the web UI do not.
 pyarrow>=15
 
-# Optional: only app.py (the Gradio demo / Hugging Face Space) needs these.
+# Optional: only app.py (the Gradio demo, demo_colab.ipynb, a Hugging Face
+# Space) needs these. space/requirements.txt pins gradio>=6, which is what the
+# Space front matter declares; locally anything from 5 on works.
 # gradio>=5
 # huggingface_hub>=0.30

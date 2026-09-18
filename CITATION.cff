@@ -21,8 +21,9 @@ abstract: >-
   architecture (grouped-query attention, 24 routed experts with aux-loss-free
   balancing, sliding-window attention on the lower layers) at roughly 400M
   parameters, 174M active per token, in pure PyTorch. It ships the training,
-  evaluation and serving code, the data recipes, and three checkpoints
+  evaluation and serving code, the data recipes, and four checkpoints
   trained on a single consumer GPU: a Python coder (MBPP 12.5% pass@1), an
-  English-Hindi translator (chrF 41.5 / 43.4 on FLORES-200 devtest) and a
-  Hindi/English question answerer. The project is not affiliated with Sarvam
+  English-Hindi translator (chrF 41.5 / 43.4 on FLORES-200 devtest), a
+  Hindi/English question answerer, and the three-language base model the
+  latter two were fine-tuned from. The project is not affiliated with Sarvam
   AI, BharatGen, AI4Bharat or the Government of India.

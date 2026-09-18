@@ -187,9 +187,12 @@ python serve.py --ckpt ckpt_coder_sft.pt        # then open http://127.0.0.1:800
 The page offers *write a function* (the MBPP setting: describe a function
 in a sentence) and *continue the code* (the HumanEval setting: paste a
 signature and docstring). *Greedy (as evaluated)* reproduces the benchmark
-decoding; untick it to sample at the temperature shown. On this machine the
-server is kept alive by the scheduled task `nanosarvam_serve`
-(`run_serve.cmd`); `TASKS.md` says how to stop it.
+decoding; untick it to sample at the temperature shown. `serve.py` takes an
+exported folder wherever it takes a `.pt`, so
+`python serve.py --ckpt AnuLM-Coder-400M` after an `hf download` is the
+shortest path from the Hub to the page. On the machine the run was done on,
+a 30-minute scheduled task (`run_serve.cmd`) kept the server up; `TASKS.md`
+has that pattern and what became of it.
 
 ```bash
 python eval_code.py ckpt_coder_sft.pt --bench mbpp --device cuda            # ~10 min

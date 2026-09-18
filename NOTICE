@@ -67,7 +67,6 @@ CHECKPOINTS may be used for, which is a separate question from the code.
     weights non-commercial and share-alike, and a downstream model trained
     on their outputs may inherit the same terms.
 
-
   * `ckpt_translate` was trained on Samanantar and the IIT Bombay corpus,
     both of which carry non-commercial terms. It is the best-performing model
     in this project and it is the one NOT to ship commercially without
@@ -86,6 +85,16 @@ CHECKPOINTS may be used for, which is a separate question from the code.
 3. RUNTIME DEPENDENCIES
 ===============================================================================
 
-  PyTorch    BSD-3-Clause        required
-  pyarrow    Apache 2.0          optional; only the parquet converters and the
+  PyTorch        BSD-3-Clause    required -- the model, training, sampling,
+                                 serving and every evaluation
+  safetensors    Apache 2.0      required only to read or write an exported
+                                 checkpoint folder (export_hf.py, and
+                                 load_checkpoint() given a folder)
+  pyarrow        Apache 2.0      optional; only the parquet converters and the
                                  MBPP loader import it
+  gradio         Apache 2.0      optional; only app.py, the Gradio demo
+  huggingface_hub Apache 2.0     optional; only app.py and demo_colab.ipynb,
+                                 to download weights from the Hub
+
+  None of these is redistributed here; each is installed from PyPI by
+  requirements.txt.

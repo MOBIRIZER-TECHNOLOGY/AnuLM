@@ -84,3 +84,8 @@ marked **(no GPU)** can be done on a laptop.
 - 2026-09-18: code, docs, recipes on GitHub (v0.1.0); four checkpoints on
   Hugging Face; Colab demo notebook; tutorial, dataset table, model cards,
   contributor guide; one GitHub issue per item above.
+- 2026-09-18: documentation pass over the finished project — the two plan
+  documents carry their final status, `docs/RESULTS.md` opens with an index
+  of its 25 sections, `docs/ARCHITECTURE.md` §10 covers §22–§25, the layout
+  in `docs/DEVELOPING.md` lists every shipped file, and `NOTICE` §3 lists
+  every runtime dependency. `python test_model.py`: 47 passed, 0 failed.

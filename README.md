@@ -4,11 +4,12 @@
 mixture-of-experts language model carrying Sarvam 30B / 105B's
 architecture, distilled from a line-by-line study of their released code,
 and trained from scratch on one consumer GPU for Hindi, English and Python.
-It ships the code, the data recipes, the experiment log, and three
+It ships the code, the data recipes, the experiment log, and four
 checkpoints: a Python coder (MBPP 12.5% pass@1), an English ↔ Hindi
-translator (chrF 41.5 / 43.4 on FLORES-200) and a Hindi/English question
-answerer. `docs/MODEL_CARD.md` is the one-page summary of the coder;
-`CITATION.cff` says how to cite the project.
+translator (chrF 41.5 / 43.4 on FLORES-200), a Hindi/English question
+answerer, and the three-language base the last two were fine-tuned from.
+`docs/MODEL_CARD.md` is the one-page summary of the coder, and there is a
+card per checkpoint beside it; `CITATION.cff` says how to cite the project.
 
 | checkpoint | Hugging Face | licence |
 | --- | --- | --- |
@@ -16,6 +17,11 @@ answerer. `docs/MODEL_CARD.md` is the one-page summary of the coder;
 | English ↔ Hindi translator | [toonist/AnuLM-Translate-400M](https://huggingface.co/toonist/AnuLM-Translate-400M) | CC BY-NC 4.0 |
 | Hindi / English question answerer | [toonist/AnuLM-Hindi-QA-400M](https://huggingface.co/toonist/AnuLM-Hindi-QA-400M) | CC BY-SA 4.0 |
 | three-language base | [toonist/AnuLM-Base-400M](https://huggingface.co/toonist/AnuLM-Base-400M) | CC BY-SA 4.0 |
+
+A fifth repo, [toonist/AnuLM-Smoke-30B](https://huggingface.co/toonist/AnuLM-Smoke-30B),
+is not a model to use: it is a 17M checkpoint trained for 200 steps on
+tinyshakespeare that exists to test the release pipeline end to end
+(`docs/MODEL_CARD_SMOKE.md`).
 
 Try it without installing anything: open
 [demo_colab.ipynb in Colab](https://colab.research.google.com/github/MOBIRIZER-TECHNOLOGY/AnuLM/blob/main/demo_colab.ipynb),
@@ -29,9 +35,13 @@ says how; each item is also a GitHub issue.
 > Independent academic project, released for research and teaching. Not
 > affiliated with or endorsed by Sarvam AI, BharatGen, AI4Bharat or the
 > Government of India. The project was called *nanosarvam* until
-> 2026-09-18; old checkpoints still load (`model.py` keeps the old class
-> names as aliases), and the redistributed Sarvam code under `sarvam/`
-> keeps its own name and Apache 2.0 licence. The code is MIT; each
+> 2026-09-18. Two compatibility shims survive that rename and nothing
+> else does: `model.py` keeps the old config class names as aliases, so a
+> checkpoint pickled before it still unpickles, and `bpe.py` still loads a
+> tokenizer file carrying the old format id, which is what the tokenizers
+> beside the released weights say. Both are pinned by tests. The
+> redistributed Sarvam code under `sarvam/` keeps its own name and Apache
+> 2.0 licence. The code is MIT; each
 > checkpoint carries the licence of its training data, see `NOTICE` §2.
 
 Two things live in this repository:
@@ -45,8 +55,8 @@ Two things live in this repository:
    to translate. The verification that the reading was understood.
 
 ```bash
-pip install -r requirements.txt      # torch; pyarrow only for the parquet converters
-python test_model.py                 # 46 tests, ~2 min, no pytest needed
+pip install -r requirements.txt      # torch, safetensors; pyarrow only for the parquet converters
+python test_model.py                 # 47 tests, ~2 min, no pytest needed
 python model.py                      # shape + param sanity check, no data needed
 python train.py --preset 30b         # GQA, high rope_theta  (Sarvam 30B's shape); downloads tinyshakespeare
 python train.py --preset 105b        # MLA, YaRN-ready       (Sarvam 105B's shape)
@@ -54,7 +64,7 @@ python train.py --preset 350m --grad-ckpt   # 353M; needs a GPU
 python sample.py --ckpt ckpt.pt --prompt "भारत"
 python serve.py --ckpt ckpt_translate.pt    # a web page: continue text, answer a question, translate
 python serve.py --ckpt ckpt_coder_sft.pt    # the Python coder: describe a function, or start one
-python app.py   --ckpt ckpt_coder_sft.pt    # the same demo as a Gradio app (pip install gradio); runs as a HF Space
+python app.py   --ckpt ckpt_coder_sft.pt    # the same demo as a Gradio app (pip install gradio); what demo_colab.ipynb launches
 ```
 
 New here? `docs/TUTORIAL.md` goes from an empty machine to every checkpoint
@@ -70,6 +80,7 @@ CPU wheel silently reports cuda unavailable.
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | How Sarvam 30B/105B are built — MLA, GQA, sparse MoE, aux-loss-free routing, YaRN — and (§10) which of those choices held up when rebuilt and trained at nano scale. The research output. |
 | [docs/RESULTS.md](docs/RESULTS.md) | Every experiment run here, with numbers: §1–21 the Hindi ladder, §22 three languages, §23 question answering in all three, §24 English ↔ Hindi translation (chrF 41.5 / 43.4 on FLORES-200), §25 the Python coder, finished: MBPP 12.5%, HumanEval 4.9%. |
 | [docs/MODEL_CARD.md](docs/MODEL_CARD.md) | The finished Python coder on one page: every data source with its size and share, the architecture as read from the checkpoint, the training run, the benchmark numbers with the prompt mode that produced each, and how to try it. |
+| The other three cards: [base](docs/MODEL_CARD_BASE.md), [question answerer](docs/MODEL_CARD_HINDI_QA.md), [translator](docs/MODEL_CARD_TRANSLATE.md) | One page each — what the checkpoint does and does not do, its data and licence, its numbers, how to run it. `export_hf.py` copies these into the Hugging Face repos, so the card on the Hub and the card here are the same file. |
 | [docs/TUTORIAL.md](docs/TUTORIAL.md) | From a fresh machine to your own AnuLM: install, a first model in 20 min on CPU, then every real run in order with the time, disk, GPU and expected number for each. Start here. |
 | [docs/DATASETS.md](docs/DATASETS.md) | Every data source with its link, licence, size, the script that fetches it and the checkpoint that used it; which licence each released checkpoint inherits. |
 | [docs/DEVELOPING.md](docs/DEVELOPING.md) | Setup, layout, testing, how to extend, known gaps and gotchas. |
@@ -77,6 +88,7 @@ CPU wheel silently reports cuda unavailable.
 | [docs/PUBLISHING.md](docs/PUBLISHING.md) | How this is released: licences per artefact, weight export to safetensors, Hugging Face upload, Zenodo DOI, the Space. |
 | [docs/TRANSLATE_PLAN.md](docs/TRANSLATE_PLAN.md), [docs/CODER_PLAN.md](docs/CODER_PLAN.md) | The two demo plans, with status: both finished. Translation is scored on FLORES-200; the coder ran its 700k steps, was instruction-tuned, and is served by `serve.py`. |
 | [experiments/README.md](experiments/README.md) | One script per results section from §9 on, and how to resume the long ones. |
+| [demo_colab.ipynb](demo_colab.ipynb), [app.py](app.py), [space/](space/) | The hosted demo: three cells in Colab that download a checkpoint and launch `app.py` with a public link, and the Space files for the day Gradio Spaces are free to host again. |
 | [TASKS.md](TASKS.md) | The running to-do list for the two demos, the resume command for each step, and a live-status block that `update_tasks.py --loop 3600` rewrites hourly from the checkpoint on disk, so a power cut loses nothing but the last interval. |
 | `sarvam/*_annotated.py` | The annotated Sarvam code, read beside `sarvam/sarvam-30b/` and `sarvam/sarvam-105b/`. |
 
@@ -86,7 +98,7 @@ CPU wheel silently reports cuda unavailable.
 | `nano_105b`         | 47.39 M | 13.33 M (28%)| 82%          | 12     | MLA        |
 | `nano_350m`         | 353.3 M | 151.5 M (43%)| —            | 20     | GQA 16q/4kv |
 | `350m` + combo `--cfg` | 364 M † | 140 M (38%) | —          | 20     | GQA 16q/4kv, window 256 on layers 0–9 |
-| the same with the 32k head | 398 M | 174 M (44%) | —       | 20     | what `ckpt_multi36k`, `ckpt_multi_qa`, `ckpt_translate` are |
+| the same with the 32k head | 398 M | 174 M (44%) | —       | 20     | every released checkpoint: `ckpt_multi36k`, `ckpt_multi_qa`, `ckpt_translate`, `ckpt_coder_sft` |
 
 `nano_350m` needs a GPU (8 GB is enough) and `--grad-ckpt`; it was sized by
 measurement against an RTX 5050 — see `docs/RESULTS.md` §6. The other two run
@@ -315,11 +327,14 @@ A stdlib HTTP server (no Flask) that loads one checkpoint and serves
 and example prompts. `GET /info` returns the model facts the page shows;
 `POST /generate` takes `{prompt, max_tokens, temperature, top_k, seed, mode,
 repetition_penalty}` and returns the completion, so anything else can call
-it too. The page shows the modes the checkpoint supports: every checkpoint
-*continues the text*; one that carries `qa_templates` (anything
-`finetune.py` wrote) offers *answer a question*, which picks the template
-from the script and shape of the prompt and decodes with a repetition
-penalty of 1.3; one whose templates include the translation directions
+it too. The MoE dispatch is chosen by device, not by what the checkpoint
+was trained with — the grouped GEMM on CUDA, the portable `sparse` path on
+CPU — so any checkpoint serves anywhere. The page shows the modes the
+checkpoint supports: every checkpoint *continues the text*; one that
+carries `qa_templates` (anything `finetune.py` wrote) offers *answer a
+question*, which picks the template from the script and shape of the prompt
+and decodes with a repetition penalty of 1.3; one whose templates include
+the translation directions
 offers *translate*, which picks the direction from the script, caps the
 temperature at 0.3 and stops at the end of the sentence. Generation is
 serialised behind a lock, since the GPU model is not re-entrant; expect
@@ -453,7 +468,7 @@ set is a builder away.
 ## Tests
 
 ```bash
-python test_model.py        # 46 tests, ~2 min, no pytest needed
+python test_model.py        # 47 tests, ~2 min, no pytest needed
 ```
 
 They target what training would not catch. A leaky causal mask still converges,

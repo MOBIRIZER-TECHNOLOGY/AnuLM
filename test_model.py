@@ -841,6 +841,38 @@ def bpe_documents_get_eos_and_the_vocab_is_exact():
 
 
 @test
+def bpe_files_load_under_both_format_ids():
+    """The project was renamed on 2026-09-18 and the tokenizer format id with
+    it. Every tokenizer trained before then -- including the four beside the
+    released weights on the Hub -- says "nanosarvam-bpe", so load() must keep
+    taking it, and the committed tokenizers under data/ must keep loading."""
+    import glob, json, os, tempfile
+    from bpe import BPE
+    assert BPE.TYPE == "anulm-bpe" and "nanosarvam-bpe" in BPE.TYPES
+    tok = BPE.train("दो शब्द, two words, def f(): " * 40, 300, verbose=False)
+    with tempfile.TemporaryDirectory() as d:
+        p = os.path.join(d, "t.json")
+        tok.save(p)
+        assert json.load(open(p, encoding="utf-8"))["type"] == "anulm-bpe",             "save must write the current id"
+        for legacy in BPE.TYPES:
+            blob = json.load(open(p, encoding="utf-8"))
+            blob["type"] = legacy
+            json.dump(blob, open(p, "w", encoding="utf-8"))
+            assert BPE.load(p).merges == tok.merges, f"{legacy} must still load"
+        blob["type"] = "gpt2"                      # anything else is refused
+        json.dump(blob, open(p, "w", encoding="utf-8"))
+        try:
+            BPE.load(p)
+            raise SystemExit("a foreign tokenizer file must not load")
+        except AssertionError:
+            pass
+    shipped = sorted(glob.glob(os.path.join(os.path.dirname(__file__), "data", "*.json")))
+    assert shipped, "the committed tokenizers under data/ went missing"
+    for f in shipped:
+        assert BPE.load(f).merges, f"{f} failed to load"
+
+
+@test
 def byte_loader_inserts_eos_at_document_boundaries():
     import os, tempfile
     from bpe import DOC_SEP

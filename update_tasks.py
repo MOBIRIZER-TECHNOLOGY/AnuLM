@@ -44,7 +44,7 @@ START, END = "<!-- live-status -->", "<!-- /live-status -->"
 # The assistant's per-project memory directory. Written every refresh so a
 # session started after a power cut inherits the live state instead of
 # re-deriving it from checkpoints and logs.
-MEMORY = (Path.home() / ".claude" / "projects" / "C--workspace-nanosarvam"
+MEMORY = (Path.home() / ".claude" / "projects" / "C--workspace-AnuLM"
           / "memory" / "live-training-state.md")
 MEMORY_INDEX = MEMORY.parent / "MEMORY.md"
 INDEX_LINE = ("- [Live training state](live-training-state.md) — rewritten hourly by "
@@ -278,9 +278,9 @@ lost power, the step below is where to resume from.
 GPU: {gpu()}.
 
 **To resume after any interruption** (power cut, reboot, crash): the
-scheduled task `nanosarvam_coder` fires every 30 min and restarts training
+scheduled task `anulm_coder` fires every 30 min and restarts training
 by itself, so usually do nothing. To force it:
-`schtasks /run /tn nanosarvam_coder`. To check it is really training and
+`schtasks /run /tn anulm_coder`. To check it is really training and
 not crash-looping, compare the step above against the previous hourly line
 in `C:\\workspace\\AnuLM\\tasks_history.log` — a step that has not
 moved means the loop is spinning.

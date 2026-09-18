@@ -3,7 +3,7 @@ REM Keep a coder pretraining phase alive, and alert once when it completes.
 REM   run_coder_phase.cmd 250000   train from the last save to step 250000
 REM   run_coder_phase.cmd          no argument: run to the end (700k)
 REM
-REM Registered as the scheduled task nanosarvam_coder, firing every 30 min.
+REM Registered as the scheduled task anulm_coder, firing every 30 min.
 REM Each firing: alert if the phase just finished, then start training if it
 REM is not already alive. The training itself is launched with `start`, in a
 REM console of its own -- a task run with an interactive token otherwise
@@ -21,7 +21,7 @@ REM never fires on the last phase.
 findstr /c:"phase done at step %1" /c:"| ckpt ckpt_coder.pt" coder_train_phase1.log >nul 2>&1 || goto :guard
 echo %date% %time% PHASE %1 COMPLETE > "phase_%1_done.marker"
 echo %date% %time% PHASE %1 COMPLETE >> coder_train_guard.log
-copy "phase_%1_done.marker" "%USERPROFILE%\Desktop\nanosarvam_phase_%1_done.txt" >nul 2>&1
+copy "phase_%1_done.marker" "%USERPROFILE%\Desktop\anulm_phase_%1_done.txt" >nul 2>&1
 powershell -NoProfile -Command "1..6 | ForEach-Object { [console]::beep(880,400); Start-Sleep -Milliseconds 200 }"
 
 :guard
@@ -31,5 +31,5 @@ if errorlevel 1 (
   exit /b 0
 )
 echo %date% %time% launching detached, target %1 >> coder_train_guard.log
-start "nanosarvam-coder" /min "%~dp0_coder_run.cmd" %1
+start "anulm-coder" /min "%~dp0_coder_run.cmd" %1
 exit /b 0

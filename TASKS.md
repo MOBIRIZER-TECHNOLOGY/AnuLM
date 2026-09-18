@@ -9,10 +9,24 @@
 > place to start, and the "Running for days without a terminal" section
 > there gives the Linux equivalents of the Task Scheduler pattern below.
 
-The running to-do list for the two demos, with the command to resume each
-step. Kept current by `update_tasks.py`, which rewrites the *Live status*
-block below every hour while a run is in flight (`python update_tasks.py
---loop 3600`), and can be run once by hand (`python update_tasks.py`).
+> **Closed 2026-09-18.** Every run below is finished. The training rig it
+> describes — the working directory it ran in before the rename, holding the
+> checkpoints, corpora and logs — has since been deleted, and the
+> five scheduled tasks that drove it (`anulm_coder`, `_updater`, `_refresh`,
+> `_sft`, `_serve`) have been removed from the machine, so nothing here is
+> running any more and the *Live status* block at the bottom is the last
+> reading rather than a current one. Two of them, `anulm_coder` and
+> `anulm_updater`, have since been re-registered **disabled** against this
+> checkout, ready for a retrain — see "Retraining on more data" below. `C:\workspace\AnuLM` is now the only
+> checkout, and the `.cmd` wrappers are kept, renamed to the project's
+> current name, as the recipe for anyone re-registering the pattern. What
+> survives the rig is what was published: the four exported checkpoints on
+> Hugging Face, `coder_curve.csv`, and the numbers in `docs/RESULTS.md`.
+
+The to-do list for the two demos as it stood, with the command that resumed
+each step. It was kept current by `update_tasks.py`, which rewrote the
+*Live status* block every hour while a run was in flight (`python
+update_tasks.py --loop 3600`), and could be run once by hand.
 
 ## If the run stopped (power cut, closed session, crash)
 
@@ -59,7 +73,7 @@ Two traps, both learned the hard way on 2026-09-10:
   terminal on 2026-09-12 and died at 06:42 with the session anyway, 2 h 20
   min of idle GPU, while the task-launched training beside it had survived
   16 h. The rule, finally: **if it must outlive the session, register a
-  scheduled task — never `start`, never a bare command.** `nanosarvam_sft`
+  scheduled task — never `start`, never a bare command.** `anulm_sft`
   exists for exactly that reason.
 
 - **A self-healing task can loop on a fatal error and look healthy.** A
@@ -71,7 +85,7 @@ Two traps, both learned the hard way on 2026-09-10:
   step, not the fact that a task is running.
 
 - **Every 30-minute task needs a guard and a done-marker, or it will
-  stampede.** `nanosarvam_sft` was registered without either for a few
+  stampede.** `anulm_sft` was registered without either for a few
   minutes, and its next firing started a *second* fine-tune against the
   same checkpoint; worse, the probe's first run had been launched by the
   marker-less wrapper, so when it finished cleanly no marker was written
@@ -87,14 +101,14 @@ staying open:
 
 | task | runs | every | purpose |
 | --- | --- | --- | --- |
-| `nanosarvam_coder` | `run_coder_phase.cmd 700000` | 30 min | keep training alive |
-| `nanosarvam_updater` | `run_updater.cmd` | 30 min | start the `--loop 3600` refresher if none is alive |
-| `nanosarvam_refresh` | `run_refresh.cmd` | 30 min | one refresh and exit, no guard |
-| `nanosarvam_sft` | `_sft_run.cmd` | disabled | re-enable for the final instruction tune |
+| `anulm_coder` | `run_coder_phase.cmd 700000` | 30 min | keep training alive |
+| `anulm_updater` | `run_updater.cmd` | 30 min | start the `--loop 3600` refresher if none is alive |
+| `anulm_refresh` | `run_refresh.cmd` | 30 min | one refresh and exit, no guard |
+| `anulm_sft` | `_sft_run.cmd` | disabled | re-enable for the final instruction tune |
 
 **Why both `_updater` and `_refresh`.** The looping refresher survives
 `schtasks /end` and keeps whatever code it started with, so a fix to
-`update_tasks.py` would not take effect until a reboot. `nanosarvam_refresh`
+`update_tasks.py` would not take effect until a reboot. `anulm_refresh`
 runs the script fresh every 30 minutes and exits, so the newest code always
 runs and a stale loop cannot block it. They write the same two files through
 `os.replace`, so overlapping is harmless. Each has its own log, because
@@ -132,7 +146,7 @@ written only to the log of the run that was killed at 265,000.
 
 **What a refresh writes.** The *Live status* block at the bottom of this
 file, a line in `tasks_history.log`, the curve CSV, and
-`~/.claude/projects/C--workspace-nanosarvam/memory/live-training-state.md`
+`~/.claude/projects/C--workspace-AnuLM/memory/live-training-state.md`
 — the last one so a fresh assistant session after a power cut inherits the
 current step, the resume command and the open decisions instead of
 re-deriving them.
@@ -150,15 +164,15 @@ idle plus at most 33 minutes of unsaved steps.**
 Managing them, from any shell:
 
 ```
-schtasks /query /tn nanosarvam_coder /fo list        status and next run
-schtasks /run   /tn nanosarvam_coder                 start now, if not already running
-schtasks /end   /tn nanosarvam_coder                 stop the task's process
-schtasks /change /tn nanosarvam_coder /tr "C:\workspace\AnuLM\run_coder_phase.cmd 250000"
-schtasks /delete /tn nanosarvam_coder /f             when the coder is finished
+schtasks /query /tn anulm_coder /fo list        status and next run
+schtasks /run   /tn anulm_coder                 start now, if not already running
+schtasks /end   /tn anulm_coder                 stop the task's process
+schtasks /change /tn anulm_coder /tr "C:\workspace\AnuLM\run_coder_phase.cmd 250000"
+schtasks /delete /tn anulm_coder /f             when the coder is finished
 ```
 
 **When a phase completes** the wrapper beeps six times, writes
-`nanosarvam_phase_<step>_done.txt` to the Desktop, logs `PHASE <step>
+`anulm_phase_<step>_done.txt` to the Desktop, logs `PHASE <step>
 COMPLETE` to `coder_train_guard.log`, and drops a
 `phase_<step>_done.marker` so it never alerts twice. The alert is
 deliberately not a dialog box: a modal window would hold the task
@@ -174,7 +188,7 @@ to 700,000.
 
 One thing the tasks do not cover: the training process running *right
 now* was started by an assistant session at 18:58 and will still die when
-that session ends. That is fine, because `nanosarvam_coder` will pick it
+that session ends. That is fine, because `anulm_coder` will pick it
 back up at the next half-hour boundary. From the first task-started run
 onward, sessions are irrelevant.
 
@@ -200,9 +214,9 @@ Each phase call trains from the last save to the step given and exits.
 | 3 | `bash experiments/coder_train.sh 100000` | 0 → 100k | 11 h | **done 2026-09-11 04:52**, best val 3.4361 at step 85k; curve in docs/CODER_PLAN.md |
 | 4 | `bash experiments/coder_train.sh 250000` | → 250k | 16 h | **done 2026-09-12 02:24**, best val 3.2758 (final eval); curve in docs/CODER_PLAN.md |
 | 4b | instruction-tune the step-250k checkpoint for an early read | `EX_CAP=200000 bash experiments/coder_sft.sh` | 3 h | **done 2026-09-12 11:03: MBPP 5.1% (13/257), HumanEval 0.0%**, answer loss 2.28 → 1.15 |
-| 5-7 | pretrain to the end, one unattended run (phases collapsed) | task `nanosarvam_coder` → `run_coder_phase.cmd 700000` | 47.8 h | **done 2026-09-14 18:38**, best val 2.7222 at step 685k; task now disabled |
+| 5-7 | pretrain to the end, one unattended run (phases collapsed) | task `anulm_coder` → `run_coder_phase.cmd 700000` | 47.8 h | **done 2026-09-14 18:38**, best val 2.7222 at step 685k; task now disabled |
 | 8 | `bash experiments/coder_sft.sh` | instruction tune + pass@1 | 7.7 h uncapped | **done 2026-09-15 04:01**: MBPP **12.5%** (32/257) tuned, HumanEval **4.9%** (8/164) base; answer loss 1.644 -> 0.918 |
-| 9 | demo: `python serve.py --ckpt ckpt_coder_sft.pt` | | minutes | **serving since 2026-09-18** at http://127.0.0.1:8000, owned by task `nanosarvam_serve` (`run_serve.cmd`, every 30 min, restarts the server if it is down). Stop for good: `schtasks /change /tn nanosarvam_serve /disable`, then end the `serve.py` python process. |
+| 9 | demo: `python serve.py --ckpt ckpt_coder_sft.pt` | | minutes | **done**: served at http://127.0.0.1:8000 from 2026-09-18, owned by the task `anulm_serve` (`run_serve.cmd`, every 30 min, restarting the server if it was down) until the rig was deleted and the task with it. To serve it again from this checkout, point `serve.py` at an exported folder: `python serve.py --ckpt release/AnuLM-Coder-400M`, or `hf download toonist/AnuLM-Coder-400M --local-dir AnuLM-Coder-400M` first. |
 
 A checkpoint at any phase boundary is usable: `python eval_code.py
 ckpt_coder.pt --bench humaneval --device cuda` gives the current pass@1,
@@ -217,26 +231,90 @@ evidence that the remaining pretraining is buying a known-good pipeline
 more compute. Watch MBPP, not HumanEval, at this size. See
 docs/CODER_PLAN.md.
 
+## Retraining on more data
+
+The pattern is registered and waiting. Nothing fires until it is enabled,
+because there is no corpus and no `.pt` on this machine yet — the training
+rig went with the old directory, and what survived it is the exported
+checkpoints, the tokenizers under `data/`, `coder_curve.csv` and the
+numbers in `docs/RESULTS.md`.
+
+| task | runs | every | state |
+| --- | --- | --- | --- |
+| `anulm_coder` | `run_coder_phase.cmd 700000` | 30 min | **disabled**, registered 2026-09-18 |
+| `anulm_updater` | `run_updater.cmd` | 30 min | **disabled**, registered 2026-09-18 |
+
+To retrain, in order:
+
+1. **Get the data back.** `bash experiments/coder_fetch.sh` then
+   `bash experiments/coder_build.sh` rebuild the coder corpus from public
+   sources (~15 GB down, ~25 GB on disk, 1 h + 2 h). For a different mix,
+   `docs/DATASETS.md` lists every source with the script that fetches it.
+   Nothing is redistributed, so this is always a fresh fetch.
+2. **Decide where it starts.** From scratch, or continued from a released
+   checkpoint: `hf download toonist/AnuLM-Base-400M --local-dir
+   AnuLM-Base-400M`, which every script takes in place of a `.pt`. No `.pt`
+   with optimizer state survives, so a continuation starts from weights
+   alone and puts the usual dent in the loss curve (`docs/DEVELOPING.md`,
+   "Checkpoints").
+3. **Point the task at the target step** and enable it:
+
+```
+schtasks /change /tn anulm_coder /tr "C:\workspace\AnuLM\run_coder_phase.cmd <STEP>"
+schtasks /change /tn anulm_coder /enable
+schtasks /change /tn anulm_updater /enable      # hourly Live status refresh
+schtasks /run    /tn anulm_coder                # or wait for the next half hour
+```
+
+4. **Watch it.** `python update_tasks.py` prints the step of the newest
+   `.last` and rewrites the *Live status* block below; `--loop 3600` keeps
+   it current, which is what `anulm_updater` starts. To recreate the serve
+   task once there is something to serve:
+   `schtasks /create /tn anulm_serve /tr "C:\workspace\AnuLM\run_serve.cmd" /sc minute /mo 30 /it`.
+5. **Stop.** `schtasks /change /tn <name> /disable` keeps the registration
+   for next time; `/delete /tn <name> /f` removes it. Disable both when the
+   run is done — leaving them firing is the mistake this file exists to
+   record.
+
+**The alarm.** `run_coder_phase.cmd` watches for the phase it was given to
+complete, and on the firing after it does: **six 880 Hz beeps**, an
+`anulm_phase_<step>_done.txt` on the Desktop, a `PHASE <step> COMPLETE`
+line in `coder_train_guard.log`, and a `phase_<step>_done.marker` so it
+never alerts twice. Deliberately not a dialog box: a modal window holds the
+task instance open and the scheduler skips the next firing, which is how a
+crashed run would go unnoticed for half an hour. A firing while training is
+healthy is a no-op — the wrapper checks for a live `train.py` first.
+
 ## Housekeeping
 
-- The old copy of the project under `C:\workspace\custommodel\Transformers\`
-  is a stale duplicate; this directory is the live one. Delete it when
-  convenient.
+- Both stale copies are gone: the duplicate under
+  `C:\workspace\custommodel\Transformers\` and the training rig the
+  project ran in before the rename. `C:\workspace\AnuLM` is the only
+  checkout, and no path in this repository points anywhere else.
 - The val-loss curve of the whole run is in `docs/MODEL_CARD.md` (every
   50k steps) and `coder_curve.csv` (all 138 points); `docs/RESULTS.md` §25
   has it phase by phase. Done 2026-09-18.
 - `docs/MODEL_CARD.md` (2026-09-18) is the one-page summary of the finished
   coder: data sources and sizes, architecture from the checkpoint, training,
   benchmark numbers by prompt mode, how to run it.
-- With everything finished, the 30-minute tasks `nanosarvam_refresh`,
-  `nanosarvam_sft` and `nanosarvam_updater` are idle no-ops (the sft one
-  exits on its done-marker). Disable them when the log noise is unwanted:
-  `schtasks /change /tn <name> /disable`. Only `nanosarvam_serve` does work.
+- All five scheduled tasks were deleted on 2026-09-18 once the rig went
+  (`schtasks /delete /tn <name> /f`). They had gone on firing every 30
+  minutes at a directory that no longer existed, failing silently — a
+  scheduled task outlives the thing it was written for, which is the last
+  operational lesson in this file. `anulm_coder` and `anulm_updater` were
+  then re-registered against `C:\workspace\AnuLM` and left **disabled**, so
+  the pattern is one command away without anything firing at an empty
+  directory meanwhile. `anulm_serve`, `_refresh` and `_sft` were not
+  re-created; the section above has the line that recreates one.
 
 <!-- live-status -->
 ## Live status
 
-Written 2026-09-18 22:07 by `update_tasks.py`. A training process is running; GPU: 9499 MiB, 16303 MiB, 0 %.
+Written 2026-09-18 22:07 by `update_tasks.py` and **frozen there**: the last
+reading taken before the rig was deleted, not a live one. The coder run had
+finished at step 700,000 four days earlier, and the process this line called
+running was the final phase wrapper on its way out. GPU at the time: 9499 MiB
+of 16303 MiB, 0 %.
 
 | checkpoint (`.last`) | step | val loss | best val | saved |
 | --- | --- | --- | --- | --- |

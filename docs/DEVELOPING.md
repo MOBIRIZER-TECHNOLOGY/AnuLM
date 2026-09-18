@@ -4,7 +4,7 @@
 
 ```bash
 pip install -r requirements.txt        # torch, safetensors; pyarrow for the parquet converters
-python test_model.py                   # 46 tests, ~2 min — run this first
+python test_model.py                   # 47 tests, ~2 min — run this first
 ```
 
 Everything runs from the repository root (this file lives in `docs/`, the
@@ -43,9 +43,10 @@ pip install --index-url https://download.pytorch.org/whl/cpu torch
 ├── ask.py            put questions to a checkpoint the way serve.py does (templates + repetition penalty)
 ├── serve.py          the same, behind a stdlib HTTP server + web/index.html
 │                     (continue / answer a question / translate, by what the checkpoint carries)
+├── app.py            the same Engine behind a Gradio UI: a laptop demo, a Colab cell or a Space
 ├── bpe.py            byte-level BPE, DOC_SEP / EOS, the .bin encoder (train / encode / stats)
 ├── muon.py           Muon optimizer (+ AdamW companion)
-├── test_model.py     46 tests, plain asserts, no pytest
+├── test_model.py     47 tests, plain asserts, no pytest
 │
 │   corpora
 ├── fetch_hindi.py    streams a Wikimedia dump into data/, one document per article (any language)
@@ -71,13 +72,26 @@ pip install --index-url https://download.pytorch.org/whl/cpu torch
 ├── eval_translate.py chrF on FLORES-200 devtest, both directions
 ├── eval_code.py      pass@1 on HumanEval / MBPP (executes generated code in a subprocess)
 │
+│   release
+├── export_hf.py      a .pt -> a Hub-ready folder: bf16 safetensors, config.json, tokenizer, model card
+├── demo_colab.ipynb  three cells: clone, download a checkpoint, launch app.py with a public link
+├── space/            README front matter + requirements for a Gradio Space running app.py
+│
+│   operations and the record
 ├── update_tasks.py   rewrites TASKS.md's live-status block from the newest .last checkpoint; --loop 3600 while a run is in flight
-├── TASKS.md          the to-do list for the two demos, with resume commands and that live block
+├── tools_eval_noise.py     the noise floor of the val-loss estimate (RESULTS.md §25)
+├── tools_backfill_curve.py recovers curve points whose log lines were lost
+├── coder_curve.csv   all 138 val-loss points of the 700k-step coder run
+├── *.cmd             Windows scheduled-task wrappers for the long runs (TASKS.md)
+├── TASKS.md          the operations log of the machine the runs were done on, with that live block
+├── TODO.md, CONTRIBUTING.md, CITATION.cff, NOTICE
 ├── golden/           the golden set itself; committed, unlike data/
 ├── experiments/      one script per RESULTS.md section from §9 on; see its README
-├── docs/             this file, ARCHITECTURE.md, RESULTS.md, the two plans, the PDF study
+├── docs/             this file, ARCHITECTURE.md, RESULTS.md, five model cards, the two plans,
+│                     TUTORIAL.md, DATASETS.md, PUBLISHING.md, the PDF study
 ├── sarvam/           Sarvam's released modelling code + the five annotated walkthroughs
 ├── web/index.html    the page serve.py serves
+├── release/          gitignored staging for the exported folders (0.8 GB each)
 └── data/             gitignored; regenerate, never commit (data/raw/ holds the HF downloads)
 ```
 
@@ -198,7 +212,13 @@ The tests `incremental_forward_matches_full_forward` and
 `cached_generation_matches_uncached` will tell you whether the cache is right.
 
 **A different tokenizer** — the byte tokenizer (`vocab_size=259`) and the
-from-scratch BPE (`bpe.py`, `bpe.py train / encode`) both exist; `train.py`
+from-scratch BPE (`bpe.py`, `bpe.py train / encode`) both exist. A tokenizer
+file is `{"type": "anulm-bpe", "version": 1, "merges": [...]}`; `BPE.load`
+also accepts `"nanosarvam-bpe"`, the id written before the 2026-09-18
+rename, because every tokenizer trained until then carries it — including
+the four uploaded beside the released weights. `bpe_files_load_under_both_format_ids`
+pins that, and the committed tokenizers under `data/` were migrated to the
+new id in place, merges byte-for-byte unchanged. `train.py`
 takes either a text file or a `.bin` from `bpe.py encode`, which carries the
 vocab size, the EOS id and the bytes-per-token needed to report bits/byte.
 Anything else needs to produce the same `.bin` dict. Read the fertility

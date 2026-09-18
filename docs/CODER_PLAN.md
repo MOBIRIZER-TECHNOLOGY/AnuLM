@@ -5,11 +5,15 @@ functions live, with a pass rate on the standard tests (HumanEval, MBPP) that
 can be quoted to an investor. Hindi and English stay in the mix so the
 multilingual story survives; the compute goes to Python.
 
-**Status 2026-09-11:** fetch and build are done (`coder_fetch.sh`,
-`coder_build.sh`; numbers at the end of this file). **Pretraining is at step
-100,000 of 700,000**, the first of the five training phases, finished
-2026-09-11 04:52. Best val 3.4361 at step 85,000. The curve and what to
-watch are at the end of this file; `coder_train.sh 250000` is next.
+**Status: finished 2026-09-15.** All 700,000 pretraining steps ran
+(2.87B tokens, ~75 h of GPU, best val 2.7222 at step 685k), the base was
+instruction-tuned on 1.38M pairs in 6 h 38 min, and the result is
+**MBPP 12.5% pass@1** tuned and **HumanEval 4.9%** base. "The final
+result (2026-09-15)" below has the table; `docs/MODEL_CARD.md` is the
+one-page summary of the checkpoint and `docs/RESULTS.md` §25 the full
+curve. Everything from "Sizing" to "The plan from here" is the plan as it
+stood while the run was in flight, kept because the predictions it makes
+at step 100,000 and 250,000 can now be read against what happened.
 
 The plan is phase by phase. Every phase is a single script that can be rerun
 after an interruption and picks up where it stopped, and the training phases
@@ -120,7 +124,7 @@ best at the final eval, so even the uncapped epoch had not saturated.
 2.8x the pretraining and 4.7x the instruction data roughly doubled it.
 **HumanEval reached 4.9%**, its first non-zero, on the *base* model.
 
-Both figures land where §the plan predicted at step 250,000 ("MBPP in the
+Both figures land where the plan predicted at step 250,000 ("MBPP in the
 low teens, HumanEval in low single digits"), and below the original plan's
 10-25% on HumanEval, for the reason given there: 2.87B tokens is about a
 third of compute-optimal for 398M parameters, and the phi-1-style exercise
@@ -152,7 +156,7 @@ the same weights score 3.0%.
 
 700,000 steps, 2.87B tokens, one pass, epoch 1.00. **Best val 2.7222** at
 step 685,000; 2.7234 at the final step. 47.8 h of GPU for the 250k→700k
-stretch, unattended, owned by the `nanosarvam_coder` scheduled task.
+stretch, unattended, owned by the `anulm_coder` scheduled task.
 
 | step | 250k | 350k | 450k | 550k | 650k | **700k** |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -288,7 +292,7 @@ The GPU cannot hold training and a fine-tune at once (~10 GB each against
 | 1 | cap the exercise pairs, then instruction-tune the 250k checkpoint | edit `coder_sft.sh`'s slice, `bash experiments/coder_sft.sh` | 1 h 30 |
 | 2 | pass@1, base and tuned, both benchmarks | inside `coder_sft.sh` | 1 h 15 - 1 h 55 |
 | 3 | decide from the table above | | |
-| 4 | phase 3 | `schtasks /change /tn nanosarvam_coder /tr "...\run_coder_phase.cmd 400000"` | 16.5 h |
+| 4 | phase 3 | `schtasks /change /tn anulm_coder /tr "...\run_coder_phase.cmd 400000"` | 16.5 h |
 | 5 | phase 4 | same, `550000` | 16 h |
 | 6 | phase 5 | same, `run_coder_phase.cmd` with no argument | 16 h |
 | 7 | final instruction tune + pass@1 from step 700,000 | `coder_sft.sh` | 3 h capped / 8 h on all 1.38M pairs |
@@ -319,7 +323,7 @@ So the choice is only about how often you want to be asked for a command:
 | every 50,000 | 9 | 5.5 h | you want to eyeball pass@1 on a ladder |
 | as written, 3 phases | 3 | ~16 h | no reason left |
 
-To collapse them: `schtasks /change /tn nanosarvam_coder /tr
+To collapse them: `schtasks /change /tn anulm_coder /tr
 "C:\workspace\AnuLM\run_coder_phase.cmd 700000"`. Evaluation does not
 need a gate either — training and both benchmarks coexist at 12.7 GB of
 16.3 GB, so `eval_code.py` can be run against `ckpt_coder.pt` at any
@@ -447,7 +451,7 @@ the end is what `coder_sft.sh` is for.
 
 ## Phase 2: steps 100,000 to 250,000 (done 2026-09-12 02:24)
 
-Same command with `--stop-at 250000`, launched by the `nanosarvam_coder`
+Same command with `--stop-at 250000`, launched by the `anulm_coder`
 scheduled task rather than a terminal. 150,000 steps in 16 h at 0.398
 s/step; running it alongside the MBPP eval peaked at 12.7 GB of the 16.3
 GB card, so the two coexisted without WDDM spillover.

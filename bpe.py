@@ -191,16 +191,25 @@ class BPE:
 
     # ---------------- persistence ----------------
 
+    # The format id the project wrote before it was renamed on 2026-09-18.
+    # Every tokenizer trained until then carries it, including the four
+    # uploaded to the Hub beside the released weights, so load() keeps
+    # accepting it: the bytes after the type field are identical either way.
+    TYPE = "anulm-bpe"
+    TYPES = (TYPE, "nanosarvam-bpe")
+
     def save(self, path: str | Path):
         Path(path).write_text(json.dumps({
-            "type": "nanosarvam-bpe", "version": 1,
+            "type": self.TYPE, "version": 1,
             "merges": [list(p) for p in self.merges],
         }), encoding="utf-8")
 
     @classmethod
     def load(cls, path: str | Path) -> "BPE":
         d = json.loads(Path(path).read_text(encoding="utf-8"))
-        assert d.get("type") == "nanosarvam-bpe"
+        assert d.get("type") in cls.TYPES, (
+            f"{path}: not an AnuLM tokenizer (type {d.get('type')!r}, "
+            f"expected one of {cls.TYPES})")
         return cls([tuple(p) for p in d["merges"]])
 
 

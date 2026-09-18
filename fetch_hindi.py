@@ -26,7 +26,7 @@ from pathlib import Path
 from bpe import DOC_SEP
 
 DUMP ="https://dumps.wikimedia.org/hiwiki/latest/hiwiki-latest-pages-articles.xml.bz2"
-UA = "nanosarvam-corpus-builder/0.1 (educational; local LLM training)"
+UA = "anulm-corpus-builder/0.1 (educational; local LLM training)"
 
 # One capture per <page>: the title, then the wikitext body. The title is kept
 # as the first line of each document -- a natural prompt format ("मुंबई\n\n...")

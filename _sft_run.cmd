@@ -1,7 +1,7 @@
 @echo off
 REM Instruction-tune the coder checkpoint, then pass@1 on both benchmarks.
 REM
-REM MUST be started by the Task Scheduler (task nanosarvam_sft), not from a
+REM MUST be started by the Task Scheduler (task anulm_sft), not from a
 REM terminal and not via `start` from one. `start` gives a new console, which
 REM defeats Ctrl+C, but the process is still a DESCENDANT of the launching
 REM session and dies with it when that session's job object closes. Only a
@@ -34,5 +34,5 @@ findstr /c:"reference: CodeParrot" eval_humaneval_sft.log >nul 2>&1 || exit /b 0
 findstr /c:"reference: CodeParrot" eval_mbpp_sft.log >nul 2>&1 || exit /b 0
 echo %date% %time% SFT PROBE COMPLETE > "sft_done.marker"
 echo %date% %time% SFT PROBE COMPLETE >> coder_train_guard.log
-copy "sft_done.marker" "%USERPROFILE%\Desktop\nanosarvam_sft_probe_done.txt" >nul 2>&1
+copy "sft_done.marker" "%USERPROFILE%\Desktop\anulm_sft_probe_done.txt" >nul 2>&1
 powershell -NoProfile -Command "1..6 | ForEach-Object { [console]::beep(880,400); Start-Sleep -Milliseconds 200 }"

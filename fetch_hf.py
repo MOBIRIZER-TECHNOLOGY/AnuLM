@@ -18,7 +18,7 @@ import time
 import urllib.request
 from pathlib import Path
 
-UA = "nanosarvam-corpus-builder/0.1 (educational; local LLM training)"
+UA = "anulm-corpus-builder/0.1 (educational; local LLM training)"
 
 
 def listing(repo: str) -> list[str]:

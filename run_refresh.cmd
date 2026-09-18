@@ -1,6 +1,6 @@
 @echo off
 REM One refresh of TASKS.md and the assistant's live-state memory file, then
-REM exit. Registered as the scheduled task nanosarvam_refresh, every 30 min.
+REM exit. Registered as the scheduled task anulm_refresh, every 30 min.
 REM
 REM Deliberately has NO guard against a concurrent run_updater.cmd: that
 REM wrapper's long-running `--loop` process can be an older build holding
