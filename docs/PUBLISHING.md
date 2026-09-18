@@ -1,8 +1,8 @@
 # Publishing AnuLM: code, weights, citation
 
 The end-to-end checklist for releasing this project as open source for
-academic use. Steps 1–3 are done in the working tree; 4–8 need the
-project's GitHub and Hugging Face accounts. Nothing here uploads anything
+academic use. Steps 1–3 are done and committed in `C:\workspace\AnuLM` (tag v0.1.0);
+4–8 need the project's GitHub and Hugging Face accounts. Nothing here uploads anything
 by itself.
 
 ## 1. What is released, under which licence
@@ -41,7 +41,7 @@ if the real e-mail should stay private:
 ```bash
 git config user.name  "<name or handle>"
 git config user.email "<id>+<user>@users.noreply.github.com"
-git add -A && git status --short          # 95 files, ~5 MB, no checkpoints, no data
+git add -A && git status --short          # ~105 files, ~5 MB, no checkpoints, no data
 git commit -m "AnuLM 0.1.0: code, docs, recipes, tokenizers"
 git tag -a v0.1.0 -m "First public release"
 ```
@@ -62,18 +62,19 @@ python export_hf.py ckpt_coder_sft.pt release/AnuLM-Coder-400M \
                nvidia/OpenCodeInstruct glaiveai/glaive-code-assistant \
     --repo <hf-owner>/AnuLM-Coder-400M
 python export_hf.py ckpt_translate.pt release/AnuLM-Translate-400M \
-    --license cc-by-nc-4.0 --datasets ai4bharat/samanantar cfilt/iitb-english-hindi \
+    --license cc-by-nc-4.0 --card docs/MODEL_CARD_TRANSLATE.md --datasets ai4bharat/samanantar cfilt/iitb-english-hindi \
     --base-model <hf-owner>/AnuLM-Base-400M --repo <hf-owner>/AnuLM-Translate-400M
 python export_hf.py ckpt_multi_qa.pt release/AnuLM-Hindi-QA-400M \
-    --license cc-by-sa-4.0 --base-model <hf-owner>/AnuLM-Base-400M --repo <hf-owner>/AnuLM-Hindi-QA-400M
+    --license cc-by-sa-4.0 --card docs/MODEL_CARD_HINDI_QA.md --base-model <hf-owner>/AnuLM-Base-400M --repo <hf-owner>/AnuLM-Hindi-QA-400M
 python export_hf.py ckpt_multi36k.pt release/AnuLM-Base-400M \
-    --license cc-by-sa-4.0 --repo <hf-owner>/AnuLM-Base-400M
+    --license cc-by-sa-4.0 --card docs/MODEL_CARD_BASE.md --repo <hf-owner>/AnuLM-Base-400M
 python serve.py --ckpt release/AnuLM-Coder-400M      # check an export loads and answers before uploading
 ```
 
-The translation and Q&A cards have no dedicated markdown yet; write one
-each from `docs/RESULTS.md` §24 and §23 (numbers, data, prompt format,
-limits) and pass it with `--card`.
+The four cards are `docs/MODEL_CARD.md` (coder), `MODEL_CARD_TRANSLATE.md`,
+`MODEL_CARD_HINDI_QA.md` and `MODEL_CARD_BASE.md`. All four exports were
+produced on 2026-09-18 into `release/` (0.8 GB each, gitignored) and each
+was loaded back and generated from before being kept.
 
 ## 4. Create the remotes
 
