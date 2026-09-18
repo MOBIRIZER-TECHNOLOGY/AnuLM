@@ -28,7 +28,7 @@ Linux and macOS the system bash is fine.
 ## 1. Install
 
 ```bash
-git clone https://github.com/<github-owner>/AnuLM.git
+git clone https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM.git
 cd AnuLM
 python -m venv .venv
 # Linux/macOS: source .venv/bin/activate     Windows: .venv\Scripts\activate

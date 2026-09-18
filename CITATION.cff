@@ -5,7 +5,7 @@ type: software
 version: 0.1.0
 date-released: 2026-09-18
 license: MIT
-repository-code: "https://github.com/<github-owner>/AnuLM"
+repository-code: "https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM"
 url: "https://huggingface.co/<hf-owner>"
 authors:
   - name: "The AnuLM authors"

@@ -78,9 +78,9 @@ was loaded back and generated from before being kept.
 
 ## 4. Create the remotes
 
-- GitHub: create `<github-owner>/AnuLM` (public, no template, no licence
+- GitHub: create `MOBIRIZER-TECHNOLOGY/AnuLM` (public, no template, no licence
   picker: the repository already has `LICENSE`). Then
-  `git remote add origin git@github.com:<github-owner>/AnuLM.git && git push -u origin main --tags`.
+  `git remote add origin git@github.com:MOBIRIZER-TECHNOLOGY/AnuLM.git && git push -u origin main --tags`.
 - Hugging Face: `pip install -U huggingface_hub`, `hf auth login` (paste a
   write token yourself; never store it in the repository), then one model
   repo per export:
@@ -91,7 +91,7 @@ hf upload <hf-owner>/AnuLM-Coder-400M release/AnuLM-Coder-400M . --commit-messag
 # repeat for AnuLM-Translate-400M, AnuLM-Hindi-QA-400M, AnuLM-Base-400M
 ```
 
-Then fill the placeholders `<github-owner>` and `<hf-owner>` in
+Then fill the placeholders `MOBIRIZER-TECHNOLOGY` and `<hf-owner>` in
 `README.md`, `CITATION.cff` and the exported cards, and push again.
 
 ## 5. Make it citable
