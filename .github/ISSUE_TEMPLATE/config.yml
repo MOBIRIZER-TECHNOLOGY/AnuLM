@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Open work, including items that need no GPU
+    url: https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/main/TODO.md
+    about: Ordered by how much it would help other people; each item is also an issue here.
+  - name: How to contribute a measured change
+    url: https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/main/CONTRIBUTING.md
+    about: What a good change looks like, and which numbers to report with it.
+  - name: Tutorial, from an empty machine to every checkpoint
+    url: https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/main/docs/TUTORIAL.md
+    about: Read this before opening a setup issue; section 13 has the numbers to expect.

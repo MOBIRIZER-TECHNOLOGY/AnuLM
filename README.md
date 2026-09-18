@@ -1,5 +1,7 @@
 # AnuLM
 
+[![tests](https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/actions/workflows/tests.yml/badge.svg)](https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/actions/workflows/tests.yml)
+
 **AnuLM** (अणु, *anu*: atom, the smallest unit) is a small, **trainable**
 mixture-of-experts language model carrying Sarvam 30B / 105B's
 architecture, distilled from a line-by-line study of their released code,
@@ -55,6 +57,10 @@ Two things live in this repository:
    to translate. The verification that the reading was understood.
 
 ```bash
+python quickstart.py                 # checks this machine and says what to run next
+python quickstart.py --train         # ... or just trains a 17M model now (~30 s GPU, 3-6 min CPU)
+python quickstart.py --demo          # ... or downloads a released 400M model and serves it
+
 pip install -r requirements.txt      # torch, safetensors; pyarrow only for the parquet converters
 python test_model.py                 # 47 tests, ~2 min, no pytest needed
 python model.py                      # shape + param sanity check, no data needed
@@ -67,8 +73,11 @@ python serve.py --ckpt ckpt_coder_sft.pt    # the Python coder: describe a funct
 python app.py   --ckpt ckpt_coder_sft.pt    # the same demo as a Gradio app (pip install gradio); what demo_colab.ipynb launches
 ```
 
-New here? `docs/TUTORIAL.md` goes from an empty machine to every checkpoint
-in this repository, with the time, disk and number to expect at each step.
+New here? Run `python quickstart.py`: it reports what your install can and
+cannot do, prints the exact command to fix anything missing, and offers to
+train a model or download one. Then `docs/TUTORIAL.md` goes from an empty
+machine to every checkpoint in this repository, with the time, disk and
+number to expect at each step.
 
 `30b` and `105b` run on CPU; `350m` needs a GPU (8 GB is enough with
 `--grad-ckpt`; every 350M-class run here used an RTX 5050 and then an RTX

@@ -12,8 +12,13 @@ it on more machines, or extend it in a measured way. Open items are in
 git clone https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM.git && cd AnuLM
 pip install --index-url https://download.pytorch.org/whl/cpu torch   # or the CUDA wheel for your driver
 pip install -r requirements.txt
+python quickstart.py          # confirms the install; prints the fix for anything missing
 python test_model.py          # 47 tests, ~2 min, must pass before and after your change
 ```
+
+CI runs the tests plus a 50-step training run on Ubuntu and Windows for
+every push and pull request, so a change that only works on one of them
+will show up before review.
 
 `docs/DEVELOPING.md` explains the layout; `docs/TUTORIAL.md` runs the
 whole pipeline. Everything is plain PyTorch with no framework, so a change
@@ -53,8 +58,8 @@ in any model card of a checkpoint trained on it.
 
 ## Reporting problems
 
-Open an issue with the command you ran, the full output, your OS, Python
-and torch versions, and the GPU if any. For a reproduction that lands
+Open an issue — the form asks for exactly what is needed, and `python
+quickstart.py` prints the environment block it wants in one go. For a reproduction that lands
 outside the expected numbers in `docs/TUTORIAL.md` §13, include the
 `.last` checkpoint's step and the val-loss curve.
 

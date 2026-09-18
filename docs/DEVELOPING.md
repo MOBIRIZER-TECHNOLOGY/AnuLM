@@ -3,6 +3,7 @@
 ## Setup
 
 ```bash
+python quickstart.py                   # what this machine can run, and how to fix what it cannot
 pip install -r requirements.txt        # torch, safetensors; pyarrow for the parquet converters
 python test_model.py                   # 47 tests, ~2 min — run this first
 ```
@@ -44,6 +45,7 @@ pip install --index-url https://download.pytorch.org/whl/cpu torch
 ├── serve.py          the same, behind a stdlib HTTP server + web/index.html
 │                     (continue / answer a question / translate, by what the checkpoint carries)
 ├── app.py            the same Engine behind a Gradio UI: a laptop demo, a Colab cell or a Space
+├── quickstart.py     environment check, then --train a small model or --demo a released one
 ├── bpe.py            byte-level BPE, DOC_SEP / EOS, the .bin encoder (train / encode / stats)
 ├── muon.py           Muon optimizer (+ AdamW companion)
 ├── test_model.py     47 tests, plain asserts, no pytest
@@ -89,6 +91,7 @@ pip install --index-url https://download.pytorch.org/whl/cpu torch
 ├── experiments/      one script per RESULTS.md section from §9 on; see its README
 ├── docs/             this file, ARCHITECTURE.md, RESULTS.md, five model cards, the two plans,
 │                     TUTORIAL.md, DATASETS.md, PUBLISHING.md, the PDF study
+├── .github/          CI (tests on Ubuntu and Windows, CPU wheel) and the issue forms
 ├── sarvam/           Sarvam's released modelling code + the five annotated walkthroughs
 ├── web/index.html    the page serve.py serves
 ├── release/          gitignored staging for the exported folders (0.8 GB each)

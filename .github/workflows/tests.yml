@@ -1,0 +1,90 @@
+name: tests
+
+# The project has no CI history and, until this workflow, had never been run
+# on Linux at all -- every number in docs/RESULTS.md came off one Windows
+# machine. So this runs the same checks on both, with the CPU torch wheel a
+# newcomer actually installs.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  # Windows consoles are cp1252 and cannot encode Devanagari; the test suite
+  # and several scripts print it. docs/DEVELOPING.md "Gotchas" has this one.
+  PYTHONIOENCODING: utf-8
+  PIP_DISABLE_PIP_VERSION_CHECK: 1
+
+jobs:
+  tests:
+    name: ${{ matrix.os }} / python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.12']
+        include:
+          # One newer interpreter, to catch a deprecation before a user does.
+          - os: ubuntu-latest
+            python: '3.13'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+
+      - name: Install (CPU wheel, as the tutorial tells people to)
+        run: |
+          python -m pip install --upgrade pip
+          pip install --index-url https://download.pytorch.org/whl/cpu torch
+          pip install -r requirements.txt
+
+      # Left on each runner's default shell (PowerShell on Windows, bash on
+      # Linux) on purpose: these are the commands a newcomer types, and they
+      # should work in whatever shell they already have open.
+      - name: Report the environment
+        run: python quickstart.py
+
+      - name: Shapes, forward and backward, no data
+        run: python model.py
+
+      - name: Test suite
+        run: python test_model.py
+
+      - name: Train 50 steps end to end
+        # Downloads tinyshakespeare, trains, evaluates, saves, and samples from
+        # the result: the whole pipeline a newcomer meets first, in ~2 minutes
+        # of CPU. Catches breakage that unit tests cannot -- a bad data path,
+        # a checkpoint that will not reload, a sampler that hangs.
+        run: |
+          python train.py --preset 30b --steps 50 --eval-every 25 --out ckpt_ci.pt
+          python sample.py --ckpt ckpt_ci.pt --prompt "KING RICHARD II:" --tokens 40
+
+      - name: Reload the checkpoint, and load every shipped tokenizer
+        shell: bash          # one shell for the heredocs, on both runners
+        run: |
+          python - <<'PY'
+          from model import load_checkpoint, AnuLM
+          ck = load_checkpoint('ckpt_ci.pt')
+          m = AnuLM(ck['cfg']).eval()
+          m.load_state_dict(ck['model'])
+          total, active = m.num_params()
+          print('reloaded step', ck['step'], '->', f'{total:,} params, {active:,} active')
+          PY
+          python - <<'PY'
+          # The project was renamed in 2026 and the tokenizer format id with it.
+          # The files beside the released weights still carry the old id, so
+          # both must keep loading -- test_model.py pins this, and here it runs
+          # against the tokenizers actually shipped in the repository.
+          import glob
+          from bpe import BPE
+          for f in sorted(glob.glob('data/*.json')):
+              print(f, '->', len(BPE.load(f).merges), 'merges')
+          PY

@@ -53,12 +53,19 @@ experiments/<script>.sh`) or from a Git Bash terminal.
 ## 2. Verify the code (2 minutes, CPU)
 
 ```bash
+python quickstart.py        # checks Python, torch, CUDA, the optional packages and the tokenizers
 python test_model.py        # 47 tests: routing math, attention, tokenizer, data loaders, loss masks
 python model.py             # builds both reference presets, forward + backward, prints parameter tables
 ```
 
-If both pass, the implementation is correct on your machine. Nothing so
-far touched data.
+`quickstart.py` is the one to run if anything below misbehaves: it prints a
+line per dependency and the exact command that fixes each problem it finds,
+which is also what a bug report here should include. If the tests pass, the
+implementation is correct on your machine. Nothing so far touched data.
+
+Every push runs steps 1-3 of this tutorial on Ubuntu and Windows with the
+CPU wheel (`.github/workflows/tests.yml`), so the path you are on is the
+path CI walks.
 
 ## 3. Your first model (20 minutes, CPU)
 

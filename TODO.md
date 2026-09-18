@@ -18,13 +18,12 @@ marked **(no GPU)** can be done on a laptop.
    the models today. Also wanted: a dropdown in `app.py` that switches
    between the four checkpoints, loading each on first use (1.6 GB per
    model on CPU).
-3. **Continuous integration (no GPU).** A GitHub Actions workflow that
-   runs `python test_model.py` on Ubuntu and Windows with the CPU torch
-   wheel, and a 200-step `--preset 30b` smoke run, on every PR.
-4. **Linux reproduction report (no GPU for the small parts).** Nobody has
-   yet run the tutorial end to end on Linux. Run §1–§4 of
-   `docs/TUTORIAL.md`, note every place the instructions were unclear,
-   and open one issue or PR with the fixes.
+3. **Linux reproduction report (no GPU for the small parts).** CI now
+   runs the tests and a 50-step training run on Ubuntu for every push, so
+   the small path is covered; nobody has yet run the *tutorial* end to end
+   on Linux. Run §1–§4 of `docs/TUTORIAL.md` on a Linux box, note every
+   place the instructions were unclear, and open one issue or PR with the
+   fixes.
 
 ## Model and training
 
@@ -84,6 +83,10 @@ marked **(no GPU)** can be done on a laptop.
 - 2026-09-18: code, docs, recipes on GitHub (v0.1.0); four checkpoints on
   Hugging Face; Colab demo notebook; tutorial, dataset table, model cards,
   contributor guide; one GitHub issue per item above.
+- 2026-09-18: onboarding — `quickstart.py` (environment check, then
+  `--train` a 17M model or `--demo` a released one), GitHub Actions CI on
+  Ubuntu and Windows with the CPU wheel, and issue forms that ask for the
+  environment block `quickstart.py` prints. Closes the old item 3.
 - 2026-09-18: documentation pass over the finished project — the two plan
   documents carry their final status, `docs/RESULTS.md` opens with an index
   of its 25 sections, `docs/ARCHITECTURE.md` §10 covers §22–§25, the layout

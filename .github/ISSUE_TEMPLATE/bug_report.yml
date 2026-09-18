@@ -1,0 +1,75 @@
+name: Something does not work
+description: A command fails, a number is far from the documented one, or an instruction is wrong.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting. The fastest fix comes from the exact command and
+        its full output — please paste them rather than describing them.
+
+        If setup itself is the problem, run `python quickstart.py` first: it
+        checks the install and usually prints the fix.
+
+  - type: textarea
+    id: command
+    attributes:
+      label: The command you ran
+      description: Copied exactly, including flags.
+      render: shell
+      placeholder: python train.py --preset 350m --grad-ckpt --data data/mixed.hi16k.bin
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: What happened
+      description: The full output or traceback. Long is fine; truncated is not.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+      description: >
+        If a number is off, say which documented number you compared against —
+        docs/TUTORIAL.md section 13 has the expected values, and val loss carries
+        about ±0.03 of noise at the default --eval-iters.
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: >
+        Paste the output of `python quickstart.py`. It reports OS, Python, torch,
+        CUDA and the optional packages in one block.
+      render: shell
+    validations:
+      required: true
+
+  - type: dropdown
+    id: hardware
+    attributes:
+      label: What are you running on
+      options:
+        - CPU only
+        - NVIDIA GPU, 8 GB or less
+        - NVIDIA GPU, more than 8 GB
+        - Other or not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: checkpoint
+    attributes:
+      label: Checkpoint and step, if a training run is involved
+      description: >
+        `python update_tasks.py` prints the step of the newest `.last`. For a run
+        that landed outside the expected numbers, the val-loss curve helps too.
+    validations:
+      required: false
