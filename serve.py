@@ -50,8 +50,10 @@ class Engine:
     def __init__(self, ckpt: str, device: str):
         ck = load_checkpoint(ckpt, device)          # a .pt, or a folder from export_hf.py
         cfg = ck["cfg"]
-        if device.startswith("cuda"):
-            cfg = replace(cfg, moe_impl="grouped")
+        # grouped = one grouped GEMM per projection, bf16, CUDA only; sparse
+        # is the portable path. A checkpoint trained with either decodes with
+        # either, so pick by device rather than by what the checkpoint says.
+        cfg = replace(cfg, moe_impl="grouped" if device.startswith("cuda") else "sparse")
         self.cfg, self.device = cfg, device
         self.model = AnuLM(cfg).to(device).eval()
         self.model.load_state_dict(ck["model"])
