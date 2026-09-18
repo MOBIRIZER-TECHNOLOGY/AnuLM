@@ -5,6 +5,27 @@ academic use. Steps 1–3 are done and committed in `C:\workspace\AnuLM` (tag v0
 4–8 need the project's GitHub and Hugging Face accounts. Nothing here uploads anything
 by itself.
 
+## Release status (2026-09-18)
+
+| step | state |
+| --- | --- |
+| code, docs, recipes on GitHub | **done**: https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM, public, branch `main`, tag and release `v0.1.0` |
+| commit identity | GitHub no-reply address; no personal e-mail in history |
+| weights exported | **done**: four safetensors folders, 0.8 GB each, in `release/` (gitignored) |
+| weights on Hugging Face | **done**: toonist/AnuLM-Coder-400M, -Translate-400M, -Hindi-QA-400M, -Base-400M, each with its model card |
+| training data | **not uploaded, by design**: every corpus is re-fetched from its public source by the scripts; `docs/DATASETS.md` links each one with its licence |
+| Zenodo DOI | open: enable the repository at https://zenodo.org/account/settings/github/ and re-publish the release, or publish v0.1.1 |
+| Hugging Face Space | open: `app.py` is ready; create a Gradio Space and set `ANULM_REPO` (section 6) |
+| hygiene | any Hugging Face token that was ever pasted into a chat or a terminal history should be revoked at https://huggingface.co/settings/tokens; the CLI login used here is a browser OAuth token that refreshes itself |
+
+Local layout: `C:\workspace\AnuLM` is the release checkout that is pushed;
+`C:\workspace
+anosarvam` is the training rig (checkpoints, data, logs,
+scheduled tasks) and the place where edits are made and tested. To
+publish a change: edit and test in the rig, `git add -A` there, then
+`git checkout-index -a -f --prefix=C:/workspace/AnuLM/`, then commit and
+push from `C:\workspace\AnuLM`.
+
 ## 1. What is released, under which licence
 
 | artefact | where | licence | why |
