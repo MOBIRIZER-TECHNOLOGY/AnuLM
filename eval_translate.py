@@ -27,7 +27,7 @@ import torch
 
 from bpe import BPE
 from make_qa import PROMPTS
-from model import AnuLM
+from model import AnuLM, load_checkpoint
 
 
 def chrf(hyps: list[str], refs: list[str], n: int = 6, beta: float = 2.0) -> float:
@@ -54,7 +54,7 @@ def chrf(hyps: list[str], refs: list[str], n: int = 6, beta: float = 2.0) -> flo
 
 @torch.no_grad()
 def score(ckpt: str, items: list[dict], device: str, max_new: int, show: int) -> dict:
-    ck = torch.load(ckpt, map_location="cpu", weights_only=False)
+    ck = load_checkpoint(ckpt, "cpu")
     cfg = ck["cfg"]
     if device.startswith("cuda"):
         cfg = replace(cfg, moe_impl="grouped")

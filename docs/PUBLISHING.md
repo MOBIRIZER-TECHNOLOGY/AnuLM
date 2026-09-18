@@ -68,7 +68,7 @@ full provenance table; keep it in sync with this one.
   are the one thing kept from `data/`.
 - `CITATION.cff` added. `README.md` opens with what the project is and the
   affiliation disclaimer.
-- `python test_model.py`: 46 tests passed after the rename; 51 now, after
+- `python test_model.py`: 46 tests passed after the rename; 52 now, after
   one for the tokenizer format id below and two for the `transformers`
   export.
 

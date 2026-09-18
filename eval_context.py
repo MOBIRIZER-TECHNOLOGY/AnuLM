@@ -25,7 +25,7 @@ from pathlib import Path
 
 import torch
 
-from model import AnuLM
+from model import AnuLM, load_checkpoint
 
 HERE = Path(__file__).parent
 
@@ -98,7 +98,7 @@ def main():
     global DEVICE
     DEVICE = args.device
 
-    ck = torch.load(args.ckpt, map_location="cpu", weights_only=False)
+    ck = load_checkpoint(args.ckpt, "cpu")
     base_cfg, state = ck["cfg"], ck["model"]
     trained_at = base_cfg.block_size
     data = load_val(Path(args.data), base_cfg)

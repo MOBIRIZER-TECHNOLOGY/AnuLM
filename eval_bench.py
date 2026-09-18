@@ -25,12 +25,12 @@ from pathlib import Path
 import torch
 
 from bpe import BPE, DOC_SEP
-from model import AnuLM
+from model import AnuLM, load_checkpoint
 
 
 @torch.no_grad()
 def score(ckpt: str, text: str, device: str, batch_size: int = 8) -> dict:
-    ck = torch.load(ckpt, map_location="cpu", weights_only=False)
+    ck = load_checkpoint(ckpt, "cpu")
     cfg = ck["cfg"]
     m = AnuLM(cfg).to(device).eval()
     m.load_state_dict(ck["model"])

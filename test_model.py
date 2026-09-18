@@ -842,6 +842,63 @@ def bpe_documents_get_eos_and_the_vocab_is_exact():
 
 
 @test
+def an_exported_folder_loads_everywhere_a_pt_does():
+    """docs/TUTORIAL.md section 11 and every model card say the same thing:
+    "Every script accepts an exported folder wherever it accepts a .pt".
+
+    That was not true. Five evaluation scripts called torch.load directly, so
+    anyone who downloaded a checkpoint from the Hub and ran eval_translate.py,
+    eval_qa.py, eval_golden.py, eval_bench.py or eval_context.py on it hit a
+    crash on the first line that touched the file. This checks the promise
+    rather than the prose: the folder path loads, and no script that takes a
+    checkpoint reads it with torch.load any more.
+    """
+    import json, re, tempfile
+    from pathlib import Path as P
+    try:
+        from safetensors.torch import save_file
+    except ImportError:
+        print("    (skipped: safetensors not installed)", end="")
+        return
+    import dataclasses
+    from model import load_checkpoint
+
+    cfg = tiny()
+    torch.manual_seed(0)
+    m = AnuLM(cfg).eval()
+    with tempfile.TemporaryDirectory() as d:
+        folder = P(d) / "Export-Test"
+        folder.mkdir()
+        sd = {k: v.contiguous() for k, v in m.state_dict().items()}
+        save_file(sd, str(folder / "model.safetensors"))
+        (folder / "config.json").write_text(json.dumps({
+            "model_type": "anulm", "config": dataclasses.asdict(cfg),
+            "step": 7, "val_loss": 1.25,
+        }), encoding="utf-8")
+
+        ck = load_checkpoint(str(folder), "cpu")
+        assert ck["step"] == 7 and abs(ck["val_loss"] - 1.25) < 1e-9
+        assert ck["cfg"].n_layer == cfg.n_layer and ck["cfg"].num_experts == cfg.num_experts
+        again = AnuLM(ck["cfg"]).eval()
+        again.load_state_dict(ck["model"])
+        x = torch.randint(0, cfg.vocab_size, (2, 16))
+        with torch.no_grad():
+            a, _ = m(x)
+            b, _ = again(x)
+        assert torch.equal(a, b), "a folder round trip changed the model"
+
+    # The promise, enforced on the scripts themselves.
+    root = P(__file__).parent
+    for name in ("eval_bench.py", "eval_context.py", "eval_golden.py", "eval_qa.py",
+                 "eval_translate.py", "eval_code.py", "sample.py", "sample_many.py",
+                 "ask.py", "serve.py"):
+        src = (root / name).read_text(encoding="utf-8")
+        assert "load_checkpoint" in src, f"{name} does not use load_checkpoint"
+        bad = re.search(r"torch\.load\(\s*(args\.)?ckpt", src)
+        assert not bad, f"{name} still reads a checkpoint with torch.load: {bad.group(0)}"
+
+
+@test
 def eval_windows_are_frozen_and_strided_windows_cover_the_split():
     """Two contracts about how val loss is measured.
 

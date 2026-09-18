@@ -54,7 +54,7 @@ experiments/<script>.sh`) or from a Git Bash terminal.
 
 ```bash
 python quickstart.py        # checks Python, torch, CUDA, the optional packages and the tokenizers
-python test_model.py        # 51 tests: routing math, attention, tokenizer, data loaders, loss masks
+python test_model.py        # 52 tests: routing math, attention, tokenizer, data loaders, loss masks
 python model.py             # builds both reference presets, forward + backward, prints parameter tables
 ```
 
@@ -223,8 +223,10 @@ python eval_code.py AnuLM-Coder-400M --bench mbpp --device cuda      # reproduce
 ```
 
 Every script accepts an exported folder (safetensors + config) wherever
-it accepts a `.pt`. `export_hf.py` makes such a folder from your own
-checkpoint; `docs/PUBLISHING.md` covers uploading it.
+it accepts a `.pt` — including all five evaluation scripts, which until
+2026-09-19 did not, and crashed on the first line that touched a downloaded
+checkpoint. A test holds them to it now. `export_hf.py` makes such a folder
+from your own checkpoint; `docs/PUBLISHING.md` covers uploading it.
 
 ## 12. Fine-tune a released model on your own data
 

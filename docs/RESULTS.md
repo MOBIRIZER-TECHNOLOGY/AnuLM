@@ -45,6 +45,7 @@ models.
 | [24](#24-english--hindi-translation) | 2M sentence pairs, one pass, chrF on FLORES-200 | **41.5 / 43.4**, `ckpt_translate`, **AnuLM-Translate-400M** |
 | [25](#25-a-python-coder-700000-steps-then-instruction-tuning) | 700k steps on 2.87B tokens, then instruction tuning | **MBPP 12.5%**, HumanEval 4.9%, **AnuLM-Coder-400M** |
 | [26](#26-reading-the-val-loss-what-the-numbers-own-error-is) | what the four quoted decimals are actually worth | the log prints its own error; strided windows land 4-11x closer |
+| [27](#27-the-released-400m-past-its-training-length-zero-shot) | the 400M base at 2x and 4x its training length, no retraining | it degrades 0.13, not 1.5; YaRN buys 0.028 at 4x, all of it at the far end |
 
 ---
 
@@ -1939,3 +1940,85 @@ restate every number in the log. New runs should pass `--eval-windows 400`.
 Each checkpoint now records how its number was measured (`eval_spec`), and a
 `--resume` that changes the method says so, because a curve measured one way
 cannot be continued by a curve measured another.
+
+---
+
+## 27. The released 400M past its training length, zero-shot
+
+§3 asked whether YaRN earns its place, and answered it at 17M and 47M
+parameters on tinyshakespeare. The released checkpoints are 398M, trained at
+512 tokens on three languages, and carry two things the nano presets did not:
+`rope_theta = 1,000,000` and a 256-token sliding window on layers 0-9. Both
+change the question. This is the same experiment on `AnuLM-Base-400M`, with
+no retraining of any kind.
+
+```bash
+python fetch_hindi.py --mb 300 --keep-prob 0.3 --out data/hindi_ctx.txt
+python eval_context.py --ckpt release/AnuLM-Base-400M --data data/hindi_ctx.txt \
+                       --device cuda --batches 24 --multipliers 1 2 4
+```
+
+Held-out Hindi, 1.98M tokens through the model's own `multi32k` tokenizer,
+24 windows per setting:
+
+| context | naive | YaRN | delta |
+| --- | --- | --- | --- |
+| 512 *(trained)* | 3.9212 | — | — |
+| 1024 | 4.0180 | 4.0090 | −0.0091 |
+| 2048 | 4.0507 | **4.0232** | **−0.0275** |
+
+**The headline is how little it degrades.** Walking out to 4x the training
+length costs 0.13 naively. The `nano_105b` preset in §3 — θ=1e4, no window —
+went 1.54 to 3.03 over the same extension, a collapse. This model barely
+notices, and that is the θ=1e6 choice plus the sliding window doing exactly
+what §15 predicted: half the layers never meet a phase they were not trained
+on, because they cannot see further than 256 tokens.
+
+Loss by position inside a 2048-token window says where YaRN's 0.028 comes
+from:
+
+| positions | naive | YaRN |
+| --- | --- | --- |
+| 0–512 *(in-distribution)* | **4.0113** | 4.0424 |
+| 512–1024 | **3.9406** | 3.9436 |
+| 1024–1536 | 4.1315 | **4.0850** |
+| 1536–2048 | 4.1194 | **4.0217** |
+
+The same trade as §3, at 20x the scale: YaRN is **worse** on the range the
+model was trained for (+0.031) and better beyond it, by more the further out
+it goes (−0.098 in the last quarter). Nothing here is free; the band blend
+buys the tail by spending in-distribution accuracy.
+
+**What this does and does not settle.** It settles the zero-shot case: at 400M
+the architecture extends to 4x without retraining, gently, and YaRN helps at
+the far end. It says nothing about whether *training* at 2,048 with YaRN
+produces a model that is genuinely good there, which is the other half of the
+question and needs GPU time rather than an evaluation. That run is in flight —
+`TASKS.md`, "In flight: long context at 2,048" — continuing this same
+checkpoint on 46M tokens of the same three-language mix.
+
+Two caveats worth stating rather than burying. The evaluation corpus is Hindi
+only, while the model was trained on Hindi, English and Python, so the
+absolute losses sit above the 4.4410 the checkpoint reports on its own mixed
+split; only the comparisons within the table are meaningful. And 24 windows
+per setting is a small sample — the §26 machinery would put an error bar on
+each of these, which `eval_context.py` does not yet do.
+
+### A number that fell out on the way
+
+Getting this far required `eval_context.py` to accept an exported folder,
+which it — and four other evaluation scripts — did not, despite
+`docs/TUTORIAL.md` §11 promising exactly that. With that fixed, the released
+base can be scored on the golden set of §19 for the first time:
+
+| checkpoint | EM% | MC% |
+| --- | --- | --- |
+| `ckpt_hindi_mixed36k` (Hindi only, §21) | 11.2 | **85.8** |
+| `AnuLM-Base-400M` (three languages, §22) | **13.2** | 80.7 |
+
+The multilingual model reproduces the exact missing word more often and picks
+it out of four choices less often. That is not a contradiction: exact match
+rewards having seen the phrasing, and the three-language corpus is 2.1 GB
+against 1.3 GB, while multiple choice rewards discriminating between plausible
+Hindi words, and this model spent a third of its budget on English and Python.
+The same trade §22 measured in bits/byte, showing up in accuracy.

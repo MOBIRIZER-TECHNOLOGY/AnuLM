@@ -31,7 +31,7 @@ from pathlib import Path
 import torch
 import torch.nn.functional as F
 
-from model import AnuLM
+from model import AnuLM, load_checkpoint
 
 STRIP_PUNCT = re.compile(r"^[\"'(\[“‘]+|[\"')\]”’,;:।.!?]+$")
 
@@ -56,7 +56,7 @@ class Codec:
 
 @torch.no_grad()
 def score(ckpt: str, items: list[dict], device: str, max_gen: int = 12) -> dict:
-    ck = torch.load(ckpt, map_location="cpu", weights_only=False)
+    ck = load_checkpoint(ckpt, "cpu")
     cfg = ck["cfg"]
     if device.startswith("cuda"):
         cfg = replace(cfg, moe_impl="grouped")
