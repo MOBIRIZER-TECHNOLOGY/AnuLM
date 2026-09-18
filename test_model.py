@@ -841,6 +841,100 @@ def bpe_documents_get_eos_and_the_vocab_is_exact():
 
 
 @test
+def transformers_wrapper_matches_the_native_model():
+    """modeling_anulm.py must produce this repository's numbers, not its own.
+
+    The wrapper exists so `AutoModelForCausalLM.from_pretrained(...,
+    trust_remote_code=True)` works without a clone. It builds the real modules
+    from model.py, so the danger is not the maths but the plumbing: a
+    transformers version that materialises the model on the meta device leaves
+    the rotary tables -- registered non-persistently, so absent from the
+    checkpoint -- as uninitialised memory. Every weight then loads, nothing
+    warns, and the positions are noise. That happened; this is the guard.
+    """
+    try:
+        import transformers  # noqa: F401
+    except ImportError:
+        return                                  # optional dependency
+    import tempfile, os
+    from configuration_anulm import AnuLMConfig as HFConfig
+    from modeling_anulm import AnuLMForCausalLM
+
+    cfg = tiny()
+    torch.manual_seed(0)
+    native = AnuLM(cfg).eval()
+
+    hf = AnuLMForCausalLM(HFConfig.from_native(cfg)).eval()
+    missing, unexpected = hf.load_state_dict(native.state_dict(), strict=False)
+    assert not missing and not unexpected, (missing, unexpected)
+    assert torch.equal(native.rotary.inv_freq, hf.rotary.inv_freq), "rotary tables differ"
+
+    x = torch.randint(0, cfg.vocab_size, (2, 16))
+    with torch.no_grad():
+        nat, _ = native(x)                      # last position only
+        out = hf(input_ids=x)
+    assert out.logits.shape == (2, 16, cfg.vocab_size), out.logits.shape
+    # Not bit-identical on purpose: the native path multiplies one row through
+    # lm_head, this one multiplies all of them, and the two GEMMs reduce in a
+    # different order. Same maths, same weights, different rounding.
+    d = (nat[:, -1] - out.logits[:, -1]).abs().max().item()
+    assert d < 1e-4, f"logits differ by {d}"
+
+    # What actually has to hold: the same tokens come out, cached or not.
+    with torch.no_grad():
+        want = native.generate(x[:1], 12, temperature=1.0, top_k=1)[0].tolist()
+        for use_cache in (True, False):
+            got = hf.generate(input_ids=x[:1], max_new_tokens=12, do_sample=False,
+                              use_cache=use_cache, pad_token_id=0)[0].tolist()
+            assert got == want, f"use_cache={use_cache}: {got} != {want}"
+
+    # A round trip through disk is what a user actually does.
+    with tempfile.TemporaryDirectory() as d_:
+        hf.save_pretrained(d_)
+        again = AnuLMForCausalLM.from_pretrained(d_, dtype=torch.float32).eval()
+        assert torch.equal(again.rotary.inv_freq, native.rotary.inv_freq), \
+            "rotary tables were not rebuilt after from_pretrained"
+        with torch.no_grad():
+            back = again(input_ids=x).logits
+        # Not bit-identical, and that is not the round trip's fault: the
+        # reloaded model rebuilds its rotary tables from scratch while the
+        # original had already cached them from the forward above, and the
+        # two agree to about 5e-08. The weights themselves are equal.
+        for a, b in zip(hf.state_dict().values(), again.state_dict().values()):
+            assert torch.equal(a, b), "save/load changed a weight"
+        d2 = (back - out.logits).abs().max().item()
+        assert d2 < 1e-6, f"save/load round trip moved the logits by {d2}"
+        assert torch.equal(back.argmax(-1), out.logits.argmax(-1)),             "save/load round trip changed the predicted tokens"
+
+
+@test
+def hf_tokenizer_conversion_is_exact():
+    """tokenizer.json must agree with bpe.py on every token, or the numbers in
+    docs/RESULTS.md do not describe the model people download."""
+    try:
+        from tokenizers import Tokenizer
+    except ImportError:
+        return
+    import tempfile, os
+    from pathlib import Path
+    import tools_hf_tokenizer as conv
+    from bpe import BPE
+    from train import FALLBACK
+
+    tok = BPE.train(FALLBACK * 8, 400, verbose=False)
+    with tempfile.TemporaryDirectory() as d:
+        out = Path(d) / "tokenizer.json"
+        out.write_text(__import__("json").dumps(conv.build(tok), ensure_ascii=False),
+                       encoding="utf-8")
+        fast = Tokenizer.from_file(str(out))
+        probes = conv.PROBES + [FALLBACK[:2000], FALLBACK[3000:5000]]
+        for text in probes:
+            ours, theirs = tok.encode(text), fast.encode(text, add_special_tokens=False).ids
+            assert ours == theirs, f"{text[:40]!r}: {ours[:12]} != {theirs[:12]}"
+            assert tok.decode(ours) == text, f"round trip failed on {text[:40]!r}"
+
+
+@test
 def bpe_files_load_under_both_format_ids():
     """The project was renamed on 2026-09-18 and the tokenizer format id with
     it. Every tokenizer trained before then -- including the four beside the

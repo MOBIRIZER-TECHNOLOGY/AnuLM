@@ -25,6 +25,21 @@ is not a model to use: it is a 17M checkpoint trained for 200 steps on
 tinyshakespeare that exists to test the release pipeline end to end
 (`docs/MODEL_CARD_SMOKE.md`).
 
+Load any of them with `transformers` — the modelling code ships beside the
+weights, so there is nothing to clone:
+
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+m = AutoModelForCausalLM.from_pretrained("toonist/AnuLM-Coder-400M", trust_remote_code=True)
+t = AutoTokenizer.from_pretrained("toonist/AnuLM-Coder-400M")
+print(t.decode(m.generate(**t("def is_prime(n):", return_tensors="pt"), max_new_tokens=60)[0]))
+```
+
+Keep it in float32, which the config asks for by default: the router's
+per-expert bias decides which experts fire, and rounding it to bfloat16
+changes that and collapses the output into repeated tokens. `modeling_anulm.py`
+warns if you force a 16-bit dtype.
+
 Try it without installing anything: open
 [demo_colab.ipynb in Colab](https://colab.research.google.com/github/MOBIRIZER-TECHNOLOGY/AnuLM/blob/main/demo_colab.ipynb),
 run the three cells, pick a checkpoint, and a public link to the demo
@@ -62,7 +77,7 @@ python quickstart.py --train         # ... or just trains a 17M model now (~30 s
 python quickstart.py --demo          # ... or downloads a released 400M model and serves it
 
 pip install -r requirements.txt      # torch, safetensors; pyarrow only for the parquet converters
-python test_model.py                 # 47 tests, ~2 min, no pytest needed
+python test_model.py                 # 49 tests, ~2 min, no pytest needed
 python model.py                      # shape + param sanity check, no data needed
 python train.py --preset 30b         # GQA, high rope_theta  (Sarvam 30B's shape); downloads tinyshakespeare
 python train.py --preset 105b        # MLA, YaRN-ready       (Sarvam 105B's shape)
@@ -477,7 +492,7 @@ set is a builder away.
 ## Tests
 
 ```bash
-python test_model.py        # 47 tests, ~2 min, no pytest needed
+python test_model.py        # 49 tests, ~2 min, no pytest needed
 ```
 
 They target what training would not catch. A leaky causal mask still converges,

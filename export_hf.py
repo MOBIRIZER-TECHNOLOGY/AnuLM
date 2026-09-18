@@ -108,23 +108,47 @@ def main() -> None:
     save_file(sd, str(out / "model.safetensors"), metadata={"format": "pt", "exported_from": Path(args.ckpt).name})
     n_params = sum(v.numel() for v in sd.values())
 
-    # 2. tokenizer
+    # 2. tokenizer -- the project's own JSON, and the tokenizers-library
+    # equivalent beside it so AutoTokenizer works with no custom code. The
+    # converter verifies the two agree token-for-token before writing.
     tok_file = None
     if getattr(cfg, "tokenizer_path", None):
         src = Path(cfg.tokenizer_path)
         tok_file = f"tokenizer.{src.stem}.json"
         shutil.copyfile(src, out / tok_file)
+        try:
+            import tools_hf_tokenizer as hf_tok
+            hf_tok.main_for(src, out)
+            print("  tokenizer.json verified against bpe.py and written")
+        except Exception as e:                       # never block a weight export
+            print(f"  WARNING: tokenizer.json not written ({type(e).__name__}: {e});"
+                  f" AutoTokenizer will not work for this folder")
 
     # 3. config
     cfg_d = dataclasses.asdict(cfg)
     cfg_d["tokenizer_path"] = tok_file  # resolved relative to the folder by load_checkpoint
     meta = {
         "model_type": "anulm",
-        "architecture": "decoder-only MoE in the shape of Sarvam 30B; load with model.py from the AnuLM repository",
+        "architectures": ["AnuLMForCausalLM"],
+        # trust_remote_code: transformers fetches these two modules from the
+        # repo, and they pull model.py down with them.
+        "auto_map": {
+            "AutoConfig": "configuration_anulm.AnuLMConfig",
+            "AutoModelForCausalLM": "modeling_anulm.AnuLMForCausalLM",
+        },
+        "architecture": "decoder-only MoE in the shape of Sarvam 30B; loads with transformers (trust_remote_code) or with model.py from the AnuLM repository",
         "config": cfg_d,
         "tokenizer_file": tok_file,
         "tokenizer_format": TOKENIZER_NOTE if tok_file else "bytes",
-        "weights_dtype": "bfloat16 (tensors under 100k elements kept in float32)",
+        # Small tensors stay float32 on disk AND must be loaded that way: the
+        # router's per-expert bias decides which experts fire, and rounding it
+        # to bfloat16 changes the routing enough to collapse the output. So
+        # the export declares float32 and transformers honours it.
+        "dtype": "float32",
+        "torch_dtype": "float32",
+        "weights_dtype": ("bfloat16 on disk for the big tensors, float32 for the small "
+                          "ones (router bias, norms); load in float32 -- 16-bit weights "
+                          "change the expert routing and break the model"),
         "num_parameters": n_params,
         "step": ck.get("step"),
         "val_loss": ck.get("val_loss"),
@@ -135,12 +159,28 @@ def main() -> None:
     }
     (out / "config.json").write_text(json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8", newline="\n")
 
-    # 4. card
+    # 4. the code trust_remote_code loads, copied verbatim from this checkout
+    for mod in ("configuration_anulm.py", "modeling_anulm.py", "model.py"):
+        shutil.copyfile(Path(__file__).parent / mod, out / mod)
+
+    # 5. card
     body = Path(args.card).read_text(encoding="utf-8") if args.card else f"# {args.name or out.name}\n\nSee the AnuLM repository for details.\n"
     repo = args.repo or f"toonist/{out.name}"
     usage = (
         "\n\n## How to load\n\n"
-        "The architecture is not in `transformers`. Clone the AnuLM repository and point its scripts at this folder:\n\n"
+        "With `transformers` (the modelling code travels with the weights, so "
+        "`trust_remote_code=True` is required and there is nothing to clone):\n\n"
+        "```python\n"
+        "from transformers import AutoModelForCausalLM, AutoTokenizer\n"
+        f'model = AutoModelForCausalLM.from_pretrained("{repo}", trust_remote_code=True)\n'
+        f'tok = AutoTokenizer.from_pretrained("{repo}")\n'
+        'ids = tok("def is_prime(n):", return_tensors="pt")\n'
+        "print(tok.decode(model.generate(**ids, max_new_tokens=60)[0]))\n"
+        "```\n\n"
+        "Greedy output is identical to this repository's own `generate`, cached "
+        "or not; `test_model.py` holds the two paths together. Batches must be "
+        "unpadded, and beam search is not supported.\n\n"
+        "Or with the AnuLM repository, which is what every script here expects:\n\n"
         "```bash\n"
         f"hf download {repo} --local-dir {out.name}\n"
         f"python serve.py  --ckpt {out.name}          # web page at http://127.0.0.1:8000\n"

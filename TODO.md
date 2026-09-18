@@ -58,27 +58,30 @@ marked **(no GPU)** can be done on a laptop.
 
 ## Tooling
 
-9. **`transformers`-loadable export (no GPU).** `export_hf.py` writes
-    safetensors that only this repository's `model.py` can load. A
-    `modeling_anulm.py` + `configuration_anulm.py` pair with
-    `trust_remote_code` would let people load the weights with
-    `AutoModelForCausalLM`.
-10. **Tokenizer in `tokenizers` format (no GPU).** `bpe.py` uses its own
-    JSON. Emitting a `tokenizer.json` that the `tokenizers` library reads
-    would remove the last custom piece from the export.
-11. **A GGUF conversion.** llama.cpp has no loader for this architecture;
+9. **A GGUF conversion.** llama.cpp has no loader for this architecture;
     the MoE with sigmoid routing and QK-norm would need a new arch entry.
     Large, but it would put the models on phones.
 
 ## Documentation
 
-12. **Translate the tutorial into Hindi (no GPU).** `docs/TUTORIAL.md` in
+10. **Translate the tutorial into Hindi (no GPU).** `docs/TUTORIAL.md` in
     Hindi would match the project's audience.
-13. **Diagrams for `docs/ARCHITECTURE.md` (no GPU).** The MLA / GQA
+11. **Diagrams for `docs/ARCHITECTURE.md` (no GPU).** The MLA / GQA
     comparison and the MoE routing are explained in prose; two figures
     would help.
 
 ## Done
+
+- 2026-09-18: the four released checkpoints load with
+  `AutoModelForCausalLM.from_pretrained(..., trust_remote_code=True)` and
+  `AutoTokenizer.from_pretrained(...)`, with nothing cloned. Closes the old
+  items 9 and 10. The tokenizer conversion is verified token-for-token
+  against `bpe.py` on 497 passages of real Hindi, Python and English before
+  it is written; the model wrapper is held to the native path's logits and
+  greedy output by `test_model.py`. Two traps found on the way, both now
+  tested: the non-persistent rotary buffers came back as uninitialised
+  memory, and bfloat16 weights change the router's expert selection badly
+  enough to collapse the output.
 
 - 2026-09-18: code, docs, recipes on GitHub (v0.1.0); four checkpoints on
   Hugging Face; Colab demo notebook; tutorial, dataset table, model cards,

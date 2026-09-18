@@ -5,7 +5,7 @@
 ```bash
 python quickstart.py                   # what this machine can run, and how to fix what it cannot
 pip install -r requirements.txt        # torch, safetensors; pyarrow for the parquet converters
-python test_model.py                   # 47 tests, ~2 min — run this first
+python test_model.py                   # 49 tests, ~2 min — run this first
 ```
 
 Everything runs from the repository root (this file lives in `docs/`, the
@@ -48,7 +48,7 @@ pip install --index-url https://download.pytorch.org/whl/cpu torch
 ├── quickstart.py     environment check, then --train a small model or --demo a released one
 ├── bpe.py            byte-level BPE, DOC_SEP / EOS, the .bin encoder (train / encode / stats)
 ├── muon.py           Muon optimizer (+ AdamW companion)
-├── test_model.py     47 tests, plain asserts, no pytest
+├── test_model.py     49 tests, plain asserts, no pytest
 │
 │   corpora
 ├── fetch_hindi.py    streams a Wikimedia dump into data/, one document per article (any language)
@@ -75,7 +75,11 @@ pip install --index-url https://download.pytorch.org/whl/cpu torch
 ├── eval_code.py      pass@1 on HumanEval / MBPP (executes generated code in a subprocess)
 │
 │   release
-├── export_hf.py      a .pt -> a Hub-ready folder: bf16 safetensors, config.json, tokenizer, model card
+├── export_hf.py      a .pt -> a Hub-ready folder: safetensors, config.json, tokenizers, code, card
+├── configuration_anulm.py  transformers config wrapping AnuLMConfig
+├── modeling_anulm.py       transformers model wrapping AnuLM: from_pretrained, generate
+├── tools_hf_tokenizer.py   bpe.py's JSON -> a tokenizers tokenizer.json, verified exact
+├── tools_hf_upgrade.py     adds all of the above to an export made before they existed
 ├── demo_colab.ipynb  three cells: clone, download a checkpoint, launch app.py with a public link
 ├── space/            README front matter + requirements for a Gradio Space running app.py
 │
@@ -230,6 +234,28 @@ holds, `window` is the sliding window or None; `_attn_mask` / `_sdpa` build the
 right mask for every combination. Look at `GQAttention` for the simple case.
 The tests `incremental_forward_matches_full_forward` and
 `cached_generation_matches_uncached` will tell you whether the cache is right.
+
+**The `transformers` path.** `export_hf.py` writes `configuration_anulm.py`,
+`modeling_anulm.py` and `model.py` into every export, plus `auto_map` in
+`config.json`, so `AutoModelForCausalLM.from_pretrained(..., trust_remote_code=True)`
+works with nothing cloned. The wrapper does not reimplement the architecture:
+it builds the real modules from `model.py` and adopts them under their own
+names, so the parameter names match `model.safetensors` exactly and a
+mismatch would be a missing key rather than a silent half-load. Two things it
+has to get right, both learned the hard way and both now tested:
+
+- **The rotary tables are not in the checkpoint.** They are computed, so
+  `model.py` registers them non-persistently. transformers builds the model on
+  the meta device and materialises whatever the checkpoint does not cover,
+  which for those buffers means uninitialised memory. Every weight loaded,
+  nothing warned, and the logits were wrong by 5.4. `AnuLMForCausalLM`
+  rebuilds them after every load.
+- **float32 is not optional.** The exports store big tensors in bfloat16 and
+  small ones — the router's `expert_bias`, the norms — in float32, and
+  transformers otherwise infers bfloat16 for everything. Rounding that bias
+  changes which experts a token is routed to, and the output collapses into
+  repeated tokens rather than degrading gracefully. The config declares
+  float32 and the wrapper warns if you override it.
 
 **A different tokenizer** — the byte tokenizer (`vocab_size=259`) and the
 from-scratch BPE (`bpe.py`, `bpe.py train / encode`) both exist. A tokenizer

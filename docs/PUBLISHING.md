@@ -68,8 +68,9 @@ full provenance table; keep it in sync with this one.
   are the one thing kept from `data/`.
 - `CITATION.cff` added. `README.md` opens with what the project is and the
   affiliation disclaimer.
-- `python test_model.py`: 46 tests passed after the rename; 47 since a
-  test was added for the tokenizer format id below.
+- `python test_model.py`: 46 tests passed after the rename; 49 now, after
+  one for the tokenizer format id below and two for the `transformers`
+  export.
 
 Before the first commit, decide the identity that will appear in history.
 GitHub offers a no-reply address (`<id>+<user>@users.noreply.github.com`)
@@ -128,6 +129,37 @@ The four cards are `docs/MODEL_CARD.md` (coder), `MODEL_CARD_TRANSLATE.md`,
 `MODEL_CARD_HINDI_QA.md` and `MODEL_CARD_BASE.md`. All four exports were
 produced on 2026-09-18 into `release/` (0.8 GB each, gitignored) and each
 was loaded back and generated from before being kept.
+
+## 3b. The `transformers` layer
+
+`export_hf.py` now writes it as part of any export. For a folder made before
+it did -- which is all four on the Hub -- add it in place, without touching
+`model.safetensors`:
+
+```bash
+python tools_hf_upgrade.py release/AnuLM-Coder-400M release/AnuLM-Translate-400M \
+                           release/AnuLM-Hindi-QA-400M release/AnuLM-Base-400M
+```
+
+That converts the tokenizer (refusing to write one that disagrees with
+`bpe.py` on any of 497 probe passages), copies `configuration_anulm.py`,
+`modeling_anulm.py` and `model.py` in, adds `architectures`, `auto_map` and
+`dtype: float32` to `config.json` beside the existing keys, and then loads the
+folder back through `AutoModelForCausalLM` to check the logits and the greedy
+continuation against this repository's own model before it reports success.
+
+Uploading it is six small files per repo and no weights:
+
+```python
+api.upload_folder(folder_path="release/AnuLM-Coder-400M", repo_id="toonist/AnuLM-Coder-400M",
+                  allow_patterns=["tokenizer.json", "tokenizer_config.json", "config.json",
+                                  "configuration_anulm.py", "modeling_anulm.py", "model.py",
+                                  "README.md"])
+```
+
+**Never re-upload the weights to fix a small file.** The `.pt` checkpoints
+those exports came from no longer exist, so `release/` and the Hub are the
+only copies.
 
 ## 4. Create the remotes
 
