@@ -38,7 +38,21 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 TASKS = HERE / "TASKS.md"
 HISTORY = HERE / "tasks_history.log"
-CURVE = HERE / "coder_curve.csv"
+CURVE = HERE / "coder_curve.csv"          # the 700k-step coder run's record
+
+
+def curve_path(ckpt_name: str) -> Path:
+    """`ckpt_coder.pt` -> `coder_curve.csv`, `ckpt_ctx2k.pt` -> `ctx2k_curve.csv`.
+
+    One file per run. They used to share `coder_curve.csv`, so the first
+    refresh after a second run started wrote that run's step 500 into the
+    middle of the coder's 138-point curve -- a record of a finished run that
+    docs/MODEL_CARD.md and RESULTS.md 25 both cite.
+    """
+    stem = Path(ckpt_name).stem
+    if stem.startswith("ckpt_"):
+        stem = stem[len("ckpt_"):]
+    return HERE / f"{stem}_curve.csv"
 START, END = "<!-- live-status -->", "<!-- /live-status -->"
 
 # The assistant's per-project memory directory. Written every refresh so a
@@ -179,7 +193,12 @@ def _bpb(rows: dict, val: float) -> str:
     return ""
 
 
-EVAL_RE = re.compile(r"eval @\s*(\d+)\s*\|\s*val loss\s*([\d.]+)\s*\|\s*bits/byte\s*([\d.]+)")
+# The "+/- 0.0272" is the standard error train.py started printing with
+# RESULTS.md 26. It is optional here so this still reads every log written
+# before that, including the coder run's -- which is the whole reason the
+# curve CSV exists.
+EVAL_RE = re.compile(r"eval @\s*(\d+)\s*\|\s*val loss\s*([\d.]+)"
+                     r"(?:\s*\+/-\s*[\d.]+)?\s*\|\s*bits/byte\s*([\d.]+)")
 
 
 def save_curve(ckpts_state=None) -> int:
@@ -194,10 +213,21 @@ def save_curve(ckpts_state=None) -> int:
     failure -- and unlike the log it survives the log being rotated, pruned
     or clobbered, because old rows already in the CSV are kept.
     """
+    # Which training log belongs to which run. A checkpoint with no entry
+    # here still gets a curve, built from the checkpoint alone.
+    LOGS = {"ckpt_coder": "coder_train_phase*.log", "ckpt_ctx2k": "ctx_train.log"}
+    total = 0
+    for name, st in ckpts_state or []:
+        total += _save_one(curve_path(name), [(name, st)],
+                           log_glob=LOGS.get(Path(name).stem))
+    return total
+
+
+def _save_one(curve: Path, ckpts_state, log_glob: str | None) -> int:
     rows: dict[int, tuple[str, str]] = {}
-    if CURVE.exists():                       # keep points whose log line is gone
+    if curve.exists():                       # keep points whose log line is gone
         try:
-            with CURVE.open(encoding="utf-8", newline="") as f:
+            with curve.open(encoding="utf-8", newline="") as f:
                 for r in csv.DictReader(f):
                     rows[int(r["step"])] = (r["val_loss"], r["bits_per_byte"])
         except Exception:
@@ -210,7 +240,7 @@ def save_curve(ckpts_state=None) -> int:
             rows.setdefault(st["step"] + 1, (f"{st['val']:.4f}", _bpb(rows, st["val"])))
 
     locked = []
-    for log in sorted(glob.glob(str(HERE / "coder_train_phase*.log"))):
+    for log in (sorted(glob.glob(str(HERE / log_glob))) if log_glob else []):
         try:
             text = Path(log).read_text(encoding="utf-8", errors="replace")
         except OSError as e:
@@ -231,13 +261,13 @@ def save_curve(ckpts_state=None) -> int:
     if not rows:
         return 0
     try:
-        tmp = CURVE.with_suffix(".csv.tmp")
+        tmp = curve.with_suffix(".csv.tmp")
         with tmp.open("w", encoding="utf-8", newline="") as f:
             w = csv.writer(f)
             w.writerow(["step", "val_loss", "bits_per_byte"])
             for step in sorted(rows):
                 w.writerow([step, *rows[step]])
-        os.replace(tmp, CURVE)
+        os.replace(tmp, curve)
     except Exception as e:
         print(f"  (curve write failed: {type(e).__name__}: {e})", flush=True)
     return len(rows)

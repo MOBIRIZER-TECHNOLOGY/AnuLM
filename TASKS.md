@@ -368,7 +368,7 @@ row for the base: naive 3.9212 at 512, and 4.0507 / 4.0232 (naive / YaRN) at
 <!-- live-status -->
 ## Live status
 
-Written 2026-09-19 01:54 by `update_tasks.py`. A training process is running; GPU: 10862 MiB, 16303 MiB, 76 %.
+Written 2026-09-19 01:55 by `update_tasks.py`. A training process is running; GPU: 10862 MiB, 16303 MiB, 65 %.
 
 | checkpoint (`.last`) | step | val loss | best val | saved |
 | --- | --- | --- | --- | --- |
@@ -378,9 +378,9 @@ Written 2026-09-19 01:54 by `update_tasks.py`. A training process is running; GP
 Tail of `ctx_train.log`:
 
 ```
-step   550 | loss 4.0614 | aux 0.0034 | lr 9.97e-05 | imbalance  1.87x |     9322 tok/s |  1696 ms/step | epoch 0.22
-step   560 | loss 2.9140 | aux 0.0042 | lr 9.97e-05 | imbalance  2.51x |     9326 tok/s |  1719 ms/step | epoch 0.22
-step   570 | loss 3.7771 | aux 0.0036 | lr 9.97e-05 | imbalance  1.81x |     9331 tok/s |  1709 ms/step | epoch 0.23
 step   580 | loss 3.8216 | aux 0.0037 | lr 9.97e-05 | imbalance  1.83x |     9342 tok/s |  1585 ms/step | epoch 0.23
+step   590 | loss 3.8124 | aux 0.0036 | lr 9.96e-05 | imbalance  1.58x |     9347 tok/s |  1600 ms/step | epoch 0.23
+step   600 | loss 3.9910 | aux 0.0035 | lr 9.96e-05 | imbalance  1.83x |     9352 tok/s |  1673 ms/step | epoch 0.24
+step   610 | loss 3.6556 | aux 0.0036 | lr 9.96e-05 | imbalance  1.59x |     9353 tok/s |  1577 ms/step | epoch 0.24
 ```
 <!-- /live-status -->
