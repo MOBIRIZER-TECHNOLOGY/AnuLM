@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use AnuLM in academic work, please cite it as below."
+title: "AnuLM: a small, trainable mixture-of-experts language model in the shape of Sarvam 30B, trained from scratch on one GPU for Hindi, English and Python"
+type: software
+version: 0.1.0
+date-released: 2026-09-18
+license: MIT
+repository-code: "https://github.com/<github-owner>/AnuLM"
+url: "https://huggingface.co/<hf-owner>"
+authors:
+  - name: "The AnuLM authors"
+keywords:
+  - mixture-of-experts
+  - Hindi
+  - Indic languages
+  - small language model
+  - code generation
+  - machine translation
+abstract: >-
+  AnuLM (अणु, "atom") is an independent re-implementation of the Sarvam 30B
+  architecture (grouped-query attention, 24 routed experts with aux-loss-free
+  balancing, sliding-window attention on the lower layers) at roughly 400M
+  parameters, 174M active per token, in pure PyTorch. It ships the training,
+  evaluation and serving code, the data recipes, and three checkpoints
+  trained on a single consumer GPU: a Python coder (MBPP 12.5% pass@1), an
+  English-Hindi translator (chrF 41.5 / 43.4 on FLORES-200 devtest) and a
+  Hindi/English question answerer. The project is not affiliated with Sarvam
+  AI, BharatGen, AI4Bharat or the Government of India.

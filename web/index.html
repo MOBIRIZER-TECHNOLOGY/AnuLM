@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AnuLM</title>
+<style>
+  :root { --bg: #f7f6f2; --fg: #1d1d1b; --muted: #6b6b66; --card: #fff; --line: #e2e0d8;
+          --accent: #b4432e; --accent-fg: #fff; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }   /* labels are display:flex, which would otherwise beat the hidden attribute */
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 15px/1.5 "Segoe UI", "Nirmala UI", "Noto Sans", "Noto Sans Devanagari", sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 20px 60px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h1 span { color: var(--muted); font-weight: 400; font-size: 15px; margin-left: 8px; }
+  .info { color: var(--muted); font-size: 13px; margin-bottom: 22px; min-height: 1.4em; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+  textarea { width: 100%; min-height: 96px; resize: vertical; border: 1px solid var(--line);
+             border-radius: 8px; padding: 10px 12px; font: inherit; font-size: 17px; background: #fff; }
+  textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .row { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: center; margin-top: 12px; }
+  label { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  input[type=range] { width: 120px; accent-color: var(--accent); }
+  input[type=number] { width: 72px; font: inherit; padding: 3px 6px; border: 1px solid var(--line);
+                       border-radius: 6px; }
+  button { font: inherit; padding: 8px 18px; border-radius: 8px; border: 1px solid var(--line);
+           background: #fff; cursor: pointer; }
+  button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  button:disabled { opacity: .55; cursor: wait; }
+  .examples { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; }
+  .examples button { font-size: 14px; padding: 5px 12px; }
+  .out { margin-top: 18px; white-space: pre-wrap; font-size: 18px; line-height: 1.7; min-height: 2em; }
+  .out .prompt { color: var(--muted); }
+  .out.code { font: 14px/1.55 Consolas, "Cascadia Mono", "Courier New", monospace; }
+  .out.code .prompt { color: var(--muted); }
+  .meta { color: var(--muted); font-size: 13px; margin-top: 10px; }
+  .err { color: var(--accent); }
+  .note { color: var(--muted); font-size: 13px; margin-top: 24px; border-top: 1px solid var(--line);
+          padding-top: 12px; }
+  kbd { font: 12px monospace; border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>AnuLM <span>a small Sarvam-shaped MoE</span></h1>
+  <div class="info" id="info">loading model info…</div>
+
+  <div class="card">
+    <div class="row" id="modes" style="margin:0 0 10px" hidden>
+      <label id="mode-question"><input type="radio" name="mode" value="question" checked> answer a question</label>
+      <label id="mode-translate"><input type="radio" name="mode" value="translate"> translate</label>
+      <label><input type="radio" name="mode" value="continue"> continue the text</label>
+    </div>
+    <textarea id="prompt" placeholder="यहाँ हिन्दी में कुछ लिखिए — एक शीर्षक, एक सवाल, या किसी वाक्य की शुरुआत" autofocus></textarea>
+    <div class="examples" id="examples"></div>
+    <div class="row">
+      <label>tokens <input type="range" id="tokens" min="10" max="400" value="150"><span id="tokensv">150</span></label>
+      <label>temperature <input type="range" id="temp" min="0.1" max="1.5" step="0.05" value="0.8"><span id="tempv">0.80</span></label>
+      <label>seed <input type="number" id="seed" value="1337"></label>
+      <label id="greedy-label" hidden title="top-k 1, the setting pass@1 was measured with; untick to sample"><input type="checkbox" id="greedy" checked> greedy (as evaluated)</label>
+      <button class="primary" id="go">Generate</button>
+      <span class="meta">or <kbd>Ctrl</kbd>+<kbd>Enter</kbd></span>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <div class="out" id="out"><span class="prompt">The model continues whatever you type.</span></div>
+    <div class="meta" id="meta"></div>
+  </div>
+
+  <p class="note" id="note">
+    This is a <b>base</b> model, not a chatbot: it was trained to continue Hindi
+    text from Wikipedia and Wikisource, so it answers the way an article or a
+    story would carry on from your words. It is fluent and it invents facts —
+    every date, number and name is fiction. A title followed by a blank line
+    (the training document format) gives the most article-like output;
+    a phrase like <i>उसने कहा</i> gives narrative.
+  </p>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const continueExamples = [
+  ["मुंबई", "मुंबई\n\n"],
+  ["भारतीय क्रिकेट टीम", "भारतीय क्रिकेट टीम\n\n"],
+  ["हिन्दी साहित्य", "हिन्दी साहित्य\n\n"],
+  ["उसने कहा", "उसने कहा"],
+  ["भारत की राजधानी", "भारत की राजधानी"],
+  ["गंगा नदी", "गंगा नदी\n\n"],
+];
+const questionExamples = [
+  ["काशी क्या है?", "काशी क्या है?"],
+  ["योग क्या है?", "योग क्या है?"],
+  ["रबीन्द्रनाथ ठाकुर कौन थे?", "रबीन्द्रनाथ ठाकुर के बारे में बताइए।"],
+  ["गंगा नदी", "गंगा नदी के बारे में जानकारी दीजिए।"],
+  ["मुंबई", "मुंबई का परिचय दीजिए।"],
+  ["क्रिकेट", "क्रिकेट किसे कहते हैं?"],
+];
+const translateExamples = [
+  ["The train to Mumbai leaves at six in the morning.", "The train to Mumbai leaves at six in the morning."],
+  ["Where is the nearest hospital?", "Where is the nearest hospital?"],
+  ["India won the match by five wickets.", "India won the match by five wickets."],
+  ["मुझे कल दिल्ली जाना है।", "मुझे कल दिल्ली जाना है।"],
+  ["यह किताब बहुत अच्छी है।", "यह किताब बहुत अच्छी है।"],
+  ["Please send me the report by Friday.", "Please send me the report by Friday."],
+];
+// The Python coder (ckpt_coder_sft.pt). "question" is the MBPP setting: a
+// task in prose, the model writes a fresh function. "continue" is the
+// HumanEval setting: a signature and docstring, the model completes it.
+const coderQuestionExamples = [
+  ["prime", "Write a Python function to check whether a number is prime."],
+  ["fibonacci", "Write a function that returns the n-th Fibonacci number."],
+  ["reverse words", "Write a Python function to reverse the order of words in a sentence."],
+  ["dedupe", "Write a function that removes duplicate items from a list while keeping their order."],
+  ["vowels", "Write a Python function to count the vowels in a string."],
+  ["max", "Write a function that returns the largest number in a list."],
+];
+const coderContinueExamples = [
+  ['is_palindrome', 'def is_palindrome(s: str) -> bool:\n    """Return True if s reads the same forwards and backwards."""\n'],
+  ['factorial', '# Compute the factorial of n\ndef factorial(n):\n'],
+  ['fizzbuzz', 'def fizzbuzz(n: int) -> list:\n    """Return the FizzBuzz sequence from 1 to n as a list of strings."""\n'],
+  ['sum_even', 'def sum_even(numbers):\n    """Return the sum of the even numbers in the list."""\n'],
+  ['average', 'def average(numbers):\n    """Return the arithmetic mean of a list of numbers."""\n'],
+  ['word_count', 'def word_count(text: str) -> dict:\n    """Return a dict mapping each word in text to how often it occurs."""\n'],
+];
+let coder = false;
+const mode = () => document.querySelector("input[name=mode]:checked")?.value || "continue";
+function renderExamples() {
+  $("examples").innerHTML = "";
+  const list = coder ? (mode() === "question" ? coderQuestionExamples : coderContinueExamples)
+                     : ({question: questionExamples, translate: translateExamples}[mode()] || continueExamples);
+  for (const [label, text] of list) {
+    const b = document.createElement("button");
+    b.textContent = label;
+    b.onclick = () => { $("prompt").value = text; generate(); };
+    $("examples").appendChild(b);
+  }
+  $("prompt").placeholder = coder ? {
+    question: "Describe a small Python function, e.g. Write a function that returns the largest number in a list.",
+  }[mode()] || "Start a Python function: a signature and a docstring, and the model completes it" : {
+    question: "हिन्दी में एक सवाल पूछिए — जैसे: काशी क्या है?",
+    translate: "Type English to get Hindi, or Hindi to get English — one sentence at a time",
+  }[mode()] || "यहाँ हिन्दी में कुछ लिखिए — एक शीर्षक, या किसी वाक्य की शुरुआत";
+}
+document.querySelectorAll("input[name=mode]").forEach(r => r.onchange = renderExamples);
+renderExamples();
+$("tokens").oninput = e => $("tokensv").textContent = e.target.value;
+$("temp").oninput = e => $("tempv").textContent = Number(e.target.value).toFixed(2);
+
+fetch("/info").then(r => r.json()).then(i => {
+  $("info").textContent =
+    `${i.ckpt}${i.base_ckpt ? " (fine-tuned from " + i.base_ckpt + ")" : ""} · ` +
+    `${i.params_total_m}M params (${i.params_active_m}M active) · ` +
+    `${i.attn.toUpperCase()} × ${i.layers} layers · ${i.experts} experts top-${i.top_k} · ` +
+    `tokenizer ${i.tokenizer} (${i.vocab}) · context ${i.block_size} · ${i.device}`;
+  $("mode-translate").hidden = !i.translate;
+  if (i.coder) {
+    coder = true;
+    document.documentElement.lang = "en";
+    document.querySelector("h1 span").textContent = "a small Sarvam-shaped MoE that writes Python";
+    $("modes").hidden = false;
+    $("mode-question").lastChild.textContent = " write a function";
+    document.querySelector("label:has(input[value=continue])").lastChild.textContent = " continue the code";
+    document.querySelector("input[value=question]").checked = true;
+    $("greedy-label").hidden = false;
+    $("out").classList.add("code");
+    $("out").querySelector(".prompt").textContent = "Describe a function, or start one, and the model writes Python.";
+    $("temp").value = 0.2; $("tempv").textContent = "0.20";
+    $("tokens").value = 200; $("tokensv").textContent = "200";
+    $("note").innerHTML = "This checkpoint is a <b>Python coder</b>: a 398M-parameter Sarvam-shaped MoE (174M active " +
+      "per token) pretrained on 2.78B tokens that are two-thirds Python, then instruction-tuned on 1.38M " +
+      "exercise-style pairs. Measured pass@1: <b>MBPP 12.5%</b> asked as a question, <b>HumanEval 4.9%</b> " +
+      "(base) / 3.0% (tuned) as a continuation. Short, common functions often work; anything longer often " +
+      "does not, and it will happily call functions that do not exist. <b>Run what it writes before trusting " +
+      "it.</b> <i>Greedy</i> reproduces the evaluated setting; untick it to sample. " +
+      "See docs/MODEL_CARD.md for the data, the architecture and the numbers.";
+  } else if (i.translate) {
+    $("modes").hidden = false;
+    document.querySelector("input[value=translate]").checked = true;
+    $("note").innerHTML = "This checkpoint was <b>fine-tuned to translate</b> between English and Hindi " +
+      "on 2M sentence pairs. It picks the direction from the script you type. Everyday sentences " +
+      "of 8 to 25 words work best; rare names and numbers are where it slips.";
+  } else if (i.qa_template) {
+    $("modes").hidden = false;
+    $("note").innerHTML = "This checkpoint was <b>fine-tuned to answer questions</b> about " +
+      "subjects in Hindi Wikipedia: ask <i>X क्या है?</i> or <i>X के बारे में बताइए।</i> and it " +
+      "replies with an encyclopaedia-style definition. It knows only what a 364M model " +
+      "absorbed from one pass over the corpus, and it still invents details — check anything " +
+      "that matters. <i>Continue the text</i> gives the underlying base-model behaviour.";
+  } else {
+    document.querySelector("input[value=continue]").checked = true;
+  }
+  renderExamples();
+}).catch(() => $("info").textContent = "server not reachable");
+
+async function generate() {
+  const prompt = $("prompt").value;
+  if (!prompt.trim()) return;
+  $("go").disabled = true;
+  $("out").innerHTML = `<span class="prompt"></span><span id="gen">…</span>`;
+  $("out").querySelector(".prompt").textContent = prompt;
+  $("meta").textContent = "generating…";
+  try {
+    const r = await fetch("/generate", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        prompt, max_tokens: +$("tokens").value, temperature: +$("temp").value,
+        top_k: coder && $("greedy").checked ? 1 : 50, seed: +$("seed").value, mode: mode(),
+        repetition_penalty: !coder && mode() === "question" ? 1.3 : 1.0,
+        ...(mode() === "translate" ? {temperature: Math.min(+$("temp").value, 0.3)} : {}),
+      }),
+    });
+    const j = await r.json();
+    if (j.error) throw new Error(j.error);
+    $("gen").textContent = j.completion;
+    $("meta").textContent =
+      `${j.tokens} tokens in ${j.seconds}s (${(j.tokens / Math.max(j.seconds, 0.01)).toFixed(0)} tok/s)` +
+      (j.stopped_at_eos ? " · stopped at end of document" : "");
+  } catch (e) {
+    $("out").innerHTML = `<span class="err"></span>`;
+    $("out").querySelector(".err").textContent = "error: " + e.message;
+    $("meta").textContent = "";
+  } finally {
+    $("go").disabled = false;
+  }
+}
+$("go").onclick = generate;
+$("prompt").addEventListener("keydown", e => {
+  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); generate(); }
+});
+</script>
+</body>
+</html>

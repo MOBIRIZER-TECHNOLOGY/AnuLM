@@ -1,0 +1,41 @@
+# Checkpoints -- 67-210 MB each, ~1 GB total. Never commit these.
+*.pt
+*.pt.last
+*.bin
+*.safetensors
+
+# Corpora -- regenerate with fetch_hindi.py / experiments/*.sh, or let train.py
+# download tinyshakespeare on first run.
+data/
+*.txt.gz
+*.xml.bz2
+
+# Sarvam's downloaded weights, if anyone pulls them alongside the code.
+sarvam/sarvam-*/*.safetensors
+sarvam/sarvam-*/*.gguf
+
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Run artefacts from this machine: logs, guard files, editor backups, scratch.
+*.log
+*.err
+*.marker
+*.probe250k
+*.bak_*
+tasks_history.log
+golden/*.old.jsonl
+release/
+
+# Tokenizers are small and every checkpoint needs its own; ship them.
+!data/
+data/*
+!data/*.json

@@ -1,0 +1,129 @@
+# Publishing AnuLM: code, weights, citation
+
+The end-to-end checklist for releasing this project as open source for
+academic use. Steps 1–3 are done in the working tree; 4–8 need the
+project's GitHub and Hugging Face accounts. Nothing here uploads anything
+by itself.
+
+## 1. What is released, under which licence
+
+| artefact | where | licence | why |
+| --- | --- | --- | --- |
+| code, docs, data recipes, tokenizers | GitHub repository | MIT (`LICENSE`) | original work |
+| `sarvam/sarvam-30b/`, `sarvam/sarvam-105b/` | in the repository, unmodified | Apache 2.0 (Sarvam AI, `NOTICE` §1) | redistributed reference code |
+| `AnuLM-Coder-400M` (`ckpt_coder_sft.pt`) and its base | Hugging Face | **CC BY-NC-SA 4.0** | tuned on jinaai/code_exercises, which is CC BY-NC-SA 4.0 and ChatGPT-generated |
+| `AnuLM-Translate-400M` (`ckpt_translate.pt`) | Hugging Face | **CC BY-NC 4.0**, research only | Samanantar is CC BY-NC 4.0; the IIT Bombay corpus is research-only |
+| `AnuLM-Hindi-QA-400M` (`ckpt_multi_qa.pt`) and `AnuLM-Base-400M` (`ckpt_multi36k.pt`) | Hugging Face | **CC BY-SA 4.0** | Wikipedia / Wikisource are CC BY-SA; C4 and fineweb-edu are ODC-BY |
+| training data | not redistributed | each source's own | `experiments/*_fetch.sh` and `*_build.sh` rebuild every corpus from its public source |
+
+Each model card states the licence in its front matter and repeats the
+non-commercial condition in prose where it applies. `NOTICE` §2 is the
+full provenance table; keep it in sync with this one.
+
+## 2. Repository hygiene (done 2026-09-18)
+
+- Project renamed from nanosarvam to AnuLM. Class names `NanoSarvam` and
+  `NanoSarvamConfig` remain as aliases in `model.py` so existing
+  checkpoints, which pickle the config class by name, still load.
+- Local machine specifics removed from anything that ships: the Windows
+  wrappers use `%LOCALAPPDATA%`, no user names, e-mails or host names remain
+  outside `data/` and the logs. Logs, guard markers, editor backups and the
+  `release/` staging folder are gitignored; tokenizers under `data/*.json`
+  are the one thing kept from `data/`.
+- `CITATION.cff` added. `README.md` opens with what the project is and the
+  affiliation disclaimer.
+- `python test_model.py`: 46 tests pass after the rename.
+
+Before the first commit, decide the identity that will appear in history.
+GitHub offers a no-reply address (`<id>+<user>@users.noreply.github.com`)
+if the real e-mail should stay private:
+
+```bash
+git config user.name  "<name or handle>"
+git config user.email "<id>+<user>@users.noreply.github.com"
+git add -A && git status --short          # 95 files, ~5 MB, no checkpoints, no data
+git commit -m "AnuLM 0.1.0: code, docs, recipes, tokenizers"
+git tag -a v0.1.0 -m "First public release"
+```
+
+## 3. Export the weights
+
+`export_hf.py` converts a training checkpoint into a Hub-ready folder:
+bfloat16 `model.safetensors` (no pickle, half the size), `config.json`,
+the tokenizer, and a `README.md` model card with front matter. The
+architecture is not in `transformers`; the card tells people to load the
+folder with this repository's `model.py`, and `serve.py` / `sample.py`
+accept a folder in place of a `.pt`.
+
+```bash
+python export_hf.py ckpt_coder_sft.pt release/AnuLM-Coder-400M \
+    --license cc-by-nc-sa-4.0 --card docs/MODEL_CARD.md \
+    --datasets codeparrot/codeparrot-clean jinaai/code_exercises HuggingFaceFW/fineweb-edu \
+               nvidia/OpenCodeInstruct glaiveai/glaive-code-assistant \
+    --repo <hf-owner>/AnuLM-Coder-400M
+python export_hf.py ckpt_translate.pt release/AnuLM-Translate-400M \
+    --license cc-by-nc-4.0 --datasets ai4bharat/samanantar cfilt/iitb-english-hindi \
+    --base-model <hf-owner>/AnuLM-Base-400M --repo <hf-owner>/AnuLM-Translate-400M
+python export_hf.py ckpt_multi_qa.pt release/AnuLM-Hindi-QA-400M \
+    --license cc-by-sa-4.0 --base-model <hf-owner>/AnuLM-Base-400M --repo <hf-owner>/AnuLM-Hindi-QA-400M
+python export_hf.py ckpt_multi36k.pt release/AnuLM-Base-400M \
+    --license cc-by-sa-4.0 --repo <hf-owner>/AnuLM-Base-400M
+python serve.py --ckpt release/AnuLM-Coder-400M      # check an export loads and answers before uploading
+```
+
+The translation and Q&A cards have no dedicated markdown yet; write one
+each from `docs/RESULTS.md` §24 and §23 (numbers, data, prompt format,
+limits) and pass it with `--card`.
+
+## 4. Create the remotes
+
+- GitHub: create `<github-owner>/AnuLM` (public, no template, no licence
+  picker: the repository already has `LICENSE`). Then
+  `git remote add origin git@github.com:<github-owner>/AnuLM.git && git push -u origin main --tags`.
+- Hugging Face: `pip install -U huggingface_hub`, `hf auth login` (paste a
+  write token yourself; never store it in the repository), then one model
+  repo per export:
+
+```bash
+hf repo create <hf-owner>/AnuLM-Coder-400M --type model
+hf upload <hf-owner>/AnuLM-Coder-400M release/AnuLM-Coder-400M . --commit-message "AnuLM-Coder-400M v0.1.0"
+# repeat for AnuLM-Translate-400M, AnuLM-Hindi-QA-400M, AnuLM-Base-400M
+```
+
+Then fill the placeholders `<github-owner>` and `<hf-owner>` in
+`README.md`, `CITATION.cff` and the exported cards, and push again.
+
+## 5. Make it citable
+
+Enable the repository in Zenodo's GitHub integration, then publish a GitHub
+release from the `v0.1.0` tag. Zenodo archives the release and mints a
+DOI; put the DOI badge in `README.md` and the `doi:` field in
+`CITATION.cff`. GitHub shows a "Cite this repository" button from the CFF
+file automatically.
+
+## 6. Optional: a public demo
+
+A Gradio Space on the free CPU tier runs the 174M-active model at a few
+tokens per second, enough for the coder and the translator. `app.py` is
+that Space: it imports `Engine` from `serve.py`, shows the modes the
+loaded checkpoint supports, and downloads the weights from the Hub when
+the Space variable `ANULM_REPO` is set. Create a Gradio Space, add
+`app.py`, `serve.py`, `model.py`, `bpe.py`, `make_qa.py` and a
+`requirements.txt` with a CPU torch wheel, `safetensors`, `gradio` and
+`huggingface_hub`, set `ANULM_REPO=<hf-owner>/AnuLM-Coder-400M`, done.
+One Space per checkpoint, or one Space with a dropdown that reloads.
+
+## 7. Optional: a write-up
+
+`docs/RESULTS.md` is most of a technical report already. A short arXiv
+note (cs.CL) with the architecture study (`docs/ARCHITECTURE.md` §10), the
+ablations (§12, §16) and the three headline numbers would give people a
+paper to cite alongside the DOI.
+
+## 8. After release
+
+- Add the "not affiliated" line to every model card, not only the README.
+- Answer issues about reproduction with the exact script and seed; every
+  run in `docs/RESULTS.md` records both.
+- Do not merge anyone's training data into the repository; keep `data/`
+  ignored and recipes only.

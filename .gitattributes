@@ -1,0 +1,13 @@
+# Bash scripts and Python must stay LF on every platform; Windows batch files must be CRLF.
+* text=auto eol=lf
+*.sh  text eol=lf
+*.py  text eol=lf
+*.md  text eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.json text eol=lf
+*.jsonl text eol=lf
+*.pdf binary
+*.png binary
+*.pt binary
+*.safetensors binary

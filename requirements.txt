@@ -1,0 +1,27 @@
+# AnuLM's model, training, sampling, serving and every evaluation need
+# exactly one third-party package: torch.
+#
+# CPU-only (what sections 1-5 of docs/RESULTS.md ran on):
+#   pip install --index-url https://download.pytorch.org/whl/cpu torch
+# CUDA: follow https://pytorch.org/get-started/locally/ for your driver.
+#   Every 350M-class run used an NVIDIA card (RTX 5050, then RTX 5070 Ti,
+#   torch 2.11.0+cu128 on Python 3.14.7, Windows).
+#
+# >=2.1 is the floor for torch.nn.functional.scaled_dot_product_attention
+# accepting a `scale=` argument, which both attention implementations rely on.
+# `--moe-impl grouped` additionally needs torch.nn.functional.grouped_mm
+# (present in 2.11).
+torch>=2.1
+
+# Reading and writing the exported (Hugging Face) checkpoint folders:
+# export_hf.py, and load_checkpoint() when given a folder instead of a .pt.
+safetensors>=0.4
+
+# Optional: only the converters that read Hugging Face parquet shards need it
+# (convert_parquet.py, convert_translate.py, and eval_code.py for the MBPP
+# test file). The fetchers, the tokenizer, training and the web UI do not.
+pyarrow>=15
+
+# Optional: only app.py (the Gradio demo / Hugging Face Space) needs these.
+# gradio>=5
+# huggingface_hub>=0.30
