@@ -45,6 +45,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install --index-url https://download.pytorch.org/whl/cpu torch
           pip install -r requirements.txt
+          # Not a dependency of the model, training or serving -- only of the
+          # transformers export, whose two tests skip themselves without it.
+          # A skip that reports PASS is how an untested path looks tested.
+          pip install transformers
 
       # Left on each runner's default shell (PowerShell on Windows, bash on
       # Linux) on purpose: these are the commands a newcomer types, and they

@@ -855,7 +855,8 @@ def transformers_wrapper_matches_the_native_model():
     try:
         import transformers  # noqa: F401
     except ImportError:
-        return                                  # optional dependency
+        print("    (skipped: transformers not installed)", end="")
+        return
     import tempfile, os
     from configuration_anulm import AnuLMConfig as HFConfig
     from modeling_anulm import AnuLMForCausalLM
@@ -914,6 +915,7 @@ def hf_tokenizer_conversion_is_exact():
     try:
         from tokenizers import Tokenizer
     except ImportError:
+        print("    (skipped: tokenizers not installed)", end="")
         return
     import tempfile, os
     from pathlib import Path
