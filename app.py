@@ -3,7 +3,7 @@ Gradio front end for AnuLM: a laptop demo or a Hugging Face Space.
 
     pip install gradio huggingface_hub
     python app.py --ckpt ckpt_coder_sft.pt                  # a .pt or an exported folder
-    ANULM_REPO=<hf-owner>/AnuLM-Coder-400M python app.py    # download the weights from the Hub first
+    ANULM_REPO=toonist/AnuLM-Coder-400M python app.py    # download the weights from the Hub first
 
 On a Space, set the variable ANULM_REPO to the model repo and add
 `gradio` and `huggingface_hub` to requirements.txt. The page shows the

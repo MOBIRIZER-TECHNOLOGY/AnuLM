@@ -137,7 +137,7 @@ def main() -> None:
 
     # 4. card
     body = Path(args.card).read_text(encoding="utf-8") if args.card else f"# {args.name or out.name}\n\nSee the AnuLM repository for details.\n"
-    repo = args.repo or f"<hf-owner>/{out.name}"
+    repo = args.repo or f"toonist/{out.name}"
     usage = (
         "\n\n## How to load\n\n"
         "The architecture is not in `transformers`. Clone the AnuLM repository and point its scripts at this folder:\n\n"

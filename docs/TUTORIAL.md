@@ -183,7 +183,7 @@ For a Gradio interface, or to run on a Hugging Face Space:
 ```bash
 pip install gradio huggingface_hub
 python app.py --ckpt ckpt_coder_sft.pt                     # local Gradio UI on http://127.0.0.1:7860
-ANULM_REPO=<hf-owner>/AnuLM-Coder-400M python app.py       # downloads the weights from the Hub first
+ANULM_REPO=toonist/AnuLM-Coder-400M python app.py       # downloads the weights from the Hub first
 ```
 
 To publish as a Space: create a Gradio Space, add `app.py`, `serve.py`,
@@ -196,7 +196,7 @@ tokens per second.
 
 ```bash
 pip install huggingface_hub
-hf download <hf-owner>/AnuLM-Coder-400M --local-dir AnuLM-Coder-400M   # `hf` is installed by huggingface_hub
+hf download toonist/AnuLM-Coder-400M --local-dir AnuLM-Coder-400M   # `hf` is installed by huggingface_hub
 python serve.py  --ckpt AnuLM-Coder-400M
 python sample.py --ckpt AnuLM-Coder-400M --prompt "def is_prime(n):"
 python eval_code.py AnuLM-Coder-400M --bench mbpp --device cuda      # reproduces 12.5%

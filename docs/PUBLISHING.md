@@ -60,14 +60,14 @@ python export_hf.py ckpt_coder_sft.pt release/AnuLM-Coder-400M \
     --license cc-by-nc-sa-4.0 --card docs/MODEL_CARD.md \
     --datasets codeparrot/codeparrot-clean jinaai/code_exercises HuggingFaceFW/fineweb-edu \
                nvidia/OpenCodeInstruct glaiveai/glaive-code-assistant \
-    --repo <hf-owner>/AnuLM-Coder-400M
+    --repo toonist/AnuLM-Coder-400M
 python export_hf.py ckpt_translate.pt release/AnuLM-Translate-400M \
     --license cc-by-nc-4.0 --card docs/MODEL_CARD_TRANSLATE.md --datasets ai4bharat/samanantar cfilt/iitb-english-hindi \
-    --base-model <hf-owner>/AnuLM-Base-400M --repo <hf-owner>/AnuLM-Translate-400M
+    --base-model toonist/AnuLM-Base-400M --repo toonist/AnuLM-Translate-400M
 python export_hf.py ckpt_multi_qa.pt release/AnuLM-Hindi-QA-400M \
-    --license cc-by-sa-4.0 --card docs/MODEL_CARD_HINDI_QA.md --base-model <hf-owner>/AnuLM-Base-400M --repo <hf-owner>/AnuLM-Hindi-QA-400M
+    --license cc-by-sa-4.0 --card docs/MODEL_CARD_HINDI_QA.md --base-model toonist/AnuLM-Base-400M --repo toonist/AnuLM-Hindi-QA-400M
 python export_hf.py ckpt_multi36k.pt release/AnuLM-Base-400M \
-    --license cc-by-sa-4.0 --card docs/MODEL_CARD_BASE.md --repo <hf-owner>/AnuLM-Base-400M
+    --license cc-by-sa-4.0 --card docs/MODEL_CARD_BASE.md --repo toonist/AnuLM-Base-400M
 python serve.py --ckpt release/AnuLM-Coder-400M      # check an export loads and answers before uploading
 ```
 
@@ -86,12 +86,12 @@ was loaded back and generated from before being kept.
   repo per export:
 
 ```bash
-hf repo create <hf-owner>/AnuLM-Coder-400M --type model
-hf upload <hf-owner>/AnuLM-Coder-400M release/AnuLM-Coder-400M . --commit-message "AnuLM-Coder-400M v0.1.0"
+hf repo create toonist/AnuLM-Coder-400M --type model
+hf upload toonist/AnuLM-Coder-400M release/AnuLM-Coder-400M . --commit-message "AnuLM-Coder-400M v0.1.0"
 # repeat for AnuLM-Translate-400M, AnuLM-Hindi-QA-400M, AnuLM-Base-400M
 ```
 
-Then fill the placeholders `MOBIRIZER-TECHNOLOGY` and `<hf-owner>` in
+Then fill the placeholders `MOBIRIZER-TECHNOLOGY` and `toonist` in
 `README.md`, `CITATION.cff` and the exported cards, and push again.
 
 ## 5. Make it citable
@@ -111,7 +111,7 @@ loaded checkpoint supports, and downloads the weights from the Hub when
 the Space variable `ANULM_REPO` is set. Create a Gradio Space, add
 `app.py`, `serve.py`, `model.py`, `bpe.py`, `make_qa.py` and a
 `requirements.txt` with a CPU torch wheel, `safetensors`, `gradio` and
-`huggingface_hub`, set `ANULM_REPO=<hf-owner>/AnuLM-Coder-400M`, done.
+`huggingface_hub`, set `ANULM_REPO=toonist/AnuLM-Coder-400M`, done.
 One Space per checkpoint, or one Space with a dropdown that reloads.
 
 ## 7. Optional: a write-up

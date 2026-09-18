@@ -10,6 +10,13 @@ translator (chrF 41.5 / 43.4 on FLORES-200) and a Hindi/English question
 answerer. `docs/MODEL_CARD.md` is the one-page summary of the coder;
 `CITATION.cff` says how to cite the project.
 
+| checkpoint | Hugging Face | licence |
+| --- | --- | --- |
+| Python coder | [toonist/AnuLM-Coder-400M](https://huggingface.co/toonist/AnuLM-Coder-400M) | CC BY-NC-SA 4.0 |
+| English ↔ Hindi translator | [toonist/AnuLM-Translate-400M](https://huggingface.co/toonist/AnuLM-Translate-400M) | CC BY-NC 4.0 |
+| Hindi / English question answerer | [toonist/AnuLM-Hindi-QA-400M](https://huggingface.co/toonist/AnuLM-Hindi-QA-400M) | CC BY-SA 4.0 |
+| three-language base | [toonist/AnuLM-Base-400M](https://huggingface.co/toonist/AnuLM-Base-400M) | CC BY-SA 4.0 |
+
 > Independent academic project, released for research and teaching. Not
 > affiliated with or endorsed by Sarvam AI, BharatGen, AI4Bharat or the
 > Government of India. The project was called *nanosarvam* until
