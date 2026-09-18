@@ -133,6 +133,15 @@ was the first time this project had executed on Linux at all; everything
 passed unchanged, and `docs/TUTORIAL.md` §13 records how closely the
 platforms agree.
 
+**One flake seen so far**, worth knowing before you chase a red Windows
+job: the suite exited 1 on `windows-latest` after 17 seconds having printed
+*nothing*, and the identical commit passed on an immediate re-run. Empty
+output is the diagnosis problem, not the bug — CI's stdout is a pipe, python
+block-buffers it, and a process that dies without flushing loses its whole
+log. Every python step in the workflow now runs under `-u` so the next one
+says where it died. If you hit a red job with no output, re-run it once; if
+it reproduces, the `-u` log will show the last test that started.
+
 **Two tests assert current *limitations* on purpose.**
 `sparse_moe_breaks_the_graph_as_documented` fails if a future torch stops
 breaking on `nonzero`, and `param_count_matches_analysis` fails if preset shapes

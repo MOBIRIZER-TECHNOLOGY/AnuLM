@@ -49,14 +49,20 @@ jobs:
       # Left on each runner's default shell (PowerShell on Windows, bash on
       # Linux) on purpose: these are the commands a newcomer types, and they
       # should work in whatever shell they already have open.
+      #
+      # -u everywhere. CI's stdout is a pipe, so python block-buffers it, and
+      # a process that dies without flushing takes its whole log with it: a
+      # Windows job once failed here after 17 seconds having printed nothing
+      # at all, which said only that something crashed, not what. This is the
+      # same buffering gotcha docs/DEVELOPING.md warns about for piped runs.
       - name: Report the environment
-        run: python quickstart.py
+        run: python -u quickstart.py
 
       - name: Shapes, forward and backward, no data
-        run: python model.py
+        run: python -u model.py
 
       - name: Test suite
-        run: python test_model.py
+        run: python -u test_model.py
 
       - name: Train 50 steps end to end
         # Downloads tinyshakespeare, trains, evaluates, saves, and samples from
@@ -64,8 +70,8 @@ jobs:
         # of CPU. Catches breakage that unit tests cannot -- a bad data path,
         # a checkpoint that will not reload, a sampler that hangs.
         run: |
-          python train.py --preset 30b --steps 50 --eval-every 25 --out ckpt_ci.pt
-          python sample.py --ckpt ckpt_ci.pt --prompt "KING RICHARD II:" --tokens 40
+          python -u train.py --preset 30b --steps 50 --eval-every 25 --out ckpt_ci.pt
+          python -u sample.py --ckpt ckpt_ci.pt --prompt "KING RICHARD II:" --tokens 40
 
       - name: Reload the checkpoint, and load every shipped tokenizer
         shell: bash          # one shell for the heredocs, on both runners
