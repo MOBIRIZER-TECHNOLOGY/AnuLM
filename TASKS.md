@@ -368,22 +368,19 @@ row for the base: naive 3.9212 at 512, and 4.0507 / 4.0232 (naive / YaRN) at
 <!-- live-status -->
 ## Live status
 
-Written 2026-09-18 22:07 by `update_tasks.py` and **frozen there**: the last
-reading taken before the rig was deleted, not a live one. The coder run had
-finished at step 700,000 four days earlier, and the process this line called
-running was the final phase wrapper on its way out. GPU at the time: 9499 MiB
-of 16303 MiB, 0 %.
+Written 2026-09-19 01:54 by `update_tasks.py`. A training process is running; GPU: 10862 MiB, 16303 MiB, 76 %.
 
 | checkpoint (`.last`) | step | val loss | best val | saved |
 | --- | --- | --- | --- | --- |
-| `ckpt_coder.pt` | 700,000 | 2.7234 | 2.7222 | 2026-09-14 18:38 |
+| `ckpt_coder.pt` | not on disk | | | |
+| `ckpt_ctx2k.pt` | 500 | 4.2380 | 4.2380 | 2026-09-19 01:51 |
 
-Tail of `coder_train_phase1.log`:
+Tail of `ctx_train.log`:
 
 ```
-resuming from ckpt_coder.pt.last at step 700000 (best val so far 2.7222, epoch 0.71)
-done in 0s | best val 2.7222 | ckpt ckpt_coder.pt
-sample with:  python sample.py --ckpt ckpt_coder.pt
-=== PHASE DONE (18:42) ===
+step   550 | loss 4.0614 | aux 0.0034 | lr 9.97e-05 | imbalance  1.87x |     9322 tok/s |  1696 ms/step | epoch 0.22
+step   560 | loss 2.9140 | aux 0.0042 | lr 9.97e-05 | imbalance  2.51x |     9326 tok/s |  1719 ms/step | epoch 0.22
+step   570 | loss 3.7771 | aux 0.0036 | lr 9.97e-05 | imbalance  1.81x |     9331 tok/s |  1709 ms/step | epoch 0.23
+step   580 | loss 3.8216 | aux 0.0037 | lr 9.97e-05 | imbalance  1.83x |     9342 tok/s |  1585 ms/step | epoch 0.23
 ```
 <!-- /live-status -->

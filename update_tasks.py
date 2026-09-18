@@ -112,7 +112,10 @@ def python_procs() -> int:
 
 
 def newest_log() -> tuple[str, str]:
-    logs = sorted(glob.glob(str(HERE / "*_phase*.log")), key=os.path.getmtime)
+    # *_phase*.log is the coder run's shape; ctx_train.log is the
+    # long-context run's. Take whichever training log is newest.
+    logs = sorted(glob.glob(str(HERE / "*_phase*.log")) + glob.glob(str(HERE / "ctx_train.log")),
+                  key=os.path.getmtime)
     if not logs:
         return "", ""
     p = logs[-1]
@@ -333,7 +336,8 @@ def update(ckpts: list[str]) -> str:
 
 def main() -> None:
     p = argparse.ArgumentParser()
-    p.add_argument("--ckpt", nargs="*", default=["ckpt_coder.pt"], help="checkpoint names whose .last to read")
+    p.add_argument("--ckpt", nargs="*", default=["ckpt_coder.pt", "ckpt_ctx2k.pt"],
+                   help="checkpoint names whose .last to read; missing ones are skipped")
     p.add_argument("--loop", type=int, default=0, help="seconds between refreshes; 0 = once")
     a = p.parse_args()
     while True:
