@@ -223,8 +223,15 @@ and no `--grad-ckpt` needed on 8 GB. `python lora.py merge <adapter> <out>`
 folds it back into an ordinary checkpoint.
 
 Two things worth knowing before trusting an adapter. The experts are **not**
-adapted by default -- 24 experts x 19 layers is 1,368 adapters, most of which
-see a fraction of the tokens -- so `--lora-targets` exists if you want to try.
+adapted by default, and §29 measures why rather than asserting it: 1,411
+adapters buy +0.049 of held-out loss over attention-only for five times the
+wall clock, because each expert sees only the tokens the router sends it and
+because adapters force `--moe-impl sparse` (the grouped path stacks expert
+weights directly, and `apply_lora` now refuses that combination with an
+explanation instead of an AttributeError from inside the kernel). Raising the
+rank on attention is cheaper and better. §29 also finds that a **full
+fine-tune beats every LoRA setting on both quality and time at this scale**,
+so LoRA here is for artefact size and memory, not for results.
 And the aux-loss-free balancer's `expert_bias` is a *buffer*: it has no
 gradient, LoRA does not freeze it, and it keeps moving every step. Merging
 adapters into a pristine base would therefore restore the base's routing and

@@ -23,11 +23,18 @@ adapters, not sixteen gigabytes.
 Quantising the base to 4 bits needs bitsandbytes and would save ~1.2 GB here
 -- worth it at 7B, mostly not worth the dependency at 398M.
 
-**Which layers.** By default the attention projections, which is where LoRA
-is normally applied and which is 52M of this model's 398M. The 269M in the
-experts are deliberately left alone: adapting 24 experts x 19 layers means
-1,368 adapters, most of which see a fraction of the tokens, and the router
-decides who learns what. `--lora-targets` overrides this if you want to try.
+**Which layers.** By default the attention projections, 52M of this model's
+398M. The 269M in the experts are left alone, and `docs/RESULTS.md` §29
+measures the reason: 1,411 adapters buy +0.049 of held-out loss over
+attention-only for five times the wall clock, because each expert sees only
+what the router sends it, and because they force `--moe-impl sparse`.
+`--lora-targets` overrides it anyway.
+
+**Read §29 before reaching for this at all.** On a 398M model a full
+fine-tune reached twice the improvement in two thirds of the time. LoRA's
+win here is a 5.7 MB artefact instead of 1.5 GB, and an optimizer small
+enough that `--grad-ckpt` is unnecessary -- worth it for many adapters, not
+for one good model.
 """
 
 from __future__ import annotations
@@ -89,6 +96,16 @@ def apply_lora(model: nn.Module, r: int = 16, alpha: float = 32.0,
                 hits += 1
     if not hits:
         raise ValueError(f"no Linear matched {targets}; nothing would train")
+    # The grouped MoE path stacks expert weights with getattr(e, name).weight,
+    # which a wrapped Linear does not have -- it fails with an AttributeError
+    # from inside the kernel, several frames from the cause. Say it here.
+    cfg = getattr(model, "cfg", None)
+    if getattr(cfg, "moe_impl", None) == "grouped" and any(
+            ".experts." in n for n, m in model.named_modules() if isinstance(m, LoRALinear)):
+        raise ValueError(
+            "adapting the experts needs --moe-impl sparse: the grouped path stacks "
+            "expert weights directly and cannot see through an adapter. Measured, "
+            "it is also the worse trade -- docs/RESULTS.md 29.")
     return hits
 
 

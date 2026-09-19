@@ -25,6 +25,13 @@ structure to mine.
 
 from __future__ import annotations
 
+try:                                    # Devanagari on a cp1252 console
+    import sys
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except (AttributeError, ValueError):
+    pass
+
+
 import argparse
 import json
 import random

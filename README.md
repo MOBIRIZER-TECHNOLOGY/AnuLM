@@ -410,14 +410,18 @@ python lora.py merge ckpt_mine.pt ckpt_mine.full.pt      # an ordinary checkpoin
 
 `finetune.py` takes any JSONL of `{question, answer, lang}` and trains with
 the loss on the answer tokens only. `--lora` freezes the checkpoint and
-trains a rank-16 correction on the attention projections instead: **1.5M
-trainable parameters of 397.7M**, gradients and optimizer state down from
-~4.8 GB to ~18 MB, and what you keep afterwards is a **6 MB adapter** rather
-than another 1.6 GB checkpoint. B starts at zero, so the adapted model begins
-as the base one did; merging folds the correction back into the weights and
-gives an ordinary AnuLM that `serve.py` and `export_hf.py` load unchanged.
-Not QLoRA -- the base stays float32, because this model's router does not
-survive 16-bit weights. `docs/TUTORIAL.md` §12 has the comparison table.
+trains a rank-16 correction on the attention projections instead: 1.5M
+trainable parameters of 397.7M, and a **5.7 MB adapter** rather than another
+1.5 GB checkpoint.
+
+Measured on 17,143 Hindi pairs (§29), and the answer is not the marketing
+one: a **full fine-tune reaches twice the improvement in two thirds of the
+time** (held-out answer loss 3.9028 → 3.3912, against 3.6430 for LoRA). At
+398M, fine-tuning everything is the right default. LoRA buys artefact size
+and memory -- 266x smaller, and optimizer state from ~4.8 GB to ~18 MB, so
+no `--grad-ckpt` on an 8 GB card -- which pays when you want *many* adapters
+rather than one good model. Not QLoRA: the base stays float32, because this
+model's router does not survive 16-bit weights.
 
 ## Three languages: Hindi, English, Python
 

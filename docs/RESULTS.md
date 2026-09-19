@@ -47,6 +47,7 @@ models.
 | [26](#26-reading-the-val-loss-what-the-numbers-own-error-is) | what the four quoted decimals are actually worth | the log prints its own error; strided windows land 4-11x closer |
 | [27](#27-the-released-400m-past-its-training-length-zero-shot) | the 400M base at 2x and 4x its training length, no retraining | it degrades 0.13, not 1.5; YaRN buys 0.028 at 4x, all of it at the far end |
 | [28](#28-training-at-2048-what-it-actually-bought) | continuing that base at 2,048 with YaRN for 10,000 steps | better everywhere, but zero-shot YaRN had already bought most of the *context* |
+| [29](#29-lora-against-a-full-fine-tune-at-398m) | is LoRA the right way to fine-tune a model this small? | it works, and at 398M full fine-tuning is still the better default |
 
 ---
 
@@ -2114,3 +2115,66 @@ python eval_bench.py release/AnuLM-Base-400M ckpt_ctx2k.pt \
 The curve is `ctx2k_curve.csv`: val 4.3031 at step 250 to 4.0501 at 10,000,
 measured at 2,048 on the mixed split and so not comparable with the base's
 4.4410, which was measured at 512 on a different one.
+
+---
+
+## 29. LoRA against a full fine-tune at 398M
+
+LoRA exists because a 70B model will not fit on your card. This model is
+398M, so the premise does not hold and the question has to be asked rather
+than assumed: on a checkpoint this size, is training 0.4% of the parameters
+a good trade?
+
+Same data for every row -- 17,143 Hindi question/answer pairs built by
+`make_qa.py` from held-out Wikipedia text, 349 pairs held out again for the
+loss, 2,183 packed rows of 512. Same base, `AnuLM-Base-400M`, whose held-out
+answer loss before any tuning is **3.9028**. One RTX 5070 Ti.
+
+| | held-out loss | improvement | of full | wall clock | what you keep |
+| --- | --- | --- | --- | --- | --- |
+| LoRA r=16, attention, 1 epoch | 3.6430 | −0.260 | 51% | **67 s** | **5.7 MB** |
+| LoRA r=16, + all experts, 1 epoch | 3.5934 | −0.309 | 60% | 349 s | 108.7 MB |
+| LoRA r=64, attention, 3 epochs | 3.5693 | −0.334 | 65% | 189 s | 22.5 MB |
+| **full fine-tune, 1 epoch** | **3.3912** | **−0.512** | 100% | 131 s | 1,517.6 MB |
+
+**The full fine-tune wins on quality and on time.** It reaches twice the
+improvement of the best LoRA row in two thirds of that row's wall clock. At
+398M, "fine-tune the whole thing" is the right default, and the honest
+summary of LoRA here is that it buys **artefact size and memory, not quality
+or speed**: 5.7 MB against 1.5 GB is a factor of 266, and gradients plus
+AdamW moments fall from ~4.8 GB to ~18 MB, which is the difference between
+needing `--grad-ckpt` on an 8 GB card and not.
+
+So the rule this measurement suggests: full fine-tune when you want one good
+model; LoRA when you want *many* -- ten domain adapters cost 57 MB and ten
+full fine-tunes cost 15 GB -- or when the card cannot hold the optimizer.
+
+**Adapting the experts is not the way to close the gap.** They are 269M of
+the 398M, so it looks like the obvious lever, and it is the worst row in the
+table per unit of time: +0.049 over attention-only for 5x the wall clock.
+Two reasons. Each of the 24 experts per layer sees only the tokens the
+router sends it, so 1,411 adapters each train on a fraction of the batch.
+And the grouped-GEMM path stacks expert weights directly, so adapters force
+`--moe-impl sparse` and give up the 1.48x that path is worth (§9). Raising
+the rank on attention is cheaper and better. `apply_lora` now refuses
+expert targets under `--moe-impl grouped` with that explanation rather than
+an AttributeError from inside the kernel.
+
+**What LoRA does keep.** B is initialised to zero, so step 0 is the base
+model to float noise and a fine-tune cannot start worse than the checkpoint
+it began from -- visible in the table as every row improving monotonically
+from 3.9028. And LoRA wants a higher learning rate: 2e-4 to 3e-4 against the
+5e-5 that suits a full fine-tune, because far fewer parameters have to move.
+
+```bash
+python make_qa.py --data data/hindi_ctx.txt --out data/qa_lora.jsonl \
+                  --heldout data/qa_lora_heldout.jsonl
+python finetune.py --ckpt release/AnuLM-Base-400M --qa data/qa_lora.jsonl \
+    --heldout data/qa_lora_heldout.jsonl --out ckpt_lora.pt --lora --lr 2e-4
+python lora.py merge ckpt_lora.pt ckpt_lora.full.pt
+```
+
+One caveat on reading these numbers: a single epoch on 17k pairs is a small
+fine-tune, and the gap between LoRA and a full pass may narrow with more
+data -- §20 and §23 tuned on 56k and 37.5k pairs respectively. What the
+table settles is the shape of the trade at this scale, not its limit.

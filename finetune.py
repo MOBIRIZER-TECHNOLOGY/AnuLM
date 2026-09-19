@@ -46,7 +46,7 @@ import torch
 import bpe
 from bpe import BPE, _encode_init
 from make_qa import PROMPT, PROMPTS
-from model import AnuLM
+from model import AnuLM, load_checkpoint
 from train import OptimizerSet, atomic_save, lr_at, make_optimizer
 
 
@@ -184,7 +184,7 @@ def main():
     args = p.parse_args()
     torch.manual_seed(args.seed)
 
-    ck = torch.load(args.ckpt, map_location="cpu", weights_only=False)
+    ck = load_checkpoint(args.ckpt, "cpu")   # a .pt or an exported folder
     cfg = ck["cfg"]
     assert getattr(cfg, "tokenizer_path", None), "finetune.py needs a BPE checkpoint"
     if args.moe_impl or args.device.startswith("cuda"):

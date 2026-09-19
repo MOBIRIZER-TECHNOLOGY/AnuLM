@@ -263,12 +263,23 @@ python lora.py merge ckpt_mine.pt ckpt_mine.full.pt   # -> an ordinary checkpoin
 python serve.py --ckpt ckpt_mine.full.pt
 ```
 
+Measured on 17,143 Hindi pairs from the same base (`docs/RESULTS.md` §29):
+
 | | full fine-tune | `--lora` (r=16) |
 | --- | --- | --- |
 | trainable | 397.7M | **1.5M** (0.37%) |
 | gradients + AdamW moments | ~4.8 GB | **~18 MB** |
-| what you keep | a 1.6 GB checkpoint | a **6 MB** adapter |
+| what you keep | a 1,518 MB checkpoint | a **5.7 MB** adapter |
 | needs `--grad-ckpt` on 8 GB | yes | no |
+| held-out answer loss, 3.9028 before | **3.3912** | 3.6430 |
+| wall clock, 1 epoch | **131 s** | 67 s |
+
+**Read that table before reaching for LoRA.** At 398M the full fine-tune
+reaches twice the improvement in two thirds of the time, so it is the right
+default for one good model. LoRA's win is 266x less to keep and an optimizer
+that fits anywhere, which pays when you want many adapters rather than one
+model. Raising the rank helps a little (r=64 over 3 epochs reaches 3.5693)
+and adapting the experts is the worst trade in the table -- §29 has both.
 
 Use a **higher learning rate** than a full fine-tune -- 1e-4 to 3e-4 rather
 than 5e-5 -- because far fewer parameters have to move. The adapter records

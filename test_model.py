@@ -960,7 +960,7 @@ def an_exported_folder_loads_everywhere_a_pt_does():
     root = P(__file__).parent
     for name in ("eval_bench.py", "eval_context.py", "eval_golden.py", "eval_qa.py",
                  "eval_translate.py", "eval_code.py", "sample.py", "sample_many.py",
-                 "ask.py", "serve.py"):
+                 "ask.py", "serve.py", "finetune.py"):
         src = (root / name).read_text(encoding="utf-8")
         assert "load_checkpoint" in src, f"{name} does not use load_checkpoint"
         bad = re.search(r"torch\.load\(\s*(args\.)?ckpt", src)
