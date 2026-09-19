@@ -26,6 +26,13 @@ Prompts are real, not synthetic:
 
 It writes `sweep/<segment>.jsonl` (every prompt and reply, so samples can be
 picked later without re-running) and prints a summary per segment.
+
+**Resumable, because it has to be.** Four thousand generations is hours, and
+on Windows a process started from a terminal does not outlive the session
+that started it -- `TASKS.md` has the story and the scheduled-task pattern
+that does. So a rerun reads what is already in the jsonl, skips those
+prompts and appends; `run_sweep.cmd` is the wrapper a task fires every 30
+minutes, and a firing while the sweep is alive is a no-op.
 """
 
 from __future__ import annotations
@@ -118,6 +125,42 @@ def repeated_4grams(text: str) -> float:
     return 1 - len(set(grams)) / len(grams)
 
 
+def done_ids(path: Path) -> set:
+    """Ids already answered, so a restart picks up where it stopped."""
+    if not path.exists():
+        return set()
+    out = set()
+    for line in path.read_text(encoding="utf-8").splitlines():
+        try:
+            out.add(json.loads(line)["id"])
+        except (json.JSONDecodeError, KeyError):
+            pass                      # a half-written last line after a kill
+    return out
+
+
+def read_stats(path: Path) -> dict:
+    """Summarise a whole jsonl, however many runs wrote it."""
+    st = {"n": 0, "empty": 0, "stopped": 0, "errors": 0, "tokens": 0, "seconds": 0.0,
+          "degenerate": 0, "rep4": 0.0, "capped": 0, "wall": 0.0}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        try:
+            r = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if r.get("error"):
+            st["errors"] += 1
+            continue
+        st["n"] += 1
+        st["tokens"] += r.get("tokens", 0)
+        st["seconds"] += r.get("seconds", 0.0)
+        st["stopped"] += bool(r.get("stopped"))
+        st["empty"] += not (r.get("completion") or "").strip()
+        st["rep4"] += r.get("rep4", 0.0)
+        st["degenerate"] += r.get("rep4", 0.0) > 0.5
+    st["wall"] = st["seconds"]
+    return st
+
+
 def run_segment(name: str, args) -> dict:
     repo, builder, local = SEGMENTS[name]
     prompts = builder(args.limit)
@@ -140,10 +183,16 @@ def run_segment(name: str, args) -> dict:
 
     OUT.mkdir(exist_ok=True)
     path = OUT / f"{name}.jsonl"
+    done = done_ids(path)
+    if done:
+        prompts = [p for p in prompts if p["id"] not in done]
+        print(f"  resuming: {len(done)} already answered, {len(prompts)} to go")
+        if not prompts:
+            return read_stats(path)
     stats = {"n": 0, "empty": 0, "stopped": 0, "errors": 0, "tokens": 0, "seconds": 0.0,
              "degenerate": 0, "rep4": 0.0, "capped": 0}
     t0 = time.time()
-    with path.open("w", encoding="utf-8") as fh:
+    with path.open("a", encoding="utf-8") as fh:
         for i, item in enumerate(prompts):
             rec = dict(item)
             try:
@@ -175,7 +224,7 @@ def run_segment(name: str, args) -> dict:
                 print(f"  {i+1:5d}/{len(prompts)}  {el:6.0f}s  "
                       f"{stats['errors']} errors, {stats['empty']} empty", flush=True)
     stats["wall"] = time.time() - t0
-    return stats
+    return read_stats(path)          # count the whole file, not just this run
 
 
 def summarise(name: str, s: dict) -> None:
