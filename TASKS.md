@@ -9,8 +9,9 @@
 > place to start, and the "Running for days without a terminal" section
 > there gives the Linux equivalents of the Task Scheduler pattern below.
 
-> **Reopened 2026-09-19** for the long-context run in "In flight" below.
-> Everything above that section is finished and stays as a record.
+> **Closed again 2026-09-19 06:29.** The long-context run finished its
+> 10,000 steps unattended overnight and its tasks are disabled; the section
+> below is the record of it. `docs/RESULTS.md` §28 has the result.
 
 > **Closed 2026-09-18.** Every run below is finished. The training rig it
 > describes — the working directory it ran in before the rename, holding the
@@ -288,7 +289,7 @@ task instance open and the scheduler skips the next firing, which is how a
 crashed run would go unnoticed for half an hour. A firing while training is
 healthy is a no-op — the wrapper checks for a live `train.py` first.
 
-## In flight: long context at 2,048 (started 2026-09-19 01:37)
+## Long context at 2,048 — done (01:37 to 06:29, 2026-09-19)
 
 The training half of the "Longer context" item. Every released checkpoint is
 trained at 512 tokens; this continues the released base at **2,048 with YaRN**
@@ -306,6 +307,7 @@ The zero-shot half is already measured and needed no training (§27).
 | data | `data/ctx_mix.multi32k.bin` -- 46.0M tokens, 189 MB Hindi + 79 MB English + 38 MB Python, the base's own proportions and its `multi32k` tokenizer |
 | shape | block 2,048, batch 2 x grad-accum 4 = 8,192 tokens/step, `--yarn` with `yarn_original_context=512 yarn_factor=4.0` |
 | budget | 10,000 steps = 82M tokens, about 2 epochs, ~5 h at the measured 1.8 s/step |
+| **outcome** | **finished 06:29 unattended**, val 4.3031 at step 250 to **4.0501** best. Ten task firings, nine of them no-ops while training was healthy, one launch. No crash, no resume needed. `ctx2k_curve.csv` has all 40 points |
 | logs | `ctx_train.log`, `ctx_train.err`, `ctx_train_guard.log` |
 
 **Why `yarn_original_context=512` is set by hand.** `train.py` defaults it to
@@ -329,19 +331,25 @@ from `ckpt_ctx2k.pt.last`, losing at most 250 steps. When step 10,000 lands,
 the wrapper beeps six times and drops `anulm_ctx_10000_done.txt` on the
 Desktop.
 
-### When it finishes
+### What it found, and one thing it nearly got wrong
 
-```
-python eval_context.py --ckpt ckpt_ctx2k.pt --data data/hindi_ctx.txt --device cuda
-python eval_bench.py release/AnuLM-Base-400M ckpt_ctx2k.pt        # did 512 regress?
-schtasks /change /tn anulm_ctx /disable
-```
+Both tasks are disabled. `docs/RESULTS.md` §28 is the write-up; the short
+version is that nothing regressed in any language (Hindi 0.6001 -> 0.5323
+bits/byte, English 1.5208 -> 1.3897, Python 1.0433 -> 0.8102) but almost none
+of that is about context -- it is 55% more tokens on a model that had seen
+148M. The context question is the *slope* of loss across a 2,048-token
+window, and there zero-shot YaRN had already done most of the work: the base
+goes from +0.073 (worse the further out) to -0.068 with YaRN alone, and five
+GPU-hours of training at 2,048 moved it to -0.085.
 
-The question is not only whether 2,048 improved -- it should, the model is
-being trained there -- but **what it cost at 512**, which is the length every
-other number in this project was measured at. Compare against §27's zero-shot
-row for the base: naive 3.9212 at 512, and 4.0507 / 4.0232 (naive / YaRN) at
-2,048.
+**The first evaluation was contaminated and its numbers were discarded.**
+`mix_corpus.py` was given the whole of `data/hindi_ctx.txt`, and
+`eval_context.py` evaluates on the last 10% of the file handed to it -- so the
+eval text was in the training corpus, and every length showed a suspiciously
+uniform -0.72. Nine probe passages out of nine from that tail are in the mix;
+zero of the same nine are in `data/bench_hindi.txt`, which `mix_corpus.py`
+holds out and which everything published uses. A held-out split of a file is
+not held out if the file went into the mix whole.
 
 ## Housekeeping
 
@@ -368,19 +376,19 @@ row for the base: naive 3.9212 at 512, and 4.0507 / 4.0232 (naive / YaRN) at
 <!-- live-status -->
 ## Live status
 
-Written 2026-09-19 01:55 by `update_tasks.py`. A training process is running; GPU: 10862 MiB, 16303 MiB, 65 %.
+Written 2026-09-19 08:13 by `update_tasks.py`. **No training process running**; GPU: 0 MiB, 16303 MiB, 0 %.
 
 | checkpoint (`.last`) | step | val loss | best val | saved |
 | --- | --- | --- | --- | --- |
 | `ckpt_coder.pt` | not on disk | | | |
-| `ckpt_ctx2k.pt` | 500 | 4.2380 | 4.2380 | 2026-09-19 01:51 |
+| `ckpt_ctx2k.pt` | 10,000 | 4.0505 | 4.0501 | 2026-09-19 06:29 |
 
 Tail of `ctx_train.log`:
 
 ```
-step   580 | loss 3.8216 | aux 0.0037 | lr 9.97e-05 | imbalance  1.83x |     9342 tok/s |  1585 ms/step | epoch 0.23
-step   590 | loss 3.8124 | aux 0.0036 | lr 9.96e-05 | imbalance  1.58x |     9347 tok/s |  1600 ms/step | epoch 0.23
-step   600 | loss 3.9910 | aux 0.0035 | lr 9.96e-05 | imbalance  1.83x |     9352 tok/s |  1673 ms/step | epoch 0.24
-step   610 | loss 3.6556 | aux 0.0036 | lr 9.96e-05 | imbalance  1.59x |     9353 tok/s |  1577 ms/step | epoch 0.24
+optimizer: AdamW (fused), 397.7M params
+resuming from ckpt_ctx2k.pt.last at step 10000 (best val so far 4.0501, epoch 3.96)
+done in 0s | best val 4.0501 | ckpt ckpt_ctx2k.pt
+sample with:  python sample.py --ckpt ckpt_ctx2k.pt
 ```
 <!-- /live-status -->

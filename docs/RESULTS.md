@@ -46,6 +46,7 @@ models.
 | [25](#25-a-python-coder-700000-steps-then-instruction-tuning) | 700k steps on 2.87B tokens, then instruction tuning | **MBPP 12.5%**, HumanEval 4.9%, **AnuLM-Coder-400M** |
 | [26](#26-reading-the-val-loss-what-the-numbers-own-error-is) | what the four quoted decimals are actually worth | the log prints its own error; strided windows land 4-11x closer |
 | [27](#27-the-released-400m-past-its-training-length-zero-shot) | the 400M base at 2x and 4x its training length, no retraining | it degrades 0.13, not 1.5; YaRN buys 0.028 at 4x, all of it at the far end |
+| [28](#28-training-at-2048-what-it-actually-bought) | continuing that base at 2,048 with YaRN for 10,000 steps | better everywhere, but zero-shot YaRN had already bought most of the *context* |
 
 ---
 
@@ -2022,3 +2023,94 @@ rewards having seen the phrasing, and the three-language corpus is 2.1 GB
 against 1.3 GB, while multiple choice rewards discriminating between plausible
 Hindi words, and this model spent a third of its budget on English and Python.
 The same trade §22 measured in bits/byte, showing up in accuracy.
+
+---
+
+## 28. Training at 2,048: what it actually bought
+
+§27 extended the released base past its training length without retraining.
+This trains it there. `AnuLM-Base-400M`, continued for **10,000 steps at
+block 2,048 with YaRN** (`yarn_original_context=512`, factor 4) on 46M tokens
+of the base's own three-language proportions — 82M tokens seen, which is 55%
+on top of the 148M the base was trained with. Five hours on one RTX 5070 Ti,
+unattended; `TASKS.md` has the recipe and the scheduled-task setup.
+
+### First, a result that was wrong
+
+The first evaluation showed a uniform −0.72 at every length, which is the
+shape of a mistake rather than a finding. It was: `mix_corpus.py` had been
+given the whole of `data/hindi_ctx.txt`, and `eval_context.py` evaluates on
+the last 10% of the file it is given — so the evaluation text was in the
+training corpus. Nine probe passages out of nine from that tail appear
+verbatim in the mix. Everything below is on `data/bench_hindi.txt`, the slice
+`mix_corpus.py` holds out, where the same nine probes appear **zero** times.
+
+This is the second time this project has been caught by the same class of
+error; §9 records the first, and `make_bench.py` exists because of it. The
+lesson that generalises: a held-out split of a *file* is not held out if the
+file went into the mix whole.
+
+### Loss by position, which is the context question
+
+Within a 2,048-token window, on held-out Hindi neither model has seen:
+
+| | 0–512 | 512–1024 | 1024–1536 | 1536–2048 | last − first |
+| --- | --- | --- | --- | --- | --- |
+| base, naive | **4.0400** | 4.0872 | 4.0330 | 4.1128 | **+0.0728** |
+| base, YaRN | 4.0743 | 4.0873 | 4.0007 | 4.0065 | **−0.0678** |
+| trained at 2,048 | 3.6693 | 3.6555 | 3.5956 | **3.5839** | **−0.0854** |
+
+Read the last column. The base with plain RoPE gets *worse* the further into
+the window it goes — it is being asked about positions it never saw. YaRN
+zero-shot inverts that sign, for the price of +0.034 at the positions it was
+trained on. Training at 2,048 inverts it slightly further, to −0.085.
+
+**Which is the deflationary finding.** Five GPU-hours of continued
+pretraining moved the slope from −0.068 to −0.085. Zero-shot YaRN, which
+costs nothing, had already done most of the work. If what you want is for a
+400M model of this shape to behave sensibly at 4× its training length, the
+rotary fix is the part that matters; the training is buying something else.
+
+### What the training did buy: everything, uniformly
+
+bits/byte on the three held-out benches `mix_corpus.py` set aside:
+
+| | Hindi | English | Python |
+| --- | --- | --- | --- |
+| `AnuLM-Base-400M` | 0.6001 | 1.5208 | 1.0433 |
+| continued at 2,048 | **0.5323** | **1.3897** | **0.8102** |
+| delta | −0.068 | −0.131 | −0.233 |
+
+Nothing regressed, in any language, at any length — the fear with a
+continuation is that it adapts to one register and loses the others, and at
+matched proportions it did not. But that is a *compute* result, not a context
+one: 55% more tokens on a model that had seen 148M of them. Python gains most
+because the base saw the least of it. The level differences in the position
+table above are this effect, not the extension; only the slope is about
+context.
+
+One caveat on fairness: the benches are held out of this run's corpus and
+drawn from the same public sources the base used (hiwiki, C4,
+codeparrot-clean), but they are a fresh fetch, so they are a held-out slice
+of *this* corpus and an out-of-sample draw for the base. That flatters the
+continuation somewhat. The position-slope comparison does not depend on it.
+
+### Reproducing
+
+```bash
+python fetch_hindi.py --mb 300 --keep-prob 0.3 --out data/hindi_ctx.txt
+python fetch_web.py  --mb 200 --out data/en_ctx.txt
+python fetch_code.py --mb 120 --out data/py_ctx.txt
+python mix_corpus.py --source hindi data/hindi_ctx.txt 190 \
+                     --source english data/en_ctx.txt 75 \
+                     --source python data/py_ctx.txt 36 --out data/ctx_mix.txt
+python bpe.py encode --tokenizer data/multi32k.json --data data/ctx_mix.txt \
+                     --out data/ctx_mix.multi32k.bin
+# then run_ctx_phase.cmd 10000, or the train.py line inside _ctx_run.cmd
+python eval_bench.py release/AnuLM-Base-400M ckpt_ctx2k.pt \
+                     --bench data/bench_hindi.txt --device cuda
+```
+
+The curve is `ctx2k_curve.csv`: val 4.3031 at step 250 to 4.0501 at 10,000,
+measured at 2,048 on the mixed split and so not comparable with the base's
+4.4410, which was measured at 512 on a different one.

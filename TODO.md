@@ -32,12 +32,7 @@ marked **(no GPU)** can be done on a laptop.
    identity examples, and a turn-marked template. `finetune.py` already
    handles question/answer pairs; multi-turn packing within 512 tokens is
    the new part. Expect 1–3 GPU-hours and modest quality at 400M.
-5. **Longer context.** Every checkpoint is trained at 512 tokens. The
-   model already implements YaRN (`docs/ARCHITECTURE.md` §4, `README.md`
-   "Long-context extension"); a continued-pretraining run at 2,048 with
-   YaRN on the coder corpus, measured on `eval_context.py`, would show
-   whether the design's long-context claim holds at this scale.
-6. **Better coder data.** The coder plan's own analysis
+5. **Better coder data.** The coder plan's own analysis
    (`docs/CODER_PLAN.md`, "If the mix is the ceiling") says textbook-style
    Python is what moves pass@1 at this size. `python-edu` from the SmolLM
    corpus is the open match and needs a Software Heritage download per
@@ -46,19 +41,27 @@ marked **(no GPU)** can be done on a laptop.
 
 ## Tooling
 
-7. **A GGUF conversion.** llama.cpp has no loader for this architecture;
+6. **A GGUF conversion.** llama.cpp has no loader for this architecture;
     the MoE with sigmoid routing and QK-norm would need a new arch entry.
     Large, but it would put the models on phones.
 
 ## Documentation
 
-8. **Translate the tutorial into Hindi (no GPU).** `docs/TUTORIAL.md` in
+7. **Translate the tutorial into Hindi (no GPU).** `docs/TUTORIAL.md` in
     Hindi would match the project's audience.
-9. **Diagrams for `docs/ARCHITECTURE.md` (no GPU).** The MLA / GQA
+8. **Diagrams for `docs/ARCHITECTURE.md` (no GPU).** The MLA / GQA
     comparison and the MoE routing are explained in prose; two figures
     would help.
 
 ## Done
+
+- 2026-09-19: long context, both halves (old item 5). §27 measured the
+  released base at 2x and 4x its training length zero-shot; §28 continued it
+  at 2,048 with YaRN for 10,000 unattended steps. Everything improved
+  (Hindi −0.068, English −0.131, Python −0.233 bits/byte) but the *context*
+  part of that is small: zero-shot YaRN already turns the loss-by-position
+  slope from +0.073 to −0.068, and five GPU-hours took it to −0.085. The
+  first evaluation was contaminated and thrown away; §28 says how.
 
 - 2026-09-19: `app.py` holds all four checkpoints in a dropdown and loads one
   on demand, evicting the previous one so the page stays inside Colab's free
