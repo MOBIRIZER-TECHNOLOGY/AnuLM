@@ -183,15 +183,24 @@ def build(loader: Loader, initial: str | None = None) -> gr.Blocks:
                     gr.update(value=(kind == "coder")),
                     gr.update(value=200 if kind == "coder" else 120),
                     f"Loaded — {SUBTITLE[kind]}.\n\n{header_for(engine)}",
-                    gr.update(value=""))
+                    gr.update(value=""),
+                    # The examples belong to the checkpoint too. Without this
+                    # the page went on offering "def is_palindrome(...)" after
+                    # a switch to the translator: Python prompts for a model
+                    # that only translates.
+                    gr.update(samples=examples_for(kind)))
 
-        outputs = [mode, temperature, greedy, max_tokens, status, out]
+        outputs = [mode, temperature, greedy, max_tokens, status, out, ex.dataset]
         go_load.click(do_load, [picker], outputs)
         picker.change(lambda: gr.update(value="Press **Load** to switch."), None, [status])
 
         def run(text, mode_label, n_tokens, temp, is_greedy, penalty):
             if loader.engine is None:
                 return "", "Nothing loaded — press **Load** first."
+            if not (text or "").strip():
+                # serve.py's HTTP API answers 400 here; the page should say
+                # something rather than return a column of spaces.
+                return "", "Type a prompt first."
             engine = loader.engine
             kind = kind_of(engine.info)
             inv = {v: k for k, v in labels_for(kind).items()}

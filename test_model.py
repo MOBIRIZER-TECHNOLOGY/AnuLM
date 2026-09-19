@@ -1018,6 +1018,66 @@ def eval_windows_are_frozen_and_strided_windows_cover_the_split():
 
 
 @test
+def an_exported_qa_checkpoint_still_offers_its_question_mode():
+    """The released question answerer lost its headline feature when loaded
+    the way everyone loads it.
+
+    finetune.py writes both `qa_template` (a single Hindi string, legacy) and
+    `qa_templates` (one per language) into a .pt. export_hf.py writes only the
+    plural. serve.py's Engine read only the singular, so a checkpoint loaded
+    from an exported folder reported qa_template None, /info described a plain
+    base model, and both web pages hid "answer a question" -- on the model
+    whose entire purpose is answering questions. Asking it directly worked the
+    whole time, which is why nothing caught it.
+    """
+    try:
+        import gradio  # noqa: F401  -- kind_of lives in app.py
+    except ImportError:
+        print("    (skipped: gradio not installed)", end="")
+        return
+    try:
+        from safetensors.torch import save_file
+    except ImportError:
+        print("    (skipped: safetensors not installed)", end="")
+        return
+    import dataclasses, json, tempfile
+    from pathlib import Path as P
+    import app
+    from serve import Engine
+
+    cfg = tiny(vocab_size=259)
+    torch.manual_seed(0)
+    m = AnuLM(cfg).eval()
+    templates = {"hi": "प्रश्न: {q}\nउत्तर:", "en": "Question: {q}\nAnswer:"}
+    with tempfile.TemporaryDirectory() as d:
+        folder = P(d) / "Export-QA"
+        folder.mkdir()
+        save_file({k: v.contiguous() for k, v in m.state_dict().items()},
+                  str(folder / "model.safetensors"))
+        # exactly what export_hf.py writes: the plural, never the singular
+        (folder / "config.json").write_text(json.dumps({
+            "model_type": "anulm", "config": dataclasses.asdict(cfg),
+            "step": 3, "qa_templates": templates,
+        }, ensure_ascii=False), encoding="utf-8")
+
+        engine = Engine(str(folder), "cpu")
+        assert engine.info["qa_template"], \
+            "an export carrying qa_templates must still report a qa_template"
+        assert app.kind_of(engine.info) == "qa", app.kind_of(engine.info)
+        assert "answer a question" in app.labels_for("qa").values()
+        # and the mode must actually run rather than silently fall back
+        r = engine.generate("test?", 4, 0.8, 50, 0, mode="question")
+        assert r["mode"] == "question", r["mode"]
+
+        # A checkpoint with no templates at all is still a base model.
+        (folder / "config.json").write_text(json.dumps({
+            "model_type": "anulm", "config": dataclasses.asdict(cfg), "step": 3,
+        }), encoding="utf-8")
+        plain = Engine(str(folder), "cpu")
+        assert not plain.info["qa_template"] and app.kind_of(plain.info) == "base"
+
+
+@test
 def eval_code_sandbox_contains_generated_code():
     """eval_code.py runs a language model's unreviewed output. These are the
     containment promises its docstring makes, and the ones that broke before:

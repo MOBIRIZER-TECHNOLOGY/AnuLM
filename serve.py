@@ -73,6 +73,15 @@ class Engine:
         # Newer fine-tunes carry one template per language; older ones a
         # single Hindi template, which template_for falls back to.
         self.qa_templates = ck.get("qa_templates") or ({"hi": self.qa_template} if self.qa_template else None)
+        # And the other way round. A .pt from finetune.py carries both keys,
+        # but export_hf.py writes only the plural -- so a checkpoint loaded
+        # from an exported folder, which is how everyone loads the released
+        # ones, had qa_template None and /info reported a plain base model.
+        # The page then hid "answer a question" on the question-answering
+        # model while the capability worked perfectly if you called it.
+        if self.qa_template is None and self.qa_templates:
+            self.qa_template = (self.qa_templates.get("hi")
+                                or next(iter(self.qa_templates.values())))
         # The coder was tuned with the code32k tokenizer on Python pairs. It
         # inherits every template in make_qa.PROMPTS (finetune.py saves them
         # all), so without this flag the page would offer translation.
