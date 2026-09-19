@@ -38,6 +38,16 @@ def have(mod: str) -> bool:
     return importlib.util.find_spec(mod) is not None
 
 
+def n_tests() -> int:
+    """Counted, not written down: this line has been wrong twice already,
+    and counting decorators needs neither torch nor an import."""
+    try:
+        return sum(1 for line in (HERE / "test_model.py").read_text(encoding="utf-8").splitlines()
+                   if line.strip() == "@test")
+    except OSError:
+        return 0
+
+
 def row(status: str, what: str, detail: str) -> None:
     print(f"  [{status:2s}] {what:22s} {detail}")
 
@@ -142,7 +152,7 @@ def report(state: dict) -> bool:
           f"  ({'~30 s' if gpu else '3-6 min'})")
     if state["safetensors"] and state["hub"]:
         print("  python quickstart.py --demo       download a real 400M checkpoint and talk to it")
-    print("  python test_model.py              47 tests, ~2 min")
+    print(f"  python test_model.py              {n_tests()} tests, ~2 min")
     print("  python model.py                   build both presets, forward + backward, no data")
     if not gpu:
         print("\n  The 30b and 105b presets run on any CPU. The 400M presets need a GPU")
