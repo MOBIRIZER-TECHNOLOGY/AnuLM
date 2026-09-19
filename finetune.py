@@ -170,6 +170,17 @@ def main():
     p.add_argument("--stop-at", type=int, default=None,
                    help="end this invocation at this step after an eval and a <out>.last save")
     p.add_argument("--seed", type=int, default=1337)
+    p.add_argument("--lora", action="store_true",
+                   help="train low-rank adapters instead of all 398M parameters: "
+                        "~0.4%% trainable, a few MB to keep, and it fits a small card")
+    p.add_argument("--lora-r", type=int, default=16)
+    p.add_argument("--lora-alpha", type=float, default=32.0)
+    p.add_argument("--lora-dropout", type=float, default=0.0)
+    p.add_argument("--lora-targets", nargs="*", default=None,
+                   help="Linear suffixes to adapt; default the attention projections")
+    p.add_argument("--save-merged", action="store_true",
+                   help="also write a full checkpoint with the adapters folded in, "
+                        "which serve.py and export_hf.py read with no LoRA knowledge")
     args = p.parse_args()
     torch.manual_seed(args.seed)
 
@@ -181,6 +192,12 @@ def main():
     tok = BPE.load(cfg.tokenizer_path)
     model = AnuLM(cfg).to(args.device)
     model.load_state_dict(ck["model"])
+    if args.lora:
+        from lora import DEFAULT_TARGETS, apply_lora, summarise
+        targets = tuple(args.lora_targets) if args.lora_targets else DEFAULT_TARGETS
+        n_ad = apply_lora(model, args.lora_r, args.lora_alpha, args.lora_dropout, targets)
+        model.to(args.device)
+        print(f"{n_ad} adapters on {', '.join(targets)}  |  {summarise(model)}")
     if args.grad_ckpt:
         model.enable_gradient_checkpointing()
 
@@ -249,9 +266,19 @@ def main():
             flag = ""
             if val < best:
                 best = val
-                atomic_save({"model": model.state_dict(), "cfg": replace(cfg, moe_impl=ck["cfg"].moe_impl),
-                            "step": step, "val_loss": val, "qa_template": PROMPT,
-                            "qa_templates": PROMPTS, "base_ckpt": args.ckpt}, args.out)
+                meta = {"cfg": replace(cfg, moe_impl=ck["cfg"].moe_impl), "step": step,
+                        "val_loss": val, "qa_template": PROMPT, "qa_templates": PROMPTS,
+                        "base_ckpt": args.ckpt}
+                if args.lora:
+                    from lora import lora_state_dict, router_state_dict
+                    # A few MB: the adapters, plus what they were trained on top
+                    # of. lora.py merge turns this back into a full checkpoint.
+                    atomic_save({**meta, "lora": lora_state_dict(model),
+                                 "router": router_state_dict(model),
+                                 "lora_cfg": {"r": args.lora_r, "alpha": args.lora_alpha,
+                                              "targets": list(targets)}}, args.out)
+                else:
+                    atomic_save({**meta, "model": model.state_dict()}, args.out)
                 flag = "  <- saved"
             save_last(step)
             print(f"  eval @ {step:6d} | held-out answer loss {val:.4f}{flag}")
@@ -259,6 +286,18 @@ def main():
         print(f"\nphase done at step {end} of {args.steps} in {time.time() - t0:.0f}s | best held-out {best:.4f}"
               f" | resume point {last_path}")
         return
+    if args.lora and args.save_merged:
+        import copy
+        from lora import merge_lora
+        merged = copy.deepcopy(model)
+        n_merged = merge_lora(merged)
+        out_merged = str(args.out).replace(".pt", "") + ".merged.pt"
+        atomic_save({"model": merged.state_dict(),
+                     "cfg": replace(cfg, moe_impl=ck["cfg"].moe_impl),
+                     "step": args.steps, "val_loss": best, "qa_template": PROMPT,
+                     "qa_templates": PROMPTS, "base_ckpt": args.ckpt}, out_merged)
+        print(f"folded {n_merged} adapters into {out_merged}")
+
     print(f"\ndone in {time.time() - t0:.0f}s | held-out answer loss "
           f"{base if base is not None else float('nan'):.4f} -> {best:.4f} | {args.out}")
 

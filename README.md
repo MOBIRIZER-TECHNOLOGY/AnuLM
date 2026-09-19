@@ -82,7 +82,7 @@ python quickstart.py --train         # ... or just trains a 17M model now (~30 s
 python quickstart.py --demo          # ... or downloads a released 400M model and serves it
 
 pip install -r requirements.txt      # torch, safetensors; pyarrow only for the parquet converters
-python test_model.py                 # 53 tests, ~2 min, no pytest needed
+python test_model.py                 # 55 tests, ~2 min, no pytest needed
 python model.py                      # shape + param sanity check, no data needed
 python train.py --preset 30b         # GQA, high rope_theta  (Sarvam 30B's shape); downloads tinyshakespeare
 python train.py --preset 105b        # MLA, YaRN-ready       (Sarvam 105B's shape)
@@ -400,6 +400,25 @@ the same script does the English and Python questions below and the
 translation pairs after them, and it has `--stop-at` / `--resume` for runs
 longer than a sitting.
 
+## Fine-tuning one of these instead of training your own
+
+```bash
+python finetune.py --ckpt AnuLM-Base-400M --qa my_pairs.jsonl --heldout my_heldout.jsonl \
+                   --out ckpt_mine.pt --lora --epochs 1 --lr 2e-4
+python lora.py merge ckpt_mine.pt ckpt_mine.full.pt      # an ordinary checkpoint again
+```
+
+`finetune.py` takes any JSONL of `{question, answer, lang}` and trains with
+the loss on the answer tokens only. `--lora` freezes the checkpoint and
+trains a rank-16 correction on the attention projections instead: **1.5M
+trainable parameters of 397.7M**, gradients and optimizer state down from
+~4.8 GB to ~18 MB, and what you keep afterwards is a **6 MB adapter** rather
+than another 1.6 GB checkpoint. B starts at zero, so the adapted model begins
+as the base one did; merging folds the correction back into the weights and
+gives an ordinary AnuLM that `serve.py` and `export_hf.py` load unchanged.
+Not QLoRA -- the base stays float32, because this model's router does not
+survive 16-bit weights. `docs/TUTORIAL.md` §12 has the comparison table.
+
 ## Three languages: Hindi, English, Python
 
 ```bash
@@ -498,7 +517,7 @@ set is a builder away.
 ## Tests
 
 ```bash
-python test_model.py        # 53 tests, ~2 min, no pytest needed
+python test_model.py        # 55 tests, ~2 min, no pytest needed
 ```
 
 They target what training would not catch. A leaky causal mask still converges,

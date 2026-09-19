@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import argparse
 import gc
+import json
 import os
 from pathlib import Path
 
@@ -80,6 +81,41 @@ EXAMPLES = {
 SUBTITLE = {"coder": "writes Python", "translate": "translates English ↔ Hindi",
             "qa": "answers questions in Hindi, English and Python",
             "base": "continues text"}
+
+
+def load_samples() -> dict:
+    """Real replies from tools_sweep.py, written by tools_samples.py.
+
+    The page shows these before anything is loaded, so a visitor sees what
+    the models produce without first waiting for 0.8 GB of weights. They are
+    selected -- nearest the median repetition among replies that stopped on
+    their own -- and the aggregate numbers for the whole sweep are shown
+    beside them, because a page of hand-picked best cases is not evidence.
+    """
+    f = Path(__file__).parent / "docs" / "samples.json"
+    try:
+        return json.loads(f.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def samples_markdown(data: dict, per_segment: int = 4) -> str:
+    out = []
+    for seg in ("code", "translate", "continue"):
+        d = data.get(seg)
+        if not d:
+            continue
+        st = d["stats"]
+        out.append(
+            "### {}\n\n{}\n\n*Over {:,} held-out prompts: {} errors, {} empty "
+            "replies, {}% stopped on their own, {}% repeated 4-grams on average, "
+            "{} ms per reply.*\n".format(
+                d["title"], d["blurb"], st["prompts"], st["errors"], st["empty"],
+                st["stopped_pct"], st["rep4_mean_pct"], st["ms_mean"]))
+        for sample in d["samples"][:per_segment]:
+            out.append("**{}**\n\n```\n{}\n```\n".format(
+                sample["prompt"].strip()[:160], sample["completion"].strip()[:420]))
+    return "\n".join(out)
 
 
 def kind_of(info: dict) -> str:
@@ -219,6 +255,11 @@ def build(loader: Loader, initial: str | None = None) -> gr.Blocks:
         inputs = [prompt, mode, max_tokens, temperature, greedy, rep_penalty]
         run_btn.click(run, inputs, [out, meta])
         prompt.submit(run, inputs, [out, meta])
+        samples = load_samples()
+        if samples:
+            with gr.Accordion("What these models produced on thousands of held-out "
+                              "prompts \u2014 real replies, nothing to load", open=False):
+                gr.Markdown(samples_markdown(samples))
         gr.Markdown(
             "These are 398M base and fine-tuned models: they repeat themselves, especially "
             "when continuing text. Raise the **repetition penalty** to about 1.2 when that "

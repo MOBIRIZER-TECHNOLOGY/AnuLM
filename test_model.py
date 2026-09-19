@@ -1018,6 +1018,95 @@ def eval_windows_are_frozen_and_strided_windows_cover_the_split():
 
 
 @test
+def lora_starts_as_the_base_model_and_merges_back_exactly():
+    """Three promises LoRA has to keep, and one this model makes it break.
+
+    B is initialised to zero, so an adapted model is numerically identical to
+    the one it wrapped until the first step -- a fine-tune cannot start worse
+    than the checkpoint it began from. Only the adapters get gradients.
+    Merging folds B@A into the base weight and gives back an ordinary AnuLM
+    that serve.py and export_hf.py load without knowing LoRA exists.
+
+    The fourth: the aux-loss-free balancer's `expert_bias` is a buffer, so it
+    has no gradient and LoRA does not freeze it -- it keeps moving every step.
+    Merging adapters into a pristine base therefore restores the *base's*
+    routing, not the routing that was trained, and the model changes which
+    experts a token reaches. The adapter carries the bias for that reason.
+    """
+    from lora import (apply_lora, lora_parameters, lora_state_dict, load_lora,
+                      merge_lora, router_state_dict)
+
+    cfg = tiny()
+    torch.manual_seed(0)
+    base = AnuLM(cfg).eval()
+    base_sd = {k: v.clone() for k, v in base.state_dict().items()}
+    x = torch.randint(0, cfg.vocab_size, (2, 16))
+    with torch.no_grad():
+        want, _ = base(x)
+
+    model = AnuLM(cfg).eval()
+    model.load_state_dict(base_sd)
+    n = apply_lora(model, r=4, alpha=8.0)
+    assert n > 0
+    with torch.no_grad():
+        got, _ = model(x)
+    # Not bit-identical: the wrapped layer adds a zero tensor, and that extra
+    # add is not always the same instruction sequence as the fused one it
+    # replaced. The claim is that step 0 is the base model to float noise.
+    d0 = (want - got).abs().max().item()
+    assert d0 < 1e-6, f"B must start at zero: step 0 moved the logits by {d0}"
+
+    trainable = {name for name, p in model.named_parameters() if p.requires_grad}
+    assert trainable and all("lora_" in name for name in trainable), \
+        f"something other than the adapters is trainable: {sorted(trainable)[:3]}"
+
+    # One real step, so the adapters stop being zero.
+    opt = torch.optim.AdamW(lora_parameters(model), lr=1e-2)
+    model.train()
+    _, loss = model(x, x)
+    loss.backward()
+    opt.step()
+    model.eval()
+    with torch.no_grad():
+        adapted, _ = model(x)
+    assert not torch.equal(adapted, want), "after a step the adapters must do something"
+
+    # Save the adapter, rebuild from a pristine base, and land in the same place.
+    ad, router = lora_state_dict(model), router_state_dict(model)
+    assert all("lora_" in k for k in ad) and ad
+    assert router and all(k.endswith("expert_bias") for k in router)
+    size = sum(v.numel() for v in ad.values())
+    assert size < sum(p.numel() for p in base.parameters()) * 0.1, \
+        "an adapter that big is not worth the machinery"
+
+    rebuilt = AnuLM(cfg).eval()
+    rebuilt.load_state_dict(base_sd)
+    apply_lora(rebuilt, r=4, alpha=8.0)
+    load_lora(rebuilt, ad)
+    rebuilt.load_state_dict(router, strict=False)
+    merge_lora(rebuilt)
+    assert not any("lora" in n for n, _ in rebuilt.named_parameters()), \
+        "a merged model must be a plain AnuLM again"
+    with torch.no_grad():
+        merged_out, _ = rebuilt(x)
+    d = (adapted - merged_out).abs().max().item()
+    assert d < 1e-4, f"merging changed the model by {d}"
+
+    # And without the router bias it does NOT come back the same, which is
+    # why the adapter carries it.
+    naive = AnuLM(cfg).eval()
+    naive.load_state_dict(base_sd)
+    apply_lora(naive, r=4, alpha=8.0)
+    load_lora(naive, ad)
+    merge_lora(naive)
+    trained_bias = router[sorted(router)[0]]
+    base_bias = base_sd[sorted(router)[0]]
+    if not torch.equal(trained_bias, base_bias):
+        assert not torch.equal(naive.state_dict()[sorted(router)[0]], trained_bias), \
+            "the test is not exercising the router drift it claims to"
+
+
+@test
 def an_exported_qa_checkpoint_still_offers_its_question_mode():
     """The released question answerer lost its headline feature when loaded
     the way everyone loads it.

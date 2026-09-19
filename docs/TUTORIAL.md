@@ -54,7 +54,7 @@ experiments/<script>.sh`) or from a Git Bash terminal.
 
 ```bash
 python quickstart.py        # checks Python, torch, CUDA, the optional packages and the tokenizers
-python test_model.py        # 53 tests: routing math, attention, tokenizer, data loaders, loss masks
+python test_model.py        # 55 tests: routing math, attention, tokenizer, data loaders, loss masks
 python model.py             # builds both reference presets, forward + backward, prints parameter tables
 ```
 
@@ -251,6 +251,36 @@ python finetune.py --ckpt AnuLM-Base-400M --qa my_pairs.jsonl --heldout my_heldo
     --out ckpt_mine.pt --epochs 1 --lr 5e-5 --grad-ckpt
 python serve.py --ckpt ckpt_mine.pt
 ```
+
+### LoRA, if the card is small or you want many fine-tunes
+
+`--lora` trains low-rank adapters and freezes everything else:
+
+```bash
+python finetune.py --ckpt AnuLM-Base-400M --qa my_pairs.jsonl --heldout my_heldout.jsonl \
+    --out ckpt_mine.pt --lora --epochs 1 --lr 2e-4
+python lora.py merge ckpt_mine.pt ckpt_mine.full.pt   # -> an ordinary checkpoint
+python serve.py --ckpt ckpt_mine.full.pt
+```
+
+| | full fine-tune | `--lora` (r=16) |
+| --- | --- | --- |
+| trainable | 397.7M | **1.5M** (0.37%) |
+| gradients + AdamW moments | ~4.8 GB | **~18 MB** |
+| what you keep | a 1.6 GB checkpoint | a **6 MB** adapter |
+| needs `--grad-ckpt` on 8 GB | yes | no |
+
+Use a **higher learning rate** than a full fine-tune -- 1e-4 to 3e-4 rather
+than 5e-5 -- because far fewer parameters have to move. The adapter records
+the base it was trained against, so `lora.py merge` needs no arguments beyond
+the two paths, and a merged model is an ordinary AnuLM: `serve.py`,
+`export_hf.py` and the transformers wrapper all load it without knowing LoRA
+exists.
+
+It is **not QLoRA**: the base stays in float32, deliberately, because this
+model's router breaks in 16-bit (`docs/DEVELOPING.md`). Quantising to 4 bits
+would need bitsandbytes and save about 1.2 GB -- a good trade at 7B, a poor
+one at 398M, where LoRA already fits the job in roughly 2.5 GB.
 
 Loss is taken on the answer tokens only; `docs/DEVELOPING.md` "Extending"
 describes the packing and how to add a new template or language.

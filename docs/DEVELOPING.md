@@ -5,7 +5,7 @@
 ```bash
 python quickstart.py                   # what this machine can run, and how to fix what it cannot
 pip install -r requirements.txt        # torch, safetensors; pyarrow for the parquet converters
-python test_model.py                   # 53 tests, ~2 min — run this first
+python test_model.py                   # 55 tests, ~2 min — run this first
 ```
 
 Everything runs from the repository root (this file lives in `docs/`, the
@@ -48,7 +48,7 @@ pip install --index-url https://download.pytorch.org/whl/cpu torch
 ├── quickstart.py     environment check, then --train a small model or --demo a released one
 ├── bpe.py            byte-level BPE, DOC_SEP / EOS, the .bin encoder (train / encode / stats)
 ├── muon.py           Muon optimizer (+ AdamW companion)
-├── test_model.py     53 tests, plain asserts, no pytest
+├── test_model.py     55 tests, plain asserts, no pytest
 │
 │   corpora
 ├── fetch_hindi.py    streams a Wikimedia dump into data/, one document per article (any language)
@@ -63,6 +63,7 @@ pip install --index-url https://download.pytorch.org/whl/cpu torch
 ├── make_qa.py        Hindi question-answer pairs from titles and lead sentences (+ the templates)
 ├── make_qa_en.py     the same for English Wikipedia;  make_qa_py.py: write/explain pairs from Python functions
 ├── finetune.py       SFT on any of those jsonl sets, loss on answer tokens only; resumable; writes qa_templates
+├── lora.py           low-rank adapters: apply/merge/save, and a merge CLI
 │
 │   evaluation
 ├── eval_bench.py     bits/byte for any checkpoints on one shared held-out file
@@ -213,6 +214,22 @@ and `.pt.last` to a new name first so the original stays put.
 long runs with `--resume` in mind. On the RTX 5070 Ti the combo preset runs
 ~10k tok/s: 36k steps at batch 8 × 512 is four hours, and the coder plan's
 700k steps is three and a half days, which is what `--stop-at` is for.
+
+**LoRA** (`lora.py`, `finetune.py --lora`) freezes the checkpoint and trains
+a rank-r correction on the attention projections: `W + (alpha/r)·B·A`, B
+initialised to zero so step 0 is the base model to float noise. 1.5M
+trainable of 397.7M at r=16, a 6 MB adapter instead of a 1.6 GB checkpoint,
+and no `--grad-ckpt` needed on 8 GB. `python lora.py merge <adapter> <out>`
+folds it back into an ordinary checkpoint.
+
+Two things worth knowing before trusting an adapter. The experts are **not**
+adapted by default -- 24 experts x 19 layers is 1,368 adapters, most of which
+see a fraction of the tokens -- so `--lora-targets` exists if you want to try.
+And the aux-loss-free balancer's `expert_bias` is a *buffer*: it has no
+gradient, LoRA does not freeze it, and it keeps moving every step. Merging
+adapters into a pristine base would therefore restore the base's routing and
+quietly change which experts a token reaches, so the adapter carries the bias
+and `merge` restores it. A test holds the merged model to the trained one.
 
 **Fine-tuning** (`finetune.py`) reuses all of the above — same optimizer
 split, cosine, bf16, grouped dispatch, `--resume` / `--stop-at` — on a

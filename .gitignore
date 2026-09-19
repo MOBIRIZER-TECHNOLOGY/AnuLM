@@ -39,3 +39,4 @@ release/
 !data/
 data/*
 !data/*.json
+sweep/

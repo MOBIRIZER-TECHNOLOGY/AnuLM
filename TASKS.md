@@ -376,7 +376,7 @@ not held out if the file went into the mix whole.
 <!-- live-status -->
 ## Live status
 
-Written 2026-09-19 10:13 by `update_tasks.py`. **No training process running**; GPU: 0 MiB, 16303 MiB, 0 %.
+Written 2026-09-19 11:13 by `update_tasks.py`. A training process is running; GPU: 3704 MiB, 16303 MiB, 0 %.
 
 | checkpoint (`.last`) | step | val loss | best val | saved |
 | --- | --- | --- | --- | --- |
