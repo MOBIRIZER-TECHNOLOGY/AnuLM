@@ -193,7 +193,8 @@ For a Gradio interface:
 
 ```bash
 pip install gradio huggingface_hub
-python app.py                                              # the picker: all four, loaded on demand
+python app.py                                              # the picker: all five, loaded on demand
+python app.py --host 0.0.0.0                               # ... and reachable from another device on the same network
 python app.py --ckpt ckpt_coder_sft.pt                     # or preselect your own checkpoint
 ANULM_REPO=toonist/AnuLM-Coder-400M python app.py       # or preselect one from the Hub
 ```

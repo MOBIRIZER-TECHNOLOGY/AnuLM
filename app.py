@@ -4,6 +4,7 @@ Gradio front end for AnuLM: a laptop demo, a Colab cell, or a Hugging Face Space
     pip install gradio huggingface_hub
     python app.py                                        # the picker, nothing loaded yet
     python app.py --ckpt ckpt_coder_sft.pt               # a .pt or an exported folder
+    python app.py --host 0.0.0.0                         # reachable from your phone on the same wifi
     ANULM_REPO=toonist/AnuLM-Coder-400M python app.py    # download the weights from the Hub first
 
 The page holds all four released checkpoints in a dropdown and loads one on
@@ -228,6 +229,9 @@ def main() -> None:
     p.add_argument("--ckpt", default=None, help="a .pt or an exported folder to preload")
     p.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     p.add_argument("--port", type=int, default=int(os.environ.get("PORT", 7860)))
+    p.add_argument("--host", default=None,
+                   help="0.0.0.0 to reach it from other devices on the same network; "
+                        "the default binds to this machine only")
     p.add_argument("--share", action="store_true")
     args = p.parse_args()
 
@@ -248,9 +252,18 @@ def main() -> None:
             MODELS[label] = repo
             initial = label
 
-    build(loader, initial).launch(
-        server_name="0.0.0.0" if os.environ.get("SPACE_ID") else "127.0.0.1",
-        server_port=args.port, share=args.share)
+    host = args.host or ("0.0.0.0" if os.environ.get("SPACE_ID") else "127.0.0.1")
+    if host == "0.0.0.0":
+        import socket
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:                                # the address other devices should use
+            s.connect(("8.8.8.8", 80))
+            print(f"\n  on this network:  http://{s.getsockname()[0]}:{args.port}\n")
+        except OSError:
+            pass
+        finally:
+            s.close()
+    build(loader, initial).launch(server_name=host, server_port=args.port, share=args.share)
 
 
 if __name__ == "__main__":
