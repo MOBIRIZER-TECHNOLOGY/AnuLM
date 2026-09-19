@@ -48,6 +48,7 @@ models.
 | [27](#27-the-released-400m-past-its-training-length-zero-shot) | the 400M base at 2x and 4x its training length, no retraining | it degrades 0.13, not 1.5; YaRN buys 0.028 at 4x, all of it at the far end |
 | [28](#28-training-at-2048-what-it-actually-bought) | continuing that base at 2,048 with YaRN for 10,000 steps | better everywhere, but zero-shot YaRN had already bought most of the *context* |
 | [29](#29-lora-against-a-full-fine-tune-at-398m) | is LoRA the right way to fine-tune a model this small? | it works, and at 398M full fine-tuning is still the better default |
+| [30](#30-four-thousand-prompts-through-the-serving-path) | what the released models do over 4,131 real prompts | no crashes, no empty replies, and the base degenerates on 81% of greedy continuations |
 
 ---
 
@@ -2178,3 +2179,93 @@ One caveat on reading these numbers: a single epoch on 17k pairs is a small
 fine-tune, and the gap between LoRA and a full pass may narrow with more
 data -- §20 and §23 tuned on 56k and 37.5k pairs respectively. What the
 table settles is the shape of the trade at this scale, not its limit.
+
+---
+
+## 30. Four thousand prompts through the serving path
+
+Every section above scores a model on a metric. This one asks what the
+*serving code* does when it is used a lot, because a benchmark harness and
+the thing behind the demo page are different programs, and only one of them
+had ever been run four thousand times.
+
+`tools_sweep.py` drives `serve.Engine` -- the same object `serve.py` and
+`app.py` use, with the same templates, stop rules and decoding -- over every
+prompt in three real sets, and records every reply:
+
+| | prompts | source |
+| --- | --- | --- |
+| code | 1,138 | MBPP full (974) + HumanEval (164), asked as prose or continued |
+| translate | 2,024 | FLORES-200 devtest, both directions |
+| continue | 969 | the opening line of each held-out document, three languages |
+
+Greedy, temperature 0.2, 96 tokens, on one RTX 5070 Ti. Two hours.
+
+| | errors | empty | stopped at EOS | repeated 4-grams | degenerate | ms/reply |
+| --- | --- | --- | --- | --- | --- | --- |
+| code | **0** | **0** | 85.6% | 4.7% | 2.9% | 1,942 |
+| translate | **0** | **0** | 98.5% | 1.8% | 1.2% | 1,108 |
+| continue | **0** | **0** | 3.0% | 66.9% | **81.2%** | 2,966 |
+
+"Degenerate" is a reply whose 4-grams are more than half repeats.
+
+**Nothing crashed and nothing came back empty**, across 4,131 generations,
+three tokenizers, three checkpoints and both scripts. That is the result
+worth having from a sweep: an empty reply and a wrong reply score the same
+on pass@1, and neither shows up in a bits/byte number at all.
+
+### The serving path gives the same answer as the evaluation path
+
+Scoring the 2,024 translations with the same chrF the benchmark uses:
+
+| | this sweep, via `serve.Engine` | §24, via `eval_translate.py` |
+| --- | --- | --- |
+| English → Hindi | 41.7 | 41.5 |
+| Hindi → English | 43.7 | 43.4 |
+
+Within 0.3 chrF of the published numbers, on all 1,012 sentences per
+direction. The two paths differ in real ways -- the server picks the
+direction from the script, caps the temperature and cuts at the end of the
+first sentence -- so agreeing this closely says the number a visitor gets
+from the demo is the number in this file. Nothing had checked that before.
+
+### The base model degenerates on four continuations in five
+
+81.2% is a large number and it deserves the caveat that goes with it: it is
+**greedy decoding with no repetition penalty**, which is the worst case, and
+it is the setting the sweep used because it is what the benchmark numbers in
+§24 and §25 were measured with. Re-running the same 250 prompts the way the
+demo actually suggests:
+
+| decoding | stopped on its own | repeated 4-grams | degenerate |
+| --- | --- | --- | --- |
+| greedy, no penalty | 2.8% | 67.2% | **80.8%** |
+| temperature 0.8, penalty 1.3 | 18.8% | 16.3% | **12.4%** |
+
+Six and a half times less degeneration for two settings. So the honest
+statement is not "the base model loops" but "**greedy free continuation at
+398M loops, and sampling with a repetition penalty mostly fixes it**" --
+which is why `app.py` carries a repetition-penalty slider and says so on the
+page, and why `serve.py` has always applied 1.3 in question mode.
+
+The instruction-tuned models barely have the problem at all: the coder
+degenerates on 2.9% of replies and the translator on 1.2%, because both were
+tuned to produce an answer and stop. Fine-tuning does not just teach the
+task, it teaches termination -- 85.6% and 98.5% of their replies end on EOS
+against the base's 3.0%.
+
+### The replies are kept
+
+`sweep/<segment>.jsonl` holds every prompt and reply. `tools_samples.py`
+selects from them for `docs/SAMPLES.md` and the demo page, choosing the
+replies **nearest the median repetition** among those that stopped on their
+own -- typical output rather than the best in the file -- and the aggregate
+numbers above travel with the samples so a reader can see what was filtered
+out. The first sample it picked for the coder is clean, commented Python
+that does not sort the matrix it claims to sort, which is a fair portrait of
+a 398M model and would never have survived hand-picking.
+
+```bash
+python tools_sweep.py --device cuda            # resumable; run_sweep.cmd for a long one
+python tools_samples.py                        # -> docs/samples.json, docs/SAMPLES.md
+```

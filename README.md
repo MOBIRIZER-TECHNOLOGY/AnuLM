@@ -115,6 +115,7 @@ CPU wheel silently reports cuda unavailable.
 | [docs/DEVELOPING.md](docs/DEVELOPING.md) | Setup, layout, testing, how to extend, known gaps and gotchas. |
 | [TODO.md](TODO.md), [CONTRIBUTING.md](CONTRIBUTING.md) | Open work, ordered by usefulness and labelled by whether it needs a GPU, and how to contribute a measured change. |
 | [docs/PUBLISHING.md](docs/PUBLISHING.md) | How this is released: licences per artefact, weight export to safetensors, Hugging Face upload, Zenodo DOI, the Space. |
+| [docs/SAMPLES.md](docs/SAMPLES.md) | What the released models actually produced on 4,131 held-out prompts, selected by rule rather than by eye, with the aggregate numbers beside them (§30). |
 | [docs/ANNOUNCEMENT.md](docs/ANNOUNCEMENT.md) | Post drafts for LinkedIn and X, with a table giving the source of every number in them and honest answers to the questions a reader will ask. |
 | [docs/TRANSLATE_PLAN.md](docs/TRANSLATE_PLAN.md), [docs/CODER_PLAN.md](docs/CODER_PLAN.md) | The two demo plans, with status: both finished. Translation is scored on FLORES-200; the coder ran its 700k steps, was instruction-tuned, and is served by `serve.py`. |
 | [experiments/README.md](experiments/README.md) | One script per results section from §9 on, and how to resume the long ones. |

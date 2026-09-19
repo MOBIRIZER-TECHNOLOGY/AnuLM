@@ -182,7 +182,7 @@ def run_segment(name: str, args) -> dict:
     engine = Engine(str(HERE / local) if (HERE / local).is_dir() else repo, args.device)
 
     OUT.mkdir(exist_ok=True)
-    path = OUT / f"{name}.jsonl"
+    path = OUT / f"{name}{args.tag}.jsonl"
     done = done_ids(path)
     if done:
         prompts = [p for p in prompts if p["id"] not in done]
@@ -250,6 +250,9 @@ def main() -> int:
     p.add_argument("--limit", type=int, help="prompts per segment; default is all of them")
     p.add_argument("--max-tokens", type=int, default=120)
     p.add_argument("--temperature", type=float, default=0.2)
+    p.add_argument("--tag", default="",
+                   help="suffix for the output file, so a second run with different "
+                        "decoding settings does not resume into the first one's results")
     p.add_argument("--penalty", action="store_true",
                    help="apply the 1.3 repetition penalty to the continue segment")
     args = p.parse_args()

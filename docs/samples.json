@@ -1,0 +1,212 @@
+{
+ "code": {
+  "title": "Writing Python",
+  "blurb": "Asked in prose, from MBPP and HumanEval. The model writes the whole function.",
+  "stats": {
+   "prompts": 1138,
+   "errors": 0,
+   "empty": 0,
+   "stopped_pct": 85.6,
+   "rep4_mean_pct": 4.7,
+   "ms_mean": 1942
+  },
+  "samples": [
+   {
+    "prompt": "Write a function to sort a given matrix in ascending order according to the sum of its rows.",
+    "completion": " def sort_matrix(matrix):\n    # Initialize the sum of rows to 0\n    total_rows = 0\n    \n    # Iterate through each row in the matrix\n    for row in matrix:\n        # Add the row to the total sum\n        total_rows += row\n        \n        # Increment the row count by 1\n        row += 1\n    \n    # Return the sorted matrix\n    return matrix",
+    "source": "mbpp",
+    "tokens": 61,
+    "seconds": 4.02
+   },
+   {
+    "prompt": "Write a python function to find the volume of a triangular prism.",
+    "completion": " def find_triangle_volume(prism):\n    volume = 0\n    for row in prism:\n        for col in row:\n            volume += col\n    return volume",
+    "source": "mbpp",
+    "tokens": 31,
+    "seconds": 2.04
+   },
+   {
+    "prompt": "Write a function to split a string at lowercase letters.",
+    "completion": " def split_string(s):\n    return s.lower().split()",
+    "source": "mbpp",
+    "tokens": 9,
+    "seconds": 0.6
+   },
+   {
+    "prompt": "Write a function to find sequences of lowercase letters joined with an underscore.",
+    "completion": " def find_sequences(sequence):\n    sequence = sequence.lower()\n    sequences = []\n    for char in sequence:\n        if char == '_':\n            sequences.append(char)\n    return sequences",
+    "source": "mbpp",
+    "tokens": 33,
+    "seconds": 2.18
+   },
+   {
+    "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n",
+    "completion": "\n    for i in range(len(numbers)):\n        for j in range(i+1, len(numbers)):\n            if abs(numbers[i] - numbers[j]) < threshold and abs(numbers[j] - numbers[i]) < threshold:\n                return True\n    return False",
+    "source": "humaneval",
+    "tokens": 37,
+    "seconds": 1.89
+   },
+   {
+    "prompt": "from typing import List\n\n\ndef below_zero(operations: List[int]) -> bool:\n    \"\"\" You're given a list of deposit and withdrawal operations on a bank account that starts with\n    zero balance. Your task is to detect if at any point the balance of account fallls below zero, and\n    at that point function should return True. Otherwise it should return False.\n    >>> below_zero([1, 2, 3])\n    False\n    >>> below_zero([1, 2, -4, 5])\n    True\n    \"\"\"\n",
+    "completion": "\n    for operation in operations:\n        if operation < 0:\n            return True\n    return False",
+    "source": "humaneval",
+    "tokens": 14,
+    "seconds": 0.42
+   },
+   {
+    "prompt": "from typing import List\n\n\ndef intersperse(numbers: List[int], delimeter: int) -> List[int]:\n    \"\"\" Insert a number 'delimeter' between every two consecutive elements of input list `numbers'\n    >>> intersperse([], 4)\n    []\n    >>> intersperse([1, 2, 3], 4)\n    [1, 4, 2, 4, 3]\n    \"\"\"\n",
+    "completion": " \n    result = []\n    for i in range(len(numbers) - 1):\n        result.append(numbers[i] + numbers[i + 1])\n    return result",
+    "source": "humaneval",
+    "tokens": 23,
+    "seconds": 0.68
+   },
+   {
+    "prompt": "from typing import List, Tuple\n\n\ndef sum_product(numbers: List[int]) -> Tuple[int, int]:\n    \"\"\" For a given list of integers, return a tuple consisting of a sum and a product of all the integers in a list.\n    Empty sum should be equal to 0 and empty product should be equal to 1.\n    >>> sum_product([])\n    (0, 1)\n    >>> sum_product([1, 2, 3, 4])\n    (10, 24)\n    \"\"\"\n",
+    "completion": " \n    result = (0, 1)\n    for num in numbers:\n        result = (result[0] + result[1], result[0] * result[1])\n    return result",
+    "source": "humaneval",
+    "tokens": 25,
+    "seconds": 0.87
+   }
+  ]
+ },
+ "translate": {
+  "title": "Translating",
+  "blurb": "FLORES-200 devtest, both directions. The direction is picked from the script.",
+  "stats": {
+   "prompts": 2024,
+   "errors": 0,
+   "empty": 0,
+   "stopped_pct": 98.5,
+   "rep4_mean_pct": 1.8,
+   "ms_mean": 1108
+  },
+  "samples": [
+   {
+    "prompt": "\"We now have 4-month-old mice that are non-diabetic that used to be diabetic,\" he added.",
+    "completion": "उन्होंने कहा, ‘‘हमारे पास अब 4 महीने के माइनर हैं जो गैर-विविधता का उपयोग करने वाले गैर-विविधता का उपयोग करते हैं।",
+    "source": "flores",
+    "tokens": 35,
+    "seconds": 1.05
+   },
+   {
+    "prompt": "उन्होंने कहा “कि अब हमारे पास 4 महीने उम्र वाले चूहे हैं जिन्हें मधुमेह नहीं है जो मधुमेह के रोगी थे। ”",
+    "completion": "He said that now we have four months of old mice that are not diabetes that were the patients of diabetes.",
+    "source": "flores",
+    "tokens": 25,
+    "seconds": 0.75
+   },
+   {
+    "prompt": "Dr. Ehud Ur, professor of medicine at Dalhousie University in Halifax, Nova Scotia and chair of the clinical and scientific division of the Canadian Diabetes Association cautioned that the research is still in its early days.",
+    "completion": "मिलिफैक्स के दलहौजी विश्वविद्यालय में चिकित्सा के प्रोफेसर डॉ. एहूद उरे ने कोविड-19 के उपचार के लिए लीबिया के डिस्ट्रिक्ट विश्वविद्यालय में चिकित्सा और वैज्ञानिक प्रभाग की अध्यक्षता में इस बात की चेतावनी दी कि अनुसंधान अभी भी अपने शुरुआती दिनों में है।",
+    "source": "flores",
+    "tokens": 62,
+    "seconds": 1.98
+   },
+   {
+    "prompt": "Like some other experts, he is skeptical about whether diabetes can be cured, noting that these findings have no relevance to people who already have Type 1 diabetes.",
+    "completion": "कुछ अन्य विशेषज्ञों की तरह, वह इस बात से अवगत हैं कि क्या डायबिटीज की उपचार की जा सकती है, न कि यह कि इन निष्कर्षों में लोगों को कोई प्रासंगिकता नहीं है जो पहले से ही टाइप 1 मधुमेह के लिए हैं।",
+    "source": "flores",
+    "tokens": 53,
+    "seconds": 2.23
+   },
+   {
+    "prompt": "कुछ अन्य विशेषज्ञों की तरह, उन्हें इस बात पर संदेह है कि क्या मधुमेह को ठीक किया जा सकता है, यह देखते हुए कि इन निष्कर्षों की उन लोगों के लिए कोई प्रासंगिकता नहीं है जिन्हें पहले से ही टाइप 1 मधुमेह है.",
+    "completion": "Like some other experts they suspect that diabetes can be cured, given that there is no relevant relevance for those who have already been type 1 diabetes.",
+    "source": "flores",
+    "tokens": 34,
+    "seconds": 1.1
+   },
+   {
+    "prompt": "सोमवार को स्वीडिश अकादमी में साहित्य के लिए नोबेल समिति के स्थायी सचिव, सारा डेनियस, स्वीडन समिति में सेवरिज रेडियो पर एक रेडियो कार्यक्रम के दौरान सार्वजनिक रूप से घोषणा की, कि साहित्य में 2016 के नोबेल पुरस्कार जीतने को लेकर सीधे बॉब डायलन तक पहुँचने में असमर्थ होकर, अपने प्रयासों को छोड़ चुके थे.",
+    "completion": "The Nobel Committee on Culture at the University of Sweden on Monday announced that the public announcement on the success of the 2016 Nobel Prize, the Seshajani, was not unfulfilled to be the first to win the 2016 Nobel Prize.",
+    "source": "flores",
+    "tokens": 55,
+    "seconds": 1.63
+   },
+   {
+    "prompt": "Danius said, \"Right now we are doing nothing. I have called and sent emails to his closest collaborator and received very friendly replies. For now, that is certainly enough.\"",
+    "completion": "\"डैनियस ने कहा, \"\"आज हम कुछ नहीं कर रहे हैं और मैंने अपने करीबी सहयोगियों को ईमेल भेजा है और बहुत मित्राना जवाब दिया है।\"",
+    "source": "flores",
+    "tokens": 35,
+    "seconds": 1.04
+   },
+   {
+    "prompt": "डेनियस ने कहा, “फ़िलहाल हम कुछ नहीं कर रहे हैं. मैंने अपने साथ काम करने वाले लोगों को ईमेल भेजे हैं और उसने उनके फ्रेंडली जवाब भेजे हैं. अभी के लिए, बस इतना ही बताना चाहूँगा.”",
+    "completion": "\"\"\"There are no people at the moment, I have sent email to the people who work with me and have sent their friends.\"",
+    "source": "flores",
+    "tokens": 28,
+    "seconds": 1.65
+   }
+  ]
+ },
+ "continue": {
+  "title": "Continuing text",
+  "blurb": "The opening line of a held-out document, in Hindi, English or Python.",
+  "stats": {
+   "prompts": 969,
+   "errors": 0,
+   "empty": 0,
+   "stopped_pct": 3.0,
+   "rep4_mean_pct": 66.9,
+   "ms_mean": 2966
+  },
+  "samples": [
+   {
+    "prompt": "# ramcn/demo2/crowdsourcing/models.py\n\n",
+    "completion": "############################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################",
+    "source": "python",
+    "tokens": 96,
+    "seconds": 5.45
+   },
+   {
+    "prompt": "# njvack/ge-mri-rtafni/scanner-console/vendor/dicom/filereader.py\n\n",
+    "completion": "############################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################",
+    "source": "python",
+    "tokens": 96,
+    "seconds": 2.78
+   },
+   {
+    "prompt": "http://www.mdservices.nl/en/our-services/loyalty.html\n\n",
+    "completion": "Products and related services are available for sale in the United States. The following are the following:\nhttps://www.nl.com/en/our-services/loyalty.html\nhttps://www.nl.com/en/our-services/loyalty.html\nhttps://www.nl.com/en/our-services/loyalty.html\nhttps://www.nl.com/en/our-services/loyalty.html\nhttps://www.nl.com/en/our-services/",
+    "source": "english",
+    "tokens": 96,
+    "seconds": 2.78
+   },
+   {
+    "prompt": "विकिपीडिया:पृष्ठ हटाने हेतु चर्चा/फ़ाइलें/Dafan hote dariya 02-2.jpg\n\n",
+    "completion": "navbox:Navbox:Navbox:Navbox:Navbox:Navbox:Navbox:Navbox:Navbox:Navbox:Navbox:Navbox:Navbox:Navbox:Navbox:Navbox:Navbox:Navbox:Navbox:Navbox:Navbox:Navbox:Navbox:Navbox:",
+    "source": "hindi",
+    "tokens": 96,
+    "seconds": 2.81
+   },
+   {
+    "prompt": "महाराव शेखा\n\n",
+    "completion": "बीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबी के रूप में\n\nबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबी के रूप में\n\nबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबीबी",
+    "source": "hindi",
+    "tokens": 96,
+    "seconds": 2.75
+   },
+   {
+    "prompt": "http://liralustde.cba.pl/q5ne85md681-q.html\n\n",
+    "completion": "Q5ne85md691qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq",
+    "source": "english",
+    "tokens": 96,
+    "seconds": 2.74
+   },
+   {
+    "prompt": "# theheros/kbengine/kbe/res/scripts/common/Lib/importlib/test/builtin/test_loader.py\n\n",
+    "completion": "############################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################",
+    "source": "python",
+    "tokens": 96,
+    "seconds": 2.77
+   },
+   {
+    "prompt": "# credativ/gofer/src/gofer/agent/config.py\n\n",
+    "completion": "############################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################",
+    "source": "python",
+    "tokens": 96,
+    "seconds": 2.76
+   }
+  ]
+ }
+}
