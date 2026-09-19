@@ -15,13 +15,14 @@ models:
   - toonist/AnuLM-Translate-400M
   - toonist/AnuLM-Hindi-QA-400M
   - toonist/AnuLM-Base-400M
+  - toonist/AnuLM-Base-2K-400M
 ---
 
 # AnuLM demo
 
 A 398M-parameter mixture-of-experts language model (174M active per
 token) in the shape of Sarvam 30B, trained from scratch on one consumer
-GPU. The page holds all four models below in a dropdown and loads one on
+GPU. The page holds all five models below in a dropdown and loads one on
 demand, one at a time, on the free CPU tier at a few tokens per second. Set
 the Space variable `ANULM_REPO` to preselect one; without it the page opens
 on the picker with nothing loaded, which costs nothing until someone

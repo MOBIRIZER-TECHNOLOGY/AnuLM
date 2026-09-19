@@ -6,10 +6,12 @@
 mixture-of-experts language model carrying Sarvam 30B / 105B's
 architecture, distilled from a line-by-line study of their released code,
 and trained from scratch on one consumer GPU for Hindi, English and Python.
-It ships the code, the data recipes, the experiment log, and four
+It ships the code, the data recipes, the experiment log, and five
 checkpoints: a Python coder (MBPP 12.5% pass@1), an English ↔ Hindi
 translator (chrF 41.5 / 43.4 on FLORES-200), a Hindi/English question
-answerer, and the three-language base the last two were fine-tuned from.
+answerer, the three-language base the last two were fine-tuned from, and that
+base continued at a 2,048-token context (§28 — better everywhere, though the
+long-context part of it was mostly free).
 `docs/MODEL_CARD.md` is the one-page summary of the coder, and there is a
 card per checkpoint beside it; `CITATION.cff` says how to cite the project.
 
@@ -19,6 +21,7 @@ card per checkpoint beside it; `CITATION.cff` says how to cite the project.
 | English ↔ Hindi translator | [toonist/AnuLM-Translate-400M](https://huggingface.co/toonist/AnuLM-Translate-400M) | CC BY-NC 4.0 |
 | Hindi / English question answerer | [toonist/AnuLM-Hindi-QA-400M](https://huggingface.co/toonist/AnuLM-Hindi-QA-400M) | CC BY-SA 4.0 |
 | three-language base | [toonist/AnuLM-Base-400M](https://huggingface.co/toonist/AnuLM-Base-400M) | CC BY-SA 4.0 |
+| the same base at 2,048 tokens | [toonist/AnuLM-Base-2K-400M](https://huggingface.co/toonist/AnuLM-Base-2K-400M) | CC BY-SA 4.0 |
 
 A fifth repo, [toonist/AnuLM-Smoke-30B](https://huggingface.co/toonist/AnuLM-Smoke-30B),
 is not a model to use: it is a 17M checkpoint trained for 200 steps on
@@ -104,7 +107,7 @@ CPU wheel silently reports cuda unavailable.
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | How Sarvam 30B/105B are built — MLA, GQA, sparse MoE, aux-loss-free routing, YaRN — and (§10) which of those choices held up when rebuilt and trained at nano scale. The research output. |
 | [docs/RESULTS.md](docs/RESULTS.md) | Every experiment run here, with numbers: §1–21 the Hindi ladder, §22 three languages, §23 question answering in all three, §24 English ↔ Hindi translation (chrF 41.5 / 43.4 on FLORES-200), §25 the Python coder, finished: MBPP 12.5%, HumanEval 4.9%. |
 | [docs/MODEL_CARD.md](docs/MODEL_CARD.md) | The finished Python coder on one page: every data source with its size and share, the architecture as read from the checkpoint, the training run, the benchmark numbers with the prompt mode that produced each, and how to try it. |
-| The other three cards: [base](docs/MODEL_CARD_BASE.md), [question answerer](docs/MODEL_CARD_HINDI_QA.md), [translator](docs/MODEL_CARD_TRANSLATE.md) | One page each — what the checkpoint does and does not do, its data and licence, its numbers, how to run it. `export_hf.py` copies these into the Hugging Face repos, so the card on the Hub and the card here are the same file. |
+| The other cards: [base](docs/MODEL_CARD_BASE.md), [base at 2K](docs/MODEL_CARD_BASE2K.md), [question answerer](docs/MODEL_CARD_HINDI_QA.md), [translator](docs/MODEL_CARD_TRANSLATE.md) | One page each — what the checkpoint does and does not do, its data and licence, its numbers, how to run it. `export_hf.py` copies these into the Hugging Face repos, so the card on the Hub and the card here are the same file. |
 | [docs/TUTORIAL.md](docs/TUTORIAL.md) | From a fresh machine to your own AnuLM: install, a first model in 20 min on CPU, then every real run in order with the time, disk, GPU and expected number for each. Start here. |
 | [docs/DATASETS.md](docs/DATASETS.md) | Every data source with its link, licence, size, the script that fetches it and the checkpoint that used it; which licence each released checkpoint inherits. |
 | [docs/DEVELOPING.md](docs/DEVELOPING.md) | Setup, layout, testing, how to extend, known gaps and gotchas. |

@@ -50,6 +50,7 @@ verify on the source before any use beyond research.
 | checkpoint | pretraining data | tuning data | released as |
 | --- | --- | --- | --- |
 | `ckpt_multi36k` (AnuLM-Base-400M) | Hindi Wikipedia + Wikisource, English Wikipedia + C4, codeparrot-clean | — | CC BY-SA 4.0 |
+| `ckpt_ctx2k` (AnuLM-Base-2K-400M) | as the base, then continued at 2,048 on a fresh Hindi Wikipedia + C4 + codeparrot mix (§28) | — | CC BY-SA 4.0 |
 | `ckpt_multi_qa` (AnuLM-Hindi-QA-400M) | as the base | Wikipedia question pairs, docstring pairs | CC BY-SA 4.0 |
 | `ckpt_translate` (AnuLM-Translate-400M) | as the base | Samanantar + IIT Bombay | CC BY-NC 4.0, research only |
 | `ckpt_coder`, `ckpt_coder_sft` (AnuLM-Coder-400M) | codeparrot-clean, code_exercises, fineweb-edu, Hindi mix | code_exercises, OpenCodeInstruct, glaive, docstring pairs | CC BY-NC-SA 4.0 |

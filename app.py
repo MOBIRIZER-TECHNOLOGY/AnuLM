@@ -49,6 +49,7 @@ MODELS = {
     "Translator — English ↔ Hindi (chrF 41.5 / 43.4)": "toonist/AnuLM-Translate-400M",
     "Question answerer — Hindi, English, Python": "toonist/AnuLM-Hindi-QA-400M",
     "Base — continues text in three languages": "toonist/AnuLM-Base-400M",
+    "Base 2K — the same, at a 2,048-token context": "toonist/AnuLM-Base-2K-400M",
 }
 
 MODES = {"coder": ["question", "continue"], "translate": ["translate", "continue"],

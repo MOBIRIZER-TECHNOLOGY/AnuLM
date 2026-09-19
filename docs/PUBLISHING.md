@@ -12,7 +12,7 @@ by itself.
 | code, docs, recipes on GitHub | **done**: https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM, public, branch `main`, tag and release `v0.1.0` |
 | commit identity | GitHub no-reply address; no personal e-mail in history |
 | weights exported | **done**: four safetensors folders, 0.8 GB each, in `release/` (gitignored) |
-| weights on Hugging Face | **done**: toonist/AnuLM-Coder-400M, -Translate-400M, -Hindi-QA-400M, -Base-400M, each with its model card |
+| weights on Hugging Face | **done**: toonist/AnuLM-Coder-400M, -Translate-400M, -Hindi-QA-400M, -Base-400M, and -Base-2K-400M (2026-09-19), each with its model card |
 | training data | **not uploaded, by design**: every corpus is re-fetched from its public source by the scripts; `docs/DATASETS.md` links each one with its licence |
 | Zenodo DOI | open: enable the repository at https://zenodo.org/account/settings/github/ and re-publish the release, or publish v0.1.1 |
 | hosted demo | Gradio Spaces need a PRO subscription (API returns 402 on free cpu-basic, 2026-09); `app.py` + `space/` are ready if that changes. `demo_colab.ipynb` is the free hosted route and is linked from the README |
@@ -106,6 +106,9 @@ python export_hf.py ckpt_multi_qa.pt release/AnuLM-Hindi-QA-400M \
     --license cc-by-sa-4.0 --card docs/MODEL_CARD_HINDI_QA.md --base-model toonist/AnuLM-Base-400M --repo toonist/AnuLM-Hindi-QA-400M
 python export_hf.py ckpt_multi36k.pt release/AnuLM-Base-400M \
     --license cc-by-sa-4.0 --card docs/MODEL_CARD_BASE.md --repo toonist/AnuLM-Base-400M
+python export_hf.py ckpt_ctx2k.pt release/AnuLM-Base-2K-400M \
+    --license cc-by-sa-4.0 --card docs/MODEL_CARD_BASE2K.md \
+    --base-model toonist/AnuLM-Base-400M --repo toonist/AnuLM-Base-2K-400M
 python serve.py --ckpt release/AnuLM-Coder-400M      # check an export loads and answers before uploading
 ```
 
@@ -125,8 +128,8 @@ python sample.py --ckpt release/AnuLM-Smoke-30B --prompt "KING RICHARD II:" --to
 only copies of those weights outside the Hub; the training rig that held
 their `.pt` files is gone.
 
-The four cards are `docs/MODEL_CARD.md` (coder), `MODEL_CARD_TRANSLATE.md`,
-`MODEL_CARD_HINDI_QA.md` and `MODEL_CARD_BASE.md`. All four exports were
+The cards are `docs/MODEL_CARD.md` (coder), `MODEL_CARD_TRANSLATE.md`,
+`MODEL_CARD_HINDI_QA.md`, `MODEL_CARD_BASE.md` and `MODEL_CARD_BASE2K.md`. All four exports were
 produced on 2026-09-18 into `release/` (0.8 GB each, gitignored) and each
 was loaded back and generated from before being kept.
 
