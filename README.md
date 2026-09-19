@@ -43,6 +43,8 @@ per-expert bias decides which experts fire, and rounding it to bfloat16
 changes that and collapses the output into repeated tokens. `modeling_anulm.py`
 warns if you force a 16-bit dtype.
 
+![AnuLM-Coder-400M writing a primality test in the demo](docs/media/demo-coder-1280.png)
+
 Try it without installing anything: open
 [demo_colab.ipynb in Colab](https://colab.research.google.com/github/MOBIRIZER-TECHNOLOGY/AnuLM/blob/main/demo_colab.ipynb),
 run the three cells, pick a checkpoint, and a public link to the demo

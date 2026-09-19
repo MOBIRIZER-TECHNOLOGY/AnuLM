@@ -114,11 +114,32 @@ costs ~2.5 tokens per Devanagari *character*; the trained BPE gets 9.5
 draft of this post had the comparison inverted, which is the kind of error a
 commenter will find.
 
+## The image
+
+![The demo: AnuLM-Coder-400M writing is_prime](media/demo-coder-1280.png)
+
+`docs/media/demo-coder-1280.png` (1280 x 1039, good for a feed) and
+`demo-coder.png` (2x, for anywhere that wants it sharp). It is the real page
+answering a real prompt: the header names the checkpoint and its shape, and
+the output is a correct primality test the model wrote, square-root bound
+and all.
+
+Regenerate it after any change to the page, rather than keeping an old
+picture of a newer interface:
+
+```bash
+python app.py --port 7860 &
+python tools_screenshot.py docs/media/demo-coder.png
+```
+
+`tools_screenshot.py` drives the page in headless Chrome the way a visitor
+does -- picks the checkpoint, presses Load, types, presses Generate, waits
+for output -- and fails loudly if any of that stops working, so the image
+cannot quietly become a photograph of a broken page.
+
 ## Before posting
 
-- **Attach an image.** The easiest honest one is a screenshot of the Colab
-  demo mid-generation, or the results table in `README.md`. Posts with an
-  image reliably outperform plain text.
+- **Attach the image above.** Posts with one reliably outperform plain text.
 - **Check the links resolve** — all nine in `README.md` were live when this
   was written, including the five Hugging Face repos and the Colab link.
 - **Keep the disclaimers.** "Not affiliated with Sarvam AI" and "it invents
