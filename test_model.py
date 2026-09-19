@@ -879,6 +879,36 @@ def the_demo_page_offers_the_right_modes_for_each_checkpoint():
     loader = app.Loader("cpu")
     assert loader.engine is None and loader.source is None
 
+    # The header must name the model, not the directory it was downloaded to.
+    # snapshot_download returns .../snapshots/<commit sha>, and Engine takes a
+    # checkpoint's name from its path, so the page showed a 40-character hash
+    # for every model loaded from the Hub until Loader overrode it.
+    import json, tempfile, dataclasses
+    from pathlib import Path as P
+    try:
+        from safetensors.torch import save_file
+    except ImportError:
+        return
+    # 259 = the byte vocabulary (256 bytes + BOS/EOS/PAD). Engine warms itself
+    # up by generating from a Devanagari prompt encoded as raw UTF-8 bytes, so
+    # a narrower vocab indexes off the end of the embedding.
+    cfg = tiny(tokenizer_path=None, vocab_size=259)
+    torch.manual_seed(0)
+    m = AnuLM(cfg).eval()
+    with tempfile.TemporaryDirectory() as d:
+        folder = P(d) / "snapshots" / "0123456789abcdef0123456789abcdef01234567"
+        folder.mkdir(parents=True)
+        save_file({k: v.contiguous() for k, v in m.state_dict().items()},
+                  str(folder / "model.safetensors"))
+        (folder / "config.json").write_text(json.dumps(
+            {"model_type": "anulm", "config": dataclasses.asdict(cfg), "step": 1}),
+            encoding="utf-8")
+        engine = loader.load(str(folder))
+        assert engine.info["ckpt"] == str(folder), engine.info["ckpt"]
+        assert app.header_for(engine).startswith(f"**{folder}**")
+        # and the loader holds exactly this one
+        assert loader.source == str(folder) and loader.engine is engine
+
 
 @test
 def an_exported_folder_loads_everywhere_a_pt_does():

@@ -126,6 +126,10 @@ class Loader:
             from huggingface_hub import snapshot_download
             path = snapshot_download(source)
         self.engine = Engine(path, self.device)
+        # snapshot_download returns .../snapshots/<commit sha>, so Engine takes
+        # the sha as the checkpoint's name and the page header showed a hash
+        # for every model loaded from the Hub. Say what was asked for instead.
+        self.engine.info["ckpt"] = source
         self.source = source
         return self.engine
 
@@ -159,6 +163,11 @@ def build(loader: Loader, initial: str | None = None) -> gr.Blocks:
         with gr.Row():
             max_tokens = gr.Slider(10, 400, value=200, step=10, label="tokens")
             temperature = gr.Slider(0.1, 1.5, value=0.2, step=0.05, label="temperature")
+            # Default 1.0 -- no change -- because every number in the model
+            # cards was measured without it. Raise it when a base model starts
+            # repeating itself, which at 398M it will.
+            rep_penalty = gr.Slider(1.0, 1.6, value=1.0, step=0.05,
+                                    label="repetition penalty")
         run_btn = gr.Button("Generate", variant="primary")
         out = gr.Textbox(lines=10, label="output")
         meta = gr.Markdown()
@@ -179,25 +188,32 @@ def build(loader: Loader, initial: str | None = None) -> gr.Blocks:
         go_load.click(do_load, [picker], outputs)
         picker.change(lambda: gr.update(value="Press **Load** to switch."), None, [status])
 
-        def run(text, mode_label, n_tokens, temp, is_greedy):
+        def run(text, mode_label, n_tokens, temp, is_greedy, penalty):
             if loader.engine is None:
                 return "", "Nothing loaded — press **Load** first."
             engine = loader.engine
             kind = kind_of(engine.info)
             inv = {v: k for k, v in labels_for(kind).items()}
             m = inv.get(mode_label, "continue")
+            # The question mode's 1.3 is what eval_qa.py and serve.py use, so
+            # the page reproduces the cards; anything the user sets wins.
+            default_pen = 1.3 if (kind == "qa" and m == "question") else 1.0
             r = engine.generate(text, int(n_tokens), float(temp), 1 if is_greedy else 50, 1337,
                                 mode=m,
-                                repetition_penalty=1.3 if (kind == "qa" and m == "question") else 1.0)
+                                repetition_penalty=max(float(penalty), default_pen))
             note = f"{r['tokens']} tokens in {r['seconds']}s, mode {r['mode']}"
             if r["stopped_at_eos"]:
                 note += ", stopped at end of answer"
             return r["completion"], note
 
-        inputs = [prompt, mode, max_tokens, temperature, greedy]
+        inputs = [prompt, mode, max_tokens, temperature, greedy, rep_penalty]
         run_btn.click(run, inputs, [out, meta])
         prompt.submit(run, inputs, [out, meta])
         gr.Markdown(
+            "These are 398M base and fine-tuned models: they repeat themselves, especially "
+            "when continuing text. Raise the **repetition penalty** to about 1.2 when that "
+            "happens — it is left at 1.0 because every number in the model cards was "
+            "measured without it.\n\n"
             "Independent academic project, not affiliated with Sarvam AI, BharatGen, AI4Bharat "
             "or the Government of India. Every checkpoint invents things: run the code, check "
             "the facts. Licences and data are on each model card.")
