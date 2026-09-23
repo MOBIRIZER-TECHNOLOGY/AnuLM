@@ -130,6 +130,39 @@ def load_packed(path: str, tokenizer_path: str, block_size: int, eos: int, worke
     return x, y
 
 
+def append_curve(out: str, step: int, val: float) -> None:
+    """Append one eval point to `<out>_curve.csv`, straight away.
+
+    The curve is the most valuable artefact of a long run and stdout is the
+    worst place to keep it: a wrapper's `>>` handle, a restarted task or --
+    as happened here -- a pipe through an unbuffered-by-default `grep` can
+    leave the log empty for hours while the run is perfectly healthy.
+    update_tasks.save_curve already rebuilds curves from logs for exactly this
+    reason; writing the point at the moment it is measured means there is
+    nothing to rebuild. Rows already in the file are kept, so a resumed run
+    extends the curve instead of truncating it.
+    """
+    import csv
+    path = Path(f"{out}").with_suffix("")
+    path = path.with_name(path.name + "_curve.csv")
+    rows: dict[int, str] = {}
+    if path.exists():
+        try:
+            with path.open(encoding="utf-8", newline="") as f:
+                for r in csv.DictReader(f):
+                    rows[int(r["step"])] = r["val_loss"]
+        except (OSError, ValueError, KeyError):
+            rows = {}                        # a corrupt curve must not kill a run
+    rows[step] = f"{val:.4f}"
+    tmp = path.with_suffix(".csv.tmp")
+    with tmp.open("w", encoding="utf-8", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["step", "val_loss"])
+        for s in sorted(rows):
+            w.writerow([s, rows[s]])
+    tmp.replace(path)
+
+
 @torch.no_grad()
 def evaluate(model, x, y, batch_size, device, autocast) -> float:
     model.eval()
@@ -170,6 +203,11 @@ def main():
     p.add_argument("--stop-at", type=int, default=None,
                    help="end this invocation at this step after an eval and a <out>.last save")
     p.add_argument("--seed", type=int, default=1337)
+    p.add_argument("--speech", metavar="PREFIX",
+                   help="train on speech pairs from speech_data.py instead of --qa "
+                        "(the checkpoint must have been grown by speech_vocab.py)")
+    p.add_argument("--task", default="tts", choices=["tts", "asr"],
+                   help="with --speech: text->audio (tts) or audio->text (asr)")
     p.add_argument("--lora", action="store_true",
                    help="train low-rank adapters instead of all 398M parameters: "
                         "~0.4%% trainable, a few MB to keep, and it fits a small card")
@@ -201,8 +239,23 @@ def main():
     if args.grad_ckpt:
         model.enable_gradient_checkpointing()
 
-    x, y = load_packed(args.qa, cfg.tokenizer_path, cfg.block_size, tok.eos_id, args.workers)
-    hx, hy = load_packed(args.heldout, cfg.tokenizer_path, cfg.block_size, tok.eos_id, args.workers)
+    if args.speech:
+        # Speech pairs come pre-tokenised: the audio half is SNAC codes from
+        # speech_data.py, not anything the BPE could produce. Everything after
+        # this point -- packing, masking, the loop -- is the text path unchanged.
+        from speech_data import make_pairs
+        from speech_vocab import vocab_of
+        sv = vocab_of(ck)
+        pairs = make_pairs(args.speech, args.task, tok, sv)
+        if len(pairs) < 2:
+            raise SystemExit(f"only {len(pairs)} pairs in {args.speech}; encode more audio")
+        cut = max(1, int(len(pairs) * 0.02))          # a 2% held-out slice
+        x, y = pack(pairs[cut:], cfg.block_size, tok.eos_id)
+        hx, hy = pack(pairs[:cut], cfg.block_size, tok.eos_id)
+        print(f"speech: {len(pairs)} {args.task} pairs from {args.speech}")
+    else:
+        x, y = load_packed(args.qa, cfg.tokenizer_path, cfg.block_size, tok.eos_id, args.workers)
+        hx, hy = load_packed(args.heldout, cfg.tokenizer_path, cfg.block_size, tok.eos_id, args.workers)
     n_ans = int((y != -1).sum())
     print(f"train: {len(x)} rows of {cfg.block_size}, {n_ans/1e6:.2f}M answer tokens "
           f"({100 * n_ans / max(y.numel(), 1):.0f}% of positions)  |  held-out: {len(hx)} rows")
@@ -263,12 +316,18 @@ def main():
                   f"imbalance {imbalance:4.2f}x | {time.time() - t0:5.0f}s")
         if (step + 1) % args.eval_every == 0 or step == end - 1:
             val = evaluate(model, hx, hy, args.batch_size, args.device, args.autocast)
+            append_curve(args.out, step, val)
             flag = ""
             if val < best:
                 best = val
                 meta = {"cfg": replace(cfg, moe_impl=ck["cfg"].moe_impl), "step": step,
                         "val_loss": val, "qa_template": PROMPT, "qa_templates": PROMPTS,
                         "base_ckpt": args.ckpt}
+                # A grown checkpoint carries where its audio block starts, and
+                # without it the fine-tuned model cannot tell a SNAC code from
+                # a BPE token -- speech_vocab.vocab_of refuses to guess.
+                if ck.get("speech_text_vocab") is not None:
+                    meta["speech_text_vocab"] = ck["speech_text_vocab"]
                 if args.lora:
                     from lora import lora_state_dict, router_state_dict
                     # A few MB: the adapters, plus what they were trained on top
