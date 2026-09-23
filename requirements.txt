@@ -30,3 +30,37 @@ pyarrow>=15
 # Space front matter declares; locally anything from 5 on works.
 # gradio>=5
 # huggingface_hub>=0.30
+
+# Optional: the speech work (voice.py, audio_codec.py, speech_*.py,
+# eval_speech.py, app_voice.py). None of it is imported by the text training,
+# sampling or serving paths.
+#
+# The cascade demo -- Whisper hears, Piper speaks:
+# faster-whisper>=1.2
+# piper-tts>=1.8
+# sounddevice>=0.4          # only for voice.py --mic / --play
+#
+# The end-to-end path -- speech as tokens in the model's own vocabulary:
+# snac>=1.2                 # the neural audio codec, pure torch
+#
+# Vision (vision_encoder.py). Install these with --no-deps and a pinned
+# torchvision, or pip resolves a NEWER torch and replaces the +cu128 build:
+#   pip install --no-deps torchvision==0.26.0 timm pillow
+# torchvision 0.26 is the build that pairs with torch 2.11; it lands as
+# +cpu, which is fine because only timm's pure-torch ViT is used and it runs
+# on whatever device it is moved to.
+# torchvision==0.26.0
+# timm>=1.0
+# pillow>=10
+#
+# Deliberately absent: transformers. Mimi and the transformers Whisper would
+# both be reasonable choices, but on the training box Smart App Control blocks
+# scipy's unsigned _rigid_transform_cy.pyd and transformers imports scipy
+# through its object-detection loss, so every model class there fails. snac,
+# faster-whisper and piper-tts are pure torch or self-contained and survive.
+#
+# Two Windows traps, both handled in code but worth knowing:
+#   * ctranslate2 wants cublas64_12.dll, which the cu128 torch wheel ships in
+#     torch/lib without exporting it -- audio_codec.ensure_cuda_dlls() adds it.
+#   * `pip install torchvision` (or open_clip_torch) resolves a NEWER torch and
+#     will replace a pinned +cu128 build. Always --dry-run first.
