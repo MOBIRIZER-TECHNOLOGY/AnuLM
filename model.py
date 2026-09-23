@@ -766,7 +766,8 @@ class AnuLM(nn.Module):
         """One dict per layer; each attention module owns its own entries."""
         return [dict() for _ in self.layers]
 
-    def forward(self, idx, targets=None, cache: Optional[list] = None, start: int = 0):
+    def forward(self, idx, targets=None, cache: Optional[list] = None, start: int = 0,
+                embeds=None):
         """`cache` (from `new_cache()`) holds K/V for the `start` tokens already
         seen; this call attends to them and appends the new ones. Positions are
         absolute -- start..start+S-1 -- so RoPE agrees with the cached keys.
@@ -775,10 +776,18 @@ class AnuLM(nn.Module):
         regulariser; the regulariser alone is kept in `self.aux_loss` (detached)
         so the training log can report the two separately.
         """
-        B, S = idx.shape
+        # `embeds` bypasses the embedding table: (B, S, D) straight in. Audio
+        # and images arrive as continuous vectors from a frozen encoder, and
+        # there is no id to look up for them (speech_encoder.py). With embeds
+        # `idx` is ignored and may be None.
+        if embeds is not None:
+            B, S, _ = embeds.shape
+            x = embeds
+        else:
+            B, S = idx.shape
+            x = self.embed_tokens(idx)                            # (B, S, D)
         assert start + S <= self.cfg.block_size, \
             f"positions up to {start + S} exceed block_size {self.cfg.block_size}"
-        x = self.embed_tokens(idx)                                # (B, S, D)
         cos, sin = self.rotary(S, x.device, x.dtype, start=start)
         aux_total = None
         for i, layer in enumerate(self.layers):
