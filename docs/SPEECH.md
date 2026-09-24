@@ -217,6 +217,54 @@ model pay for ignoring the prompt is the real one.
 WER above 100% is not a bug: insertions count, and the model says more than it
 was asked to.
 
+## The second run: 20x the data (train-clean-100)
+
+100.58 h, 28,538 clips, 29.80M audio tokens, encoded in 9 minutes at 691x real
+time on a free GPU. 1,500 steps -- 0.27 of an epoch, so every step saw audio
+the model had never met, against dev-clean's eight passes over five hours.
+
+| | dev-clean (5 h, 8 epochs) | probe (100 h, 0.27 epochs) |
+| --- | --- | --- |
+| best held-out loss | 7.2663 @ step 1099 | **7.1067 @ step 1500** |
+| end of run | overfitting since 1099 | still improving |
+| TTS WER | 100.4% | **100.0%** |
+| stray non-audio tokens | 45 | 10 |
+| codes out of slot | not measured | 1,353 |
+| mean output rms | 0.0136 | **0.0049** |
+| inaudible clips (<0.005) | 30 / 50 | **39 / 50** |
+| real speech, for scale | | rms 0.0636 |
+
+**The loss improved and the audio got worse, and that is the finding.**
+
+Cross-entropy rewards hedging. Speech is a high-variance signal around
+near-silence, so the distributional average of audio codes is *quiet*: a model
+that is unsure lowers its loss by predicting the mean, and the mean is
+inaudible. Eight passes over dev-clean forced that model to commit to specific
+loud codes; 0.27 of an epoch never forced the probe to commit to anything, so
+it settled into the hedge -- better loss, ten times quieter, and 39 of 50
+clips below the threshold of audibility.
+
+So **held-out cross-entropy on audio tokens is not a proxy for audio quality**,
+and this project should stop reading it as one. The loudness columns above
+exist because the first three clips came back from Whisper as `(nothing)`
+rather than as the babble the previous run produced, which was the only reason
+anyone looked. `eval_speech.py` now reports mean rms and counts inaudible
+clips, so a quiet model cannot score well unnoticed again.
+
+Two smaller results. The `stray` count fell from 45 to 10, so more data does
+teach the model to stay inside the audio block. But `off_slot` -- 1,353 codes
+landing in the wrong slot of their frame across 50 clips -- says it still has
+not learned SNAC's 7-slot frame grammar, which is a different and more basic
+failure than not knowing the words.
+
+**What neither run was.** dev-clean converged on too little data; the probe saw
+plenty of data and converged on none of it. Neither is the experiment that
+settles whether this architecture can speak. That needs enough steps on the
+large corpus to force commitment -- 5 to 10 epochs of train-clean-100, roughly
+27,000 to 55,000 steps, 40 to 80 GPU-hours uncontended. That is a project, not
+a probe, and it should be started deliberately.
+
+
 ## Status
 
 Every stage runs end to end on real data. The pipeline is done; the model is
@@ -236,9 +284,14 @@ it:
   block-buffered `grep` left three hours of evals invisible until the process
   exited. It now appends each point to `<out>_curve.csv` as it is measured.
 
-Next: train-clean-100 (100.6 h, 28,539 clips, ~30M audio tokens, ~17 min to
-encode at the measured 363x real time). Fewer epochs, far more data, and a
-held-out set larger than the 12 rows this run used.
+train-clean-100 has now been run (above) and the answer was no: fewer epochs on
+far more data trades intelligibility for a better loss. The held-out set was
+raised to 5% (1,185 rows) via `--heldout-frac`, which is the one change from
+that plan worth keeping.
+
+Next is a decision rather than a command: either commit 40-80 GPU-hours to a
+converged run on train-clean-100, or accept that 232M active parameters is too
+small for this recipe and say so with the numbers above.
 
 ## Open questions
 

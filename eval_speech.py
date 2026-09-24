@@ -139,7 +139,8 @@ def eval_tts(ckpt: str, texts: list[str], judge: str = "small",
         Path(keep).mkdir(parents=True, exist_ok=True)
         import soundfile as sf
 
-    edits = length = stray = silent = off_slot = 0
+    edits = length = stray = silent = off_slot = quiet = 0
+    levels = []
     t0 = time.time()
     for i, text in enumerate(texts):
         audio, off_block = sm.speak(text, temperature=temperature)
@@ -151,6 +152,14 @@ def eval_tts(ckpt: str, texts: list[str], judge: str = "small",
             continue
         rate, wav = codec.decode(np.array(audio))
         off_slot += getattr(codec, "off_slot", 0)
+        # Loudness, because cross-entropy does not measure it and a model that
+        # hedges towards the mean emits inaudible noise while scoring *better*.
+        # Real LibriSpeech averages rms 0.064; below 0.005 nothing is audible
+        # and the WER is 100% for a reason that has nothing to do with words.
+        rms = float(np.sqrt((wav.astype(np.float64) ** 2).mean())) if wav.size else 0.0
+        levels.append(rms)
+        if rms < 0.005:
+            quiet += 1
         if keep:
             sf.write(str(Path(keep) / f"{i:04d}.wav"), wav, rate)
         heard = asr.hear((rate, wav))["text"]
@@ -160,7 +169,8 @@ def eval_tts(ckpt: str, texts: list[str], judge: str = "small",
             print(f"  [{i}] said     {text}")
             print(f"      heard    {heard or '(nothing)'}  ({wav.size/rate:.1f}s)")
     return {"wer": edits / max(length, 1), "clips": len(texts), "silent": silent,
-            "stray_tokens": stray, "off_slot": off_slot,
+            "stray_tokens": stray, "off_slot": off_slot, "quiet": quiet,
+            "rms": float(np.mean(levels)) if levels else 0.0,
             "seconds": round(time.time() - t0)}
 
 
@@ -239,6 +249,8 @@ def main() -> None:
         print(f"\nTTS  WER {r['wer']*100:.1f}%  over {r['clips']} clips  "
               f"({r['silent']} silent, {r['stray_tokens']} stray non-audio tokens, "
               f"{r['off_slot']} codes out of slot, {r['seconds']}s)")
+        print(f"     loudness: mean rms {r['rms']:.4f}, {r['quiet']} of {r['clips']} clips "
+              f"inaudible (<0.005); real speech averages 0.064")
     elif args.cmd == "asr":
         r = eval_asr(args.ckpt, args.prefix, args.limit)
         print(f"\nASR  WER {r['wer']*100:.1f}%  over {r['clips']} clips ({r['seconds']}s)")

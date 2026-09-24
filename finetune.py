@@ -208,6 +208,8 @@ def main():
                         "(the checkpoint must have been grown by speech_vocab.py)")
     p.add_argument("--task", default="tts", choices=["tts", "asr"],
                    help="with --speech: text->audio (tts) or audio->text (asr)")
+    p.add_argument("--heldout-frac", type=float, default=0.05,
+                   help="with --speech: fraction of pairs held out (default 0.05)")
     p.add_argument("--lora", action="store_true",
                    help="train low-rank adapters instead of all 398M parameters: "
                         "~0.4%% trainable, a few MB to keep, and it fits a small card")
@@ -249,7 +251,9 @@ def main():
         pairs = make_pairs(args.speech, args.task, tok, sv)
         if len(pairs) < 2:
             raise SystemExit(f"only {len(pairs)} pairs in {args.speech}; encode more audio")
-        cut = max(1, int(len(pairs) * 0.02))          # a 2% held-out slice
+        # 2% of a small corpus is a handful of rows and its loss is noise: the
+        # dev-clean run held out 12 rows and the curve's decimals meant nothing.
+        cut = max(1, int(len(pairs) * args.heldout_frac))
         x, y = pack(pairs[cut:], cfg.block_size, tok.eos_id)
         hx, hy = pack(pairs[:cut], cfg.block_size, tok.eos_id)
         print(f"speech: {len(pairs)} {args.task} pairs from {args.speech}")
