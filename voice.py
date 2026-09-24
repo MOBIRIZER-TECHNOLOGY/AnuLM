@@ -216,13 +216,15 @@ class Voice:
         self.max_say_chars = max_say_chars
 
     def reply(self, audio, max_tokens: int = 120, temperature: float = 0.3,
-              top_k: int = 40, seed: int = 0, mode: str | None = None) -> Reply:
+              top_k: int = 40, seed: int = 0, mode: str | None = None,
+              repetition_penalty: float = 1.0) -> Reply:
         h = self.asr.hear(audio)
         if not h["text"]:
             return Reply("", h["language"], "", 22_050, np.zeros(0, np.int16), "-",
                          {"hear": h["seconds"], "think": 0.0, "say": 0.0})
         mode = mode or mode_for(self.engine.info)
-        out = self.engine.generate(h["text"], max_tokens, temperature, top_k, seed, mode=mode)
+        out = self.engine.generate(h["text"], max_tokens, temperature, top_k, seed, mode=mode,
+                                   repetition_penalty=repetition_penalty)
         said = speakable(out["completion"], self.max_say_chars)
         t0 = time.time()
         rate, samples = self.tts.say(said) if said else (22_050, np.zeros(0, np.int16))
@@ -284,6 +286,9 @@ def main() -> None:
     p.add_argument("--top-k", type=int, default=40)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--max-say-chars", type=int, default=400)
+    p.add_argument("--repetition-penalty", type=float, default=1.0,
+                   help="a base checkpoint loops without this; serve.py's page "
+                        "offers it for the same reason. 1.15-1.3 is usually enough")
     args = p.parse_args()
 
     if args.say:                                 # the mouth on its own
@@ -305,7 +310,8 @@ def main() -> None:
 
     v = Voice(load_engine(args.ckpt), ASR(args.whisper), TTS(), args.max_say_chars)
     audio = record(args.seconds) if args.mic else args.wav
-    r = v.reply(audio, args.max_tokens, args.temperature, args.top_k, args.seed, args.mode)
+    r = v.reply(audio, args.max_tokens, args.temperature, args.top_k, args.seed, args.mode,
+                args.repetition_penalty)
     print(r.summary())
     if r.audio.size:
         print(f"-> {write_wav(args.out, r.rate, r.audio)}")
