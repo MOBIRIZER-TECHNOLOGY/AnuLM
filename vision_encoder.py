@@ -46,6 +46,7 @@ import sys
 import time
 from pathlib import Path
 
+import numpy as np
 import torch
 import torch.nn as nn
 
@@ -149,6 +150,91 @@ class VisionLanguage(nn.Module):
         return embeds, targets
 
 
+def prep_parquet(src: str, out_dir: str, manifest: str, limit: int | None = None) -> int:
+    """A Hugging Face image-caption parquet (or a directory of shards) -> jpgs
+    on disk plus a jsonl manifest, which is what the trainer already reads.
+
+    Images are written out rather than kept in memory because the tower is
+    frozen and the trainer re-reads each one every epoch. A caption set like
+    Flickr8k carries five captions per image, so five manifest rows point at
+    one file instead of five copies of the same pixels.
+    """
+    import glob as _glob
+    import io
+    import json as _json
+
+    import pyarrow.parquet as pq
+    from PIL import Image
+
+    src_p = Path(src)
+    shards = (sorted(src_p.glob("*.parquet")) if src_p.is_dir()
+              else sorted(Path(x) for x in _glob.glob(src)) or [src_p])
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    n_img = n_pair = 0
+    with open(manifest, "w", encoding="utf-8") as f:
+        for shard in shards:
+            pf = pq.ParquetFile(str(shard))
+            caps = [c for c in pf.schema_arrow.names if c.startswith("caption")] or ["text"]
+            for batch in pf.iter_batches(batch_size=32):
+                for r in batch.to_pylist():
+                    if limit and n_img >= limit:
+                        break
+                    img = r.get("image")
+                    raw = img.get("bytes") if isinstance(img, dict) else img
+                    if not raw:
+                        continue
+                    dest = out / f"{n_img:06d}.jpg"
+                    try:
+                        Image.open(io.BytesIO(raw)).convert("RGB").save(dest, quality=92)
+                    except Exception:
+                        continue
+                    for c in caps:
+                        text = (r.get(c) or "").strip()
+                        if text:
+                            f.write(_json.dumps({"image": str(dest.resolve()),
+                                                 "text": text}) + '\n')
+                            n_pair += 1
+                    n_img += 1
+                    if n_img % 500 == 0:
+                        print(f"  {n_img} images, {n_pair} pairs", flush=True)
+    print(f"{n_img} images, {n_pair} caption pairs -> {manifest}")
+    return n_pair
+
+
+def build_cache(rows, tower, path: str | Path, dtype="float16"):
+    """Encode every distinct image once into a memmap of (N, patches, dim).
+
+    The tower is frozen, so its output for a given image never changes and
+    re-encoding it every epoch is pure waste. Measured before this existed:
+    6.9 s/step at batch 16, almost all of it JPEG decode plus the ViT forward,
+    for a language-model step over 64 tokens. Flickr8k also gives five captions
+    per image, so the same pixels were being encoded five times per epoch.
+
+    Returns (memmap, {path: row}). At 196 x 768 float16 an image costs 301 kB,
+    so Flickr8k's 6,000 come to 1.8 GB on disk.
+    """
+    path = Path(path)
+    uniq = sorted({r["image"] for r in rows})
+    index = {p_: i for i, p_ in enumerate(uniq)}
+    probe = tower.encode(uniq[0])
+    shape = (len(uniq), probe.shape[0], probe.shape[1])
+    if path.exists() and path.stat().st_size == int(np.prod(shape)) * 2:
+        print(f"cache: reusing {path} {shape}")
+        return np.memmap(path, dtype=dtype, mode="r", shape=shape), index
+    print(f"cache: encoding {len(uniq)} images -> {path} {shape}")
+    mm = np.memmap(path, dtype=dtype, mode="w+", shape=shape)
+    t0 = time.time()
+    for i, img in enumerate(uniq):
+        mm[i] = tower.encode(img).cpu().numpy().astype(dtype)
+        if (i + 1) % 500 == 0:
+            rate = (i + 1) / max(time.time() - t0, 1e-6)
+            print(f"  {i + 1}/{len(uniq)}  {rate:.0f} img/s", flush=True)
+    mm.flush()
+    print(f"cache: built in {time.time() - t0:.0f}s")
+    return np.memmap(path, dtype=dtype, mode="r", shape=shape), index
+
+
 def load_manifest(path: str) -> list[dict]:
     """jsonl of {"image": ..., "text": ...}; relative paths resolve beside it."""
     p = Path(path)
@@ -168,16 +254,19 @@ def load_manifest(path: str) -> list[dict]:
 
 
 def batches(rows, tower: VisionTower, tok, vl: VisionLanguage, device: str,
-            batch_size: int, shuffle: bool = True, seed: int = 0):
-    import numpy as np
+            batch_size: int, shuffle: bool = True, seed: int = 0, cache=None):
     order = list(range(len(rows)))
     if shuffle:
         np.random.default_rng(seed).shuffle(order)
+    mm, index = cache if cache else (None, None)
     for i in range(0, len(order), batch_size):
         built = []
         for j in order[i: i + batch_size]:
             r = rows[j]
-            patches = tower.encode(r["image"]).to(device)
+            if mm is not None:
+                patches = torch.from_numpy(np.asarray(mm[index[r["image"]]])).float().to(device)
+            else:
+                patches = tower.encode(r["image"]).to(device)
             answer = tok.encode(" " + r["text"].strip()) + [tok.eos_id]
             built.append(vl.build(patches, answer))
         if not built:
@@ -193,10 +282,10 @@ def batches(rows, tower: VisionTower, tok, vl: VisionLanguage, device: str,
 
 
 @torch.no_grad()
-def evaluate(vl, rows, tower, tok, device, autocast) -> float:
+def evaluate(vl, rows, tower, tok, device, autocast, cache=None) -> float:
     vl.eval()
     tot = n = 0.0
-    for eb, tb in batches(rows, tower, tok, vl, device, 1, shuffle=False):
+    for eb, tb in batches(rows, tower, tok, vl, device, 1, shuffle=False, cache=cache):
         with autocast:
             _, loss = vl.model(None, tb, embeds=eb)
         k = int((tb != -1).sum())
@@ -204,6 +293,21 @@ def evaluate(vl, rows, tower, tok, device, autocast) -> float:
         n += k
     vl.train()
     return tot / max(n, 1)
+
+
+def save_vl(vl, model, ck, cfg, args, step, val, path):
+    """Write a checkpoint mid-run. A trainer that only saves at the end has no
+    answer to a crash, a pause, or a curiosity about step 1800 -- this run's
+    plateau could not be inspected because the only checkpoint was three hours
+    away."""
+    from dataclasses import replace
+
+    from train import atomic_save
+    atomic_save({"model": model.state_dict(), "proj": vl.proj.state_dict(),
+                 "cfg": replace(cfg, moe_impl=ck["cfg"].moe_impl),
+                 "speech_text_vocab": ck["speech_text_vocab"],
+                 "tower": args.tower, "pool": args.pool,
+                 "step": step, "val_loss": val, "base_ckpt": args.ckpt}, path)
 
 
 def train(args) -> None:
@@ -228,22 +332,30 @@ def train(args) -> None:
           f"{sum(p.numel() for p in vl.proj.parameters())/1e6:.2f}M params")
 
     rows = load_manifest(args.manifest)
+    cache = None
+    if args.cache:
+        cache = build_cache(rows, tower, args.cache)
     cut = max(1, int(len(rows) * 0.02))
     held, rows = rows[:cut], rows[cut:]
     steps = max(1, int(math.ceil(len(rows) / args.batch_size * args.epochs)))
     print(f"{len(rows)} images, {len(held)} held out, {steps} steps")
 
+    # fused=True on CUDA: one kernel for the whole step instead of a launch per
+    # parameter tensor. finetune.py has always logged "AdamW (fused)"; these two
+    # trainers were written without it and paid for the omission on a 456M model.
     opt = torch.optim.AdamW(
         [{"params": vl.proj.parameters(), "lr": args.proj_lr},
          {"params": model.parameters(), "lr": args.lr}],
-        weight_decay=0.1, betas=(0.9, 0.95))
+        weight_decay=0.1, betas=(0.9, 0.95), fused=dev.startswith("cuda"))
     autocast = (torch.autocast("cuda", dtype=torch.bfloat16)
                 if dev.startswith("cuda") else torch.autocast("cpu", enabled=False))
 
+    from finetune import append_curve
     vl.train()
-    step, t0 = 0, time.time()
+    step, t0, best = 0, time.time(), float("inf")
     for epoch in range(math.ceil(args.epochs)):
-        for eb, tb in batches(rows, tower, tok, vl, dev, args.batch_size, seed=args.seed + epoch):
+        for eb, tb in batches(rows, tower, tok, vl, dev, args.batch_size,
+                              seed=args.seed + epoch, cache=cache):
             if step >= steps:
                 break
             with autocast:
@@ -256,16 +368,25 @@ def train(args) -> None:
                 print(f"step {step:6d} | loss {loss.item():.4f} | {time.time()-t0:5.0f}s",
                       flush=True)
             step += 1
+            if args.eval_every and step % args.eval_every == 0 and step < steps:
+                val = evaluate(vl, held, tower, tok, dev, autocast, cache)
+                flag = ""
+                if val < best:
+                    best = val
+                    save_vl(vl, model, ck, cfg, args, step, val, args.out)
+                    flag = "  <- saved"
+                append_curve(args.out, step, val)
+                print(f"  eval @ {step:6d} | held-out loss {val:.4f}{flag}", flush=True)
         if step >= steps:
             break
 
-    val = evaluate(vl, held, tower, tok, dev, autocast)
-    atomic_save({"model": model.state_dict(), "proj": vl.proj.state_dict(),
-                 "cfg": replace(cfg, moe_impl=ck["cfg"].moe_impl),
-                 "speech_text_vocab": ck["speech_text_vocab"],
-                 "tower": args.tower, "pool": args.pool,
-                 "step": step, "val_loss": val, "base_ckpt": args.ckpt}, args.out)
-    print(f"\ndone in {time.time()-t0:.0f}s | held-out loss {val:.4f} | {args.out}")
+    val = evaluate(vl, held, tower, tok, dev, autocast, cache)
+    append_curve(args.out, step, val)
+    if val <= best:
+        save_vl(vl, model, ck, cfg, args, step, val, args.out)
+        best = val
+    print(f"\ndone in {time.time()-t0:.0f}s | held-out loss {val:.4f} "
+          f"(best {best:.4f}) | {args.out}")
 
 
 def load_trained(ckpt: str, device: str):
@@ -313,6 +434,12 @@ def main() -> None:
     p = argparse.ArgumentParser(description="Images into AnuLM.")
     sub = p.add_subparsers(dest="cmd", required=True)
 
+    pp = sub.add_parser("prep", help="parquet shards -> jpgs + a jsonl manifest")
+    pp.add_argument("--parquet", required=True, help="a shard, a glob, or a directory")
+    pp.add_argument("--images", required=True, help="where to write the jpgs")
+    pp.add_argument("--manifest", required=True)
+    pp.add_argument("--limit", type=int, help="stop after this many images")
+
     pr = sub.add_parser("probe", help="shapes and context cost for one image")
     pr.add_argument("--image", required=True)
     pr.add_argument("--tower", default=DEFAULT_TOWER)
@@ -328,6 +455,10 @@ def main() -> None:
     t.add_argument("--proj-lr", type=float, default=1e-3)
     t.add_argument("--tower", default=DEFAULT_TOWER)
     t.add_argument("--pool", type=int, default=POOL)
+    t.add_argument("--cache", help="memmap path for precomputed tower features; "
+                                   "the tower is frozen so this is exact, not an approximation")
+    t.add_argument("--eval-every", type=int, default=250,
+                   help="held-out eval and a save this often; 0 disables")
     t.add_argument("--log-every", type=int, default=25)
     t.add_argument("--seed", type=int, default=1337)
     t.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
@@ -340,7 +471,9 @@ def main() -> None:
 
     args = p.parse_args()
 
-    if args.cmd == "probe":
+    if args.cmd == "prep":
+        prep_parquet(args.parquet, args.images, args.manifest, args.limit)
+    elif args.cmd == "probe":
         tower = VisionTower(args.tower)
         patches = tower.encode(args.image)
         proj = ImageProjector(tower.dim, 1024, args.pool).to(patches.device)

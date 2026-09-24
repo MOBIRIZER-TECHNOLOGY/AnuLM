@@ -200,10 +200,13 @@ def train(args) -> None:
 
     # The projector starts from nothing and wants a livelier rate than a
     # backbone that is already trained; one group each rather than one rate.
+    # fused=True on CUDA: one kernel for the whole step instead of a launch per
+    # parameter tensor. finetune.py has always logged "AdamW (fused)"; these two
+    # trainers were written without it and paid for the omission on a 456M model.
     opt = torch.optim.AdamW(
         [{"params": sm.proj.parameters(), "lr": args.proj_lr},
          {"params": model.parameters(), "lr": args.lr}],
-        weight_decay=0.1, betas=(0.9, 0.95))
+        weight_decay=0.1, betas=(0.9, 0.95), fused=dev.startswith("cuda"))
     autocast = (torch.autocast("cuda", dtype=torch.bfloat16)
                 if dev.startswith("cuda") else torch.autocast("cpu", enabled=False))
 
