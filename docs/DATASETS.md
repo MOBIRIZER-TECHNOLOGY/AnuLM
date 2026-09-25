@@ -24,6 +24,35 @@ verify on the source before any use beyond research.
 | code_exercises (phi-1-style Python exercises) | https://huggingface.co/datasets/jinaai/code_exercises | **CC BY-NC-SA 4.0**; synthetic, generated with ChatGPT 3.5 | `fetch_hf.py jinaai/code_exercises --prefix data/` | 0.5 GB raw → 1.0 GB text + 1.1 GB SFT pairs | coder pretraining (7%) and instruction tuning (93% of pairs) |
 | tinyshakespeare | https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt | public domain | `train.py` downloads it when no `--data` is given | 1 MB | the CPU smoke runs in `README.md` "Results" |
 
+## Speech and image corpora
+
+Added for the speech and vision work (`docs/SPEECH.md`). Same rule as above:
+nothing is redistributed, every set is re-fetched from its source.
+
+| corpus | link | licence | fetched by | kept on disk | used by |
+| --- | --- | --- | --- | --- | --- |
+| LibriSpeech `dev-clean` | https://huggingface.co/datasets/openslr/librispeech_asr (`clean/validation`) | CC BY 4.0 | `speech_data.py encode --parquet …` after a `snapshot_download` | 326 MB parquet → 4.97 h, 1.48M SNAC tokens | the first TTS probe, `docs/SPEECH.md` |
+| LibriSpeech `train-clean-100` | same repo, `clean/train.100` (14 shards) | CC BY 4.0 | as above | 6.0 GB parquet → 100.58 h, 29.80M SNAC tokens | the 20x-data TTS probe |
+| IndicTTS Hindi | https://huggingface.co/datasets/SPRINGLab/IndicTTS-Hindi | CC BY 4.0 (derived from the Indic TTS Database, IIT Madras) | `speech_data.py encode --parquet … --where gender=0` | 7.7 GB parquet → 11.84 h one speaker, 3.52M SNAC tokens | `ckpt_tts_hi.pt` |
+| Flickr8k | https://huggingface.co/datasets/jxie/flickr8k | research use; images are Flickr-sourced, see the dataset card | `vision_encoder.py prep --parquet …` | 828 MB parquet → 6,000 jpgs + 30,000 caption pairs + 1.81 GB cached tower features | `ckpt_caption_f8k.pt` |
+
+Two Hindi speech sets worth naming because they are the obvious next step and
+are **not** openly downloadable: `ai4bharat/IndicVoices` (~1,600 h) and
+`ai4bharat/Shrutilipi` (~6,400 h) both list their files publicly but return
+403 on the data itself and need access granted on Hugging Face. That is why the
+Hindi TTS run used IndicTTS, which is two orders of magnitude smaller.
+
+Note on the IndicTTS card: it states ~10.33 h total and 5.18 h for the female
+speaker. Encoding that speaker alone yielded **11.84 h across 5,851 clips**, so
+the card understates the duration and the full set is nearer 24 h.
+
+Pretrained models used as components, not trained here: `openai/whisper-small`
+(via faster-whisper, MIT), `hubertsiuzdak/snac_24khz` (MIT),
+`rhasspy/piper-voices` (MIT, per-voice licences on the card), and
+`vit_base_patch16_siglip_224` from timm (Apache 2.0). Whisper also acts as the
+judge for TTS word error rate, which `eval_speech.py` documents as a bias to
+account for rather than a neutral measurement.
+
 ## Instruction-tuning and translation pairs
 
 | corpus | link | licence | fetched by | used by |
