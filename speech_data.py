@@ -100,7 +100,8 @@ def from_manifest(path: str | Path):
         yield (p if p.is_absolute() else path.parent / p), text.strip()
 
 
-def from_parquet(path: str | Path, tmp: str | Path | None = None):
+def from_parquet(path: str | Path, tmp: str | Path | None = None,
+                 where: tuple[str, str] | None = None):
     """Hugging Face audio parquet: one row per clip, the audio inline as
     encoded bytes under `audio`, the transcript under `text`.
 
@@ -127,6 +128,14 @@ def from_parquet(path: str | Path, tmp: str | Path | None = None):
         for batch in table.iter_batches(batch_size=64):
             rows = batch.to_pylist()
             for r in rows:
+                # A speaker filter matters more for TTS than data volume does.
+                # IndicTTS-Hindi is two speakers labelled by `gender`, and
+                # training on both without speaker conditioning asks the model
+                # to emit the average of two voices -- which in the codec domain
+                # is exactly the muddy, low-energy output the LibriSpeech runs
+                # produced. One voice gives it a single acoustic target.
+                if where and str(r.get(where[0])) != where[1]:
+                    continue
                 audio, text = r.get("audio"), (r.get("text") or "").strip()
                 if not audio or not text:
                     continue
@@ -265,6 +274,17 @@ def make_pairs(prefix: str, task: str, tok, vocab, limit: int | None = None):
     return pairs
 
 
+def _where(args):
+    """--where COL=VAL -> (COL, VAL), or None."""
+    w = getattr(args, "where", None)
+    if not w:
+        return None
+    col, _, val = w.partition("=")
+    if not col or not val:
+        raise SystemExit(f"--where wants COL=VAL, got {w!r}")
+    return (col, val)
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description="Turn speech into AnuLM tokens.")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -275,6 +295,9 @@ def main() -> None:
     src.add_argument("--manifest", help="a tsv/jsonl of path + transcript")
     src.add_argument("--dir", help="a folder of clips with .txt beside them")
     src.add_argument("--parquet", help="a HF parquet shard, a glob, or a directory of them")
+    e.add_argument("--where", metavar="COL=VAL",
+                   help="keep only rows whose COL equals VAL, e.g. gender=0 "
+                        "to take a single speaker from IndicTTS")
     e.add_argument("--out", required=True, help="output prefix, e.g. data/speech_ls100")
     e.add_argument("--limit", type=int, help="stop after this many clips")
     e.add_argument("--max-seconds", type=float, default=MAX_SECONDS)
@@ -287,7 +310,7 @@ def main() -> None:
     if args.cmd == "encode":
         clips = (from_librispeech(args.librispeech) if args.librispeech
                  else from_manifest(args.manifest) if args.manifest
-                 else from_parquet(args.parquet) if args.parquet
+                 else from_parquet(args.parquet, where=_where(args)) if args.parquet
                  else from_directory(args.dir))
         encode(clips, args.out, args.limit, args.max_seconds)
     else:

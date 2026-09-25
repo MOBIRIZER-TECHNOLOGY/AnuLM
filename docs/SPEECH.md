@@ -312,10 +312,69 @@ synthetic six-shape run had ("a blue circle on white" for everything). Distinct
 images must be sampled deliberately.
 
 
+## Hindi TTS: the acoustics work, the alignment does not
+
+`SPRINGLab/IndicTTS-Hindi`, filtered to one speaker with
+`speech_data.py encode --where gender=0`. The dataset card says 10.33 h total
+and 5.18 h for that speaker; the encoder found **11.84 h and 5,851 clips** from
+the one voice, so the card understates it and the full set is nearer 24 h.
+3.52M audio tokens, encoded in 110 s at 415x real time.
+
+One speaker on purpose. Two voices without speaker conditioning asks the model
+to emit the average of two people, and in the codec domain an average is
+exactly the low-energy mush the LibriSpeech runs produced.
+
+| | 100 h English probe | Hindi, 11.84 h, one speaker |
+| --- | --- | --- |
+| WER | 100.0% | **131.2%** |
+| mean output rms | 0.0049 | **0.1613** (source 0.1635) |
+| inaudible clips | 39 / 50 | **0 / 50** |
+| codes out of slot | 1,353 | 857 |
+| best held-out loss | 7.1067 | **5.6343** |
+
+**The acoustic problem is solved.** Loudness matches the source to within 1.3%,
+not one clip of fifty is inaudible, and Whisper parses the output as Devanagari
+syllables rather than noise. Frame-grammar violations fell 37%.
+
+**The alignment problem is not.** Around thirty text tokens have to map onto six
+hundred audio tokens with no alignment mechanism, and 232M active parameters on
+11.84 h does not learn it. The model has learned to sound like this speaker
+speaking Hindi without learning which sounds go with which characters.
+
+**131.2% is not worse than 100.0%.** WER counts insertions, and the two models
+fail oppositely: the probe scored 100% by emitting silence, where every word is
+a deletion and nothing is added; this scores 131% by emitting confident wrong
+words. Silence games the metric. Neither is intelligible, but one produces
+nothing and the other produces fluent, correctly-pitched, speaker-matched Hindi
+that says the wrong thing.
+
+### The epoch ceiling, which is the transferable finding
+
+Best held-out loss came at **step 1,999, epoch ~4.7** -- and dev-clean's best
+was at epoch ~4.7 as well, on a corpus less than half the size. Epoch count
+predicts the turn, not token count. What followed was not a plateau but a
+collapse: 5.6343 at step 1,999 climbing to **10.3147** by step 13,274, against
+a uniform-guessing line of 10.26. Twenty of twenty-five epochs were actively
+destructive, and only `finetune.py` writing `--out` on improvement alone saved
+the usable checkpoint.
+
+Any future speech run here should cap at about five epochs with early stopping.
+This one took five hours and should have taken one.
+
+### What to change before spending more compute
+
+The token rate is the structural lever. SNAC at 83.3 tok/s makes a seven-second
+utterance a ~600-token target; modelling only the coarse level is 11.9 Hz, or
+**85 tokens -- seven times shorter**, with the fine levels restored afterwards.
+That turns alignment from hard into plausible, and costs nothing in data.
+
+
 ## Status
 
-Vision is the part of this that works. Speech generation is not, and the
-continuous audio path is still only shape-checked on five synthetic clips.
+Vision works. Speech generation produces audible, speaker-matched, frame-valid
+audio that says the wrong words -- the acoustics are solved and the text
+alignment is not. The continuous audio path is still only shape-checked on five
+synthetic clips.
 
 Two bugs worth remembering, both found by running the thing rather than reading
 it:
