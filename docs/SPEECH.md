@@ -265,11 +265,57 @@ large corpus to force commitment -- 5 to 10 epochs of train-clean-100, roughly
 a probe, and it should be started deliberately.
 
 
+## Vision works
+
+Flickr8k, 6,000 images and 30,000 captions, one epoch: **983 seconds** on one
+RTX 5070 Ti. Held-out loss fell at every one of eight evals and never
+plateaued: 2.8065, 2.6623, 2.5731, 2.5379, 2.4815, 2.4466, 2.4389, **2.4340**.
+
+Ten distinct held-out images (the held-out slice is manifest rows 0-599, so
+images 000000-000119 were never trained on), greedy decode:
+
+| reference | generated |
+| --- | --- |
+| A brown dog is running along a beach | A brown dog is running on the beach |
+| A black and white dog with a red Frisbee on a sandy beach | A black and white dog is running on the beach |
+| A skier in a yellow jacket is airborne above the mountains | A person is skiing down a snowy hill |
+| A black dog running after a white dog in the snow | Two dogs are playing in the snow |
+| A boy wearing a red t-shirt running through woodland | A boy in a red shirt is playing with a toy in a field |
+| A cyclist wearing a red helmet riding on the pavement | A woman in a yellow shirt ... riding a bike on a dirt path |
+| A girl in a white dress | A girl in a pink shirt is playing with a toy |
+| A man in a purple shirt and red bandanna | A man in a black shirt and a black shirt standing in front of a building |
+| A little baby plays croquet | A boy in a red shirt is standing in a puddle |
+
+About five are clearly right, three partly, two wrong. It gets the subject and
+the setting reliably, often the action, and hallucinates colours. It falls back
+on "playing with a toy" when unsure, and once repeated a phrase ("a black shirt
+and a black shirt").
+
+**Why this worked where speech did not**, and it is the same asymmetry this file
+predicted before either run:
+
+| | audio | captioning |
+| --- | --- | --- |
+| new parameters | 58.7M embeddings from scratch | 12.6M projector |
+| output vocabulary | 28,672 fresh audio ids | the trained BPE |
+| output length | ~500 tokens | ~12 tokens |
+| result | 100% WER, inaudible | image-conditioned, often correct |
+
+The model already speaks English; it only had to learn to look. For speech it
+had to learn a new language and then produce five hundred tokens in it.
+
+One methodological trap worth recording: Flickr8k ships five captions per
+image, so the first five manifest rows are the *same picture*. Printing
+`rows[:5]` shows one image five times and reveals nothing about whether the
+model is conditioned on the image at all -- which is exactly the failure the
+synthetic six-shape run had ("a blue circle on white" for everything). Distinct
+images must be sampled deliberately.
+
+
 ## Status
 
-Every stage runs end to end on real data. The pipeline is done; the model is
-not. Vision and the continuous path have been exercised only on synthetic data
-(six Piper clips, six drawn shapes) and are shape-correct, not trained.
+Vision is the part of this that works. Speech generation is not, and the
+continuous audio path is still only shape-checked on five synthetic clips.
 
 Two bugs worth remembering, both found by running the thing rather than reading
 it:
