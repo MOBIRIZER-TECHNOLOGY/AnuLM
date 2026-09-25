@@ -91,6 +91,8 @@ python sample.py --ckpt ckpt.pt --prompt "भारत"
 python serve.py --ckpt ckpt_translate.pt    # a web page: continue text, answer a question, translate
 python serve.py --ckpt ckpt_coder_sft.pt    # the Python coder: describe a function, or start one
 python app.py   --ckpt ckpt_coder_sft.pt    # the same demo as a Gradio app (pip install gradio); what demo_colab.ipynb launches
+python app_vision.py                        # show it a photograph and read the caption (pip install timm pillow)
+python app_voice.py                         # talk to it: Whisper hears, Piper speaks (pip install faster-whisper piper-tts)
 ```
 
 New here? Run `python quickstart.py`: it reports what your install can and
