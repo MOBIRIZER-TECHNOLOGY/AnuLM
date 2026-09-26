@@ -303,7 +303,8 @@ def load_trained(ckpt: str, device: str):
 
 
 @torch.no_grad()
-def transcribe(sm, enc, tok, wav_path: str, max_tokens: int = 64, device: str = "cuda") -> str:
+def transcribe(sm, enc, tok, wav_path: str, max_tokens: int = 64, device: str = "cuda",
+               no_repeat_ngram: int = 3) -> str:
     """Greedy decode from a continuous prompt, one token at a time.
 
     No KV cache: the prompt is embeddings rather than ids, and `generate` takes
@@ -324,7 +325,19 @@ def transcribe(sm, enc, tok, wav_path: str, max_tokens: int = 64, device: str = 
                torch.cat([prefix, emb(torch.tensor(out, device=device))], dim=0))
         with autocast:
             logits, _ = sm.model(None, embeds=cur[None])
-        nxt = int(logits[0, -1].argmax())
+        scores = logits[0, -1].float()
+        # Block any token that would complete an n-gram already emitted. Greedy
+        # decoding on this model falls into loops -- "end of this end of this
+        # end of this", "i opened her and i opened her" -- and every repeated
+        # word is an insertion, so an unguarded WER measures looping as much as
+        # listening. n=3 is the usual choice for transcripts: real speech
+        # rarely repeats a trigram inside one utterance.
+        if len(out) >= no_repeat_ngram - 1:
+            tail = tuple(out[-(no_repeat_ngram - 1):])
+            for j in range(len(out) - no_repeat_ngram + 1):
+                if tuple(out[j:j + no_repeat_ngram - 1]) == tail:
+                    scores[out[j + no_repeat_ngram - 1]] = float("-inf")
+        nxt = int(scores.argmax())
         if nxt == tok.eos_id or nxt >= sm.vocab.text:
             break
         out.append(nxt)
