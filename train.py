@@ -602,7 +602,7 @@ def main():
             # across runs with and without the regularisers.
             print(f"step {step:5d} | loss {loss_acc - aux_acc:6.4f} | "
                   f"{f'aux {aux_acc:.4f} | ' if aux_on else ''}lr {lr:.2e} | "
-                  f"imbalance {imbalance:5.2f}x | {tokens_seen/max(dt,1e-9):8.0f} tok/s | "
+                  f"imbalance {imbalance:5.2f}x (median {getattr(raw_model, 'imbalance_median', imbalance):4.2f}x) | {tokens_seen/max(dt,1e-9):8.0f} tok/s | "
                   f"{(time.time()-t_step)*1e3:5.0f} ms/step | epoch {sampler.epochs_done:.2f}")
 
         if (step + 1) % args.eval_every == 0 or step == end - 1:

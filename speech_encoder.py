@@ -253,7 +253,7 @@ def train(args) -> None:
             imbalance = model.update_expert_biases()
             if step % args.log_every == 0:
                 print(f"step {step:6d} | loss {loss.item():.4f} | "
-                      f"imbalance {imbalance:4.2f}x | {time.time()-t0:5.0f}s", flush=True)
+                      f"imbalance {imbalance:4.2f}x (median {getattr(model, 'imbalance_median', imbalance):4.2f}x) | {time.time()-t0:5.0f}s", flush=True)
             step += 1
             # Periodic eval and save, because a trainer that only saves at the
             # end loses everything to a timeout -- which is how four hours of

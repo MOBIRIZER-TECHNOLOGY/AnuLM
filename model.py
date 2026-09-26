@@ -845,6 +845,14 @@ class AnuLM(nn.Module):
             m.expert_bias += self.cfg.bias_update_rate * torch.sign(mean - load)
             ratios.append((load.max() / mean).item())
             load.zero_()
+        # The return value stays the WORST layer, so every existing log line and
+        # comparison keeps its meaning. The median is kept alongside because the
+        # max alone misleads: on the textbook checkpoint it read 4.33x while the
+        # median layer sat at 2.15x -- one hard-specialising deep layer, not a
+        # model-wide imbalance.
+        s = sorted(ratios)
+        self.imbalance_median = (s[len(s) // 2] if len(s) % 2 else
+                                 (s[len(s) // 2 - 1] + s[len(s) // 2]) / 2) if s else 1.0
         return max(ratios) if ratios else 1.0
 
     # --- bookkeeping --------------------------------------------------------

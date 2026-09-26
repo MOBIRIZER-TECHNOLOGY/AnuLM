@@ -317,7 +317,7 @@ def main():
         imbalance = model.update_expert_biases()
         if step % args.log_every == 0 or step == end - 1:
             print(f"step {step:6d} | loss {loss.item():6.4f} | lr {lr:.2e} | "
-                  f"imbalance {imbalance:4.2f}x | {time.time() - t0:5.0f}s")
+                  f"imbalance {imbalance:4.2f}x (median {getattr(model, 'imbalance_median', imbalance):4.2f}x) | {time.time() - t0:5.0f}s")
         if (step + 1) % args.eval_every == 0 or step == end - 1:
             val = evaluate(model, hx, hy, args.batch_size, args.device, args.autocast)
             append_curve(args.out, step, val)

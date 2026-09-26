@@ -431,7 +431,7 @@ def train(args) -> None:
             imbalance = model.update_expert_biases()
             if step % args.log_every == 0:
                 print(f"step {step:6d} | loss {loss.item():.4f} | "
-                      f"imbalance {imbalance:4.2f}x | {time.time()-t0:5.0f}s", flush=True)
+                      f"imbalance {imbalance:4.2f}x (median {getattr(model, 'imbalance_median', imbalance):4.2f}x) | {time.time()-t0:5.0f}s", flush=True)
             step += 1
             if args.eval_every and step % args.eval_every == 0 and step < steps:
                 val = evaluate(vl, held, tower, tok, dev, autocast, cache)
