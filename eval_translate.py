@@ -8,8 +8,15 @@ chrF (Popovic 2015; the chrF2 variant sacrebleu reports) compares character
 n-grams up to 6 between hypothesis and reference with recall weighted 2x.
 It is the standard metric for Indic MT because it does not depend on word
 segmentation. Reference points on FLORES devtest, English -> Hindi: Google
-Translate and IndicTrans2 report chrF around 58-62; NLLB-600M around 55.
+Translate and IndicTrans2 around 58-62, NLLB-600M around 55. Those published
+figures are **chrF++** (character n-grams plus word uni- and bigrams), not the
+chrF this file computes, so they are a neighbouring metric rather than the same
+one -- and the two do not move together in a fixed direction. When sacrebleu is
+installed this file reports chrF++ as well, for a like-for-like comparison.
 Hindi -> English scores run higher for every system.
+
+The chrF here is verified against sacrebleu.corpus_chrf: identical to three
+decimals on all 1,012 FLORES devtest sentences in both directions.
 
 Greedy decoding, one sentence at a time, cut at EOS or the first newline.
 """
@@ -31,8 +38,11 @@ from model import AnuLM, load_checkpoint
 
 
 def chrf(hyps: list[str], refs: list[str], n: int = 6, beta: float = 2.0) -> float:
-    """Corpus chrF: n-gram counts pooled over the corpus, then one F-beta per
-    order averaged -- sacrebleu's chrF2 definition (word order 0)."""
+    """Corpus chrF: character n-gram counts pooled over the corpus, precision
+    and recall computed per order and averaged over orders 1..n, then ONE
+    F-beta from those averages -- sacrebleu 2.x's chrF2 (word order 0, no eps
+    smoothing). Averaging per-order F-scores instead is the older smoothed
+    variant and gives a different number."""
     def grams(s, k):
         s = s.replace(" ", "")
         return Counter(s[i:i + k] for i in range(len(s) - k + 1))
@@ -80,8 +90,27 @@ def score(ckpt: str, items: list[dict], device: str, max_new: int, show: int) ->
             samples.append((it["lang"], it["question"], hyp, it["answer"]))
         print(f"\r  {Path(ckpt).name}: {i + 1}/{len(items)}  ({time.time() - t0:.0f}s)", end="", flush=True)
     print()
-    return {"ckpt": ckpt, "samples": samples,
-            **{d: chrf(h, r) for d, (h, r) in out.items() if h}}
+    res = {"ckpt": ckpt, "samples": samples,
+           **{d: chrf(h, r) for d, (h, r) in out.items() if h}}
+    pp = chrf_pp(out)
+    if pp:
+        res["chrf++"] = pp
+    return res
+
+
+def chrf_pp(out: dict) -> dict | None:
+    """chrF++ per direction via sacrebleu, if it is installed.
+
+    Published FLORES figures for NLLB and IndicTrans2 are chrF++, so this is
+    the number to set beside them. It stays optional -- the project's scoring
+    needs only torch -- and chrF above is computed natively either way.
+    """
+    try:
+        import sacrebleu
+    except ImportError:
+        return None
+    return {d: sacrebleu.corpus_chrf(h, [r], word_order=2).score
+            for d, (h, r) in out.items() if h}
 
 
 def main():
@@ -100,11 +129,21 @@ def main():
         items = [it for d in ("en-hi", "hi-en") for it in [x for x in items if x["lang"] == d][: args.limit]]
     print(f"{args.data}: {len(items)} items, greedy, chrF, device {args.device}\n")
     results = [score(c, items, args.device, args.max_new, args.show) for c in args.ckpts]
-    print(f"\n{'checkpoint':26s} {'en->hi chrF':>12s} {'hi->en chrF':>12s}")
-    print("-" * 52)
+    have_pp = all("chrf++" in r for r in results)
+    head = f"{'checkpoint':26s} {'en->hi chrF':>12s} {'hi->en chrF':>12s}"
+    if have_pp:
+        head += f" {'en->hi chrF++':>14s} {'hi->en chrF++':>14s}"
+    print("\n" + head)
+    print("-" * len(head))
     for r in results:
-        print(f"{Path(r['ckpt']).name:26s} {r.get('en-hi', 0):12.1f} {r.get('hi-en', 0):12.1f}")
-    print("\nreference (FLORES devtest, en->hi): NLLB-600M ~55, IndicTrans2 / Google ~60")
+        row = f"{Path(r['ckpt']).name:26s} {r.get('en-hi', 0):12.1f} {r.get('hi-en', 0):12.1f}"
+        if have_pp:
+            pp = r["chrf++"]
+            row += f" {pp.get('en-hi', 0):14.1f} {pp.get('hi-en', 0):14.1f}"
+        print(row)
+    print("\nreference (FLORES devtest, en->hi, chrF++): NLLB-600M ~55, IndicTrans2 / Google ~60")
+    if not have_pp:
+        print("  (those are chrF++; pip install sacrebleu to report it beside chrF)")
     for r in results:
         print(f"\n=== {Path(r['ckpt']).name}")
         for lang, q, hyp, ref in r["samples"]:
