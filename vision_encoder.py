@@ -364,9 +364,15 @@ def train(args) -> None:
             torch.nn.utils.clip_grad_norm_(vl.parameters(), 1.0)
             opt.step()
             opt.zero_grad(set_to_none=True)
+            # The aux-loss-free balancing is not in the loss -- it is this call,
+            # once per optimizer step, nudging each router's expert_bias against
+            # its load and zeroing the counts. finetune.py and train.py make it;
+            # this trainer did not, so every run froze the biases at the init
+            # checkpoint's values and let load_counts grow without bound.
+            imbalance = model.update_expert_biases()
             if step % args.log_every == 0:
-                print(f"step {step:6d} | loss {loss.item():.4f} | {time.time()-t0:5.0f}s",
-                      flush=True)
+                print(f"step {step:6d} | loss {loss.item():.4f} | "
+                      f"imbalance {imbalance:4.2f}x | {time.time()-t0:5.0f}s", flush=True)
             step += 1
             if args.eval_every and step % args.eval_every == 0 and step < steps:
                 val = evaluate(vl, held, tower, tok, dev, autocast, cache)

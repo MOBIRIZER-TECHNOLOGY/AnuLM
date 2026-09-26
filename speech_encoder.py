@@ -210,8 +210,17 @@ def train(args) -> None:
     autocast = (torch.autocast("cuda", dtype=torch.bfloat16)
                 if dev.startswith("cuda") else torch.autocast("cpu", enabled=False))
 
+    from finetune import append_curve
+
+    def save():
+        atomic_save({"model": model.state_dict(), "proj": sm.proj.state_dict(),
+                     "cfg": replace(cfg, moe_impl=ck["cfg"].moe_impl),
+                     "speech_text_vocab": ck["speech_text_vocab"],
+                     "whisper": args.whisper, "stack": args.stack,
+                     "step": step, "val_loss": best, "base_ckpt": args.ckpt}, args.out)
+
     sm.train()
-    step = 0
+    step, best = 0, float("inf")
     t0 = time.time()
     for epoch in range(math.ceil(args.epochs)):
         for eb, tb in batches(rows, enc, tok, sm, dev, args.batch_size, seed=args.seed + epoch):
@@ -226,20 +235,38 @@ def train(args) -> None:
             torch.nn.utils.clip_grad_norm_(sm.parameters(), 1.0)
             opt.step()
             opt.zero_grad(set_to_none=True)
+            # The aux-loss-free balancing is not in the loss -- it is this call,
+            # once per optimizer step, nudging each router's expert_bias against
+            # its load and zeroing the counts. finetune.py and train.py make it;
+            # this trainer did not, so every run froze the biases at the init
+            # checkpoint's values and let load_counts grow without bound.
+            imbalance = model.update_expert_biases()
             if step % args.log_every == 0:
-                print(f"step {step:6d} | loss {loss.item():.4f} | {time.time()-t0:5.0f}s",
-                      flush=True)
+                print(f"step {step:6d} | loss {loss.item():.4f} | "
+                      f"imbalance {imbalance:4.2f}x | {time.time()-t0:5.0f}s", flush=True)
             step += 1
+            # Periodic eval and save, because a trainer that only saves at the
+            # end loses everything to a timeout -- which is how four hours of
+            # captioner training vanished before vision_encoder got this.
+            if args.eval_every and step % args.eval_every == 0 and step < steps:
+                val = evaluate(sm, held, enc, tok, dev, autocast)
+                flag = ""
+                if val < best:
+                    best = val
+                    save()
+                    flag = "  <- saved"
+                append_curve(args.out, step, val)
+                print(f"  eval @ {step:6d} | held-out loss {val:.4f}{flag}", flush=True)
         if step >= steps:
             break
 
     val = evaluate(sm, held, enc, tok, dev, autocast)
-    atomic_save({"model": model.state_dict(), "proj": sm.proj.state_dict(),
-                 "cfg": replace(cfg, moe_impl=ck["cfg"].moe_impl),
-                 "speech_text_vocab": ck["speech_text_vocab"],
-                 "whisper": args.whisper, "stack": args.stack,
-                 "step": step, "val_loss": val, "base_ckpt": args.ckpt}, args.out)
-    print(f"\ndone in {time.time()-t0:.0f}s | held-out loss {val:.4f} | {args.out}")
+    append_curve(args.out, step, val)
+    if val <= best:
+        best = val
+        save()
+    print(f"\ndone in {time.time()-t0:.0f}s | held-out loss {val:.4f} "
+          f"(best {best:.4f}) | {args.out}")
 
 
 @torch.no_grad()
@@ -318,6 +345,8 @@ def main() -> None:
     t.add_argument("--proj-lr", type=float, default=1e-3)
     t.add_argument("--whisper", default="small")
     t.add_argument("--stack", type=int, default=STACK)
+    t.add_argument("--eval-every", type=int, default=500,
+                   help="held-out eval and a save this often; 0 disables")
     t.add_argument("--log-every", type=int, default=25)
     t.add_argument("--seed", type=int, default=1337)
     t.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
