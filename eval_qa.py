@@ -19,6 +19,25 @@ in this form (make_qa.py holds articles out by title):
 
 Also prints a few decoded answers. The base model is scored with the same
 prompt template so the before/after is on one axis.
+
+**MC distractors are drawn from every answer in the file**, with no filter on
+language or answer type. That is fine for a single-language, single-type file
+(section 23 scored each language separately, so no Hindi question ever got an
+English distractor). It is NOT fine for a per-type breakdown of a mixed file.
+The Python held-out set mixes "write" questions (code answers) with "explain"
+questions (prose answers); scored on 300 of them with the section 23 model:
+
+                              all    write   explain
+    any-type (this file)     67.0%   90.7%   43.3%
+    same-type distractors    68.7%   82.0%   55.3%
+
+The biases run opposite ways and cancel in the aggregate: a write question
+rejects prose distractors on sight (+9), while an explain question -- which
+contains the function's code -- is drawn to code distractors that echo it
+(-12). So the overall number is sound, and "Python is the easy language"
+survives, but do not report write/explain separately from this file: the true
+gap is 82 vs 55, not 91 vs 43. The default is left as it is, since changing
+the sampling would move every number already in docs/RESULTS.md.
 """
 
 from __future__ import annotations
