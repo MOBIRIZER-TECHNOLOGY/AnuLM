@@ -113,8 +113,10 @@ input-side items come first; they are the likely wins.
     are both understated by it. The A/B between them survives because the
     bug hit both, but the absolute numbers should be re-measured — on an
     otherwise idle machine, since the timeout counter shows concurrent load
-    moves pass@1 too. **§25 re-scored: 13.6% (35/257)**, up from 12.5%.
-    §31 is being re-scored.
+    moves pass@1 too. **Done, on an idle GPU:** §25 13.6% (35/257, was
+    12.5%), §31 14.8% (38/257, was 14.4%). The gap narrows from 1.9 to 1.2
+    points -- three problems, well inside noise at n=257 -- so "the
+    textbook corpus helped MBPP" no longer stands; its HumanEval cost does.
 16. **Finish the evaluation review (no GPU).** `eval_code.py` is reviewed.
     Still to read with the same eye: `eval_translate.py` (behind chrF
     41.5 / 43.4), `eval_qa.py`, `eval_golden.py`, `eval_context.py`, then
