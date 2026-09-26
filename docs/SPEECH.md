@@ -456,12 +456,43 @@ reports mean rms and counts inaudible clips for exactly this reason -- the 100 h
 probe would otherwise have been recorded as an improvement.
 
 
+## Listening works: speech recognition and visual questions
+
+The input-side pattern held a third and fourth time. Each run below keeps the
+encoder frozen, trains a projector plus the language model, and emits text in
+the vocabulary the model already speaks.
+
+| task | data | result | control |
+| --- | --- | --- | --- |
+| English ASR | LibriSpeech train-clean-100, 1 epoch, 6,992 steps | **WER 12.4%**, 100 held-out clips | Whisper itself on the same audio: 3.78% |
+| Hindi ASR | FLEURS hi train, 2,120 clips (6.66 h), 3 epochs, 8 min | **WER 62.7%**, 50 FLEURS dev clips | the English ASR model zero-shot: 103.7% |
+| VQA | A-OKVQA train, 17,056 questions, 3 epochs from `ckpt_caption_p1.pt` | **40.2%** 4-way MC, 1,145 val questions | the captioner, no VQA training: 25.9% (chance 25%) |
+| captioning | Flickr30k, 145,000 captions, 1 epoch, pool 1 | held-out loss 2.6988, still falling at the last step | better captions than the Flickr8k model on 6 of 8 Flickr30k val images |
+
+Notes a reader needs:
+
+* **English ASR errors are mostly proper nouns.** The common words come out
+  right; names the model has never seen spelled are guessed phonetically.
+  The loss curve shows a phase transition near step 1,500-2,000, before which
+  the output is fluent English unrelated to the audio -- so a run judged
+  early would look like a failure.
+* **Hindi warm-starts from the English model** and reaches 62.7% in eight
+  minutes. None of the 126 FLEURS dev sentences occur in its training set.
+  The projector transfers across languages; the zero-shot control shows the
+  English model alone produces nothing usable on Hindi audio.
+* **VQA is scored by multiple choice**, ranking the four A-OKVQA choices by
+  mean per-token loss (`vision_encoder.py vqa-eval`). The captioner control
+  sits at chance, so the 14-point gain comes from the VQA training and is
+  not a side effect of the scoring.
+* `voice.py --ear own` puts the English ASR model in the cascade in place of
+  Whisper (`OwnASR`), so a spoken turn can use the project's own ear.
+
 ## Status
 
-Vision works. Speech generation produces audible, speaker-matched, frame-valid
-audio that says the wrong words -- the acoustics are solved and the text
-alignment is not. The continuous audio path is still only shape-checked on five
-synthetic clips.
+Vision works: captioning and visual question answering. Speech recognition
+works through the continuous path, in English and roughly in Hindi. Speech
+generation produces audible, speaker-matched, frame-valid audio that says the
+wrong words -- the acoustics are solved and the text alignment is not.
 
 Two bugs worth remembering, both found by running the thing rather than reading
 it:

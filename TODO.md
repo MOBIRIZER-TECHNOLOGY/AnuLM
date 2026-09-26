@@ -59,22 +59,32 @@ input-side items come first; they are the likely wins.
    on the held-out slice with `speech_encoder.py eval`, against Whisper's own
    3.78% floor on the same audio. ~2.4 GPU-hours per epoch; the trainer now
    checkpoints every 500 steps, so intermediate checkpoints can be scored
-   rather than waiting for the end. **In progress.**
+   rather than waiting for the end. **Works: WER 12.4% after one epoch**
+   (100 held-out clips, mostly proper-noun errors). Epochs 2 and 3 are
+   queued; the curve had not flattened.
 10. **A spoken turn with the project's own ear.** Once 9 works, route
     `voice.py` through it instead of Whisper: own ASR -> a reasoning
     checkpoint -> Piper. No new training beyond 9. The cascade currently
     borrows both the ear and the mouth; this would make the ear the
-    project's.
+    project's. **Wired:** `voice.py --ear own` (`OwnASR`). A retest on the
+    Piper questions with the epoch-2 ear is queued.
 11. **Visual question answering.** Captioning works; answering a question
     about an image does not exist. Same frozen tower and projector with an
     image + question -> answer template. Needs VQA data — VQAv2 or GQA for
     English, and a Hindi VQA set if one is open. The projector from
-    `ckpt_caption_p1.pt` is a warm start.
+    `ckpt_caption_p1.pt` is a warm start. **Works: 40.2%** 4-way multiple
+    choice on 1,145 A-OKVQA val questions, against 25.9% for the untrained
+    captioner. Queued: the same run warm from the Flickr30k captioner.
+    A Hindi VQA set is still missing.
 12. **Hindi speech recognition.** After 9 works in English, train on the
     IndicTTS speaker already encoded (11.84 h). Two speakers only, so it
     will overfit to those voices; `ai4bharat/IndicVoices` (~1,600 h) and
     `ai4bharat/Shrutilipi` (~6,400 h) are the real corpora and are gated —
-    someone with a Hugging Face account should request access.
+    someone with a Hugging Face account should request access. **First
+    result: WER 62.7%** on 50 FLEURS dev clips, trained on FLEURS hi
+    (6.66 h, many speakers) warm from the English ASR model; zero-shot was
+    103.7%. Queued: FLEURS + the IndicTTS speaker together (7,971 clips).
+    The gated corpora remain the real fix.
 13. **Intelligible speech out: model only SNAC's coarse level.** The Hindi
     TTS run solved the acoustics (loudness matched to source within 1.3%,
     zero inaudible clips) and not the alignment (WER 131%). SNAC at 83.3
@@ -89,6 +99,9 @@ input-side items come first; they are the likely wins.
     separate file, so `vision_encoder.py prep` needs a second reader. Use
     the known-good recipe: `--pool 1`, three epochs (six was worse), and a
     batch of at least 8 — batch size moved the loss more than epoch count.
+    **One epoch done** (`ckpt_caption_f30k.pt`, held-out 2.6988, still
+    falling); better captions than the Flickr8k model on 6 of 8 val images.
+    A second epoch is queued.
 
 ## Evaluation
 
@@ -100,7 +113,8 @@ input-side items come first; they are the likely wins.
     are both understated by it. The A/B between them survives because the
     bug hit both, but the absolute numbers should be re-measured — on an
     otherwise idle machine, since the timeout counter shows concurrent load
-    moves pass@1 too.
+    moves pass@1 too. **§25 re-scored: 13.6% (35/257)**, up from 12.5%.
+    §31 is being re-scored.
 16. **Finish the evaluation review (no GPU).** `eval_code.py` is reviewed.
     Still to read with the same eye: `eval_translate.py` (behind chrF
     41.5 / 43.4), `eval_qa.py`, `eval_golden.py`, `eval_context.py`, then
