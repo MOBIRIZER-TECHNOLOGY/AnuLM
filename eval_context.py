@@ -49,6 +49,14 @@ DEVICE = "cpu"
 @torch.no_grad()
 def eval_at(state, cfg, data, length: int, batches: int, seed: int = 0) -> float:
     """Mean loss over fixed windows of `length` tokens."""
+    w = eval_windows(state, cfg, data, length, batches, seed)
+    return sum(w) / len(w)
+
+
+def eval_windows(state, cfg, data, length: int, batches: int, seed: int = 0) -> list[float]:
+    """Per-window loss. The generator is seeded the same way on every call, so
+    two configs asked for the same length see the SAME windows -- which is what
+    makes a paired error bar on their difference possible."""
     m = AnuLM(cfg).to(DEVICE).eval()
     m.load_state_dict(state)
     g = torch.Generator().manual_seed(seed)
@@ -60,7 +68,22 @@ def eval_at(state, cfg, data, length: int, batches: int, seed: int = 0) -> float
         with torch.autocast("cuda", dtype=torch.bfloat16, enabled=DEVICE.startswith("cuda")):
             _, loss = m(x, y)
         losses.append(loss.item())
-    return sum(losses) / len(losses)
+    return losses
+
+
+def paired(a: list[float], b: list[float]) -> tuple[float, float]:
+    """Mean and standard error of b - a over matched windows.
+
+    A paired error is far tighter than either loss's own: much of a window's
+    loss is the window (its text), and that part is identical in both configs
+    and cancels in the difference. 24 windows of unpaired error would bury a
+    0.01 effect; the paired error usually does not.
+    """
+    d = [y - x for x, y in zip(a, b)]
+    n = len(d)
+    mean = sum(d) / n
+    var = sum((x - mean) ** 2 for x in d) / (n - 1) if n > 1 else 0.0
+    return mean, (var / n) ** 0.5
 
 
 @torch.no_grad()
@@ -109,24 +132,28 @@ def main():
              if getattr(base_cfg, "sliding_window", None) else ""))
     print(f"val {unit} {len(data)/1e6:.2f}M   {args.batches} windows per setting\n")
 
-    print(f"{'context':>8}  {'naive':>8}  {'yarn':>8}  {'delta':>8}   verdict")
-    print("-" * 52)
+    print(f"{'context':>8}  {'naive':>8}  {'yarn':>8}  {'delta':>8}  {'+/- se':>7}   verdict")
+    print("-" * 62)
     rows = []
     for mult in args.multipliers:
         length = trained_at * mult
         naive_cfg = replace(base_cfg, block_size=length, yarn=False)
-        naive = eval_at(state, naive_cfg, data, length, args.batches)
+        naive_w = eval_windows(state, naive_cfg, data, length, args.batches)
+        naive = sum(naive_w) / len(naive_w)
         if mult == 1:
             print(f"{length:>8}  {naive:>8.4f}  {'-':>8}  {'-':>8}   training length")
             rows.append((length, naive, None))
             continue
         yarn_cfg = replace(base_cfg, block_size=length, yarn=True,
                            yarn_factor=float(mult), yarn_original_context=trained_at)
-        yarned = eval_at(state, yarn_cfg, data, length, args.batches)
-        delta = yarned - naive
-        verdict = "YaRN helps" if delta < -0.01 else (
-            "YaRN hurts" if delta > 0.01 else "no difference")
-        print(f"{length:>8}  {naive:>8.4f}  {yarned:>8.4f}  {delta:>+8.4f}   {verdict}")
+        yarn_w = eval_windows(state, yarn_cfg, data, length, args.batches)
+        yarned = sum(yarn_w) / len(yarn_w)
+        delta, se = paired(naive_w, yarn_w)
+        # The verdict used to be a fixed +/-0.01, with no measured error behind
+        # it -- section 27 said as much. Two paired standard errors instead.
+        verdict = ("YaRN helps" if delta < -2 * se else
+                   "YaRN hurts" if delta > 2 * se else "within noise")
+        print(f"{length:>8}  {naive:>8.4f}  {yarned:>8.4f}  {delta:>+8.4f}  {se:>7.4f}   {verdict}")
         rows.append((length, naive, yarned))
 
     # Where does it break? Average hides a cliff at the far end of the window.
