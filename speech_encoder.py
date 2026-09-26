@@ -188,6 +188,16 @@ def train(args) -> None:
 
     enc = WhisperEncoder(args.whisper, dev)
     sm = ContinuousSpeech(model, vocab, enc.dim, args.stack).to(dev)
+    # Warm start: a checkpoint from this trainer already carries a projector
+    # that has learned to pass Whisper's features into the backbone. Building a
+    # fresh one throws that away -- and the English run spent 1,500 steps
+    # before its projector learned to carry the audio at all.
+    if "proj" in ck:
+        try:
+            sm.proj.load_state_dict(ck["proj"])
+            print(f"projector warm-started from {args.ckpt}")
+        except RuntimeError as e:
+            print(f"projector shape differs, starting fresh ({str(e)[:80]})")
     n_proj = sum(p.numel() for p in sm.proj.parameters())
     print(f"projector: {enc.dim} x{args.stack} -> {cfg.hidden_size}, {n_proj/1e6:.2f}M params "
           f"(whisper-{args.whisper} frozen)")

@@ -136,18 +136,41 @@ class VisionLanguage(nn.Module):
         self.vocab = vocab
         self.proj = ImageProjector(in_dim, model.cfg.hidden_size, pool)
 
-    def build(self, patches: torch.Tensor, answer_ids: list[int]):
+    def build(self, patches: torch.Tensor, answer_ids: list[int],
+              prompt_ids: list[int] | None = None):
+        """<|image|> patches <|/image|> [prompt] answer, loss on the answer only.
+
+        `prompt_ids` is the question for VQA and empty for captioning; it sits
+        between the image and the answer so the answer is conditioned on both,
+        and it is masked so the model is never trained to predict the question.
+        """
         dev = patches.device
         emb = self.model.embed_tokens
         img = self.proj(patches)
         pre = emb(torch.tensor([self.vocab.image_bos], device=dev))
         post = emb(torch.tensor([self.vocab.image_eos], device=dev))
-        ans = emb(torch.tensor(answer_ids, device=dev))
-        embeds = torch.cat([pre, img, post, ans], dim=0)
+        parts = [pre, img, post]
+        if prompt_ids:
+            parts.append(emb(torch.tensor(prompt_ids, device=dev)))
+        parts.append(emb(torch.tensor(answer_ids, device=dev)))
+        embeds = torch.cat(parts, dim=0)
         targets = torch.full((embeds.shape[0],), -1, dtype=torch.long, device=dev)
-        start = pre.shape[0] + img.shape[0] + post.shape[0]
+        start = embeds.shape[0] - len(answer_ids)
         targets[start - 1: start - 1 + len(answer_ids)] = torch.tensor(answer_ids, device=dev)
         return embeds, targets
+
+
+def qa_ids(tok, row: dict, answer: str | None = None) -> tuple[list[int], list[int]]:
+    """(prompt ids, answer ids + EOS) for one manifest row.
+
+    Captions have no prompt. VQA rows get " Question: ... Answer:" and the
+    answer with its leading space, the way the BPE chunks text. Training and
+    the multiple-choice scorer both call this, so they cannot drift apart.
+    """
+    text = (answer if answer is not None else row["text"]).strip()
+    ans = tok.encode(" " + text) + [tok.eos_id]
+    q = row.get("question")
+    return (tok.encode(f" Question: {q.strip()} Answer:") if q else []), ans
 
 
 def prep_parquet(src: str, out_dir: str, manifest: str, limit: int | None = None) -> int:
@@ -172,10 +195,14 @@ def prep_parquet(src: str, out_dir: str, manifest: str, limit: int | None = None
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     n_img = n_pair = 0
+    seen: dict = {}
     with open(manifest, "w", encoding="utf-8") as f:
         for shard in shards:
             pf = pq.ParquetFile(str(shard))
-            caps = [c for c in pf.schema_arrow.names if c.startswith("caption")] or ["text"]
+            names = pf.schema_arrow.names
+            caps = [c for c in names if c.startswith("caption")] or ["text"]
+            # A-OKVQA and friends: a question, several choices, one correct index.
+            vqa = "question" in names and "correct_choice_idx" in names
             for batch in pf.iter_batches(batch_size=32):
                 for r in batch.to_pylist():
                     if limit and n_img >= limit:
@@ -184,10 +211,31 @@ def prep_parquet(src: str, out_dir: str, manifest: str, limit: int | None = None
                     raw = img.get("bytes") if isinstance(img, dict) else img
                     if not raw:
                         continue
-                    dest = out / f"{n_img:06d}.jpg"
-                    try:
-                        Image.open(io.BytesIO(raw)).convert("RGB").save(dest, quality=92)
-                    except Exception:
+                    # VQA sets reuse one COCO image across many questions; one
+                    # jpg per row would multiply the disk and the feature cache.
+                    key = img.get("path") if isinstance(img, dict) else None
+                    if key and key in seen:
+                        dest = seen[key]
+                    else:
+                        dest = out / f"{n_img:06d}.jpg"
+                        try:
+                            Image.open(io.BytesIO(raw)).convert("RGB").save(dest, quality=92)
+                        except Exception:
+                            continue
+                        if key:
+                            seen[key] = dest
+                        n_img += 1
+                    if vqa:
+                        idx = r.get("correct_choice_idx")
+                        choices = list(r.get("choices") or [])
+                        if idx is None or not choices:      # the test split has no answers
+                            continue
+                        f.write(_json.dumps({"image": str(dest.resolve()),
+                                             "question": r["question"],
+                                             "text": choices[idx],
+                                             "choices": choices,
+                                             "answer_idx": int(idx)}) + '\n')
+                        n_pair += 1
                         continue
                     for c in caps:
                         text = (r.get(c) or "").strip()
@@ -195,10 +243,9 @@ def prep_parquet(src: str, out_dir: str, manifest: str, limit: int | None = None
                             f.write(_json.dumps({"image": str(dest.resolve()),
                                                  "text": text}) + '\n')
                             n_pair += 1
-                    n_img += 1
                     if n_img % 500 == 0:
                         print(f"  {n_img} images, {n_pair} pairs", flush=True)
-    print(f"{n_img} images, {n_pair} caption pairs -> {manifest}")
+    print(f"{n_img} images, {n_pair} pairs -> {manifest}")
     return n_pair
 
 
@@ -244,8 +291,11 @@ def load_manifest(path: str) -> list[dict]:
             continue
         r = json.loads(line)
         img = Path(r.get("image") or r.get("path"))
-        rows.append({"image": str(img if img.is_absolute() else p.parent / img),
-                     "text": r["text"]})
+        row = {"image": str(img if img.is_absolute() else p.parent / img), "text": r["text"]}
+        for k in ("question", "choices", "answer_idx"):
+            if k in r:
+                row[k] = r[k]
+        rows.append(row)
     missing = [r for r in rows if not Path(r["image"]).exists()]
     if missing:
         raise SystemExit(f"{len(missing)} of {len(rows)} images are missing, "
@@ -267,8 +317,8 @@ def batches(rows, tower: VisionTower, tok, vl: VisionLanguage, device: str,
                 patches = torch.from_numpy(np.asarray(mm[index[r["image"]]])).float().to(device)
             else:
                 patches = tower.encode(r["image"]).to(device)
-            answer = tok.encode(" " + r["text"].strip()) + [tok.eos_id]
-            built.append(vl.build(patches, answer))
+            prompt, answer = qa_ids(tok, r)
+            built.append(vl.build(patches, answer, prompt))
         if not built:
             continue
         S = max(e.shape[0] for e, _ in built)
@@ -327,6 +377,15 @@ def train(args) -> None:
 
     tower = VisionTower(args.tower, dev)
     vl = VisionLanguage(model, vocab_of(ck), tower.dim, args.pool).to(dev)
+    # Warm start from a checkpoint this trainer wrote: its projector already
+    # knows how to read the tower. Only when the pooling matches, since pooling
+    # changes the projector's input width (3072 pooled against 768 unpooled).
+    if "proj" in ck and ck.get("pool", POOL) == args.pool:
+        try:
+            vl.proj.load_state_dict(ck["proj"])
+            print(f"projector warm-started from {args.ckpt}")
+        except RuntimeError as e:
+            print(f"projector shape differs, starting fresh ({str(e)[:80]})")
     print(f"tower: {args.tower}, {tower.dim}-dim, frozen")
     print(f"projector: {tower.dim} x{args.pool*args.pool} -> {cfg.hidden_size}, "
           f"{sum(p.numel() for p in vl.proj.parameters())/1e6:.2f}M params")
@@ -395,6 +454,36 @@ def train(args) -> None:
           f"(best {best:.4f}) | {args.out}")
 
 
+@torch.no_grad()
+def mc_accuracy(vl, tower, tok, rows, device: str, limit: int | None = None) -> dict:
+    """Multiple-choice VQA accuracy: score every choice, pick the most likely.
+
+    This is the automatic measure captioning lacks -- four choices, one right,
+    chance 25%. Each choice is scored by MEAN per-token loss as the answer: a
+    summed loss would prefer whichever choice has fewest tokens.
+    """
+    autocast = (torch.autocast("cuda", dtype=torch.bfloat16)
+                if device.startswith("cuda") else torch.autocast("cpu", enabled=False))
+    rows = [r for r in rows if r.get("choices") and r.get("answer_idx") is not None]
+    if limit:
+        rows = rows[:limit]
+    right = 0
+    vl.eval()
+    for r in rows:
+        patches = tower.encode(r["image"]).to(device)
+        losses = []
+        for ch in r["choices"]:
+            prompt, ans = qa_ids(tok, r, ch)
+            e, t = vl.build(patches, ans, prompt)
+            with autocast:
+                _, loss = vl.model(None, t[None], embeds=e[None])
+            losses.append(loss.item())
+        right += int(min(range(len(losses)), key=losses.__getitem__) == r["answer_idx"])
+    n = max(len(rows), 1)
+    return {"accuracy": right / n, "n": len(rows),
+            "chance": sum(1 / len(r["choices"]) for r in rows) / n}
+
+
 def load_trained(ckpt: str, device: str):
     from dataclasses import replace
 
@@ -446,6 +535,12 @@ def main() -> None:
     pp.add_argument("--manifest", required=True)
     pp.add_argument("--limit", type=int, help="stop after this many images")
 
+    vq = sub.add_parser("vqa-eval", help="multiple-choice accuracy on a VQA manifest")
+    vq.add_argument("--ckpt", required=True)
+    vq.add_argument("--manifest", required=True)
+    vq.add_argument("--limit", type=int)
+    vq.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
+
     pr = sub.add_parser("probe", help="shapes and context cost for one image")
     pr.add_argument("--image", required=True)
     pr.add_argument("--tower", default=DEFAULT_TOWER)
@@ -477,6 +572,12 @@ def main() -> None:
 
     args = p.parse_args()
 
+    if args.cmd == "vqa-eval":
+        vl, tower, tok = load_trained(args.ckpt, args.device)
+        r = mc_accuracy(vl, tower, tok, load_manifest(args.manifest), args.device, args.limit)
+        print(f"multiple-choice accuracy {100*r['accuracy']:.1f}% over {r['n']} questions "
+              f"(chance {100*r['chance']:.1f}%)")
+        return
     if args.cmd == "prep":
         prep_parquet(args.parquet, args.images, args.manifest, args.limit)
     elif args.cmd == "probe":
