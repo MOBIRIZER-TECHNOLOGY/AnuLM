@@ -1340,7 +1340,21 @@ def bpe_files_load_under_both_format_ids():
             raise SystemExit("a foreign tokenizer file must not load")
         except AssertionError:
             pass
-    shipped = sorted(glob.glob(os.path.join(os.path.dirname(__file__), "data", "*.json")))
+    # The COMMITTED tokenizers, not every json that happens to be in data/.
+    # data/ is gitignored except the tokenizers, so git's tracked list is exactly
+    # that set; globbing picked up untracked working files (contamination
+    # reports, say) and failed on them. Filtering to "files that look like a
+    # tokenizer" would be worse: a corrupted committed tokenizer could stop
+    # looking like one, be skipped, and let this test pass over the breakage it
+    # exists to catch. Without git, fall back to the glob.
+    here = os.path.dirname(os.path.abspath(__file__))
+    try:
+        import subprocess
+        tracked = subprocess.run(["git", "ls-files", "--", "data/*.json"], cwd=here,
+                                 capture_output=True, text=True, check=True).stdout.split()
+        shipped = sorted(os.path.join(here, t) for t in tracked)
+    except (OSError, subprocess.CalledProcessError):
+        shipped = sorted(glob.glob(os.path.join(here, "data", "*.json")))
     assert shipped, "the committed tokenizers under data/ went missing"
     for f in shipped:
         assert BPE.load(f).merges, f"{f} failed to load"
