@@ -417,6 +417,14 @@ pooling hypothesis was wrong.
 pool 2 at three epochs, so it is stochastic decoding rather than a resolution or
 training-length effect.
 
+**Three epochs is the ceiling for this corpus.** A six-epoch run at `--pool 1`
+peaked at step 10,250 -- about 2.8 epochs -- with 2.4489, then degraded 0.15 nats
+to 2.6004 by step 17,000. The three-epoch run reached 2.4370 at step 11,025,
+slightly better because its cosine had decayed to the floor by then while the
+six-epoch schedule still had a high learning rate at the same step. Beyond about
+three epochs the run is spending compute to get worse, which is the same shape as
+the speech runs' peak-then-collapse, at a different epoch count.
+
 **Batch size turned out to matter more than epoch count**, which was the third
 variable and the one treated as incidental: pool 2 at batch 16 for one epoch
 (2.4340) beat pool 2 at batch 8 for three epochs (2.4959). Halving the batch to
