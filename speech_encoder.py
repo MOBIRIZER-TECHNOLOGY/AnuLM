@@ -321,7 +321,9 @@ def transcribe(sm, enc, tok, wav_path: str, max_tokens: int = 64, device: str = 
     ids. Re-running the prefix each step is O(n^2) and fine for evaluation --
     caching it is the obvious optimisation if this ever goes in a demo.
     """
-    states = torch.from_numpy(enc.encode(read_wav(wav_path, ASR_RATE))).to(device)
+    # A path from a file, or 16 kHz samples straight from a microphone.
+    audio = read_wav(wav_path, ASR_RATE) if isinstance(wav_path, (str, Path)) else wav_path
+    states = torch.from_numpy(enc.encode(audio)).to(device)
     emb = sm.model.embed_tokens
     audio = sm.proj(states[None])[0]
     prefix = torch.cat([

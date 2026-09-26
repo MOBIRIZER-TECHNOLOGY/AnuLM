@@ -120,6 +120,40 @@ class ASR:
                 "seconds": round(time.time() - t0, 2)}
 
 
+class OwnASR:
+    """The project's own ear: a trained speech_encoder.py checkpoint in place of
+    Whisper's decoder.
+
+    Whisper's *encoder* is still underneath -- frozen, it turns audio into
+    features -- but the words come from this project's backbone and projector,
+    trained on LibriSpeech (TODO item 9). Same `hear()` interface as ASR, so
+    Voice cannot tell them apart.
+
+    It knows nothing about language identification, so the reported language
+    is read off the script of what it transcribed.
+    """
+
+    def __init__(self, ckpt: str = "ckpt_asr_ls100.pt", device: str = "auto"):
+        import torch
+
+        from speech_encoder import load_trained
+        if device == "auto":
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = device
+        self.sm, self.enc, self.tok = load_trained(ckpt, device)
+        self.ckpt = ckpt
+
+    def hear(self, audio, language: str | None = None) -> dict:
+        from speech_encoder import transcribe
+        if isinstance(audio, tuple):
+            audio = to_mono16k(*audio)
+        t0 = time.time()
+        text = transcribe(self.sm, self.enc, self.tok, audio, max_tokens=96,
+                          device=self.device)
+        return {"text": text, "language": script_of(text),
+                "seconds": round(time.time() - t0, 2)}
+
+
 class TTS:
     """Piper: one small ONNX voice per language, held open, CPU-only (the
     onnxruntime wheel on PyPI has no CUDA provider, and medium voices
@@ -279,6 +313,11 @@ def main() -> None:
     p.add_argument("--say", help="synthesise this text and exit (no model loaded)")
     p.add_argument("--hear", help="transcribe this file and exit (no model loaded)")
     p.add_argument("--whisper", default="small", help="tiny/base/small/medium/large-v3")
+    p.add_argument("--ear", choices=["whisper", "own"], default="whisper",
+                   help="whisper: faster-whisper transcribes; own: this project's "
+                        "trained speech_encoder.py checkpoint does (TODO item 10)")
+    p.add_argument("--asr-ckpt", default="ckpt_asr_ls100.pt",
+                   help="with --ear own: the speech_encoder.py checkpoint")
     p.add_argument("--mode", choices=["question", "translate", "continue"],
                    help="override the mode picked from the checkpoint")
     p.add_argument("--max-tokens", type=int, default=120)
@@ -308,7 +347,8 @@ def main() -> None:
     if not args.wav and not args.mic:
         p.error("give --wav a file, or --mic to record (or --say/--hear to test one stage)")
 
-    v = Voice(load_engine(args.ckpt), ASR(args.whisper), TTS(), args.max_say_chars)
+    ear = OwnASR(args.asr_ckpt) if args.ear == "own" else ASR(args.whisper)
+    v = Voice(load_engine(args.ckpt), ear, TTS(), args.max_say_chars)
     audio = record(args.seconds) if args.mic else args.wav
     r = v.reply(audio, args.max_tokens, args.temperature, args.top_k, args.seed, args.mode,
                 args.repetition_penalty)
