@@ -369,6 +369,85 @@ utterance a ~600-token target; modelling only the coarse level is 11.9 Hz, or
 That turns alignment from hard into plausible, and costs nothing in data.
 
 
+## Patch pooling: what the control showed, and what it corrected
+
+The first captioner hallucinated colours -- a white dress read as a pink shirt,
+a purple shirt as "a black shirt and a black shirt". That looked like the 2x2
+patch pooling, which averages four neighbouring patches and blurs the
+boundaries colour lives on. So the corpus was rerun with `--pool 1`: 196 patch
+tokens per image instead of 49.
+
+One thing worth stating because it inverts the obvious expectation: **`--pool 1`
+makes the projector smaller.** Pooling quadruples the input dimension, so pooled
+is 3072 -> 1024 and 12.6M parameters while unpooled is 768 -> 1024 and 1.84M.
+Four times the visual detail through a seven times smaller projector.
+
+The unpooled run produced visibly better captions than the original, and the
+temptation was to call pooling the culprit. It is not. The first comparison
+changed three things at once -- pooling, epochs (1 -> 3) and batch size
+(16 -> 8) -- so a third run held everything fixed but the pooling.
+
+| | pool 2x2 | pool 1 | pool 2x2 |
+| --- | --- | --- | --- |
+| visual tokens | 49 | 196 | 49 |
+| projector | 12.6M | 1.84M | 12.6M |
+| batch | 16 | 8 | 8 |
+| epochs | 1 | 3 | 3 |
+| best held-out loss | 2.4340 | **2.4370** | 2.4959 |
+
+**What the control established.**
+
+*Resolution helps the loss.* At matched batch and epochs, pool 1 beats pool 2 by
+0.059 nats (2.4370 against 2.4959) with a seven times smaller projector.
+
+*Resolution does not clearly help the captions.* On ten distinct held-out images
+the two are about even -- three clear wins each and four ties. pool 2 produced
+the single best caption of any run, "a black and white dog with a red Frisbee on
+a beach" against a reference reading "A black and white dog with a red Frisbee
+standing on a sandy beach", and also got the airborne skier and the mountain.
+pool 1 won on the cyclist's gender, avoided a repetition, and caught "running"
+where pool 2 saw "playing with a toy".
+
+*The colour errors were epochs, not pooling.* pool 2 at one epoch said "a girl in
+a **pink** shirt"; the same 49 tokens and the same 2x2 pooling at three epochs say
+"a **white** shirt and jeans". The first captioner was undertrained, and the
+pooling hypothesis was wrong.
+
+*The repetition artefact is neither.* "A black hat and a black hat" reappears in
+pool 2 at three epochs, so it is stochastic decoding rather than a resolution or
+training-length effect.
+
+**Batch size turned out to matter more than epoch count**, which was the third
+variable and the one treated as incidental: pool 2 at batch 16 for one epoch
+(2.4340) beat pool 2 at batch 8 for three epochs (2.4959). Halving the batch to
+fit 196-token sequences in memory was not a free change.
+
+The honest summary is that a single uncontrolled comparison suggested a
+mechanism, a controlled one refuted it, and the refutation arrived before the
+claim was published only because the commit was held back for its control.
+
+
+## Cross-entropy is a poor proxy for output quality here
+
+Twice, in different modalities, the loss moved opposite to the thing anyone
+cares about:
+
+| run | what the loss said | what the output was |
+| --- | --- | --- |
+| 100 h speech probe | better than the 5 h run (7.1067 against 7.2663) | inaudible, rms 0.0049, 39 of 50 clips silent |
+| Hindi TTS at step 1,999 | the run's best, 5.6343 | words still wrong, WER 131% |
+
+A third case looked like an instance and was not: pool 1 and pool 2 differed by
+0.059 nats and produced captions of about equal quality, so there the loss was
+uninformative rather than actively misleading.
+
+The rule this project now follows is that **no claim about what a model produces
+rests on a loss number.** Speech claims carry loudness and word error rate;
+vision claims carry printed captions on held-out images. `eval_speech.py`
+reports mean rms and counts inaudible clips for exactly this reason -- the 100 h
+probe would otherwise have been recorded as an improvement.
+
+
 ## Status
 
 Vision works. Speech generation produces audible, speaker-matched, frame-valid
