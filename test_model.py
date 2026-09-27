@@ -1602,6 +1602,32 @@ def merge_tree_composes_trains_and_bakes_losslessly():
 
 
 @test
+def merge_tree_eval_cache_sees_optimizer_updates():
+    """The eval-mode cache of composed tables must never outlive a training
+    step. Optimizers (fused AdamW) update weights without bumping their
+    version counter, which is how a version-keyed cache once scored every
+    eval of a 10,000-step run against step 999's embeddings."""
+    import json, os, tempfile
+    with tempfile.TemporaryDirectory() as d:
+        path = os.path.join(d, "tok.json")
+        json.dump({"type": "anulm-bpe", "version": 1, "merges": [[97, 98], [256, 99]]}, open(path, "w"))
+        torch.manual_seed(0)
+        m = AnuLM(tiny(vocab_size=259, tokenizer_path=path, merge_tree="both",
+                       tie_word_embeddings=True))
+        x = torch.randint(0, 259, (2, 8))
+        m.eval()
+        with torch.no_grad():
+            a, _ = m(x, x)
+        m.train()
+        with torch.no_grad():
+            m.embed_tokens.weight.data.add_(0.5)      # an update invisible to _version
+        m.eval()
+        with torch.no_grad():
+            b, _ = m(x, x)
+        assert not torch.allclose(a, b), "eval after a training step reused stale tables"
+
+
+@test
 def batched_muon_matches_per_matrix_muon():
     """Stacking same-shaped updates into one batched Newton-Schulz must give
     the same step as orthogonalising each matrix alone -- it is a speed change

@@ -911,14 +911,22 @@ class AnuLM(nn.Module):
             return W
         if self.training:
             return self._compose(W)
-        # Eval: weights are fixed, so compose once per weight version -- a
-        # decode step would otherwise redo the whole-vocabulary product.
-        key = (side, W._version, W.data_ptr())
-        if self._merged is None or key not in self._merged:
-            self._merged = {k: v for k, v in (self._merged or {}).items() if k[0] != side}
+        # Eval: compose once and reuse -- a decode step would otherwise redo
+        # the whole-vocabulary product. The cache is dropped by train(), i.e.
+        # every time training resumes. It must NOT be keyed on W._version:
+        # the fused AdamW step updates weights without bumping it, and a
+        # version-keyed cache served step-999 tables to every later eval of
+        # the 400M check (val 6.37 -> 10.66 while train loss fell to 4.43).
+        if self._merged is None:
+            self._merged = {}
+        if side not in self._merged:
             with torch.no_grad():
-                self._merged[key] = self._compose(W)
-        return self._merged[key]
+                self._merged[side] = self._compose(W)
+        return self._merged[side]
+
+    def train(self, mode: bool = True):
+        self._merged = None             # weights may change from here on
+        return super().train(mode)
 
     def _head(self, h):
         if self.cfg.merge_tree in ("out", "both"):

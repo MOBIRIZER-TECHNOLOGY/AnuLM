@@ -49,7 +49,7 @@ models.
 | [28](#28-training-at-2048-what-it-actually-bought) | continuing that base at 2,048 with YaRN for 10,000 steps | better everywhere, but zero-shot YaRN had already bought most of the *context* |
 | [29](#29-lora-against-a-full-fine-tune-at-398m) | is LoRA the right way to fine-tune a model this small? | it works, and at 398M full fine-tuning is still the better default |
 | [30](#30-four-thousand-prompts-through-the-serving-path) | what the released models do over 4,131 real prompts | no crashes, no empty replies, and the base degenerates on 81% of greedy continuations |
-| [32](#32-the-lab-what-learns-faster-on-one-consumer-gpu) | 35 proxy runs: which training ideas buy more learning per token and per GPU-second | Muon (batched) + tied embeddings + two new ideas: **~2.4x the tokens' worth, ~1.8x faster to the same loss** |
+| [32](#32-the-lab-what-learns-faster-on-one-consumer-gpu) | 35 proxy runs: which training ideas buy more learning per token and per GPU-second | ~2.4x the tokens' worth at 88M / 25M tokens -- but **at 400M it is 0.044 better per token and 43% slower, so not worth it**; the gain is early-training only |
 
 ---
 
@@ -2412,13 +2412,45 @@ one with outside evidence of surviving scale.
 - `export_hf.py` bakes a merge-tree checkpoint before export.
 - Seven new tests; 62 pass.
 
-The recipe for the next pretraining run, from this section:
+### At 400M the gain does not hold
 
-```bash
-python train.py --preset 350m --device cuda --moe-impl grouped --optimizer muon \
-    --cfg tie_word_embeddings=true merge_tree=both --bigram-teacher 2.0 \
-    --schedule wsd --val-interleave --eval-windows 400 ...
-```
+Before spending days on it, the recipe was run at the real size: the
+`350m` preset (420M parameters, 218M active), 10,000 steps of batch 8 x 512
+on the same corpus -- one pass over its 41M training tokens -- against a
+plain-AdamW baseline with the same schedule (WSD), data order and held-out
+split (`--val-interleave --eval-windows 400`).
+
+| 400M, 41M tokens | held-out loss | tokens/s |
+| --- | --- | --- |
+| baseline, AdamW | 4.6015 +/- 0.039 | 15,448 |
+| Muon + tied + merge-tree both + bigram teacher 2 | **4.5574** +/- 0.043 | 8,834 |
+
+At step 1,000 the recipe was far ahead (6.37 against 6.80), exactly as in
+the lab. By the end the baseline had caught up to within about one standard
+error, and the recipe had cost 43% more time per token -- so at equal GPU
+hours it is **worse**. What the lab measured is real but it is an
+*early-training* effect: all four ideas speed up learning the vocabulary,
+which is most of what a model does in its first 25M tokens and a shrinking
+part of it after. The proxy, with a 512-wide model and a 32k vocabulary, is
+also far more embedding-dominated than the 1024-wide model, which is where
+these ideas act. So the 2.4x above stands for what it measured and does not
+transfer.
+
+The verdict for the next pretraining run is therefore the boring one:
+**plain AdamW, without gradient checkpointing** (the +30% measured on the
+16 GB card), `--schedule wsd --val-interleave --eval-windows 400`. Muon,
+with its learning rate tuned at 400M rather than taken from the proxy, is
+the one idea worth a second look; tuning it is a few more 45-minute runs.
+
+The 400M check also caught a bug in this section's own code, and it is
+worth recording because it looked like the recipe diverging. The merge-tree
+model caches its composed tables in eval mode, keyed on the weight's
+version counter. The fused AdamW step updates weights without bumping that
+counter, so every evaluation after the first scored the current network
+against step 999's embeddings: held-out loss "rose" from 6.37 to 10.66 while
+the training loss fell to 4.43. The cache is now dropped whenever the model
+returns to training, a test holds it, and the final weights re-scored
+correctly give the 4.5574 above.
 
 Reproduce any row: `python experiments/lab.py NAME [flags]`, e.g.
 `python experiments/lab.py full --muon --tie --merge-tree 1.0 --merge-out --teacher 2.0 --grow 0.5`.
