@@ -1154,3 +1154,25 @@ def load_checkpoint(path, map_location="cpu") -> dict:
         if meta.get(k) is not None:
             ck[k] = meta[k]
     return ck
+
+
+def fit_memory(model: "AnuLM", big_params: float = 500e6, big_vocab: int = 100_000) -> None:
+    """Training-memory switches for models that do not fit a 16 GB card as-is.
+
+    Converted Qwen3-0.6B with the multimodal vocabulary (625M parameters,
+    180,613 ids) trained at 11 s/step with the card at 15.7 of 16.3 GB --
+    WDDM paging to system RAM, 18x slower than the 400M model, with no error.
+    Above `big_params`, activations are recomputed (gradient checkpointing);
+    above `big_vocab`, the loss is computed in chunks (enable_chunked_loss).
+    Both are exact. The project's own models are below both thresholds (456M
+    with the grown multimodal vocabulary, 61,445 ids) and train as before.
+    """
+    n = sum(p.numel() for p in model.parameters())
+    if n > big_params:
+        model.enable_gradient_checkpointing()
+    if model.cfg.vocab_size > big_vocab:
+        model.enable_chunked_loss(2048)
+    if n > big_params or model.cfg.vocab_size > big_vocab:
+        print(f"fit_memory: {n / 1e6:.0f}M params, vocab {model.cfg.vocab_size:,} -> "
+              f"grad checkpointing {'on' if n > big_params else 'off'}, "
+              f"chunked loss {'on' if model.cfg.vocab_size > big_vocab else 'off'}")

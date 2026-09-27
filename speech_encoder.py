@@ -174,7 +174,7 @@ def train(args) -> None:
     from dataclasses import replace
 
     from hf_tok import load_tokenizer
-    from model import AnuLM, load_checkpoint
+    from model import AnuLM, fit_memory, load_checkpoint
     from speech_vocab import vocab_of
     from train import atomic_save
 
@@ -185,6 +185,7 @@ def train(args) -> None:
     tok = load_tokenizer(cfg.tokenizer_path)
     model = AnuLM(cfg).to(dev)
     model.load_state_dict(ck["model"])
+    fit_memory(model)
 
     enc = WhisperEncoder(args.whisper, dev)
     sm = ContinuousSpeech(model, vocab, enc.dim, args.stack).to(dev)
