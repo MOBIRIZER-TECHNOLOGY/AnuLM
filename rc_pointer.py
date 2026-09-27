@@ -125,7 +125,9 @@ def best_span(s, e, n):
 
 
 def load(ckpt, device):
+    global MAX_LEN
     ck = load_checkpoint(ckpt, "cpu")
+    MAX_LEN = ck.get("max_len", MAX_LEN)
     cfg = replace(ck["cfg"], moe_impl="grouped" if device.startswith("cuda") else "sparse")
     m = AnuLM(cfg)
     if "pointer_head" in ck:
@@ -135,10 +137,13 @@ def load(ckpt, device):
     else:
         m.load_state_dict(ck["model"])
         p = Pointer(m)
-    return p.to(device), BPE.load(cfg.tokenizer_path), ck
+    from hf_tok import load_tokenizer
+    return p.to(device), load_tokenizer(cfg.tokenizer_path), ck
 
 
 def train(a):
+    global MAX_LEN
+    MAX_LEN = a.max_len
     torch.manual_seed(0)
     p, tok, ck = load(a.ckpt, "cuda")
     p.model.enable_gradient_checkpointing(a.grad_ckpt)
@@ -204,6 +209,7 @@ def train(a):
             if v < best:
                 best = v
                 torch.save({"model": p.model.state_dict(), "pointer_head": p.head.state_dict(),
+                            "max_len": MAX_LEN,
                             "cfg": p.model.cfg, "step": step, "val_loss": v, "base_ckpt": a.ckpt}, a.out)
                 flag = "  <- saved"
             print(f"  eval @ {step:5d} | held-out span loss {v:.4f}{flag}", flush=True)
@@ -276,6 +282,8 @@ def main():
     t.add_argument("--lr", type=float, default=5e-5)
     t.add_argument("--eval-every", type=int, default=1000)
     t.add_argument("--grad-ckpt", action="store_true")
+    t.add_argument("--max-len", type=int, default=MAX_LEN,
+                   help="tokens per example; Qwen's tokenizer needs ~1.55x ours for Hindi")
     e = sub.add_parser("eval")
     e.add_argument("--ckpt", default="ckpt_rc_pointer.pt")
     e.add_argument("--n", type=int, default=300)
