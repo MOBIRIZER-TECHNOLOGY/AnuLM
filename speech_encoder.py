@@ -329,7 +329,8 @@ def transcribe(sm, enc, tok, wav_path: str, max_tokens: int = 64, device: str = 
     """
     # A path from a file, or 16 kHz samples straight from a microphone.
     audio = read_wav(wav_path, ASR_RATE) if isinstance(wav_path, (str, Path)) else wav_path
-    states = torch.from_numpy(enc.encode(audio)).to(device)
+    # In the projector's dtype, so a model cast to bf16 for serving works too.
+    states = torch.from_numpy(enc.encode(audio)).to(device, next(sm.proj.parameters()).dtype)
     emb = sm.model.embed_tokens
     audio = sm.proj(states[None])[0]
     prefix = torch.cat([

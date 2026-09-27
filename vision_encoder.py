@@ -512,7 +512,8 @@ def caption(vl, tower, tok, image, max_tokens: int = 40, device: str = "cuda",
     `qa_ids` builds it for training, and the reply is a free-form answer --
     what a demo needs, where `mc_accuracy` can only rank given choices.
     """
-    patches = tower.encode(image).to(device)
+    # In the projector's dtype, so a model cast to bf16 for serving works too.
+    patches = tower.encode(image).to(device, next(vl.proj.parameters()).dtype)
     emb = vl.model.embed_tokens
     parts = [emb(torch.tensor([vl.vocab.image_bos], device=device)), vl.proj(patches),
              emb(torch.tensor([vl.vocab.image_eos], device=device))]

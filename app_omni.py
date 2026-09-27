@@ -60,14 +60,37 @@ class Models:
             print(f"loaded {key} in {time.time() - t0:.1f}s", flush=True)
         return self._m[key]
 
+    def _half(self, module):
+        """bf16 weights on the GPU: five resident backbones in fp32 filled the
+        16 GB card to 15,986 MiB, the edge of the silent spill to system RAM."""
+        if self.device.startswith("cuda"):
+            from model import Rotary
+            module.to(torch.bfloat16)
+            # .to(dtype) also casts RoPE's inv_freq buffer; in bf16 the angles
+            # drift ~0.8 rad by position 200. Rebuild it in fp32.
+            for m in module.modules():
+                if isinstance(m, Rotary):
+                    m.inv_freq = Rotary._build_inv_freq(m.cfg, m.dim).to(self.device)
+                    m._cached_len, m._cached_key = 0, None
+        return module
+
     def ear(self, lang: str):
         from voice import OwnASR
+
+        def make():
+            asr = OwnASR(CKPTS[key], self.device)
+            self._half(asr.sm)
+            return asr
         key = "asr_hi" if lang == "hi" else "asr_en"
-        return self._get(key, lambda: OwnASR(CKPTS[key], self.device))
+        return self._get(key, make)
 
     def eye(self, task: str):
         from vision_encoder import load_trained
-        return self._get(task, lambda: load_trained(CKPTS[task], self.device))
+
+        def make():
+            vl, tower, tok = load_trained(CKPTS[task], self.device)
+            return self._half(vl), tower, tok
+        return self._get(task, make)
 
     def brain(self):
         from voice import load_engine
@@ -79,6 +102,17 @@ class Models:
     def mouth(self):
         from voice import TTS
         return self._get("tts", TTS)
+
+
+def as_question(heard: str) -> str:
+    """Speech recognition returns "what animal is this"; the VQA model was
+    trained on A-OKVQA's "What animal is this?" and answered the heard form
+    "bee" where the typed one got "dog". Restore the written form."""
+    q = heard.strip()
+    if not q:
+        return q
+    q = q[0].upper() + q[1:]
+    return q if q[-1] in "?.!।" else q + "?"
 
 
 def answer_text(models: Models, text: str, max_tokens: int = 120) -> tuple[str, float]:
@@ -155,7 +189,7 @@ def build(models: Models) -> gr.Blocks:
                 t0 = time.time()
                 parts = []
                 if sq is not None:
-                    q = models.ear("en").hear(sq)["text"]
+                    q = as_question(models.ear("en").hear(sq)["text"])
                     parts.append(f"heard {time.time() - t0:.2f}s")
                 t1 = time.time()
                 if q and q.strip():
