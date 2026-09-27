@@ -464,10 +464,13 @@ the vocabulary the model already speaks.
 
 | task | data | result | control |
 | --- | --- | --- | --- |
-| English ASR | LibriSpeech train-clean-100, 1 epoch, 6,992 steps | **WER 12.4%**, 100 held-out clips | Whisper itself on the same audio: 3.78% |
-| Hindi ASR | FLEURS hi train, 2,120 clips (6.66 h), 3 epochs, 8 min | **WER 62.7%**, 50 FLEURS dev clips | the English ASR model zero-shot: 103.7% |
+| English ASR | LibriSpeech train-clean-100, 1 / 2 / 3 epochs | **WER 12.4% -> 9.0% -> 8.2%**, same 100 held-out clips | Whisper itself on the same audio: 3.78% |
+| Hindi ASR | FLEURS hi, 2,120 clips (6.66 h), 3 epochs | **WER 62.7%**, 50 FLEURS dev clips | the English ASR model zero-shot: 103.7% |
+| Hindi ASR | + the IndicTTS speaker (7,971 clips), 3 epochs, then 3 more | **WER 58.9% -> 48.4%**, same 50 clips | |
 | VQA | A-OKVQA train, 17,056 questions, 3 epochs from `ckpt_caption_p1.pt` | **40.2%** 4-way MC, 1,145 val questions | the captioner, no VQA training: 25.9% (chance 25%) |
-| captioning | Flickr30k, 145,000 captions, 1 epoch, pool 1 | held-out loss 2.6988, still falling at the last step | better captions than the Flickr8k model on 6 of 8 Flickr30k val images |
+| VQA | the same, from the Flickr30k captioner | **40.9%**, same questions | a better captioner barely helps |
+| captioning | Flickr30k, 145,000 captions, 1 epoch, pool 1 | held-out loss 2.6988 | better captions than the Flickr8k model on 6 of 8 Flickr30k val images |
+| captioning | Flickr30k epoch 2 (14,000 of 17,763 steps) | best 2.6718 at step 7,000, then flat to 2.68 | the plateau; `ckpt_caption_f30k_e2.pt` |
 
 Notes a reader needs:
 
@@ -484,8 +487,17 @@ Notes a reader needs:
   mean per-token loss (`vision_encoder.py vqa-eval`). The captioner control
   sits at chance, so the 14-point gain comes from the VQA training and is
   not a side effect of the scoring.
+* **More epochs kept paying for ASR** (English 12.4 -> 9.0 -> 8.2; Hindi
+  58.9 -> 48.4) where they stopped paying for captioning (Flickr30k flat
+  after 1.4 epochs) and VQA (held-out loss best at step 4,000 of 6,269, then
+  rising). Adding the single IndicTTS voice to FLEURS helped rather than
+  overfitting to it: the dev clips are other speakers.
+* The VQA runs are 40.2% and 40.9% on 1,145 questions; one standard error is
+  about 1.4 points, so the Flickr30k warm start is not a measured gain.
 * `voice.py --ear own` puts the English ASR model in the cascade in place of
-  Whisper (`OwnASR`), so a spoken turn can use the project's own ear.
+  Whisper (`OwnASR`). With the epoch-2 ear, of two Piper-spoken questions it
+  heard "what is the capital of india" exactly and "What is Python?" as
+  "or his pony" -- the proper-noun weakness in its shortest form.
 
 ## Status
 

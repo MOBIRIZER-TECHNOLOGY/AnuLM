@@ -32,6 +32,13 @@ marked **(no GPU)** can be done on a laptop.
    identity examples, and a turn-marked template. `finetune.py` already
    handles question/answer pairs; multi-turn packing within 512 tokens is
    the new part. Expect 1–3 GPU-hours and modest quality at 400M.
+   **First probe (2026-09-27):** Dolly-15k (14,711 pairs, 2 epochs, 9 min)
+   on `ckpt_ctx2k.pt`: held-out answer loss 3.7625 -> 3.4222, and the output
+   changes register -- it now answers in the instruction's form ("Mango is a
+   fruit or a vegetable") where the base continued as a web page -- but the
+   answers are wrong or looping ("Python: Python - Python: Python"). Format
+   is learnable from 15k examples; knowledge at this size is not. Next:
+   oasst2 multi-turn, and judge by output, not loss.
 5. **Better coder data — rethink before running.** §31 ran the textbook
    probe this item proposed, and it did not do what the coder plan expected:
    after the §25 SFT recipe the textbook corpus scored MBPP 14.4% (up from
@@ -59,22 +66,23 @@ input-side items come first; they are the likely wins.
    on the held-out slice with `speech_encoder.py eval`, against Whisper's own
    3.78% floor on the same audio. ~2.4 GPU-hours per epoch; the trainer now
    checkpoints every 500 steps, so intermediate checkpoints can be scored
-   rather than waiting for the end. **Works: WER 12.4% after one epoch**
-   (100 held-out clips, mostly proper-noun errors). Epochs 2 and 3 are
-   queued; the curve had not flattened.
+   rather than waiting for the end. **Works: WER 12.4% / 9.0% / 8.2%
+   after 1 / 2 / 3 epochs** (same 100 held-out clips, mostly proper-noun
+   errors). `ckpt_asr_ls100_e3.pt` is the one to use.
 10. **A spoken turn with the project's own ear.** Once 9 works, route
     `voice.py` through it instead of Whisper: own ASR -> a reasoning
     checkpoint -> Piper. No new training beyond 9. The cascade currently
     borrows both the ear and the mouth; this would make the ear the
     project's. **Wired:** `voice.py --ear own` (`OwnASR`). A retest on the
-    Piper questions with the epoch-2 ear is queued.
+    Piper questions with the epoch-2 ear: one of two heard exactly;
+    "What is Python?" came out "or his pony".
 11. **Visual question answering.** Captioning works; answering a question
     about an image does not exist. Same frozen tower and projector with an
     image + question -> answer template. Needs VQA data — VQAv2 or GQA for
     English, and a Hindi VQA set if one is open. The projector from
     `ckpt_caption_p1.pt` is a warm start. **Works: 40.2%** 4-way multiple
     choice on 1,145 A-OKVQA val questions, against 25.9% for the untrained
-    captioner. Queued: the same run warm from the Flickr30k captioner.
+    captioner. Warm from the Flickr30k captioner: 40.9%, within noise.
     A Hindi VQA set is still missing.
 12. **Hindi speech recognition.** After 9 works in English, train on the
     IndicTTS speaker already encoded (11.84 h). Two speakers only, so it
@@ -83,8 +91,9 @@ input-side items come first; they are the likely wins.
     someone with a Hugging Face account should request access. **First
     result: WER 62.7%** on 50 FLEURS dev clips, trained on FLEURS hi
     (6.66 h, many speakers) warm from the English ASR model; zero-shot was
-    103.7%. Queued: FLEURS + the IndicTTS speaker together (7,971 clips).
-    The gated corpora remain the real fix.
+    103.7%. FLEURS + the IndicTTS speaker (7,971 clips): 58.9% after 3
+    epochs, **48.4%** after 3 more (`ckpt_asr_hi_mix2.pt`). The gated
+    corpora remain the real fix.
 13. **Intelligible speech out: model only SNAC's coarse level.** The Hindi
     TTS run solved the acoustics (loudness matched to source within 1.3%,
     zero inaudible clips) and not the alignment (WER 131%). SNAC at 83.3
@@ -101,7 +110,7 @@ input-side items come first; they are the likely wins.
     batch of at least 8 — batch size moved the loss more than epoch count.
     **One epoch done** (`ckpt_caption_f30k.pt`, held-out 2.6988, still
     falling); better captions than the Flickr8k model on 6 of 8 val images.
-    A second epoch is queued.
+    Epoch 2 plateaued: best 2.6718 at step 7,000, flat after. Done.
 
 ## Evaluation
 
