@@ -2,8 +2,8 @@
 Show AnuLM a picture: the captioning demo.
 
     pip install gradio timm pillow
-    python app_vision.py                              # loads ckpt_caption_f8k.pt
-    python app_vision.py --ckpt ckpt_caption_p1.pt     # a different checkpoint
+    python app_vision.py                              # loads ckpt_caption_f30k_e2.pt
+    python app_vision.py --ckpt ckpt_caption_p1.pt     # the Flickr8k captioner
     python app_vision.py --host 0.0.0.0               # reachable on the same wifi
 
 This is the only multimodal path in the project that works, and until now there
@@ -84,7 +84,7 @@ class Captioner:
 def build(cap: Captioner) -> gr.Blocks:
     with gr.Blocks(title="AnuLM — vision") as demo:
         gr.Markdown("## AnuLM — show it a picture\n"
-                    "A frozen SigLIP tower, a 12.6M projector trained on Flickr8k, "
+                    "A frozen SigLIP tower, a projector trained on Flickr30k, "
                     "and the same 353M backbone that writes Python.")
         gr.Markdown(cap.info)
         with gr.Row():
@@ -109,7 +109,7 @@ def build(cap: Captioner) -> gr.Blocks:
 
 def main() -> None:
     p = argparse.ArgumentParser(description="Caption images with AnuLM.")
-    p.add_argument("--ckpt", default="ckpt_caption_f8k.pt",
+    p.add_argument("--ckpt", default="ckpt_caption_f30k_e2.pt",
                    help="a checkpoint from vision_encoder.py train")
     p.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     p.add_argument("--host", default="127.0.0.1")

@@ -133,7 +133,7 @@ class OwnASR:
     is read off the script of what it transcribed.
     """
 
-    def __init__(self, ckpt: str = "ckpt_asr_ls100.pt", device: str = "auto"):
+    def __init__(self, ckpt: str = "ckpt_asr_ls100_e3.pt", device: str = "auto"):
         import torch
 
         from speech_encoder import load_trained
@@ -316,8 +316,9 @@ def main() -> None:
     p.add_argument("--ear", choices=["whisper", "own"], default="whisper",
                    help="whisper: faster-whisper transcribes; own: this project's "
                         "trained speech_encoder.py checkpoint does (TODO item 10)")
-    p.add_argument("--asr-ckpt", default="ckpt_asr_ls100.pt",
-                   help="with --ear own: the speech_encoder.py checkpoint")
+    p.add_argument("--asr-ckpt", default="ckpt_asr_ls100_e3.pt",
+                   help="with --ear own: the speech_encoder.py checkpoint "
+                        "(LibriSpeech, 3 epochs, WER 8.2%%; ckpt_asr_hi_mix2.pt for Hindi)")
     p.add_argument("--mode", choices=["question", "translate", "continue"],
                    help="override the mode picked from the checkpoint")
     p.add_argument("--max-tokens", type=int, default=120)
