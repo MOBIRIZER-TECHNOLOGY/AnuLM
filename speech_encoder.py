@@ -314,12 +314,18 @@ def load_trained(ckpt: str, device: str):
 
 @torch.no_grad()
 def transcribe(sm, enc, tok, wav_path: str, max_tokens: int = 64, device: str = "cuda",
-               no_repeat_ngram: int = 3) -> str:
-    """Greedy decode from a continuous prompt, one token at a time.
+               no_repeat_ngram: int = 3, use_cache: bool = True) -> str:
+    """Greedy decode from a continuous prompt, through `decode_from_embeds`:
+    the audio prefix is prefilled into the KV cache once, then one position
+    per token. `use_cache=False` is the old prefix-replay path, kept so a test
+    can hold the two to the same output.
 
-    No KV cache: the prompt is embeddings rather than ids, and `generate` takes
-    ids. Re-running the prefix each step is O(n^2) and fine for evaluation --
-    caching it is the obvious optimisation if this ever goes in a demo.
+    `no_repeat_ngram` blocks any token that would complete an n-gram already
+    emitted. Greedy decoding on this model falls into loops -- "end of this end
+    of this end of this", "i opened her and i opened her" -- and every repeated
+    word is an insertion, so an unguarded WER measures looping as much as
+    listening. n=3 is the usual choice for transcripts: real speech rarely
+    repeats a trigram inside one utterance.
     """
     # A path from a file, or 16 kHz samples straight from a microphone.
     audio = read_wav(wav_path, ASR_RATE) if isinstance(wav_path, (str, Path)) else wav_path
@@ -329,30 +335,12 @@ def transcribe(sm, enc, tok, wav_path: str, max_tokens: int = 64, device: str = 
     prefix = torch.cat([
         emb(torch.tensor([sm.vocab.speech_bos], device=device)), audio,
         emb(torch.tensor([sm.vocab.text_bos], device=device))], dim=0)
-    out: list[int] = []
     autocast = (torch.autocast("cuda", dtype=torch.bfloat16)
                 if device.startswith("cuda") else torch.autocast("cpu", enabled=False))
-    for _ in range(max_tokens):
-        cur = (prefix if not out else
-               torch.cat([prefix, emb(torch.tensor(out, device=device))], dim=0))
-        with autocast:
-            logits, _ = sm.model(None, embeds=cur[None])
-        scores = logits[0, -1].float()
-        # Block any token that would complete an n-gram already emitted. Greedy
-        # decoding on this model falls into loops -- "end of this end of this
-        # end of this", "i opened her and i opened her" -- and every repeated
-        # word is an insertion, so an unguarded WER measures looping as much as
-        # listening. n=3 is the usual choice for transcripts: real speech
-        # rarely repeats a trigram inside one utterance.
-        if len(out) >= no_repeat_ngram - 1:
-            tail = tuple(out[-(no_repeat_ngram - 1):])
-            for j in range(len(out) - no_repeat_ngram + 1):
-                if tuple(out[j:j + no_repeat_ngram - 1]) == tail:
-                    scores[out[j + no_repeat_ngram - 1]] = float("-inf")
-        nxt = int(scores.argmax())
-        if nxt == tok.eos_id or nxt >= sm.vocab.text:
-            break
-        out.append(nxt)
+    with autocast:
+        out = sm.model.decode_from_embeds(
+            prefix, max_tokens, stop=lambda t: t == tok.eos_id or t >= sm.vocab.text,
+            no_repeat_ngram=no_repeat_ngram, use_cache=use_cache)
     return tok.decode(out).strip().split("\n")[0]
 
 

@@ -56,6 +56,32 @@ def zeropower_via_newtonschulz5(G: torch.Tensor, steps: int = 5, eps: float = 1e
     return X
 
 
+def zeropower_batched(G: torch.Tensor, steps: int = 5, eps: float = 1e-7):
+    """`zeropower_via_newtonschulz5` on a stack (n, r, c) of same-shaped matrices
+    at once: one batched matmul per iteration instead of n small ones.
+
+    Why it matters for an MoE: the 350m preset has 12-24 experts x 3 matrices
+    x 19 layers, i.e. hundreds of small (hidden x expert-width) weights. One
+    at a time, each Newton-Schulz iteration is a tiny kernel launch, and the
+    optimizer step ran 3x slower than AdamW's; stacked, the GPU sees a few
+    large batched GEMMs. Each matrix is normalised by its own norm, so the
+    result equals the per-matrix function up to bf16 rounding.
+    """
+    a, b, c = 3.4445, -4.7750, 2.0315
+    X = G.bfloat16()
+    X = X / (X.flatten(1).norm(dim=1)[:, None, None] + eps)
+    transposed = G.size(-2) > G.size(-1)
+    if transposed:
+        X = X.mT
+    for _ in range(steps):
+        A = X @ X.mT
+        B = b * A + c * (A @ A)
+        X = a * X + B @ X
+    if transposed:
+        X = X.mT
+    return X
+
+
 class Muon(torch.optim.Optimizer):
     """Muon for 2D parameters. Pair with AdamW for everything else.
 
@@ -65,16 +91,19 @@ class Muon(torch.optim.Optimizer):
     """
 
     def __init__(self, params, lr: float = 0.02, momentum: float = 0.95,
-                 nesterov: bool = True, ns_steps: int = 5, weight_decay: float = 0.0):
+                 nesterov: bool = True, ns_steps: int = 5, weight_decay: float = 0.0,
+                 batched: bool = True):
         defaults = dict(lr=lr, momentum=momentum, nesterov=nesterov,
                         ns_steps=ns_steps, weight_decay=weight_decay)
         super().__init__(params, defaults)
+        self.batched = batched
 
     @torch.no_grad()
     def step(self, closure=None):
         loss = closure() if closure is not None else None
         for group in self.param_groups:
             lr, mom = group["lr"], group["momentum"]
+            todo = []
             for p in group["params"]:
                 if p.grad is None:
                     continue
@@ -86,14 +115,25 @@ class Muon(torch.optim.Optimizer):
                 buf.lerp_(g, 1 - mom)
                 # Note: `lerp`, not `lerp_` -- mutating p.grad in place would
                 # corrupt gradient clipping and any later inspection of grads.
-                d = g.lerp(buf, mom) if group["nesterov"] else buf
-                d = zeropower_via_newtonschulz5(d, steps=group["ns_steps"])
-                if group["weight_decay"]:
-                    p.mul_(1 - lr * group["weight_decay"])
-                # Shape correction: a tall matrix needs a larger step to move
-                # its output distribution as much as a square one would.
-                scale = max(1.0, p.size(-2) / p.size(-1)) ** 0.5
-                p.add_(d.to(p.dtype), alpha=-lr * scale)
+                todo.append((p, g.lerp(buf, mom) if group["nesterov"] else buf))
+            # Same-shaped updates are orthogonalised together (zeropower_batched);
+            # an MoE's experts all share one shape per projection.
+            by_shape: dict = {}
+            for p, d in todo:
+                by_shape.setdefault(tuple(d.shape) if self.batched else id(p), []).append((p, d))
+            for items in by_shape.values():
+                if len(items) > 1:
+                    outs = zeropower_batched(torch.stack([d for _, d in items]),
+                                             steps=group["ns_steps"]).unbind(0)
+                else:
+                    outs = [zeropower_via_newtonschulz5(items[0][1], steps=group["ns_steps"])]
+                for (p, _), d in zip(items, outs):
+                    if group["weight_decay"]:
+                        p.mul_(1 - lr * group["weight_decay"])
+                    # Shape correction: a tall matrix needs a larger step to move
+                    # its output distribution as much as a square one would.
+                    scale = max(1.0, p.size(-2) / p.size(-1)) ** 0.5
+                    p.add_(d.to(p.dtype), alpha=-lr * scale)
         return loss
 
 

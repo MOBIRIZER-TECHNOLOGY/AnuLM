@@ -49,6 +49,7 @@ models.
 | [28](#28-training-at-2048-what-it-actually-bought) | continuing that base at 2,048 with YaRN for 10,000 steps | better everywhere, but zero-shot YaRN had already bought most of the *context* |
 | [29](#29-lora-against-a-full-fine-tune-at-398m) | is LoRA the right way to fine-tune a model this small? | it works, and at 398M full fine-tuning is still the better default |
 | [30](#30-four-thousand-prompts-through-the-serving-path) | what the released models do over 4,131 real prompts | no crashes, no empty replies, and the base degenerates on 81% of greedy continuations |
+| [32](#32-the-lab-what-learns-faster-on-one-consumer-gpu) | 35 proxy runs: which training ideas buy more learning per token and per GPU-second | Muon (batched) + tied embeddings + two new ideas: **~2.4x the tokens' worth, ~1.8x faster to the same loss** |
 
 ---
 
@@ -2269,3 +2270,156 @@ a 398M model and would never have survived hand-picking.
 python tools_sweep.py --device cuda            # resumable; run_sweep.cmd for a long one
 python tools_samples.py                        # -> docs/samples.json, docs/SAMPLES.md
 ```
+
+## 32. The lab: what learns faster on one consumer GPU
+
+Every section above spends GPU days on one recipe. This one asks which
+*recipe* to spend them on. The constraint that shapes it: on the RTX 5070 Ti a
+174M-active model trains at ~14,600 tokens/s, about 1.26B tokens a day, so
+quality is bought in tokens and anything that makes a token teach more is worth
+more than any size change. `experiments/lab.py` is a harness for asking that
+cheaply: a proxy of the same architecture (8 layers, width 512, 16 experts
+top-2 + shared, the `multi32k` vocabulary; 88M parameters) trained on 25M
+tokens of `data/ctx_mix.multi32k.bin` in ~6 minutes, all runs with the same
+data order per seed, the same WSD schedule and the same held-out windows. 35
+runs.
+
+### First, the measurement was wrong
+
+The first sweep split held-out data the way `train.py` does, as the last 10%
+of the file. The file is ordered by source. Sampling 60 windows from each part:
+
+| part of `ctx_mix.multi32k.bin` | Hindi | English | code |
+| --- | --- | --- | --- |
+| first 30% | 43 | 9 | 8 |
+| 30–60% | 29 | 21 | 10 |
+| 60–90% | 21 | 33 | 6 |
+| **last 10% (the val split)** | **0** | **57** | **3** |
+
+So every val loss read through the tail split on this file is an English
+number, and the ideas aimed at Hindi could not show. The lab now holds out
+every 10th 256k-token chunk (160 Hindi / 153 English / 71 code windows of
+384) and reports each language and their mean. `train.py --val-interleave`
+does the same; it is off by default only so older curves stay comparable, and
+every new run should use it.
+
+### The ideas, one at a time (AdamW, 25M tokens)
+
+Mean held-out loss over the three languages; lower is better. Seed-to-seed
+noise on the baseline is 0.066 (4.946 vs 5.012), so only a change several
+times that, or one that repeats on the second seed, is counted.
+
+| idea | loss | vs baseline | tokens/s | verdict |
+| --- | --- | --- | --- | --- |
+| baseline | 4.946 | | 78k | |
+| **Muon, batched** (below) | **4.575** | **−0.371** | 61k | keep |
+| bigram teacher, weight 1 → 0 by 50% (new) | 4.728 | −0.218 (seed 1: −0.216) | 67k | keep |
+| **tied embeddings** | **4.739** | **−0.207** | 78k | keep, free |
+| merge-tree embeddings, input (new) | 4.759 | −0.187 (seed 1: −0.185) | 70k | keep |
+| merge-tree, output head (new) | 4.752 | −0.194 | 74k | keep |
+| grow depth: half the tokens at half depth | 4.838 | −0.108 | **92k** | faster *and* better |
+| no weight decay on embeddings | 4.919 | −0.027 | 76k | within noise |
+| hashed bigram/trigram input memory (+67M params) | ≈ baseline* | 0 | 75k | drop |
+| in-window token cache added to the logits | 5.031 | +0.085 | 76k | drop |
+| loop layers 2–5 twice (shared weights) | 5.116 | +0.170 | 57k | drop |
+| backprop only the hardest 70% of tokens | 5.554 | +0.608 | 78k | drop |
+| **bigram log-probs ADDED to the logits** | **5.473** | **+0.527** | 70k | drop |
+
+(* measured before the split fix, on English-only held-out data: 5.357 against the baseline's 5.361; not re-run.)
+
+The two new ideas:
+
+- **Merge-tree embeddings** (`merge_tree` in `AnuLMConfig`). A BPE token is
+  a merge of two earlier tokens, so row *t* of the table is trained as
+  `W[t] + (E[a] + E[b]) / 2`, recursively down the merge tree. A rare token
+  like a long Hindi word starts from the vectors of its common pieces, and
+  every gradient on a common piece improves its descendants. Unrolled it is
+  a fixed sparse matrix, `E = P @ W`, with 393,657 nonzeros for `multi32k`
+  (12 per token), so it costs ~0.4 GFLOP per step. It is a
+  reparameterisation, not new capacity: `bake_merge_tree()` writes `P @ W`
+  back as a plain table and the served model is an ordinary one.
+- **A bigram teacher** (`bigram_teacher.py`, `train.py --bigram-teacher`).
+  One count pass over the training split gives, for every previous token,
+  the distribution of the next; a KL term pulls the model toward it early
+  and fades to zero by half-way. It is distillation with no teacher model.
+  The last row of the table is the control that makes it interesting: the
+  *same* statistics added permanently to the logits are the worst idea
+  tested. Soft targets carry information about every vocabulary entry at
+  every position and then get out of the way; a fixed prior has to be
+  un-learned everywhere it is wrong. Keeping the teacher on to 80% of the run
+  was worse (4.760) than fading it by 50%; weight 2 beat weight 1 (4.692).
+
+**Batched Muon.** `muon.py` orthogonalised each 2D update separately. An MoE
+has hundreds of same-shaped expert matrices (336 in the proxy), so each
+Newton-Schulz iteration was hundreds of tiny kernels and Muon ran at 26k
+tokens/s, a third of AdamW. `zeropower_batched` stacks same-shaped updates
+and runs one batched matmul per iteration. The updates are bit-identical to
+the per-matrix ones (a test holds it); the speed went to 61k tokens/s, and
+with it Muon went from not worth it to the largest single gain here.
+
+### Together
+
+| recipe (25M tokens) | seed 0 | seed 1 | time |
+| --- | --- | --- | --- |
+| baseline | 4.946 | 5.012 | 320 s |
+| merge-tree + teacher | 4.571 | 4.623 | 404 s |
+| merge-tree in + out + teacher | 4.484 | | 422 s |
+| Muon + tied | 4.443 | | 413 s |
+| Muon + tied + merge-tree out | 4.445 | | 430 s |
+| Muon + tied + teacher 2 | 4.429 | | 492 s |
+| Muon + tied + grow | 4.473 | | **342 s** |
+| **everything** (Muon, tied, merge-tree in + out, teacher 2, grow) | **4.400** | **4.395** | 442 s |
+
+Under AdamW the two new ideas add up exactly (−0.19 and −0.22 → −0.38, on
+both seeds). On top of Muon and tied embeddings they add only ~0.04 more:
+all four mostly fix the same thing, rare vocabulary rows that learn slowly,
+and Muon plus a shared input/output table already fix most of it. That is a
+real negative result about the new ideas and it is reported as one. Their
+place is where Muon is not used, which today includes every fine-tuning
+script in this repository.
+
+### What it is worth, in tokens and in time
+
+The baseline was also trained to 50M and 100M tokens, each with its own
+full schedule:
+
+| baseline tokens | 25M | 50M | 100M |
+| --- | --- | --- | --- |
+| held-out loss | 4.946 | 4.466 | 4.219 |
+
+Interpolating in log-tokens, the full recipe at 25M (4.400 / 4.395) sits
+where the baseline would be at **~60M tokens: about 2.4x the learning per
+token**. By the clock, the full recipe given 299 s (17.5M tokens) reached
+4.577, which the baseline reaches at ~43M tokens, ~545 s: **about 1.8x faster
+to the same loss**. Two cautions. The training split is 41M tokens, so the
+100M baseline repeats its data 2.4 times, which flatters the multiplier a
+little. And this is an 88M proxy at 25M tokens; gains measured this early in
+training can shrink at 400M parameters and billions of tokens. Muon's is the
+one with outside evidence of surviving scale.
+
+### What changed in the code
+
+- `muon.py`: batched Newton-Schulz across same-shaped matrices (default on).
+- `model.py`: `merge_tree` config field, `bake_merge_tree()`;
+  `decode_from_embeds()`, a KV-cached decoder for audio/image prompts
+  (captioning and transcription no longer re-run the whole prefix each
+  token); `enable_chunked_loss()`; a `NATIVE_GQA` switch. The last two are
+  written and tested but **not yet measured on the GPU**, so both stay off.
+- `train.py`: `--val-interleave`, `--bigram-teacher`, `--schedule wsd`,
+  `--ce-chunk`, `--native-gqa`, and a warning when the first step reserves
+  more than 92% of the card (on Windows that spills silently to system RAM:
+  batch 16 without checkpointing asked for 19.3 GB and ran 4x slower).
+- `export_hf.py` bakes a merge-tree checkpoint before export.
+- Seven new tests; 62 pass.
+
+The recipe for the next pretraining run, from this section:
+
+```bash
+python train.py --preset 350m --device cuda --moe-impl grouped --optimizer muon \
+    --cfg tie_word_embeddings=true merge_tree=both --bigram-teacher 2.0 \
+    --schedule wsd --val-interleave --eval-windows 400 ...
+```
+
+Reproduce any row: `python experiments/lab.py NAME [flags]`, e.g.
+`python experiments/lab.py full --muon --tie --merge-tree 1.0 --merge-out --teacher 2.0 --grow 0.5`.
+Growing depth is lab-only for now; it is not in `train.py`.

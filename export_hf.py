@@ -102,6 +102,15 @@ def main() -> None:
     out.mkdir(parents=True, exist_ok=True)
     ck = load_checkpoint(args.ckpt, "cpu")
     cfg = ck["cfg"]
+    if getattr(cfg, "merge_tree", ""):
+        # A merge-tree checkpoint stores the raw tables; the exported model
+        # (and the transformers wrapper) must see the composed ones.
+        from model import AnuLM
+        m = AnuLM(cfg)
+        m.load_state_dict(ck["model"])
+        m.bake_merge_tree()
+        ck["model"], cfg = m.state_dict(), m.cfg
+        print("baked the merge-tree tables into plain weights")
 
     # 1. weights
     sd = to_bf16(ck["model"])

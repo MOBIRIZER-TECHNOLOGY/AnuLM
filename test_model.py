@@ -1478,6 +1478,165 @@ def qa_packing_masks_prompts_and_keeps_examples_whole():
     assert x2.shape[0] == 0
 
 
+@test
+def chunked_loss_matches_the_full_loss_and_its_gradients():
+    """enable_chunked_loss must be a memory change and nothing else: the same
+    loss and the same gradient on every parameter, including with ignored
+    (-1) targets and a last chunk shorter than the others."""
+    torch.manual_seed(0)
+    cfg = tiny()
+    a, b = AnuLM(cfg).train(), AnuLM(cfg).train()
+    b.load_state_dict(a.state_dict())
+    b.enable_chunked_loss(7)                        # 2*16 = 32 rows -> 5 chunks, last of 4
+    x = torch.randint(0, cfg.vocab_size, (2, 16))
+    y = x.clone()
+    y[0, :5] = -1
+    la = a(x, y)[1]
+    logits, lb = b(x, y)
+    assert logits is None, "the chunked path must not build the full logits"
+    assert abs(la.item() - lb.item()) < 1e-5, (la.item(), lb.item())
+    la.backward()
+    lb.backward()
+    for (n, pa), (_, pb) in zip(a.named_parameters(), b.named_parameters()):
+        if pa.grad is None:
+            assert pb.grad is None, n
+            continue
+        assert torch.allclose(pa.grad, pb.grad, atol=1e-5), f"gradient differs at {n}"
+    b.eval()
+    with torch.no_grad():
+        assert b(x, y)[0] is not None, "eval mode keeps returning logits"
+
+
+@test
+def cached_embeds_decoding_matches_prefix_replay():
+    """decode_from_embeds with the KV cache must emit exactly what re-running
+    the whole prefix every step emits -- for a prompt made of embeddings, as
+    the speech and vision paths build it, with and without n-gram blocking."""
+    for attn in ("gqa", "mla"):
+        torch.manual_seed(1)
+        m = AnuLM(tiny(attn=attn, block_size=64)).eval()
+        prefix = torch.randn(9, m.cfg.hidden_size) * 0.5
+        for n in (0, 3):
+            a = m.decode_from_embeds(prefix, 20, stop=lambda t: False, no_repeat_ngram=n)
+            b = m.decode_from_embeds(prefix, 20, stop=lambda t: False, no_repeat_ngram=n,
+                                     use_cache=False)
+            assert a == b, f"{attn} n={n}: cached {a} vs replay {b}"
+            assert len(a) == 20
+        stop_at = a[4]
+        c = m.decode_from_embeds(prefix, 20, stop=lambda t: t == stop_at)
+        assert stop_at not in c and c == a[:a.index(stop_at)], "stop must end decoding"
+
+
+@test
+def native_gqa_matches_repeat_interleave():
+    """NATIVE_GQA hands the Hkv heads to SDPA's enable_gqa instead of copying
+    them; outputs must agree on the full-sequence, cached and windowed paths."""
+    import model as M
+    torch.manual_seed(2)
+    m = AnuLM(tiny(n_kv_head=1, sliding_window=4, max_window_layers=1)).eval()
+    x = torch.randint(0, 64, (2, 12))
+    saved = M.NATIVE_GQA
+    try:
+        outs = []
+        for native in (False, True):
+            M.NATIVE_GQA = native
+            with torch.no_grad():
+                full, _ = m(x, x)
+                cache = m.new_cache()
+                m(x[:, :8], cache=cache)
+                step, _ = m(x[:, 8:], cache=cache, start=8)
+            outs.append((full, step))
+    finally:
+        M.NATIVE_GQA = saved
+    assert torch.allclose(outs[0][0], outs[1][0], atol=1e-5), "full-sequence logits differ"
+    assert torch.allclose(outs[0][1], outs[1][1], atol=1e-5), "cached-step logits differ"
+
+
+@test
+def wsd_schedule_is_flat_then_decays_to_min_lr():
+    from types import SimpleNamespace
+    from train import lr_at
+    a = SimpleNamespace(lr=1e-3, min_lr=1e-4, warmup=10, steps=100, schedule="wsd",
+                        decay_frac=0.2, rewarmup=0)
+    lrs = [lr_at(s, a) for s in range(100)]
+    assert lrs[0] < lrs[9] == 1e-3, "warmup ramps to the peak"
+    assert all(v == 1e-3 for v in lrs[10:80]), "flat until the last 20%"
+    assert all(x > y for x, y in zip(lrs[80:], lrs[81:])), "strictly decreasing in the tail"
+    assert abs(lr_at(100, a) - 1e-4) < 1e-12, "ends at min_lr"
+
+
+@test
+def merge_tree_composes_trains_and_bakes_losslessly():
+    """merge_tree="both": row t of each table is W[t] + (E[a] + E[b]) / 2 over
+    the BPE merge (a, b); gradients reach both tables; and bake_merge_tree()
+    leaves an ordinary model with identical outputs, tied or not."""
+    import json, os, tempfile
+    from model import merge_tree_matrix
+    merges = [[97, 98], [256, 99], [257, 257], [100, 101]]      # ab, abc, abcabc, de
+    P = merge_tree_matrix(merges, 261)
+    W = torch.randn(261, 4)
+    E = torch.sparse.mm(P, W)
+    assert torch.allclose(E[97], W[97])
+    assert torch.allclose(E[256], W[256] + (W[97] + W[98]) / 2)
+    assert torch.allclose(E[257], W[257] + (E[256] + W[99]) / 2)
+    assert torch.allclose(E[258], W[258] + E[257]), "a self-pair counts both halves"
+    with tempfile.TemporaryDirectory() as d:
+        path = os.path.join(d, "tok.json")
+        json.dump({"type": "anulm-bpe", "version": 1, "merges": merges}, open(path, "w"))
+        for tie in (False, True):
+            torch.manual_seed(0)
+            m = AnuLM(tiny(vocab_size=261, tokenizer_path=path, merge_tree="both",
+                           tie_word_embeddings=tie)).train()
+            x = torch.randint(0, 97, (2, 12))
+            x[0, 3] = 258                       # abcabc: 97 reaches it only through the tree
+            _, loss = m(x, x)
+            loss.backward()
+            assert m.embed_tokens.weight.grad[97].abs().sum() > 0, "an ancestor must get the gradient"
+            m.eval()
+            with torch.no_grad():
+                before, _ = m(x, x)
+                m.bake_merge_tree()
+                after, _ = m(x, x)
+            assert m.cfg.merge_tree == "" and m.merge_P is None
+            assert torch.allclose(before, after, atol=1e-5), f"tie={tie}: baking changed outputs"
+
+
+@test
+def batched_muon_matches_per_matrix_muon():
+    """Stacking same-shaped updates into one batched Newton-Schulz must give
+    the same step as orthogonalising each matrix alone -- it is a speed change
+    (2.3x on the MoE proxy, where experts share shapes), not a new optimizer."""
+    from muon import Muon
+    torch.manual_seed(0)
+    shapes = [(64, 24)] * 5 + [(24, 64), (32, 32)]
+    a = [torch.nn.Parameter(torch.randn(*s)) for s in shapes]
+    b = [torch.nn.Parameter(p.detach().clone()) for p in a]
+    for _ in range(3):
+        for p, q in zip(a, b):
+            g = torch.randn_like(p)
+            p.grad, q.grad = g.clone(), g.clone()
+        Muon(a, batched=True).step()
+        Muon(b, batched=False).step()
+    for p, q in zip(a, b):
+        assert torch.allclose(p, q, atol=1e-6), (p - q).abs().max()
+
+
+@test
+def interleaved_split_samples_the_whole_corpus():
+    """An ordered corpus (source A then source B) split at the tail holds out
+    only B; the interleaved split must hold out both, and lose nothing."""
+    from train import interleaved_split
+    data = torch.cat([torch.zeros(8_000_000, dtype=torch.int16),
+                      torch.ones(8_000_000, dtype=torch.int16)])
+    train, val = interleaved_split(data)
+    assert len(train) + len(val) == len(data)
+    assert 0.05 < len(val) / len(data) < 0.15
+    frac_b = float((val == 1).float().mean())
+    assert 0.3 < frac_b < 0.7, f"held-out split is {frac_b:.0%} source B"
+    tail = data[int(0.9 * len(data)):]
+    assert float((tail == 1).float().mean()) == 1.0, "the old tail split is all B"
+
+
 def main():
     passed, failed = [], []
     for fn in TESTS:

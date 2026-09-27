@@ -111,6 +111,12 @@ class AnuLMConfig:
     dropout: float = 0.0
     tie_word_embeddings: bool = False   # Sarvam unties both models
     initializer_range: float = 0.02
+    # Merge-tree reparameterisation of the token tables ("in", "out", "both"):
+    # row t is trained as W[t] + (E[a] + E[b]) / 2 for BPE merge t = (a, b),
+    # recursively, so a rare token shares parameters with the common pieces it
+    # is built from. Needs a BPE tokenizer_path. Training-time only --
+    # bake_merge_tree() writes the composed tables back as plain weights.
+    merge_tree: str = ""
 
     def __post_init__(self):
         assert self.attn in ("gqa", "mla")
@@ -354,6 +360,36 @@ def _attn_mask(S: int, T: int, start: int, window: Optional[int], device):
     return mask
 
 
+# GQA through SDPA's own `enable_gqa` instead of repeat_interleave. Same
+# maths; whether it is faster depends on which kernel accepts it, so it is a
+# switch, measured before it becomes the default (see docs/RESULTS.md).
+NATIVE_GQA = False
+
+
+def merge_tree_matrix(merges, vocab_size: int) -> torch.Tensor:
+    """Sparse (V, V) matrix P with E = P @ W unrolling E[t] = W[t] + (E[a] + E[b]) / 2.
+
+    `merges` is the BPE merge list (token 256 + i = merges[i]); bytes, EOS and
+    any id past the merges are their own row. For multi32k it has 393,657
+    nonzeros -- about 12 per token -- so P @ W costs ~0.4 GFLOP at width 1024.
+    """
+    coef = [{i: 1.0} for i in range(256)]
+    for a, b in merges:
+        c = {len(coef): 1.0}
+        for q in (a, b):
+            for k, v in coef[q].items():
+                c[k] = c.get(k, 0.0) + 0.5 * v
+        coef.append(c)
+    while len(coef) < vocab_size:
+        coef.append({len(coef): 1.0})
+    rows, cols, vals = [], [], []
+    for t, c in enumerate(coef[:vocab_size]):
+        for k, v in c.items():
+            rows.append(t); cols.append(k); vals.append(v)
+    return torch.sparse_coo_tensor(torch.tensor([rows, cols]), torch.tensor(vals),
+                                   (vocab_size, vocab_size), check_invariants=True).coalesce()
+
+
 def _sdpa(q, k, v, mask, S, scale, dropout_p):
     return F.scaled_dot_product_attention(
         q, k, v, attn_mask=mask, is_causal=(mask is None and S > 1),
@@ -411,13 +447,18 @@ class GQAttention(nn.Module):
             cache["k"], cache["v"] = k, v
         T = k.shape[2]
 
-        # Broadcast each KV head across its query group. (torch>=2.5 could do
-        # this inside SDPA with enable_gqa=True; done explicitly for version safety.)
-        k = k.repeat_interleave(self.n_rep, dim=1)    # (B, H, T, Dh)
-        v = v.repeat_interleave(self.n_rep, dim=1)
-
-        y = _sdpa(q, k, v, _attn_mask(S, T, start, window, x.device), S,
-                  self.scale, self.dropout if self.training else 0.0)     # (B, H, S, Dh)
+        mask = _attn_mask(S, T, start, window, x.device)
+        drop = self.dropout if self.training else 0.0
+        if NATIVE_GQA and self.n_rep > 1:
+            # SDPA broadcasts the Hkv heads itself: no (B, H, T, Dh) copies.
+            y = F.scaled_dot_product_attention(
+                q, k, v, attn_mask=mask, is_causal=(mask is None and S > 1),
+                scale=self.scale, dropout_p=drop, enable_gqa=True)
+        else:
+            # Broadcast each KV head across its query group explicitly.
+            k = k.repeat_interleave(self.n_rep, dim=1)    # (B, H, T, Dh)
+            v = v.repeat_interleave(self.n_rep, dim=1)
+            y = _sdpa(q, k, v, mask, S, self.scale, drop)                    # (B, H, S, Dh)
         y = y.transpose(1, 2).contiguous().view(B, S, -1)
         return self.dense(y)
 
@@ -748,6 +789,14 @@ class AnuLM(nn.Module):
             self.lm_head.weight = self.embed_tokens.weight
 
         self.grad_ckpt = False          # set via enable_gradient_checkpointing()
+        self.ce_chunk = 0               # set via enable_chunked_loss()
+        self.merge_P = None             # sparse (V, V), see merge_tree_matrix()
+        self._merged = None             # eval-mode cache of composed tables
+        if cfg.merge_tree:
+            assert cfg.merge_tree in ("in", "out", "both"), cfg.merge_tree
+            import json as _json
+            merges = _json.load(open(cfg.tokenizer_path, encoding="utf-8"))["merges"]
+            self.merge_P = merge_tree_matrix(merges, cfg.vocab_size)
         self.apply(self._init_weights)
         # nanoGPT's scaled init for the residual output projections.
         for name, p in self.named_parameters():
@@ -785,7 +834,7 @@ class AnuLM(nn.Module):
             x = embeds
         else:
             B, S = idx.shape
-            x = self.embed_tokens(idx)                            # (B, S, D)
+            x = F.embedding(idx, self._table("in"))               # (B, S, D)
         assert start + S <= self.cfg.block_size, \
             f"positions up to {start + S} exceed block_size {self.cfg.block_size}"
         cos, sin = self.rotary(S, x.device, x.dtype, start=start)
@@ -806,15 +855,135 @@ class AnuLM(nn.Module):
 
         if targets is None:
             # Inference shortcut: only the last position matters.
-            logits = self.lm_head(x[:, -1:, :])
+            logits = self._head(x[:, -1:, :])
             return logits, None
-        logits = self.lm_head(x)
+        if self.ce_chunk and self.training:
+            loss = self._chunked_loss(x, targets)
+            return None, (loss + aux_total if aux_total is not None else loss)
+        logits = self._head(x)
         loss = F.cross_entropy(
             logits.view(-1, logits.size(-1)).float(), targets.reshape(-1), ignore_index=-1
         )
         if aux_total is not None:
             loss = loss + aux_total
         return logits, loss
+
+    def enable_chunked_loss(self, rows: int = 2048):
+        """Training-mode loss without the full logit tensor.
+
+        The plain path holds B*S*V logits, casts all of them to fp32 for the
+        cross-entropy, and keeps both for backward: at batch 8 x 512 and the
+        61,445-token multimodal vocabulary that is 0.5 GB bf16 + 1.0 GB fp32,
+        plus gradients of each. Here lm_head + cross-entropy run on `rows`
+        positions at a time under activation checkpointing, so only one
+        chunk's logits exist at once, in the forward and in the recompute.
+        Same loss up to summation order. Returns logits=None in training
+        mode, which no training loop reads; eval mode is unchanged. 0 = off.
+        """
+        self.ce_chunk = rows
+
+    def _chunked_loss(self, x, targets):
+        xf = x.reshape(-1, x.shape[-1])
+        tf = targets.reshape(-1)
+        total = xf.new_zeros((), dtype=torch.float32)
+        for i in range(0, xf.shape[0], self.ce_chunk):
+            total = total + torch.utils.checkpoint.checkpoint(
+                self._ce_sum, xf[i:i + self.ce_chunk], tf[i:i + self.ce_chunk],
+                use_reentrant=False)
+        # The mean over labelled positions, as F.cross_entropy(ignore_index=-1).
+        return total / (tf != -1).sum().clamp(min=1)
+
+    def _ce_sum(self, h, t):
+        return F.cross_entropy(self._head(h).float(), t, ignore_index=-1, reduction="sum")
+
+    # --- merge-tree reparameterisation ---------------------------------------
+    def _compose(self, W):
+        """P @ W in fp32 outside autocast (sparse matmul has no bf16 path here)."""
+        if self.merge_P.device != W.device:
+            self.merge_P = self.merge_P.to(W.device)
+        with torch.autocast(device_type=W.device.type, enabled=False):
+            return torch.sparse.mm(self.merge_P, W.float()).to(W.dtype)
+
+    def _table(self, side: str):
+        """The embedding ("in") or output ("out") table as the model uses it."""
+        W = self.embed_tokens.weight if side == "in" else self.lm_head.weight
+        if not self.cfg.merge_tree or self.cfg.merge_tree not in (side, "both"):
+            return W
+        if self.training:
+            return self._compose(W)
+        # Eval: weights are fixed, so compose once per weight version -- a
+        # decode step would otherwise redo the whole-vocabulary product.
+        key = (side, W._version, W.data_ptr())
+        if self._merged is None or key not in self._merged:
+            self._merged = {k: v for k, v in (self._merged or {}).items() if k[0] != side}
+            with torch.no_grad():
+                self._merged[key] = self._compose(W)
+        return self._merged[key]
+
+    def _head(self, h):
+        if self.cfg.merge_tree in ("out", "both"):
+            return F.linear(h, self._table("out"))
+        return self.lm_head(h)
+
+    @torch.no_grad()
+    def bake_merge_tree(self):
+        """Replace the raw tables by their composed values and switch the
+        reparameterisation off. Outputs are unchanged; afterwards this is an
+        ordinary checkpoint for serve.py, export_hf.py and the HF wrapper."""
+        if not self.cfg.merge_tree:
+            return
+        ein, eout = self._compose(self.embed_tokens.weight), self._compose(self.lm_head.weight)
+        side = self.cfg.merge_tree
+        tied = self.lm_head.weight is self.embed_tokens.weight
+        assert not (tied and side != "both"), "a tied table composed on one side only cannot be baked"
+        if side in ("in", "both"):
+            self.embed_tokens.weight.copy_(ein)
+        if side in ("out", "both") and not tied:
+            self.lm_head.weight.copy_(eout)
+        self.cfg.merge_tree = ""
+        self.merge_P, self._merged = None, None
+
+    @torch.no_grad()
+    def decode_from_embeds(self, prefix, max_tokens: int, stop, no_repeat_ngram: int = 0,
+                           use_cache: bool = True) -> list[int]:
+        """Greedy decoding after a prompt that is embeddings rather than ids.
+
+        `prefix` is (T, D): projected audio or image features with their
+        marker tokens, as speech_encoder / vision_encoder build them.
+        `stop(id)` ends decoding (EOS, or an id outside the text block).
+        `no_repeat_ngram` > 0 blocks any token that would complete an n-gram
+        already emitted -- the guard transcription needs against loops.
+
+        With the cache, the prefix is prefilled once and each new token is a
+        single-position step, where the uncached path re-ran all T prefix
+        positions for every token. Run it under the caller's autocast.
+        """
+        dev = prefix.device
+        cache = self.new_cache() if use_cache else None
+        logits, _ = self(None, embeds=prefix[None], cache=cache, start=0)
+        pos, out = prefix.shape[0], []
+        for _ in range(max_tokens):
+            scores = logits[0, -1].float()
+            n = no_repeat_ngram
+            if n and len(out) >= n - 1:
+                tail = tuple(out[len(out) - (n - 1):])
+                for j in range(len(out) - n + 1):
+                    if tuple(out[j:j + n - 1]) == tail:
+                        scores[out[j + n - 1]] = float("-inf")
+            nxt = int(scores.argmax())
+            if stop(nxt):
+                break
+            out.append(nxt)
+            if len(out) == max_tokens:
+                break
+            if use_cache:
+                logits, _ = self(torch.tensor([[nxt]], device=dev), cache=cache, start=pos)
+                pos += 1
+            else:
+                cur = torch.cat([prefix, F.embedding(torch.tensor(out, device=dev),
+                                                     self._table("in"))], dim=0)
+                logits, _ = self(None, embeds=cur[None])
+        return out
 
     def enable_gradient_checkpointing(self, enable: bool = True):
         """Unlike the released Sarvam 105B file -- which advertises support and

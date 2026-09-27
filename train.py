@@ -23,6 +23,7 @@ from pathlib import Path
 
 import torch
 
+from bigram_teacher import teacher_kl, teacher_weight
 from bpe import DOC_SEP
 from model import AnuLM, AnuLMConfig, Router
 
@@ -146,6 +147,41 @@ class WindowSampler:
         self.g.set_state(s["g"])
 
 
+def interleaved_split(data: torch.Tensor, chunk: int = 262144, every: int = 10):
+    """Hold out every `every`-th chunk of `chunk` tokens instead of the tail.
+
+    The build scripts concatenate sources in order, so the tail is not a
+    sample of the corpus. Measured on data/ctx_mix.multi32k.bin (Hindi,
+    English, Python): 60 random windows from the first 30% were 43 Hindi /
+    9 English / 8 code, and from the last 10% -- the default validation
+    split -- 0 Hindi / 57 English / 3 code. Every val loss read on that file
+    through the tail split is an English number. Interleaving gives the
+    split the corpus's own mix (160 / 153 / 71 of 384 windows).
+    """
+    chunks = list(data.split(chunk))
+    val = torch.cat(chunks[every // 2::every])
+    train = torch.cat([c for i, c in enumerate(chunks) if i % every != every // 2])
+    return train, val
+
+
+def warn_if_spilling(device: str, frac: float = 0.92) -> bool:
+    """Warn when the first step reserved nearly all of the card.
+
+    On Windows (WDDM) an allocation past physical VRAM does not fail: the
+    driver pages it to system RAM and the run continues 4x slower. Measured on
+    the 16 GB card: batch 16 x 512 without --grad-ckpt reserved 19.3 GB and ran
+    at 3,657 tok/s against 13,639 with it. Nothing errors, so check here.
+    """
+    total = torch.cuda.get_device_properties(device).total_memory
+    peak = torch.cuda.max_memory_reserved(device)
+    if peak > frac * total:
+        print(f"WARNING: step 0 reserved {peak/2**30:.1f} of {total/2**30:.1f} GB. On Windows "
+              f"this spills to system RAM silently and runs several times slower -- "
+              f"lower --batch-size, or add --grad-ckpt / --ce-chunk.")
+        return True
+    return False
+
+
 def make_batch(data: torch.Tensor, ix: torch.Tensor, block_size: int, device: str):
     x = torch.stack([data[i: i + block_size] for i in ix]).long()
     y = torch.stack([data[i + 1: i + 1 + block_size] for i in ix]).long()
@@ -194,6 +230,16 @@ def strided_windows(data: torch.Tensor, batch_size: int, block_size: int, n: int
 def lr_at(step: int, args, start_step: int = 0) -> float:
     if step < args.warmup:
         return args.lr * (step + 1) / max(args.warmup, 1)
+    if getattr(args, "schedule", "cosine") == "wsd":
+        # Warmup-stable-decay (MiniCPM, DeepSeek-V3): flat at the peak, then a
+        # linear decay over the last --decay-frac of --steps. A phased run can
+        # stop or be extended anywhere in the flat part without the jump a
+        # cosine re-declared over new --steps makes; only the tail is final.
+        decay_start = int(args.steps * (1 - args.decay_frac))
+        if step < decay_start:
+            return args.lr
+        frac = min((step - decay_start) / max(args.steps - decay_start, 1), 1.0)
+        return args.lr + (args.min_lr - args.lr) * frac
     progress = min((step - args.warmup) / max(args.steps - args.warmup, 1), 1.0)
     lr = args.min_lr + 0.5 * (args.lr - args.min_lr) * (1 + math.cos(math.pi * progress))
     # Extending a finished run (--resume with a larger --steps) lands mid-cosine,
@@ -405,8 +451,31 @@ def main():
     p.add_argument("--grad-ckpt", action="store_true",
                    help="recompute activations in backward; ~30%% slower, much "
                         "less activation memory")
+    p.add_argument("--schedule", choices=["cosine", "wsd"], default="cosine",
+                   help="wsd = warmup, flat at --lr, linear decay to --min-lr over the "
+                        "last --decay-frac of --steps; extendable mid-run")
+    p.add_argument("--decay-frac", type=float, default=0.2)
+    p.add_argument("--ce-chunk", type=int, default=0,
+                   help="compute lm_head + cross-entropy this many positions at a time "
+                        "under checkpointing, never holding the full logit tensor "
+                        "(model.enable_chunked_loss). 0 = off; 2048 is a good value")
+    p.add_argument("--bigram-teacher", type=float, default=0.0,
+                   help="KL weight toward the corpus bigram distribution, fading linearly "
+                        "to 0 by --teacher-until of --steps (bigram_teacher.py). 2.0 was best "
+                        "in the lab; 0 = off")
+    p.add_argument("--teacher-until", type=float, default=0.5)
+    p.add_argument("--val-interleave", action="store_true",
+                   help="hold out every 10th 256k-token chunk instead of the last 10%%; "
+                        "the tail of an ordered multi-source corpus is one source "
+                        "(see interleaved_split). Off by default so earlier curves "
+                        "stay comparable; use it on every new run")
+    p.add_argument("--native-gqa", action="store_true",
+                   help="GQA through SDPA's enable_gqa instead of repeat_interleave")
     p.add_argument("--seed", type=int, default=1337)
     args = p.parse_args()
+    if args.native_gqa:
+        import model as _model
+        _model.NATIVE_GQA = True
 
     torch.manual_seed(args.seed)
     dtype = (torch.bfloat16 if args.device.startswith("cuda")
@@ -433,10 +502,20 @@ def main():
         n_docs = int((data == BYTE_EOS).sum()) if data.dtype != torch.uint8 else 0
         if n_docs:
             print(f"byte data: {n_docs} documents, EOS ({BYTE_EOS}) after each")
-    n = int(0.9 * len(data))
-    train_data, val_data = data[:n], data[n:]
+    if args.val_interleave:
+        train_data, val_data = interleaved_split(data)
+    else:
+        n = int(0.9 * len(data))
+        train_data, val_data = data[:n], data[n:]
     print(f"corpus {len(data)/1e6:.2f}M {'tokens' if tokenizer_path else 'bytes'}"
           f"  ->  train {len(train_data)/1e6:.2f}M / val {len(val_data)/1e6:.2f}M")
+    teacher = None
+    if args.bigram_teacher:
+        assert not args.ce_chunk, "--bigram-teacher needs the logits; drop --ce-chunk"
+        from bigram_teacher import build_bigram_teacher
+        teacher = build_bigram_teacher(train_data, vocab_size, device=args.device)
+        print(f"bigram teacher: weight {args.bigram_teacher}, fading to 0 by "
+              f"{args.teacher_until:.0%} of the run")
     sampler = WindowSampler(len(train_data), args.block_size, args.batch_size, args.seed)
     print(f"sampler: {len(sampler.order)} windows/epoch, no replacement; "
           f"{args.steps * args.grad_accum / len(sampler.order) * args.batch_size:.2f} epochs planned")
@@ -468,6 +547,8 @@ def main():
     model = AnuLM(cfg).to(args.device)
     if args.grad_ckpt:
         model.enable_gradient_checkpointing()
+    if args.ce_chunk:
+        model.enable_chunked_loss(args.ce_chunk)
     total, active = model.num_params()
     n_routers = sum(1 for m in model.modules() if isinstance(m, Router))
     print(f"nano_{args.preset}: attn={cfg.attn}  layers={cfg.n_layer}  "
@@ -583,9 +664,14 @@ def main():
                   if args.sample_with_replacement else sampler.next())
             x, y = make_batch(train_data, ix, args.block_size, args.device)
             with args.autocast:
-                _, loss = model(x, y)
+                logits, loss = model(x, y)
+            lm_loss = loss
+            tw = (teacher_weight(step, args.steps, args.bigram_teacher, args.teacher_until)
+                  if teacher is not None else 0.0)
+            if tw > 0:
+                loss = loss + tw * teacher_kl(logits, x, teacher)
             (loss / args.grad_accum).backward()
-            loss_acc += loss.item() / args.grad_accum
+            loss_acc += lm_loss.item() / args.grad_accum
             if raw_model.aux_loss is not None:
                 aux_acc += raw_model.aux_loss.item() / args.grad_accum
             tokens_seen += x.numel()
@@ -595,6 +681,8 @@ def main():
         opt.step()
         # Out-of-band, after the gradient step, never part of the loss.
         imbalance = raw_model.update_expert_biases()
+        if step == start_step and args.device.startswith("cuda"):
+            warn_if_spilling(args.device)
 
         if step % args.log_every == 0 or step == args.steps - 1:
             dt = time.time() - t0

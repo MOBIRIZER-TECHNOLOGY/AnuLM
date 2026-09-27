@@ -503,26 +503,36 @@ def load_trained(ckpt: str, device: str):
 
 
 @torch.no_grad()
-def caption(vl, tower, tok, image: str, max_tokens: int = 40, device: str = "cuda") -> str:
-    """Greedy, no KV cache -- same O(n^2) prefix replay as the speech decoder,
-    for the same reason (the prompt is a matrix, not ids)."""
+def caption(vl, tower, tok, image, max_tokens: int = 40, device: str = "cuda",
+            question: str | None = None, use_cache: bool = True) -> str:
+    """Greedy decoding after <|image|> patches <|/image|>, KV-cached: the image
+    is prefilled once, then one position per token.
+
+    With `question`, the prompt gets " Question: ... Answer:" exactly as
+    `qa_ids` builds it for training, and the reply is a free-form answer --
+    what a demo needs, where `mc_accuracy` can only rank given choices.
+    """
     patches = tower.encode(image).to(device)
     emb = vl.model.embed_tokens
-    prefix = torch.cat([
-        emb(torch.tensor([vl.vocab.image_bos], device=device)), vl.proj(patches),
-        emb(torch.tensor([vl.vocab.image_eos], device=device))], dim=0)
-    out: list[int] = []
+    parts = [emb(torch.tensor([vl.vocab.image_bos], device=device)), vl.proj(patches),
+             emb(torch.tensor([vl.vocab.image_eos], device=device))]
+    if question:
+        prompt, _ = qa_ids(tok, {"question": question, "text": ""})
+        parts.append(emb(torch.tensor(prompt, device=device)))
+    prefix = torch.cat(parts, dim=0)
     autocast = (torch.autocast("cuda", dtype=torch.bfloat16)
                 if device.startswith("cuda") else torch.autocast("cpu", enabled=False))
-    for _ in range(max_tokens):
-        cur = prefix if not out else torch.cat([prefix, emb(torch.tensor(out, device=device))])
-        with autocast:
-            logits, _ = vl.model(None, embeds=cur[None])
-        nxt = int(logits[0, -1].argmax())
-        if nxt == tok.eos_id or nxt >= vl.vocab.text:
-            break
-        out.append(nxt)
+    with autocast:
+        out = vl.model.decode_from_embeds(
+            prefix, max_tokens, stop=lambda t: t == tok.eos_id or t >= vl.vocab.text,
+            use_cache=use_cache)
     return tok.decode(out).strip().split("\n")[0]
+
+
+def answer(vl, tower, tok, image, question: str, max_tokens: int = 16,
+           device: str = "cuda") -> str:
+    """A free-form answer to a question about an image (the VQA checkpoints)."""
+    return caption(vl, tower, tok, image, max_tokens, device, question=question)
 
 
 def main() -> None:
