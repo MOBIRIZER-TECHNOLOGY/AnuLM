@@ -55,7 +55,11 @@ PROMPT_EN = "Question: {q}\nAnswer:"
 # Translation pairs carry their direction as `lang`; serve.py's translate
 # mode picks the direction from the script of the input.
 PROMPTS = {"hi": PROMPT, "en": PROMPT_EN, "py": PROMPT_EN,
-           "en-hi": "English: {q}\nHindi:", "hi-en": "Hindi: {q}\nEnglish:"}
+           "en-hi": "English: {q}\nHindi:", "hi-en": "Hindi: {q}\nEnglish:",
+           # Retrieval-augmented reading (make_rc.py, rag.py): `q` holds the
+           # numbered passages and then the question line.
+           "rc-en": "Answer from the passages.\n\n{q}\nAnswer:",
+           "rc-hi": "अनुच्छेदों से उत्तर दीजिए।\n\n{q}\nउत्तर:"}
 _DEVANAGARI = re.compile(r"[ऀ-ॿ]")
 
 

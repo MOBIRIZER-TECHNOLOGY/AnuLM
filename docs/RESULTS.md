@@ -50,6 +50,7 @@ models.
 | [29](#29-lora-against-a-full-fine-tune-at-398m) | is LoRA the right way to fine-tune a model this small? | it works, and at 398M full fine-tuning is still the better default |
 | [30](#30-four-thousand-prompts-through-the-serving-path) | what the released models do over 4,131 real prompts | no crashes, no empty replies, and the base degenerates on 81% of greedy continuations |
 | [32](#32-the-lab-what-learns-faster-on-one-consumer-gpu) | 35 proxy runs: which training ideas buy more learning per token and per GPU-second | ~2.4x the tokens' worth at 88M / 25M tokens -- but **at 400M it is 0.044 better per token and 43% slower, so not worth it**; the gain is early-training only |
+| [33](#33-looking-facts-up-retrieval-plus-a-reader) | BM25 over 405k Wikipedia articles + a reader | retrieval works (8-40 ms, 15/20 top-3); pointer reader F1 37 English but 0/20 demo answers: the backbone is the limit |
 
 ---
 
@@ -2455,3 +2456,75 @@ correctly give the 4.5574 above.
 Reproduce any row: `python experiments/lab.py NAME [flags]`, e.g.
 `python experiments/lab.py full --muon --tie --merge-tree 1.0 --merge-out --teacher 2.0 --grow 0.5`.
 Growing depth is lab-only for now; it is not in `train.py`.
+
+## 33. Looking facts up: retrieval plus a reader
+
+The demo's weak point is answering: asked "What is the capital of India?",
+the question-answering model says the capital is "the Roman Empire". A model
+that has read ~230M tokens stores few facts, so the idea here is to stop
+asking it to remember and let it read: retrieve a passage, then extract the
+answer from it.
+
+### The retriever (`rag.py`)
+
+BM25 over 932,648 passages of ~100 words, cut from Simple English Wikipedia
+(241,787 articles) and Hindi Wikipedia (163,093), `wikimedia/wikipedia`
+20231101, CC BY-SA. It is written in numpy from scratch, because the usual
+packages import scipy and Smart App Control blocks scipy on this machine.
+Words are hashed rather than looked up, so 12 processes tokenise with nothing
+to merge; the index builds in 28 s; a query takes 8-40 ms.
+
+Recall (the answer string appears in the top-k passages):
+
+| | R@1 | R@3 | R@10 |
+| --- | --- | --- | --- |
+| Hindi MLQA dev, 300 questions | 24.7% | 35.0% | 46.3% |
+| English SQuAD dev, 300 | 8.7% | 15.3% | 20.7% |
+| 20 demo-style questions (`data/rag_demo_questions.jsonl`) | 13/20 | 15/20 | |
+
+English SQuAD's answers come from full English Wikipedia, much of which is
+not in Simple Wikipedia, so that row is a coverage limit more than a ranking
+one. Two tweaks from first principles both lost on all three sets and are off:
+scoring the article title as its own field (−4 to −6 points of R@1) and a
+bonus for an article's lead paragraph (worse again).
+
+### The reader: generation failed, pointing half-worked
+
+`make_rc.py` builds 59,400 examples from SQuAD (English) and MLQA's
+machine-translated SQuAD (Hindi). Each example has the right passage plus
+two hard negatives, which are what the retriever itself returns for the
+question minus anything containing the answer. In 15% of examples the right
+passage is left out and the target is "not found in the passages". The
+held-out tests are never trained on: SQuAD dev, MLQA hi.hi test (native
+Hindi questions), XQuAD hi and IndicQA hi. Each test gives the right passage
+plus two hard negatives.
+
+| reader (F1, 300 each) | SQuAD en | MLQA hi | XQuAD hi | IndicQA hi | demo, end to end |
+| --- | --- | --- | --- | --- | --- |
+| untuned QA model, same prompt | 3.4 | 2.6 | 1.9 | 0.6 | 0/20 |
+| generative reader (`finetune.py`, 1 epoch) | 4.9 | 1.5 | 2.7 | 1.7 | 0/20 |
+| **pointer reader** (`rc_pointer.py`, 1 epoch) | **37.4** (EM 21.0) | 7.1 | 10.3 | 4.9 | 0/20 |
+
+The generative reader learned the format and learned to abstain; it says
+"not found" on 21–79% of questions instead of looping. It did not learn to
+read: it answered "not found" to "Who wrote Hamlet?" while holding two Hamlet
+passages. Two things were wrong for a model this size. First, the question
+came after the passages, so in a left-to-right model every passage token was
+encoded without knowing what to look for. Second, only 1% of positions
+carried loss, and the answer had to be generated.
+
+`rc_pointer.py` fixes both. The question comes first, and a 2-way linear
+head on the backbone scores every position as the answer's start and end,
+with a reserved position 0 for "no answer". The target is dense and exact,
+and the reader can only return text that is in the passages. English
+reading rose from F1 4.9 to 37.4. Hindi barely moved, because its training
+data is machine-translated English and its tests are native Hindi.
+
+End to end it still gets 0 of 20. Both halves fail. The retriever hands
+"capital of India" passages about Vaishali, and most Hindi questions
+unrelated articles. The reader, even holding the right article, answers
+"Who wrote Hamlet?" with "Thomas Wyatt" and "Who discovered penicillin?"
+with "Paul Ehrlich". For scale, BERT-base reaches ~88 F1 on SQuAD, and 37
+is what a backbone that has read 230M tokens can do with one epoch of this
+data. The method is sound and each stage moved by a measured amount; the
+backbone is the limit, as it was in section 32.
