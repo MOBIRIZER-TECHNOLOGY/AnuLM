@@ -173,7 +173,7 @@ def batches(rows, enc: WhisperEncoder, tok, sm: ContinuousSpeech, device: str,
 def train(args) -> None:
     from dataclasses import replace
 
-    from bpe import BPE
+    from hf_tok import load_tokenizer
     from model import AnuLM, load_checkpoint
     from speech_vocab import vocab_of
     from train import atomic_save
@@ -182,7 +182,7 @@ def train(args) -> None:
     ck = load_checkpoint(args.ckpt, dev)
     cfg = replace(ck["cfg"], moe_impl="grouped" if dev.startswith("cuda") else "sparse")
     vocab = vocab_of(ck)
-    tok = BPE.load(cfg.tokenizer_path)
+    tok = load_tokenizer(cfg.tokenizer_path)
     model = AnuLM(cfg).to(dev)
     model.load_state_dict(ck["model"])
 
@@ -297,7 +297,7 @@ def load_trained(ckpt: str, device: str):
     """A checkpoint written by `train` -> (ContinuousSpeech, encoder, tokeniser)."""
     from dataclasses import replace
 
-    from bpe import BPE
+    from hf_tok import load_tokenizer
     from model import AnuLM, load_checkpoint
     from speech_vocab import vocab_of
     ck = load_checkpoint(ckpt, device)
@@ -309,7 +309,7 @@ def load_trained(ckpt: str, device: str):
     enc = WhisperEncoder(ck.get("whisper", "small"), device)
     sm = ContinuousSpeech(model, vocab_of(ck), enc.dim, ck.get("stack", STACK)).to(device).eval()
     sm.proj.load_state_dict(ck["proj"])
-    return sm, enc, BPE.load(cfg.tokenizer_path)
+    return sm, enc, load_tokenizer(cfg.tokenizer_path)
 
 
 @torch.no_grad()

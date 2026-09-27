@@ -363,7 +363,7 @@ def save_vl(vl, model, ck, cfg, args, step, val, path):
 def train(args) -> None:
     from dataclasses import replace
 
-    from bpe import BPE
+    from hf_tok import load_tokenizer
     from model import AnuLM, load_checkpoint
     from speech_vocab import vocab_of
     from train import atomic_save
@@ -371,7 +371,7 @@ def train(args) -> None:
     dev = args.device
     ck = load_checkpoint(args.ckpt, dev)
     cfg = replace(ck["cfg"], moe_impl="grouped" if dev.startswith("cuda") else "sparse")
-    tok = BPE.load(cfg.tokenizer_path)
+    tok = load_tokenizer(cfg.tokenizer_path)
     model = AnuLM(cfg).to(dev)
     model.load_state_dict(ck["model"])
 
@@ -487,7 +487,7 @@ def mc_accuracy(vl, tower, tok, rows, device: str, limit: int | None = None) -> 
 def load_trained(ckpt: str, device: str):
     from dataclasses import replace
 
-    from bpe import BPE
+    from hf_tok import load_tokenizer
     from model import AnuLM, load_checkpoint
     from speech_vocab import vocab_of
     ck = load_checkpoint(ckpt, device)
@@ -499,7 +499,7 @@ def load_trained(ckpt: str, device: str):
     tower = VisionTower(ck["tower"], device)
     vl = VisionLanguage(model, vocab_of(ck), tower.dim, ck.get("pool", POOL)).to(device).eval()
     vl.proj.load_state_dict(ck["proj"])
-    return vl, tower, BPE.load(cfg.tokenizer_path)
+    return vl, tower, load_tokenizer(cfg.tokenizer_path)
 
 
 @torch.no_grad()
