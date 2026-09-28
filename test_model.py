@@ -1648,6 +1648,28 @@ def batched_muon_matches_per_matrix_muon():
 
 
 @test
+def memmap_batches_match_in_memory_batches():
+    """A build_v2 corpus (meta.json + raw uint16 files) must give train.py the
+    same (x, y) windows as the same ids held in memory as a tensor."""
+    import json, os, tempfile
+    import numpy as np
+    from train import load_memmap, make_batch
+    ids = np.random.RandomState(0).randint(0, 32768, 5000).astype(np.uint16)
+    with tempfile.TemporaryDirectory() as d:
+        ids.tofile(os.path.join(d, "train.u16"))
+        ids[:700].tofile(os.path.join(d, "val.u16"))
+        json.dump({"train": "train.u16", "val": "val.u16", "vocab_size": 32768,
+                   "tokenizer": "x", "bytes_per_token": 4.0}, open(os.path.join(d, "meta.json"), "w"))
+        tr, va, meta = load_memmap(os.path.join(d, "meta.json"))
+        assert len(tr) == 5000 and len(va) == 700
+        ix = torch.tensor([0, 17, 4000])
+        xm, ym = make_batch(tr, ix, 64, "cpu")
+        xt, yt = make_batch(torch.from_numpy(ids.astype(np.int64)), ix, 64, "cpu")
+        assert torch.equal(xm, xt) and torch.equal(ym, yt) and xm.dtype == torch.long
+        del tr, va                                # release the files before the dir goes
+
+
+@test
 def interleaved_split_samples_the_whole_corpus():
     """An ordered corpus (source A then source B) split at the tail holds out
     only B; the interleaved split must hold out both, and lose nothing."""

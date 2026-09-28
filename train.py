@@ -21,6 +21,7 @@ import os
 import time
 from pathlib import Path
 
+import numpy as np
 import torch
 
 from bigram_teacher import teacher_kl, teacher_weight
@@ -147,6 +148,19 @@ class WindowSampler:
         self.g.set_state(s["g"])
 
 
+def load_memmap(meta_path: str):
+    """A corpus from experiments/build_v2.py: meta.json beside train.u16 and
+    val.u16, raw uint16 token ids. Memory-mapped, so an 11B-token corpus costs
+    no RAM up front -- torch.load of the same ids as one tensor would need 22 GB
+    at once. The build holds out val by document hash, so no split here."""
+    import json
+    meta = json.load(open(meta_path))
+    root = Path(meta_path).parent
+    tr = np.memmap(root / meta["train"], dtype=np.uint16, mode="r")
+    va = np.memmap(root / meta["val"], dtype=np.uint16, mode="r")
+    return tr, va, meta
+
+
 def interleaved_split(data: torch.Tensor, chunk: int = 262144, every: int = 10):
     """Hold out every `every`-th chunk of `chunk` tokens instead of the tail.
 
@@ -183,8 +197,12 @@ def warn_if_spilling(device: str, frac: float = 0.92) -> bool:
 
 
 def make_batch(data: torch.Tensor, ix: torch.Tensor, block_size: int, device: str):
-    x = torch.stack([data[i: i + block_size] for i in ix]).long()
-    y = torch.stack([data[i + 1: i + 1 + block_size] for i in ix]).long()
+    if isinstance(data, np.ndarray):            # a memory-mapped corpus (load_memmap)
+        rows = np.stack([data[i: i + block_size + 1] for i in ix.tolist()]).astype(np.int64)
+        x, y = torch.from_numpy(rows[:, :-1]), torch.from_numpy(rows[:, 1:])
+    else:
+        x = torch.stack([data[i: i + block_size] for i in ix]).long()
+        y = torch.stack([data[i + 1: i + 1 + block_size] for i in ix]).long()
     if device.startswith("cuda"):
         return x.pin_memory().to(device, non_blocking=True), y.pin_memory().to(device, non_blocking=True)
     return x.to(device), y.to(device)
@@ -489,7 +507,16 @@ def main():
     # `bpe.py encode` (token ids + metadata). bits/byte stays comparable across
     # both because the .bin remembers how many bytes each token covers.
     tokenizer_path, vocab_size, args.bytes_per_token = None, 259, 1.0
-    if args.data and args.data.endswith(".bin"):
+    memmapped = bool(args.data and args.data.endswith("meta.json"))
+    if memmapped:
+        train_data, val_data, meta = load_memmap(args.data)
+        vocab_size, tokenizer_path = meta["vocab_size"], meta["tokenizer"]
+        args.bytes_per_token = meta["bytes_per_token"]
+        data = train_data
+        print(f"memory-mapped corpus: {len(train_data)/1e9:.2f}B train / {len(val_data)/1e6:.1f}M val "
+              f"tokens, vocab {vocab_size}, {args.bytes_per_token:.2f} bytes/token "
+              f"({', '.join(meta.get('sources', {}))})")
+    elif args.data and args.data.endswith(".bin"):
         blob = torch.load(args.data, weights_only=False)
         data = blob["ids"]
         vocab_size = blob["vocab_size"]
@@ -502,7 +529,9 @@ def main():
         n_docs = int((data == BYTE_EOS).sum()) if data.dtype != torch.uint8 else 0
         if n_docs:
             print(f"byte data: {n_docs} documents, EOS ({BYTE_EOS}) after each")
-    if args.val_interleave:
+    if memmapped:
+        pass                                     # the build already held out val by document
+    elif args.val_interleave:
         train_data, val_data = interleaved_split(data)
     else:
         n = int(0.9 * len(data))
