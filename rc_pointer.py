@@ -216,6 +216,28 @@ def train(a):
     print(f"done in {time.time() - t0:.0f}s | best held-out span loss {best:.4f} | {a.out}")
 
 
+def truecase(question: str, passages: list[str]) -> str:
+    """Restore capitals the speech model drops, using the retrieved passages.
+
+    Our ASR was trained on LibriSpeech's lowercase transcripts, so a spoken
+    question arrives as "what is the capital of india"; the reader, trained
+    on cased text, found the answer for "India" and nothing for "india".
+    Retrieval is case-insensitive, so the passages it returns already spell
+    the question's names: a word takes the passages' casing when it appears
+    there capitalised at least twice as often as lowercase."""
+    from collections import Counter
+    seen = Counter(re.findall(r"[A-Za-z]+", " ".join(passages)))
+    out = []
+    for w in question.split(" "):
+        core = re.sub(r"[^A-Za-z]", "", w)
+        if core and core.islower():
+            cap = core[0].upper() + core[1:]
+            if seen[cap] >= 2 * max(seen[core], 1) and seen[cap] >= 2:
+                w = w.replace(core, cap)
+        out.append(w)
+    return " ".join(out)
+
+
 class PointerQA:
     def __init__(self, ckpt="ckpt_rc_pointer.pt", device="cuda", retriever=None):
         self.p, self.tok, _ = load(ckpt, device)
@@ -262,6 +284,7 @@ class PointerQA:
             self.r = Retriever()
         t0 = time.time()
         hits = self.r.search(question, k)
+        question = truecase(question, [h["text"] for h in hits])
         qword = "प्रश्न" if DEV.search(question) else "Question"
         t1 = time.time()
         if mode == "joint":

@@ -42,6 +42,7 @@ CKPTS = {
     "vqa": "ckpt_vqa_f30k.pt",
 }
 BRAIN = "release/AnuLM-Hindi-QA-400M"
+READER = "ckpt_rc_pointer.pt"
 BRAIN_HUB = "toonist/AnuLM-Hindi-QA-400M"
 
 
@@ -92,6 +93,14 @@ class Models:
             return self._half(vl), tower, tok
         return self._get(task, make)
 
+    def reader(self):
+        """Our own from-scratch reader (rc_pointer.py) over dense retrieval of
+        Simple English + Hindi Wikipedia (rag.py). None if either is missing."""
+        if not (HERE / READER).exists() or not (HERE / "data" / "rag" / "dense_e5s.npy").exists():
+            return None
+        from rc_pointer import PointerQA
+        return self._get("reader", lambda: PointerQA(str(HERE / READER), self.device))
+
     def brain(self):
         from voice import load_engine
         src = self.brain_source
@@ -116,10 +125,19 @@ def as_question(heard: str) -> str:
 
 
 def answer_text(models: Models, text: str, max_tokens: int = 120) -> tuple[str, float]:
+    """Look it up first: retrieve Wikipedia passages and let our reader point
+    at the answer (docs/RESULTS.md section 33). Only when it finds none does
+    the question-answering model answer from memory, and the reply says so."""
     from voice import speakable
+    t0 = time.time()
+    qa = models.reader()
+    if qa is not None:
+        out = qa.ask(text)
+        if out["answer"]:
+            return f"{out['answer']}  (from Wikipedia: {out['sources'][0]})", time.time() - t0
     eng = models.brain()
     out = eng.generate(text, max_tokens, 0.3, 40, 0, mode="question", repetition_penalty=1.15)
-    return speakable(out["completion"]), out["seconds"]
+    return "(not found in Wikipedia; from memory) " + speakable(out["completion"]), time.time() - t0
 
 
 def build(models: Models) -> gr.Blocks:
@@ -155,7 +173,7 @@ def build(models: Models) -> gr.Blocks:
                     return "", "", None, f"heard nothing ({t_hear:.2f}s)"
                 if not speak:
                     return h["text"], "", None, f"hear {t_hear:.2f}s"
-                reply, t_think = answer_text(models, h["text"])
+                reply, t_think = answer_text(models, as_question(h["text"]))
                 t1 = time.time()
                 rate, samples = models.mouth().say(reply) if reply else (22050, None)
                 t_say = time.time() - t1
