@@ -2578,3 +2578,38 @@ epoch, 8.2% → **8.9%**. Held-out loss improved in both (1.341 → 1.295, 0.736
 0.696) while the error rate got worse, which is the cross-entropy-versus-output
 pattern `docs/SPEECH.md` records. The demo keeps `ckpt_asr_ls100_e3.pt` and
 `ckpt_asr_hi_mix2.pt`. More speech quality now needs more data, not epochs.
+
+### Retrieval by meaning: dense beats keywords, and our own reader starts answering
+
+Two retrieval fixes were tested against the diagnosis that retrieval, not
+reading, now gates the demo. One failed. Reading each of the top-k passages
+alone and keeping the most confident answer (reader-based reranking) cut
+Qwen's demo score from 4/20 to 2/20: a reader trained on three passages at a
+time is not calibrated across single passages.
+
+The other worked. A borrowed embedding model, `intfloat/multilingual-e5-small`
+(MIT, 118M parameters, the same kind of component as Whisper and SigLIP
+here), embeds all 932,648 passages in 5 minutes and finds them by meaning;
+it also matches across scripts (a Hindi question scores the English passage
+that answers it at 0.862, the Vaishali passage at 0.735).
+
+| retriever | demo R@1/3/10 | MLQA hi R@1/3/10 | SQuAD en R@1/3/10 |
+| --- | --- | --- | --- |
+| BM25 | 65 / 75 / 90% | 25 / 35 / 46% | 9 / 15 / 21% |
+| **dense (e5)** | **90 / 100 / 100%** | 32 / 43 / 56% | 10 / 18 / 25% |
+| hybrid (reciprocal-rank fusion) | 75 / 90 / 100% | 30 / 45 / 59% | 11 / 16 / 25% |
+
+| end to end, demo questions | BM25 | dense | hybrid |
+| --- | --- | --- | --- |
+| Qwen3-0.6B reader (not from scratch) | 4/20 | **7/20** | 2/20 |
+| **AnuLM 400M reader (ours)** | 0/20 | **5/20** | 2/20 |
+
+Our own from-scratch reader now answers "What is the capital of India?" with
+"New Delhi" in both English and Hindi, and names जवाहरलाल नेहरू as the first
+Prime Minister. Its 5 includes one false positive from the substring check
+("Hamnet Shakespeare" is Shakespeare's son), so strictly it is 4. Hybrid
+retrieval scores well on recall and badly end to end, because BM25's
+near-misses confuse the reader, so `rag.py` now defaults to dense. The
+open-domain F1s stay low (under 6) for two reasons that are not about
+ranking: SQuAD's answers are mostly not in Simple Wikipedia, and native Hindi
+reading is still weak.

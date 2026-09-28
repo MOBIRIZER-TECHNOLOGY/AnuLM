@@ -159,6 +159,59 @@ def build(langs=("simple", "hi"), workers: int = 12) -> None:
     print(f"built {N:,} chunks, {len(rows):,} postings in {time.time() - t0:.0f}s -> {RAG}")
 
 
+E5 = RAG / "e5-small"          # intfloat/multilingual-e5-small, MIT, 118M params
+
+
+class Dense:
+    """Dense retrieval: multilingual-e5-small embeddings of every chunk.
+
+    A borrowed component, like Whisper and SigLIP elsewhere in the project --
+    it finds passages by meaning rather than shared words, which is where
+    BM25 fails ("capital of India" ranked an ancient capital, Vaishali, first)
+    and it matches across scripts: a Hindi question scores an English
+    passage that answers it above a Hindi one that does not.
+    """
+
+    def __init__(self, device: str = "cuda"):
+        import torch
+        from transformers import AutoModel, AutoTokenizer
+        self.torch, self.device = torch, device
+        self.tok = AutoTokenizer.from_pretrained(str(E5))
+        self.m = AutoModel.from_pretrained(str(E5)).to(device).half().eval()
+        self.mat = None
+
+    def embed(self, texts: list[str], max_len: int = 256):
+        torch = self.torch
+        b = self.tok(texts, padding=True, truncation=True, max_length=max_len,
+                     return_tensors="pt").to(self.device)
+        with torch.no_grad():
+            h = self.m(**b).last_hidden_state
+        mask = b["attention_mask"][..., None]
+        v = (h * mask).sum(1) / mask.sum(1)
+        return torch.nn.functional.normalize(v.float(), dim=-1).half()
+
+    def build(self, chunks: list[dict], batch: int = 512) -> None:
+        torch = self.torch
+        t0 = time.time()
+        order = sorted(range(len(chunks)), key=lambda i: len(chunks[i]["text"]))   # less padding
+        out = torch.empty(len(chunks), self.m.config.hidden_size, dtype=torch.float16)
+        for s in range(0, len(order), batch):
+            ix = order[s:s + batch]
+            out[ix] = self.embed([f"passage: {chunks[i]['title']}. {chunks[i]['text']}" for i in ix]).cpu()
+            if s % (batch * 200) == 0:
+                print(f"  dense: {s:,}/{len(chunks):,} ({time.time() - t0:.0f}s)", flush=True)
+        np.save(RAG / "dense_e5s.npy", out.numpy())
+        print(f"dense index: {tuple(out.shape)} in {time.time() - t0:.0f}s")
+
+    def search(self, query: str, k: int):
+        torch = self.torch
+        if self.mat is None:
+            self.mat = torch.from_numpy(np.load(RAG / "dense_e5s.npy")).to(self.device)
+        s = (self.mat @ self.embed([f"query: {query}"])[0]).float()
+        v, i = s.topk(k)
+        return i.tolist(), v.tolist()
+
+
 class Retriever:
     def __init__(self, root: Path = RAG):
         self.indptr = np.load(root / "indptr.npy")
@@ -172,11 +225,36 @@ class Retriever:
         self.t_len = np.load(root / "t_len.npy")
         self.art = np.load(root / "chunk_art.npy")
         self.lead = (np.load(root / "chunk_pos.npy") == 0).astype(np.float32)
+        # Dense when its index exists: on the 20 demo questions it put the answer in
+        # the top 3 every time (BM25: 15/20) and took our own reader from 0/20 to 5/20.
+        # Hybrid fusion scored worse end to end (2/20): BM25's near-misses confuse the reader.
+        self.mode = "dense" if (root / "dense_e5s.npy").exists() else "bm25"
+        self.dense = None
         langs = np.array([c["lang"] for c in self.chunks])
         self._lm = {l: langs == l for l in set(langs.tolist())}
 
     def search(self, query: str, k: int = 3, lang: str | None = None,
-               title_w: float = 0.0, lead_b: float = 0.0) -> list[dict]:
+               title_w: float = 0.0, lead_b: float = 0.0, mode: str | None = None) -> list[dict]:
+        """mode "bm25" (default), "dense", or "hybrid": reciprocal-rank fusion
+        of both top-100 lists, sum of 1 / (60 + rank)."""
+        mode = mode or self.mode
+        if mode == "bm25":
+            return self.bm25(query, k, lang, title_w, lead_b)
+        if self.dense is None:
+            self.dense = Dense()
+        di, dv = self.dense.search(query, 100 if mode == "hybrid" else k)
+        if mode == "dense":
+            return [{**self.chunks[i], "score": v} for i, v in zip(di, dv)]
+        fused: dict[int, float] = {}
+        for rank, i in enumerate(di):
+            fused[i] = fused.get(i, 0.0) + 1.0 / (60 + rank)
+        for rank, h in enumerate(self.bm25(query, 100, lang, title_w, lead_b)):
+            fused[h["_i"]] = fused.get(h["_i"], 0.0) + 1.0 / (60 + rank)
+        top = sorted(fused, key=fused.get, reverse=True)[:k]
+        return [{**self.chunks[i], "score": fused[i]} for i in top]
+
+    def bm25(self, query: str, k: int = 3, lang: str | None = None,
+             title_w: float = 0.0, lead_b: float = 0.0) -> list[dict]:
         """BM25 over chunk text, plus `title_w` x the idf-weighted share of the
         query's words found in the article title, plus `lead_b` for an
         article's first chunk (where an encyclopedia states its main facts)."""
@@ -200,7 +278,7 @@ class Retriever:
             scores[~self._lm[lang]] = 0
         top = np.argpartition(-scores, min(k, self.n - 1))[:k]
         top = top[np.argsort(-scores[top])]
-        return [{**self.chunks[i], "score": float(scores[i])} for i in top if scores[i] > 0]
+        return [{**self.chunks[i], "score": float(scores[i]), "_i": int(i)} for i in top if scores[i] > 0]
 
 
 # From `rag.py eval` and 20 demo-style questions: plain BM25 won on all three

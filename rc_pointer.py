@@ -232,17 +232,48 @@ class PointerQA:
         span = best_span(s[0], e[0], len(ids))
         return self.tok.decode(ids[span[0]:span[1] + 1]).strip() if span else ""
 
-    def ask(self, question, k=3):
+    @torch.no_grad()
+    def extract_scored(self, qword, q, body):
+        """-> (answer or "", confidence) where confidence is the best span's
+        score minus the no-answer score: how much the reader prefers this
+        span to saying the passage does not answer the question."""
+        ids, _, _ = encode(self.tok, qword, q, body)
+        x = torch.tensor([ids], device=self.device)
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=self.device.startswith("cuda")):
+            s, e = self.p(x)
+        s, e = s[0], e[0]
+        n = len(ids)
+        S = s[1:n, None] + e[None, 1:n]
+        i = torch.arange(n - 1, device=s.device)
+        ok = (i[None, :] >= i[:, None]) & (i[None, :] < i[:, None] + MAX_ANS)
+        S = S.masked_fill(~ok, float("-inf"))
+        k = int(S.argmax())
+        st, en = divmod(k, n - 1)
+        conf = float(S.view(-1)[k]) - float(s[0] + e[0])
+        return self.tok.decode(ids[st + 1:en + 2]).strip(), conf
+
+    def ask(self, question, k=3, mode="joint"):
+        """mode "joint": the top-k passages read together (how it was trained).
+        mode "each": every passage read alone, and the answer the reader is
+        most confident in wins -- reader-based reranking. When no passage
+        beats "no answer", the reply is empty."""
         from rag import Retriever
         if self.r is None:
             self.r = Retriever()
         t0 = time.time()
         hits = self.r.search(question, k)
-        body = "\n\n".join(f"[{i + 1}] {' '.join(h['text'].split()[:120])}" for i, h in enumerate(hits))
         qword = "प्रश्न" if DEV.search(question) else "Question"
         t1 = time.time()
-        ans = self.extract(qword, question, body)
-        return {"answer": ans, "sources": [h["title"] for h in hits],
+        if mode == "joint":
+            body = "\n\n".join(f"[{i + 1}] {' '.join(h['text'].split()[:120])}" for i, h in enumerate(hits))
+            ans, src = self.extract(qword, question, body), [h["title"] for h in hits]
+        else:
+            scored = [(*self.extract_scored(qword, question, f"[1] {' '.join(h['text'].split()[:120])}"),
+                       h["title"]) for h in hits]
+            best = max(scored, key=lambda t: t[1]) if scored else ("", -1.0, "")
+            ans = best[0] if best[1] > 0 else ""
+            src = [best[2]] + [t[2] for t in scored if t[2] != best[2]][:2]
+        return {"answer": ans, "sources": src,
                 "retrieve_s": round(t1 - t0, 3), "read_s": round(time.time() - t1, 3)}
 
 
