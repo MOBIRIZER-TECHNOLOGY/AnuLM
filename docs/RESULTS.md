@@ -2528,3 +2528,53 @@ with "Paul Ehrlich". For scale, BERT-base reaches ~88 F1 on SQuAD, and 37
 is what a backbone that has read 230M tokens can do with one epoch of this
 data. The method is sound and each stage moved by a measured amount; the
 backbone is the limit, as it was in section 32.
+
+### The same reader on a better-read backbone: Qwen3-0.6B
+
+To separate the method from the backbone, the identical pointer reader
+(same data, one epoch, same learning rate) was trained on **Qwen3-0.6B-Base**
+(Apache 2.0, 36T tokens) instead of this project's 400M base. This is a
+comparison, not a from-scratch result: anything built on it must be labelled
+as built on Qwen3. `tools_qwen.py` loads Qwen3's dense checkpoints into
+`model.py` unchanged in function: against transformers' `Qwen3ForCausalLM`,
+maximum logit difference 0.00 and 100% next-token agreement on English, Hindi
+and code. `hf_tok.py` puts its tokenizer behind `bpe.BPE`'s interface.
+
+| pointer reader (F1, 300 each) | SQuAD en | MLQA hi | XQuAD hi | IndicQA hi | demo |
+| --- | --- | --- | --- | --- | --- |
+| AnuLM 400M backbone | 37.4 | 7.1 | 10.3 | 4.9 | 0/20 |
+| **Qwen3-0.6B backbone**, 1 epoch | **79.9** (EM 71.3) | 5.2 | 8.2 | 3.0 | **4/20** |
+| Qwen3-0.6B, 2 epochs | 78.7 | 4.3 | 8.5 | 2.4 | 4/20 |
+
+English reading more than doubles with only the backbone changed, which
+confirms the diagnosis above: the method was sound and the 230M-token base
+was the limit. Hindi does not move on either backbone. The training data is
+machine-translated English, the tests are native Hindi, and Qwen's tokenizer
+needs ~1.55x `multi32k`'s tokens for Hindi, so the model says "no answer" on
+half of them. End to end, every correct demo answer ("William Shakespeare",
+"Tokyo", "Au", "…दिल्ली") came when retrieval handed over the right article, and
+most misses came when it did not. The bottleneck has moved to retrieval and to
+Hindi reading data. A second epoch changed nothing.
+
+### What does not fit a 16 GB card
+
+Training all of Qwen3-0.6B inside the speech or vision stack (625M
+parameters with the 180,613-id multimodal vocabulary, AdamW, plus Whisper or
+SigLIP) needs ~26 GB. On Windows that does not fail: WDDM pages the excess to
+system RAM (measured: 15.6 GB dedicated + 10.4 GB shared) and the run slows
+18x. One such run ran the machine low enough on RAM that the session stopped
+it. `fit_memory()` (gradient checkpointing and a chunked loss above 500M
+parameters or a 100k vocabulary) is exact and helps, but it is not enough
+here. Adapters (`lora.py`) are the route for multimodal work on this backbone.
+The partial Qwen VQA checkpoint that did get trained (1,000 of 4,179 steps)
+scores 37.4% on A-OKVQA, against 40.9% for the AnuLM model after 3 full
+epochs, which is not a comparison either way.
+
+### Our own speech models have plateaued
+
+Another round on each, scored on the same clips: Hindi, 3 more epochs on the
+FLEURS + IndicTTS mix, 48.4% → **51.8%** WER; English, a fourth LibriSpeech
+epoch, 8.2% → **8.9%**. Held-out loss improved in both (1.341 → 1.295, 0.736 →
+0.696) while the error rate got worse, which is the cross-entropy-versus-output
+pattern `docs/SPEECH.md` records. The demo keeps `ckpt_asr_ls100_e3.pt` and
+`ckpt_asr_hi_mix2.pt`. More speech quality now needs more data, not epochs.
