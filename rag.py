@@ -172,12 +172,15 @@ class Dense:
     passage that answers it above a Hindi one that does not.
     """
 
-    def __init__(self, device: str = "cuda"):
+    def __init__(self, device: str | None = None):
         import torch
         from transformers import AutoModel, AutoTokenizer
+        device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+        # fp16 on the GPU; fp32 on the CPU, where half-precision matmuls are slow.
+        self.dtype = torch.float16 if device.startswith("cuda") else torch.float32
         self.torch, self.device = torch, device
         self.tok = AutoTokenizer.from_pretrained(str(E5))
-        self.m = AutoModel.from_pretrained(str(E5)).to(device).half().eval()
+        self.m = AutoModel.from_pretrained(str(E5)).to(device, self.dtype).eval()
         self.mat = None
 
     def embed(self, texts: list[str], max_len: int = 256):
@@ -188,7 +191,7 @@ class Dense:
             h = self.m(**b).last_hidden_state
         mask = b["attention_mask"][..., None]
         v = (h * mask).sum(1) / mask.sum(1)
-        return torch.nn.functional.normalize(v.float(), dim=-1).half()
+        return torch.nn.functional.normalize(v.float(), dim=-1).to(self.dtype)
 
     def build(self, chunks: list[dict], batch: int = 512) -> None:
         torch = self.torch
@@ -206,7 +209,7 @@ class Dense:
     def search(self, query: str, k: int):
         torch = self.torch
         if self.mat is None:
-            self.mat = torch.from_numpy(np.load(RAG / "dense_e5s.npy")).to(self.device)
+            self.mat = torch.from_numpy(np.load(RAG / "dense_e5s.npy")).to(self.device, self.dtype)
         s = (self.mat @ self.embed([f"query: {query}"])[0]).float()
         v, i = s.topk(k)
         return i.tolist(), v.tolist()
