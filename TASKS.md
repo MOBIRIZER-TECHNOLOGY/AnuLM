@@ -9,6 +9,11 @@
 > place to start, and the "Running for days without a terminal" section
 > there gives the Linux equivalents of the Task Scheduler pattern below.
 
+> **Open 2026-09-28: base-v2 pretraining is running unattended until about
+> 2026-10-08.** Two scheduled tasks own it and restart everything by
+> themselves; see "Base v2 pretraining" below for what they do, how to check
+> on the run, and how to pause it for a demo.
+
 > **Closed again 2026-09-19 06:29.** The long-context run finished its
 > 10,000 steps unattended overnight and its tasks are disabled; the section
 > below is the record of it. `docs/RESULTS.md` §28 has the result.
@@ -195,6 +200,81 @@ now* was started by an assistant session at 18:58 and will still die when
 that session ends. That is fine, because `anulm_coder` will pick it
 back up at the next half-hour boundary. From the first task-started run
 onward, sessions are irrelevant.
+
+## Base v2 pretraining (started 2026-09-28 12:03, ends ~2026-10-08)
+
+The project's own from-scratch base, trained on 11.3B tokens of English,
+Hindi and Python (`experiments/build_v2.py` → `data/v2/`): the combo preset
+(398M total / 174M active), 1,024-token windows, 2,750,000 steps, plain
+AdamW with a warmup-stable-decay schedule. The learning rate holds at its
+peak until step 2,200,000 (~2026-10-06 17:00) and decays over the last 20%,
+which is where most of the remaining gain comes. `docs/RESULTS.md` §32-33 say
+why each choice was made.
+
+### What restarts itself
+
+| task | runs | every | job |
+| --- | --- | --- | --- |
+| `anulm_v2` | `run_v2_phase.cmd` | 30 min | keep training alive |
+| `anulm_v2_backup` | `backup_v2.ps1` | 30 min | keep dated copies, ~every 3 h |
+| `anulm_tb` | `run_tb_phase.cmd 250000` | — | **disabled 2026-09-28** so it cannot relaunch the finished textbook run into the GPU |
+
+**`anulm_v2`** does nothing while any `train.py` is running. Otherwise it
+starts `_v2_run.cmd` in its own console (so a Ctrl+C elsewhere cannot reach
+it, see "How to launch so it survives" above), with `--resume` whenever
+`ckpt_base_v2.pt.last` exists. Training saves that resume point every 10,000
+steps (~53 min), so a power cut, crash or closed session loses at most ~50
+minutes. When the run ends it writes `v2_done.marker` and the task goes idle.
+
+**`anulm_v2_backup`** copies the resume point and the best checkpoint to
+`backups\v2\` about every 3 hours and keeps the newest 3 sets (~20 GB). It
+copies only 1-30 minutes after a save. On Windows, `train.py`'s
+`os.replace` fails if another process has the file open, so a copy that
+overlapped a save would crash training.
+
+**After a reboot** both tasks start firing again once someone logs in to
+Windows. They are registered interactive-only, so a machine that reboots
+and sits at the login screen does not train. Log in, or wait up to 30
+minutes after logging in, and the run resumes by itself.
+
+### Checking on it
+
+```
+type v2_train_run.log | findstr "eval @"      held-out loss at every 10,000 steps
+powershell Get-Content v2_train_run.log -Tail 1  the latest step, loss, ms/step
+type v2_train_guard.log                        every firing of anulm_v2
+type v2_backup.log                             every backup taken or removed
+type v2_train_run.err                          errors, if the run died
+schtasks /query /tn anulm_v2 /fo list          status and next firing
+```
+
+Healthy looks like ~300-350 ms/step (~12,700 tok/s) and a guard log that
+reads "already training, nothing to do" every half hour. If the step in the
+last line has not moved between two checks, read `v2_train_run.err`. A step
+time near 1,200 ms means the GPU is paging to system RAM: something else is
+on the card.
+
+### Pausing it (for a demo on the GPU)
+
+```
+schtasks /change /tn anulm_v2 /disable      stop it from restarting
+powershell "Get-CimInstance Win32_Process -Filter \"name='python.exe'\" | ? CommandLine -like '*train.py*' | % { Stop-Process $_.ProcessId }"
+   ... run the demo (python app_omni.py) ...
+schtasks /change /tn anulm_v2 /enable
+schtasks /run    /tn anulm_v2               resume now from the last save
+```
+
+Stop it just after an `eval @` line appears in the log to lose the least.
+The demo also runs on CPU with training untouched (`--device cpu`),
+slower but with no pause.
+
+### Restoring a backup
+
+Only needed if `ckpt_base_v2.pt.last` is damaged: `train.py` falls back to
+the best checkpoint by itself when the resume point will not load. Disable
+`anulm_v2` and stop training as above. Copy a
+`backups\v2\ckpt_base_v2_step<N>_<date>.pt.last` over `ckpt_base_v2.pt.last`.
+Enable and run `anulm_v2`. The run continues from step N.
 
 ## Translation demo (docs/TRANSLATE_PLAN.md) — done
 
