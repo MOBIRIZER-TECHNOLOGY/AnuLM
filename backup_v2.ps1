@@ -31,6 +31,23 @@ try {
     Note "backed up step $step -> $name"
 } catch { Note "backup failed: $($_.Exception.Message)"; exit 0 }
 
+# Milestones for the "watch it learn" page: the first backup at or past each
+# of these steps also keeps its best checkpoint (1.6 GB) in milestones\,
+# which is never pruned -- the rolling copies below are.
+$milestones = 700000, 1000000, 1500000, 2000000, 2200000, 2500000, 2750000
+if ($step -ne "unknown") {
+    $mdir = Join-Path $dir "milestones"
+    New-Item -ItemType Directory -Force $mdir | Out-Null
+    foreach ($m in $milestones) {
+        $target = Join-Path $mdir ("ckpt_base_v2_milestone{0}.pt" -f $m)
+        if ($step -ge $m -and -not (Test-Path $target) -and (Test-Path "ckpt_base_v2.pt")) {
+            Copy-Item "ckpt_base_v2.pt" $target
+            Note "kept milestone $m (best checkpoint as of step $step)"
+            break
+        }
+    }
+}
+
 # Keep the newest 3 backup sets; older ones are removed (these are copies, the
 # live resume point is untouched).
 $sets = Get-ChildItem $dir -Filter "*.last" | Sort-Object LastWriteTime -Descending
