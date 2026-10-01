@@ -81,16 +81,36 @@ def encode(tok, text: str, options: list[str], max_len: int = 1024):
 
 # --------------------------------------------------------------------- model
 class Decider(nn.Module):
-    def __init__(self, model: AnuLM):
+    """A decision head on one of three backbones:
+
+    kind "causal"  AnuLM as trained: an option sees the message and the
+                   options before it, never those after (the first version).
+    kind "bidir"   AnuLM converted to an encoder (bidirectional.py): every
+                   token sees every real token.
+    kind "hf"      an open pretrained encoder (ModernBERT) -- a reference
+                   point, not this project's own model.
+    """
+
+    def __init__(self, model, kind: str = "causal", pad_id: int = 0):
         super().__init__()
-        self.model = model
-        self.head = nn.Linear(model.cfg.hidden_size, 1)
+        self.model, self.kind, self.pad_id = model, kind, pad_id
+        hid = model.cfg.hidden_size if kind != "hf" else model.config.hidden_size
+        self.head = nn.Linear(hid, 1)
         nn.init.normal_(self.head.weight, std=0.02)
         nn.init.zeros_(self.head.bias)
         self.register_buffer("temperature", torch.ones(()))
 
     def hidden(self, idx):
-        m = self.model
+        # Real tokens: everything but padding (position 0 is the start token,
+        # which for AnuLM shares its id with the padding).
+        attn = idx != self.pad_id
+        attn[:, 0] = True
+        if self.kind == "hf":
+            return self.model(input_ids=idx, attention_mask=attn.long()).last_hidden_state
+        if self.kind == "bidir":
+            from bidirectional import bidir_hidden
+            return bidir_hidden(self.model, idx, attn)
+        m = self.model                         # causal: right padding never reaches real tokens
         x = F.embedding(idx, m._table("in"))
         cos, sin = m.rotary(idx.shape[1], x.device, x.dtype)
         for layer in m.layers:
@@ -99,6 +119,18 @@ class Decider(nn.Module):
             else:
                 x, _ = layer(x, cos, sin)
         return m.norm(x)
+
+    def balance(self):
+        if hasattr(self.model, "update_expert_biases"):
+            self.model.update_expert_biases()
+
+    def save(self, path, **extra):
+        state = {"decide_head": self.head.state_dict(), "kind": self.kind, **extra}
+        if self.kind == "hf":
+            state.update(hf_backbone=self.hf_path, hf_state=self.model.state_dict())
+        else:
+            state.update(model=self.model.state_dict(), cfg=self.model.cfg, bidirectional=self.kind == "bidir")
+        torch.save(state, path)
 
     def forward(self, idx, pos, mask=None):
         """idx (B, S); pos (B, K) option positions; mask (B, K) real options
@@ -134,17 +166,39 @@ def make_examples(rows, tok, labs, rng=None):
     return out
 
 
+def _hf_encoder(path: str):
+    from transformers import AutoModel
+
+    from hf_tok import EncoderTokenizer
+    return AutoModel.from_pretrained(path), EncoderTokenizer(Path(path) / "tokenizer.json")
+
+
 def load(ckpt: str, device: str):
+    """A decide checkpoint, an AnuLM base (causal or bidirectional.py's), or
+    the folder of an open encoder (config.json + tokenizer.json)."""
     from hf_tok import load_tokenizer
+    p = Path(ckpt)
+    if p.is_dir() and "config" not in json.load(open(p / "config.json", encoding="utf-8")):
+        enc, tok = _hf_encoder(ckpt)                          # a fresh open encoder (export_hf.py
+        d = Decider(enc, "hf", tok.pad_id)                    # folders nest AnuLM's under "config")
+        d.hf_path = ckpt
+        return d.to(device), tok, {}
     ck = load_checkpoint(ckpt, "cpu")
-    cfg = replace(ck["cfg"], moe_impl="grouped" if device.startswith("cuda") else "sparse")
-    m = AnuLM(cfg)
-    m.load_state_dict(ck["model"])
-    d = Decider(m)
+    if "hf_backbone" in ck:                                   # a trained decider on an open encoder
+        enc, tok = _hf_encoder(ck["hf_backbone"])
+        enc.load_state_dict(ck["hf_state"])
+        d = Decider(enc, "hf", tok.pad_id)
+        d.hf_path = ck["hf_backbone"]
+    else:
+        cfg = replace(ck["cfg"], moe_impl="grouped" if device.startswith("cuda") else "sparse")
+        m = AnuLM(cfg)
+        m.load_state_dict(ck["model"])
+        tok = load_tokenizer(cfg.tokenizer_path)
+        d = Decider(m, "bidir" if ck.get("bidirectional") else "causal", tok.eos_id)
     if "decide_head" in ck:
         d.head.load_state_dict(ck["decide_head"])
         d.temperature.fill_(ck.get("temperature", 1.0))
-    return d.to(device), load_tokenizer(cfg.tokenizer_path), ck
+    return d.to(device), tok, ck
 
 
 # --------------------------------------------------------------------- calibration and metrics
@@ -184,7 +238,7 @@ def predict_logits(d: Decider, examples, tok, device, bs=16):
     out = []
     ac = torch.autocast("cuda", dtype=torch.bfloat16, enabled=device.startswith("cuda"))
     for i in range(0, len(examples), bs):
-        x, pos, _ = batchify(examples[i:i + bs], tok, tok.eos_id)
+        x, pos, _ = batchify(examples[i:i + bs], tok, d.pad_id)
         with ac:
             out.append(d(x.to(device), pos.to(device)).cpu())
     return torch.cat(out)
@@ -247,7 +301,8 @@ def train_general(a):
     torch.manual_seed(0)
     rng = random.Random(0)
     d, tok, ck = load(a.ckpt, a.device)
-    fit_memory(d.model)
+    if d.kind != "hf":
+        fit_memory(d.model)
     tasks = general_tasks()
     pool = [(name, t, l) for name, (labs, tr, _) in tasks.items() for t, l in tr]
     rng.shuffle(pool)
@@ -275,7 +330,7 @@ def train_general(a):
             opts = sample_options(tasks[name][0], l, rng)
             ids, pos = encode(tok, t, opts)
             batch.append((ids, pos, opts.index(l), opts))
-        x, pos, y, mask = batchify(batch, tok, tok.eos_id, with_mask=True)
+        x, pos, y, mask = batchify(batch, tok, d.pad_id, with_mask=True)
         scale = min(1.0, (step + 1) / 200) * max(0.0, 1 - step / steps)
         for g, b in zip(opt.param_groups, base):
             g["lr"] = b * scale
@@ -286,7 +341,7 @@ def train_general(a):
         torch.nn.utils.clip_grad_norm_(d.parameters(), 1.0)
         opt.step()
         opt.zero_grad(set_to_none=True)
-        d.model.update_expert_biases()
+        d.balance()
         if step % 200 == 0:
             print(f"step {step:5d}/{steps} | loss {loss.item():.4f} | {time.time() - t0:.0f}s", flush=True)
         if (step + 1) % a.eval_every == 0 or step == steps - 1:
@@ -294,7 +349,7 @@ def train_general(a):
             lv, yv = [], []
             with torch.no_grad():
                 for i in range(0, len(val), 16):
-                    xb, pb, ybt, mb = batchify(val[i:i + 16], tok, tok.eos_id, with_mask=True)
+                    xb, pb, ybt, mb = batchify(val[i:i + 16], tok, d.pad_id, with_mask=True)
                     with ac:
                         lv.append(d(xb.to(a.device), pb.to(a.device), mb.to(a.device)).cpu())
                     yv.append(ybt)
@@ -307,9 +362,8 @@ def train_general(a):
             if nll < best:
                 best = nll
                 tmp = fit_temperature(lv, yv)
-                torch.save({"model": d.model.state_dict(), "decide_head": d.head.state_dict(), "temperature": tmp,
-                            "cfg": d.model.cfg, "step": step, "val_accuracy": acc, "labels": None,
-                            "general": True, "tasks": list(tasks), "base_ckpt": a.ckpt}, a.out)
+                d.save(a.out, temperature=tmp, step=step, val_accuracy=acc, labels=None,
+                       general=True, tasks=list(tasks), base_ckpt=a.ckpt)
                 flag = f"  <- saved (temperature {tmp:.2f})"
             print(f"  eval @ {step:5d} | held-out (training tasks) accuracy {100 * acc:.2f}% nll {nll:.4f}{flag}",
                   flush=True)
@@ -322,8 +376,9 @@ def train(a):
     torch.manual_seed(0)
     rng = random.Random(0)
     d, tok, ck = load(a.ckpt, a.device)
-    fit_memory(d.model)
-    if a.grad_ckpt:
+    if d.kind != "hf":
+        fit_memory(d.model)
+    if a.grad_ckpt and d.kind != "hf":
         d.model.enable_gradient_checkpointing()
     labs = labels()
     rows = load_split("train")
@@ -347,7 +402,7 @@ def train(a):
             order = list(range(len(train_rows)))
             rng.shuffle(order)
         batch = make_examples([train_rows[order.pop()] for _ in range(a.batch_size)], tok, labs, rng)
-        x, pos, y = batchify(batch, tok, tok.eos_id)
+        x, pos, y = batchify(batch, tok, d.pad_id)
         scale = min(1.0, (step + 1) / 100) * max(0.0, 1 - step / steps)
         for g, b in zip(opt.param_groups, base):
             g["lr"] = b * scale
@@ -358,7 +413,7 @@ def train(a):
         torch.nn.utils.clip_grad_norm_(d.parameters(), 1.0)
         opt.step()
         opt.zero_grad(set_to_none=True)
-        d.model.update_expert_biases()
+        d.balance()
         if step % 100 == 0:
             print(f"step {step:5d}/{steps} | loss {loss.item():.4f} | {time.time() - t0:.0f}s", flush=True)
         if (step + 1) % a.eval_every == 0 or step == steps - 1:
@@ -369,9 +424,7 @@ def train(a):
             if acc > best:
                 best = acc
                 t = fit_temperature(lv, yv)
-                torch.save({"model": d.model.state_dict(), "decide_head": d.head.state_dict(), "temperature": t,
-                            "cfg": d.model.cfg, "step": step, "val_accuracy": acc, "labels": labs,
-                            "base_ckpt": a.ckpt}, a.out)
+                d.save(a.out, temperature=t, step=step, val_accuracy=acc, labels=labs, base_ckpt=a.ckpt)
                 flag = f"  <- saved (temperature {t:.2f})"
             print(f"  eval @ {step:5d} | val accuracy {100 * acc:.2f}%{flag}", flush=True)
             d.train()

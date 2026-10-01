@@ -1,0 +1,56 @@
+{
+  "device": "cpu",
+  "gpu": "cpu",
+  "cold_start_s": 3.08,
+  "latency_by_options": {
+    "2": {
+      "ms": 106.2,
+      "tokens": 29
+    },
+    "5": {
+      "ms": 130.5,
+      "tokens": 43
+    },
+    "10": {
+      "ms": 142.4,
+      "tokens": 65
+    },
+    "20": {
+      "ms": 185.0,
+      "tokens": 111
+    },
+    "50": {
+      "ms": 261.5,
+      "tokens": 255
+    },
+    "77": {
+      "ms": 342.3,
+      "tokens": 387
+    },
+    "100": {
+      "ms": 398.8,
+      "tokens": 468
+    },
+    "150": {
+      "ms": 494.3,
+      "tokens": 632
+    }
+  },
+  "throughput": {
+    "1": {
+      "ms_per_batch": 342.1,
+      "queries_per_s": 2.9,
+      "peak_gb": null
+    },
+    "8": {
+      "ms_per_batch": 2057.8,
+      "queries_per_s": 3.9,
+      "peak_gb": null
+    }
+  },
+  "message_only": {
+    "ms": 72.7,
+    "tokens": 10,
+    "possible_speedup_vs_77": 4.7
+  }
+}

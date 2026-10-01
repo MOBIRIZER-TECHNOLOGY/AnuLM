@@ -424,7 +424,7 @@ class GQAttention(nn.Module):
         self.scale = cfg.head_dim ** -0.5 * (rotary.attn_mscale ** 2)
 
     def forward(self, x, cos, sin, cache: Optional[dict] = None, start: int = 0,
-                window: Optional[int] = None):
+                window: Optional[int] = None, bidir_mask: Optional[torch.Tensor] = None):
         B, S, _ = x.shape
         qkv = self.query_key_value(x)
         qkv = qkv.view(B, S, self.n_head + 2 * self.n_kv_head, self.head_dim)
@@ -447,7 +447,9 @@ class GQAttention(nn.Module):
             cache["k"], cache["v"] = k, v
         T = k.shape[2]
 
-        mask = _attn_mask(S, T, start, window, x.device)
+        # bidir_mask (B, 1, 1, T), True = a real token: BIDIRECTIONAL attention
+        # over the unpadded tokens (bidirectional.py's encoder use). None = causal.
+        mask = bidir_mask if bidir_mask is not None else _attn_mask(S, T, start, window, x.device)
         drop = self.dropout if self.training else 0.0
         if NATIVE_GQA and self.n_rep > 1:
             # SDPA broadcasts the Hkv heads itself: no (B, H, T, Dh) copies.
@@ -498,7 +500,7 @@ class MLAttention(nn.Module):
         self.scale = self.q_head_dim ** -0.5 * (rotary.attn_mscale ** 2)
 
     def forward(self, x, cos, sin, cache: Optional[dict] = None, start: int = 0,
-                window: Optional[int] = None):
+                window: Optional[int] = None, bidir_mask: Optional[torch.Tensor] = None):
         B, S, _ = x.shape
 
         q = self.q_proj(x).view(B, S, self.n_head, self.q_head_dim).transpose(1, 2)
@@ -535,8 +537,8 @@ class MLAttention(nn.Module):
         k = torch.cat([k_nope, k_pe], dim=-1)                     # (B, H, T, Qd)
 
         # SDPA allows V's head dim to differ from Q/K's -- which MLA needs.
-        y = _sdpa(q, k, v, _attn_mask(S, T, start, window, x.device), S,
-                  self.scale, self.dropout if self.training else 0.0)     # (B, H, S, Vd)
+        mask = bidir_mask if bidir_mask is not None else _attn_mask(S, T, start, window, x.device)
+        y = _sdpa(q, k, v, mask, S, self.scale, self.dropout if self.training else 0.0)     # (B, H, S, Vd)
         y = y.transpose(1, 2).contiguous().view(B, S, self.n_head * self.v_head_dim)
         return self.o_proj(y)
 
@@ -766,10 +768,12 @@ class Block(nn.Module):
         # on the rest (Qwen2 semantics). None = full attention.
         self.window = cfg.sliding_window if layer_idx < cfg.max_window_layers else None
 
-    def forward(self, x, cos, sin, cache: Optional[dict] = None, start: int = 0):
-        """Returns (x, aux). aux is the MoE regulariser or None."""
+    def forward(self, x, cos, sin, cache: Optional[dict] = None, start: int = 0,
+                bidir_mask: Optional[torch.Tensor] = None):
+        """Returns (x, aux). aux is the MoE regulariser or None. With bidir_mask
+        the attention is bidirectional (the sliding window does not apply)."""
         x = x + self.attn(self.input_layernorm(x), cos, sin,
-                          cache=cache, start=start, window=self.window)
+                          cache=cache, start=start, window=self.window, bidir_mask=bidir_mask)
         h = self.mlp(self.post_attention_layernorm(x))
         h, aux = h if self.is_moe else (h, None)
         return x + h, aux

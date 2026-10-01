@@ -1,0 +1,66 @@
+{
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 5070 Ti",
+  "cold_start_s": 3.4,
+  "latency_by_options": {
+    "2": {
+      "ms": 44.8,
+      "tokens": 29
+    },
+    "5": {
+      "ms": 45.9,
+      "tokens": 43
+    },
+    "10": {
+      "ms": 46.3,
+      "tokens": 65
+    },
+    "20": {
+      "ms": 48.3,
+      "tokens": 111
+    },
+    "50": {
+      "ms": 45.3,
+      "tokens": 255
+    },
+    "77": {
+      "ms": 44.2,
+      "tokens": 387
+    },
+    "100": {
+      "ms": 43.4,
+      "tokens": 468
+    },
+    "150": {
+      "ms": 42.7,
+      "tokens": 632
+    }
+  },
+  "throughput": {
+    "1": {
+      "ms_per_batch": 43.8,
+      "queries_per_s": 22.8,
+      "peak_gb": 2.13
+    },
+    "8": {
+      "ms_per_batch": 58.0,
+      "queries_per_s": 138.0,
+      "peak_gb": 2.31
+    },
+    "32": {
+      "ms_per_batch": 204.7,
+      "queries_per_s": 156.3,
+      "peak_gb": 2.92
+    },
+    "64": {
+      "ms_per_batch": 408.4,
+      "queries_per_s": 156.7,
+      "peak_gb": 3.73
+    }
+  },
+  "message_only": {
+    "ms": 39.2,
+    "tokens": 10,
+    "possible_speedup_vs_77": 1.1
+  }
+}

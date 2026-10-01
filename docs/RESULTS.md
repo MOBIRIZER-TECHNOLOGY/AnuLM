@@ -2741,3 +2741,69 @@ distinctions between near-synonymous intents are among the hardest zero-shot
 cases. For a fixed task with labelled data, the trained model (89.2%) is the
 right tool. The general version is a measured baseline, not a replacement
 for Jev.
+
+## 36. Decide: speed, and decoder vs encoder backbones
+
+**Speed** (`experiments/decide_speed.py`, trained BANKING77 model; results in
+`logs/decide_speed/`). On the RTX 5070 Ti, one query takes about 44 ms
+whatever the number of options: 44.8 ms with 2 options, 44.2 ms with 77,
+42.7 ms with 150 (632 tokens). At batch 1 the GPU is bound by per-layer
+overhead, not by tokens; the message alone (10 tokens) still takes 39 ms.
+So caching the option names would gain at most 1.1x on the GPU, against
+up to 4.7x on the CPU, where 150 options cost 494 ms against 106 ms for 2.
+Batching is what pays: 23 queries/s at batch 1, 138 at batch 8, 157 at
+batch 32-64 (3.7 GB peak). Loading the model takes 3.4 s.
+
+**Backbones.** The decide head first ran on AnuLM as trained, a causal
+decoder: each option sees the message and the options before it, never
+those after. Two encoders were tried in its place, with the same head,
+data, recipe and seeds:
+
+* **AnuLM as an encoder** (`bidirectional.py`, the LLM2Vec recipe):
+  attention made bidirectional, then 2,000 steps (10 minutes) of masked
+  next-token prediction on the base-v2 corpus, 20% of tokens hidden.
+  Masked-token loss went from 8.97 (the decoder simply switched to
+  bidirectional) to about 3.9. Still this project's own weights.
+* **ModernBERT-base** (Answer.AI, Apache 2.0, 149M parameters): an open
+  pretrained encoder, as a reference point. **Not from scratch**.
+
+| BANKING77 test, 3,080 queries | trained | ECE (cal.) | zero-shot | ECE (cal.) | ms/query |
+| --- | --- | --- | --- | --- | --- |
+| AnuLM decoder (sections 34-35) | 89.2% | 2.38% | 43.2% | 3.67% | 53 |
+| AnuLM as encoder (bidirectional) | 89.5% | 2.02% | 41.6% | 4.59% | 50 |
+| ModernBERT-base (borrowed) | **90.8%** | **1.75%** | **55.0%** | 18.12% | **12** |
+| Jev, zero-shot (independent) | - | - | 80.1% | n/p | - |
+| fine-tuned BERT (Casanueva et al.) | 93.6% | - | - | - | - |
+
+(ms/query is the eval loop's timing, one query at a time, 77 options, the
+same loop for all three.)
+
+Answering only when calibrated confidence >= 0.7:
+
+| | trained: answers / accuracy | zero-shot: answers / accuracy |
+| --- | --- | --- |
+| AnuLM decoder | 84.4% / 96.3% | 17.5% / 86.3% |
+| AnuLM as encoder | 85.2% / 95.8% | 16.0% / 82.0% |
+| ModernBERT-base | 88.5% / 95.9% | 61.4% / 72.3% |
+
+What it shows:
+
+* **Making AnuLM bidirectional did not help.** Trained, +0.3 points and
+  slightly better calibration, within noise; zero-shot, 1.6 points worse.
+  Ten minutes of adaptation left its masked-token loss (3.9) above the
+  decoder's own next-token loss (3.4); a longer adaptation might change
+  that, but on this evidence the attention direction is not what limits
+  the model.
+* **ModernBERT is better and 4x faster**, and the gap is largest
+  zero-shot (+12 points). It is dense and was pretrained on about 2
+  trillion tokens; the AnuLM demo base has read about 2.5 billion. The
+  speed gap is mostly the MoE: AnuLM routes every token through 4 of 24
+  experts in each of its layers, which costs time at batch 1.
+* **ModernBERT's zero-shot confidence cannot be trusted.** After
+  temperature scaling its calibration error is still 18%: confident
+  (72.8% mean) where it is right 55% of the time, and at >= 0.9 only 80.5%
+  accurate. A temperature fitted on the training tasks does not transfer
+  to a new one. AnuLM's zero-shot models are weaker but honest about it.
+* Trained on the task, all three land within 1.6 points of each other and
+  close to fine-tuned BERT (93.6%). For a fixed task with labelled data the
+  backbone matters little; for zero-shot, pretraining scale does.
