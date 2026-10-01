@@ -62,7 +62,9 @@ def labels() -> list[str]:
 
 
 def readable(label: str) -> str:
-    return label.replace("_", " ")
+    """'card_arrival' -> 'card arrival'; 'EducationalInstitution' -> 'educational institution'."""
+    import re
+    return re.sub(r"(?<=[a-z])(?=[A-Z])", " ", label).replace("_", " ").lower()
 
 
 def encode(tok, text: str, options: list[str], max_len: int = 1024):
@@ -98,21 +100,27 @@ class Decider(nn.Module):
                 x, _ = layer(x, cos, sin)
         return m.norm(x)
 
-    def forward(self, idx, pos):
-        """idx (B, S); pos (B, K) option positions -> raw logits (B, K)."""
+    def forward(self, idx, pos, mask=None):
+        """idx (B, S); pos (B, K) option positions; mask (B, K) real options
+        when the examples in a batch have different numbers of them -> (B, K)."""
         h = self.hidden(idx)
         g = h.gather(1, pos[..., None].expand(-1, -1, h.shape[-1]))
-        return self.head(g).squeeze(-1).float()
+        logits = self.head(g).squeeze(-1).float()
+        return logits if mask is None else logits.masked_fill(~mask, float("-inf"))
 
 
-def batchify(examples, tok, pad):
+def batchify(examples, tok, pad, with_mask=False):
     L = max(len(e[0]) for e in examples)
+    K = max(len(e[1]) for e in examples)
     x = torch.full((len(examples), L), pad, dtype=torch.long)
+    pos = torch.zeros(len(examples), K, dtype=torch.long)
+    mask = torch.zeros(len(examples), K, dtype=torch.bool)
     for b, e in enumerate(examples):
         x[b, :len(e[0])] = torch.tensor(e[0])
-    pos = torch.tensor([e[1] for e in examples])
+        pos[b, :len(e[1])] = torch.tensor(e[1])
+        mask[b, :len(e[1])] = True
     y = torch.tensor([e[2] for e in examples])
-    return x, pos, y
+    return (x, pos, y, mask) if with_mask else (x, pos, y)
 
 
 def make_examples(rows, tok, labs, rng=None):
@@ -171,6 +179,7 @@ def metrics(probs: torch.Tensor, y: torch.Tensor, bins: int = 15) -> dict:
 
 @torch.no_grad()
 def predict_logits(d: Decider, examples, tok, device, bs=16):
+    """Logits per example; examples in one call must share an option count."""
     d.eval()
     out = []
     ac = torch.autocast("cuda", dtype=torch.bfloat16, enabled=device.startswith("cuda"))
@@ -179,6 +188,133 @@ def predict_logits(d: Decider, examples, tok, device, bs=16):
         with ac:
             out.append(d(x.to(device), pos.to(device)).cpu())
     return torch.cat(out)
+
+
+# --------------------------------------------------------------------- the general version
+GEN = HERE / "data" / "decide_general"
+# Kept out of training so BANKING77 is a true zero-shot test: CLINC's banking
+# and credit-card domains, its exchange_rate intent, MASSIVE's qa_currency,
+# and CLINC's out-of-scope class.
+CLINC_EXCLUDE = {
+    "transfer", "transactions", "balance", "freeze_account", "pay_bill", "bill_balance", "bill_due",
+    "interest_rate", "routing", "min_payment", "order_checks", "pin_change", "report_fraud",
+    "account_blocked", "spending_history",
+    "credit_score", "report_lost_card", "credit_limit", "rewards_balance", "new_card",
+    "application_status", "card_declined", "international_fees", "apr", "redeem_rewards",
+    "credit_limit_change", "damaged_card", "replacement_card_duration", "expiration_date",
+    "improve_credit_score", "exchange_rate", "oos"}
+MASSIVE_EXCLUDE = {"qa_currency"}
+
+
+def general_tasks(seed: int = 0) -> dict:
+    """{task: (labels, train_rows, val_rows)} -- five label sets, none of them
+    about banking. Rows are (text, label)."""
+    import pandas as pd
+    rng = random.Random(seed)
+    tasks = {}
+    names = json.load(open(GEN / "clinc" / "intent_names.json"))
+    def clinc(split):
+        df = pd.read_parquet(GEN / "clinc" / "plus" / f"{split}-00000-of-00001.parquet")
+        return [(t, names[i]) for t, i in zip(df.text, df.intent) if names[i] not in CLINC_EXCLUDE]
+    tr, va = clinc("train"), clinc("validation")
+    tasks["clinc intent"] = (sorted({l for _, l in tr}), tr, va)
+    for lang in ("en-US", "hi-IN"):
+        def massive(split):
+            rows = [json.loads(l) for l in open(GEN / f"massive_{lang}" / f"{split}.jsonl", encoding="utf-8")]
+            return [(r["text"], r["label_text"]) for r in rows if r["label_text"] not in MASSIVE_EXCLUDE]
+        tr, va = massive("train"), massive("validation")
+        tasks[f"massive intent {lang}"] = (sorted({l for _, l in tr}), tr, va)
+        sc_tr = [(t, l.split("_")[0]) for t, l in rng.sample(tr, 4000)]
+        sc_va = [(t, l.split("_")[0]) for t, l in va]
+        tasks[f"massive scenario {lang}"] = (sorted({l for _, l in sc_tr}), sc_tr, sc_va)
+    df = pd.read_parquet(GEN / "dbpedia" / "dbpedia_14" / "train-00000-of-00001.parquet").sample(7000, random_state=seed)
+    dbl = json.load(open(GEN / "dbpedia" / "label_names.json"))
+    rows = [(f"{t}. {c[:300]}", dbl[l]) for t, c, l in zip(df.title, df.content, df.label)]
+    tasks["dbpedia topic"] = (sorted(set(dbl)), rows[:6000], rows[6000:])
+    return tasks
+
+
+def sample_options(labels, gold, rng, k_min=5, k_max=77):
+    """The gold label plus a random subset of the others, shuffled: the model
+    must learn to pick from any list, of any length, in any order."""
+    k = rng.randint(min(k_min, len(labels)), min(k_max, len(labels)))
+    opts = [gold] + rng.sample([l for l in labels if l != gold], k - 1)
+    rng.shuffle(opts)
+    return opts
+
+
+def train_general(a):
+    torch.manual_seed(0)
+    rng = random.Random(0)
+    d, tok, ck = load(a.ckpt, a.device)
+    fit_memory(d.model)
+    tasks = general_tasks()
+    pool = [(name, t, l) for name, (labs, tr, _) in tasks.items() for t, l in tr]
+    rng.shuffle(pool)
+    val = []
+    for name, (labs, _, va) in tasks.items():                     # temperature: training tasks only
+        for t, l in rng.sample(va, min(a.val_per_task, len(va))):
+            opts = sample_options(labs, l, rng)
+            ids, pos = encode(tok, t, opts)
+            val.append((ids, pos, opts.index(l), opts))
+    for name, (labs, tr, va) in tasks.items():
+        print(f"  {name:24s} {len(labs):3d} labels  {len(tr):6d} train  {len(va):5d} val")
+    opt = torch.optim.AdamW([{"params": d.model.parameters(), "lr": a.lr},
+                             {"params": d.head.parameters(), "lr": 1e-3}], betas=(0.9, 0.95),
+                            weight_decay=0.0, fused=a.device.startswith("cuda"))
+    steps = int(len(pool) * a.epochs) // a.batch_size
+    base = [g["lr"] for g in opt.param_groups]
+    ac = torch.autocast("cuda", dtype=torch.bfloat16, enabled=a.device.startswith("cuda"))
+    print(f"general training: {len(pool)} examples over {len(tasks)} tasks, {steps} steps; "
+          f"BANKING77 and banking-like intents excluded", flush=True)
+    t0, best = time.time(), float("inf")
+    d.train()
+    for step in range(steps):
+        batch = []
+        for name, t, l in pool[(step * a.batch_size) % len(pool):][:a.batch_size]:
+            opts = sample_options(tasks[name][0], l, rng)
+            ids, pos = encode(tok, t, opts)
+            batch.append((ids, pos, opts.index(l), opts))
+        x, pos, y, mask = batchify(batch, tok, tok.eos_id, with_mask=True)
+        scale = min(1.0, (step + 1) / 200) * max(0.0, 1 - step / steps)
+        for g, b in zip(opt.param_groups, base):
+            g["lr"] = b * scale
+        with ac:
+            logits = d(x.to(a.device), pos.to(a.device), mask.to(a.device))
+        loss = F.cross_entropy(logits, y.to(a.device))
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(d.parameters(), 1.0)
+        opt.step()
+        opt.zero_grad(set_to_none=True)
+        d.model.update_expert_biases()
+        if step % 200 == 0:
+            print(f"step {step:5d}/{steps} | loss {loss.item():.4f} | {time.time() - t0:.0f}s", flush=True)
+        if (step + 1) % a.eval_every == 0 or step == steps - 1:
+            d.eval()
+            lv, yv = [], []
+            with torch.no_grad():
+                for i in range(0, len(val), 16):
+                    xb, pb, ybt, mb = batchify(val[i:i + 16], tok, tok.eos_id, with_mask=True)
+                    with ac:
+                        lv.append(d(xb.to(a.device), pb.to(a.device), mb.to(a.device)).cpu())
+                    yv.append(ybt)
+            K = max(t.shape[1] for t in lv)
+            lv = torch.cat([F.pad(t, (0, K - t.shape[1]), value=float("-inf")) for t in lv])
+            yv = torch.cat(yv)
+            nll = F.cross_entropy(lv, yv).item()
+            acc = (lv.argmax(1) == yv).float().mean().item()
+            flag = ""
+            if nll < best:
+                best = nll
+                tmp = fit_temperature(lv, yv)
+                torch.save({"model": d.model.state_dict(), "decide_head": d.head.state_dict(), "temperature": tmp,
+                            "cfg": d.model.cfg, "step": step, "val_accuracy": acc, "labels": None,
+                            "general": True, "tasks": list(tasks), "base_ckpt": a.ckpt}, a.out)
+                flag = f"  <- saved (temperature {tmp:.2f})"
+            print(f"  eval @ {step:5d} | held-out (training tasks) accuracy {100 * acc:.2f}% nll {nll:.4f}{flag}",
+                  flush=True)
+            d.train()
+    print(f"done in {time.time() - t0:.0f}s | best held-out nll {best:.4f} | {a.out}")
 
 
 # --------------------------------------------------------------------- train / eval / ask
@@ -309,6 +445,15 @@ def main():
     t.add_argument("--grad-ckpt", action="store_true")
     t.add_argument("--limit", type=int, default=0, help="use only this many training queries (smoke tests)")
     t.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
+    g = sub.add_parser("train-general", help="many tasks, BANKING77 excluded, for a zero-shot test")
+    g.add_argument("--ckpt", default="ckpt_demo_v2.pt")
+    g.add_argument("--out", default="ckpt_decide_general.pt")
+    g.add_argument("--epochs", type=float, default=1.0)
+    g.add_argument("--batch-size", type=int, default=8)
+    g.add_argument("--lr", type=float, default=3e-5)
+    g.add_argument("--eval-every", type=int, default=1000)
+    g.add_argument("--val-per-task", type=int, default=300)
+    g.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     e = sub.add_parser("eval")
     e.add_argument("--ckpt", default="ckpt_decide.pt")
     e.add_argument("--limit", type=int, default=0)
@@ -320,6 +465,8 @@ def main():
     a = ap.parse_args()
     if a.cmd == "train":
         train(a)
+    elif a.cmd == "train-general":
+        train_general(a)
     elif a.cmd == "eval":
         evaluate(a)
     else:
