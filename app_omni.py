@@ -45,7 +45,11 @@ CKPTS = {
 _HERE = Path(__file__).parent
 BRAIN = "ckpt_chat_v2.pt" if (_HERE / "ckpt_chat_v2.pt").exists() else "release/AnuLM-Hindi-QA-400M"
 READER = "ckpt_rc_pointer_v2.pt" if (_HERE / "ckpt_rc_pointer_v2.pt").exists() else "ckpt_rc_pointer.pt"
-DECIDER = "ckpt_decide.pt"
+# Decide backbones (docs/RESULTS.md section 36). ModernBERT is an open
+# pretrained encoder, not this project's model, and is labelled so in the UI.
+DECIDE_OWN = "AnuLM (our own, from scratch)"
+DECIDE_MB = "ModernBERT-base (borrowed open model, not from scratch)"
+DECIDERS = {DECIDE_OWN: "ckpt_decide.pt", DECIDE_MB: "ckpt_decide_modernbert.pt"}
 BRAIN_HUB = "toonist/AnuLM-Hindi-QA-400M"
 
 
@@ -115,9 +119,9 @@ class Models:
         from voice import TTS
         return self._get("tts", TTS)
 
-    def decider(self):
+    def decider(self, which: str = DECIDE_OWN):
         from decide import Decide
-        return self._get("decide", lambda: Decide(str(HERE / DECIDER), self.device))
+        return self._get(f"decide:{which}", lambda: Decide(str(HERE / DECIDERS[which]), self.device))
 
 
 def as_question(heard: str) -> str:
@@ -283,29 +287,33 @@ def build(models: Models) -> gr.Blocks:
             gr.Markdown("A *System One* decision, like TypeSafe's Jev: no text is generated. The "
                         "message and all 77 banking intents go through the model **once**; it "
                         "returns a calibrated probability for every intent, and hands the case to "
-                        "a person when it is not confident enough. Trained on BANKING77: 89.2% "
-                        "accurate on 3,080 unseen queries; at confidence 0.7 it answers 84% of "
-                        "them at 96.3% accuracy.")
+                        "a person when it is not confident enough. Trained on BANKING77, on 3,080 "
+                        "unseen queries: **AnuLM** 89.2% accurate (at confidence 0.7 it answers 84% "
+                        "at 96.3%), 53 ms; **ModernBERT-base**, an open model used as a reference, "
+                        "90.8% (88% at 95.9%), 12 ms.")
             with gr.Row():
                 with gr.Column():
                     msg = gr.Textbox(label="customer message", lines=3,
                                      placeholder="I still haven't received my new card")
+                    backbone = gr.Radio([k for k, v in DECIDERS.items() if (HERE / v).exists()],
+                                        value=DECIDE_OWN, label="model")
                     thr = gr.Slider(0.3, 0.99, value=0.7, step=0.01, label="hand to a human below this confidence")
                     go_dec = gr.Button("Decide", variant="primary")
                     gr.Examples([["I still haven't received my new card"],
                                  ["Why was I charged twice for the same coffee?"],
                                  ["The exchange rate on my transfer looks wrong"],
                                  ["How do I top up with Apple Pay?"],
-                                 ["I think someone stole my phone and my card"]], [msg])
+                                 ["I think someone stole my phone and my card"],
+                                 ["Someone is using my card right now, block it!"]], [msg])
                 with gr.Column():
                     choice = gr.Label(label="intent (top 3)", num_top_classes=3)
                     action = gr.Markdown()
                     typed = gr.JSON(label="typed output")
 
-            def do_decide(m, t):
+            def do_decide(m, t, which):
                 if not m or not m.strip():
                     return None, "", None
-                d = models.decider()
+                d = models.decider(which or DECIDE_OWN)
                 d.threshold = float(t)
                 t0 = time.time()
                 out = d(m.strip())
@@ -315,9 +323,10 @@ def build(models: Models) -> gr.Blocks:
                 else:
                     verdict = "**send to a human** (not confident enough)"
                 return ({k.replace("_", " "): v for k, v in out["probabilities"].items()},
-                        f"{verdict} · confidence {out['confidence']:.2f} · {ms:.0f} ms", out)
+                        f"{verdict} · confidence {out['confidence']:.2f} · {ms:.0f} ms · {which}",
+                        {**out, "model": which})
 
-            go_dec.click(do_decide, [msg, thr], [choice, action, typed])
+            go_dec.click(do_decide, [msg, thr, backbone], [choice, action, typed])
     return demo
 
 

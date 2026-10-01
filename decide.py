@@ -170,6 +170,8 @@ def _hf_encoder(path: str):
     from transformers import AutoModel
 
     from hf_tok import EncoderTokenizer
+    if not Path(path).is_absolute() and not Path(path).exists():
+        path = str(HERE / path)                           # saved relative to the repo
     return AutoModel.from_pretrained(path), EncoderTokenizer(Path(path) / "tokenizer.json")
 
 
@@ -193,7 +195,8 @@ def load(ckpt: str, device: str):
         cfg = replace(ck["cfg"], moe_impl="grouped" if device.startswith("cuda") else "sparse")
         m = AnuLM(cfg)
         m.load_state_dict(ck["model"])
-        tok = load_tokenizer(cfg.tokenizer_path)
+        tp = Path(cfg.tokenizer_path)
+        tok = load_tokenizer(tp if tp.is_absolute() or tp.exists() else HERE / tp)
         d = Decider(m, "bidir" if ck.get("bidirectional") else "causal", tok.eos_id)
     if "decide_head" in ck:
         d.head.load_state_dict(ck["decide_head"])
