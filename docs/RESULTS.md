@@ -2707,3 +2707,37 @@ Smart App Control began blocking Piper's DLL on 2026-10-01, so `voice.TTS`
 falls back to Windows' own speech engine. That engine has English voices
 only on this machine, so Hindi replies are text until a Hindi voice is
 installed.
+
+### The general version, zero-shot: well behind Jev, but well calibrated
+
+`decide.py train-general` trains the same architecture on six label sets
+that contain nothing about banking. Those are CLINC150's 119 non-banking
+intents, MASSIVE intents and scenarios in English and Hindi, and DBpedia
+topics: 48,644 examples, each with a random 5-77 of its task's labels,
+shuffled. All of BANKING77 is held out, along with every banking,
+credit-card, exchange-rate and currency intent in the other sets. The
+temperature is fitted on held-out data from the training tasks only.
+Training took 21 minutes on the demo base; held-out accuracy on the training
+tasks reached 92.7%.
+
+| BANKING77 test, 3,080 queries | accuracy | ECE |
+| --- | --- | --- |
+| Jev, zero-shot (independent benchmark) | **80.1%** | not published |
+| **AnuLM-Decide general, zero-shot** | **43.2%** | 3.67% (17.25% raw) |
+| AnuLM-Decide trained on BANKING77 | 89.2% | 2.38% |
+
+Zero-shot it is 33x chance (1.3%) and nearly 37 points behind Jev. What it
+does keep is calibration: at confidence >= 0.7 it answers 17.5% of queries
+at 86.3% accuracy, and at >= 0.9 it answers 7.3% at 94.2%. On tasks it never
+saw, `experiments/decide_samples.py` got clear topics and sentiment right
+with high confidence ("Add the onions and fry until golden" -> cooking,
+0.998). It also produced one dangerous confident error: "Someone is using
+my card right now, block it!" -> not urgent, 0.78. Zero-shot decisions
+from this model are not safe for anything that matters.
+
+The likely gaps are scale (a 174M-active base that has read 2.5B tokens) and
+breadth (6 label sets where a general decision model needs hundreds). Fine
+distinctions between near-synonymous intents are among the hardest zero-shot
+cases. For a fixed task with labelled data, the trained model (89.2%) is the
+right tool. The general version is a measured baseline, not a replacement
+for Jev.
