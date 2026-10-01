@@ -1628,6 +1628,33 @@ def merge_tree_eval_cache_sees_optimizer_updates():
 
 
 @test
+def decide_scores_each_option_at_its_last_token_and_calibrates():
+    """decide.py's contract: option k's score is read at the last token of
+    option k's name (so it has seen the message and that option), a forward
+    pass gives one logit per option, ECE is 0 for a perfectly calibrated set,
+    and temperature scaling never changes the argmax."""
+    import decide as D
+    from bpe import BPE
+    tok = BPE.train("Message: which of these does it ask for options card arrival "
+                    "lost card refund exchange rate\n- " * 30, 300, verbose=False)
+    opts = ["card_arrival", "lost_card", "refund"]
+    ids, pos = D.encode(tok, "where is my card", opts)
+    for k, o in enumerate(opts):
+        assert tok.decode(ids[:pos[k] + 1]).endswith(D.readable(o)), o
+    torch.manual_seed(0)
+    d = D.Decider(AnuLM(tiny(vocab_size=300, block_size=128))).eval()
+    x, p, y = D.batchify([(ids, pos, 0, opts), (ids, pos, 2, opts)], tok, tok.eos_id)
+    with torch.no_grad():
+        logits = d(x, p)
+    assert logits.shape == (2, 3)
+    probs = torch.tensor([[0.8, 0.1, 0.1]] * 5)
+    y5 = torch.tensor([0, 0, 0, 0, 1])                     # 80% confident, 80% right
+    assert D.metrics(probs, y5)["ece"] < 1e-6
+    t = D.fit_temperature(logits.repeat(4, 1), torch.tensor([0, 2] * 4))
+    assert (F.softmax(logits / t, 1).argmax(1) == logits.argmax(1)).all()
+
+
+@test
 def batched_muon_matches_per_matrix_muon():
     """Stacking same-shaped updates into one batched Newton-Schulz must give
     the same step as orthogonalising each matrix alone -- it is a speed change
