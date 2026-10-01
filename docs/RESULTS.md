@@ -51,6 +51,8 @@ models.
 | [30](#30-four-thousand-prompts-through-the-serving-path) | what the released models do over 4,131 real prompts | no crashes, no empty replies, and the base degenerates on 81% of greedy continuations |
 | [32](#32-the-lab-what-learns-faster-on-one-consumer-gpu) | 35 proxy runs: which training ideas buy more learning per token and per GPU-second | ~2.4x the tokens' worth at 88M / 25M tokens -- but **at 400M it is 0.044 better per token and 43% slower, so not worth it**; the gain is early-training only |
 | [33](#33-looking-facts-up-retrieval-plus-a-reader) | BM25 over 405k Wikipedia articles + a reader | retrieval works (8-40 ms, 15/20 top-3); pointer reader F1 37 English but 0/20 demo answers: the backbone is the limit |
+| [34](#34-anulm-decide-typed-calibrated-decisions-in-one-pass) | a Jev-style decision model on our own base, BANKING77 | **89.2%** (Jev zero-shot 80.1%, BERT 93.6%); ECE 7.6% -> 2.4%; 53 ms/query |
+| [35](#35-a-demo-base-in-a-day-decaying-a-copy-of-the-run) | decaying a copy of the run at 700k for the demo | held-out 3.99 -> **3.39**; reader F1 37 -> **57**; chat answers on topic |
 
 ---
 
@@ -2613,3 +2615,95 @@ near-misses confuse the reader, so `rag.py` now defaults to dense. The
 open-domain F1s stay low (under 6) for two reasons that are not about
 ranking: SQuAD's answers are mostly not in Simple Wikipedia, and native Hindi
 reading is still weak.
+
+## 34. AnuLM-Decide: typed, calibrated decisions in one pass
+
+TypeSafe's Jev (September 2026) is a "System One" model: it returns choices
+with calibrated probabilities instead of text, and it is fast because it
+never generates token by token. Its weights and architecture are closed.
+`decide.py` builds the same kind of model on this project's own backbone,
+for one use case: routing banking support messages (BANKING77, CC BY 4.0;
+77 intents, 10,003 training and 3,080 test queries).
+
+The message and all 77 intent names go through the model once. A linear head
+scores the hidden state at the last token of each intent's name, and a
+softmax gives a probability for every intent. Options are shuffled in
+training, so it reads names, not positions. It is trained with cross-entropy
+on the demo base below, then calibrated with one temperature fitted on 1,000
+held-out training queries.
+
+| BANKING77 test (3,080 queries) | accuracy |
+| --- | --- |
+| Jev, zero-shot (independent benchmark) | 80.1% |
+| **AnuLM-Decide** (trained on this task, 861 s) | **89.2%** |
+| fine-tuned BERT (Casanueva et al.) | 93.6% |
+
+The comparison with Jev is not like for like. Jev was never trained on this
+task; ours was. A small model trained for a fixed task beating a general one
+is the expected result, and the independent benchmark says so too.
+
+| calibration | ECE | Brier | mean confidence |
+| --- | --- | --- | --- |
+| raw | 7.58% | 0.177 | 96.8% |
+| temperature 2.70 | **2.38%** | 0.159 | 88.6% |
+
+Raw, it was overconfident, as the independent test also found Jev to be (88%
+confidence at ~80% accuracy). One temperature removed two-thirds of the
+calibration error without changing a single prediction. With calibrated
+confidence it can choose when to answer:
+
+| answer only when confidence >= | answers | accuracy on those | handed to a human |
+| --- | --- | --- | --- |
+| 0.5 | 91.4% | 93.5% | 8.6% |
+| 0.7 | 84.4% | 96.3% | 15.6% |
+| 0.9 | 73.9% | 97.7% | 26.1% |
+
+Latency: 53 ms per query on the RTX 5070 Ti (one pass over ~400 tokens),
+about 330 ms on CPU. The chat model takes 1-2 s to write an answer, so that
+is 30-45x, not the 100x first guessed. Caching the intent names, which never
+change, would cut the per-query input from ~400 tokens to ~25. That is the
+obvious next speed-up, and its accuracy cost is still to be measured.
+
+## 35. A demo base in a day: decaying a copy of the run
+
+The main base-v2 run keeps its learning rate at the peak until step 2.2M
+(~6 Oct). With a warmup-stable-decay schedule, most of what the final decay
+buys can be had early by decaying a **copy**. `experiments/demo_branch.py`
+paused the run at step 700k and trained the copy 700k -> 800k with the
+learning rate falling linearly to its floor. The main run was not touched:
+it resumed from the same resume point the same day.
+
+| | held-out loss | bits per byte |
+| --- | --- | --- |
+| main run at 700k | 3.989 | 0.900 |
+| **demo base after the 100k-step decay** | **3.393** | **0.765** |
+
+On that base:
+
+* **Chat** (`ckpt_chat_v2.pt`, 12.5 minutes on 23,022 human-written pairs,
+  22% Hindi; `make_chat.py`). The old QA model rambled or looped on every
+  question in `experiments/chat_samples.py`. The new one answers in the form
+  and language asked: lists for "tips", Hindi for Hindi. It also gives true
+  identity answers, though those were in the training data. Facts from memory
+  are still wrong: the Taj Mahal is placed near Lucknow, and the list-vs-tuple
+  answer is wrong.
+* **Reader** (`ckpt_rc_pointer_v2.pt`):
+
+| reader (F1, 300 each) | SQuAD en | MLQA hi | XQuAD hi | IndicQA hi | demo end to end |
+| --- | --- | --- | --- | --- | --- |
+| old base | 37.4 | 7.1 | 10.3 | 4.9 | 4/20 |
+| **demo base** | **57.2** | **11.3** | **18.5** | **8.4** | **6/20** |
+
+The new demo answers are "Who built the Taj Mahal?" -> Shah Jahan and "Which
+river flows through Varanasi?" -> Ganga. The penicillin answer counts but is
+a whole sentence containing "Fleming".
+
+`app_omni.py` now uses the chat model, the new reader, and a Decide tab. The
+Chat tab lets you choose between looking an answer up in Wikipedia and the
+chat model's own words, so a request like "give me three tips" is not forced
+through retrieval. Tested end to end through the running app on CPU: every
+tab answered correctly on its samples. One environmental break came up.
+Smart App Control began blocking Piper's DLL on 2026-10-01, so `voice.TTS`
+falls back to Windows' own speech engine. That engine has English voices
+only on this machine, so Hindi replies are text until a Hindi voice is
+installed.

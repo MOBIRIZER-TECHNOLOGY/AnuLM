@@ -180,13 +180,49 @@ class TTS:
         return self.loaded[lang]
 
     def say(self, text: str, lang: str | None = None) -> tuple[int, np.ndarray]:
-        """-> (sample rate, int16 samples), the shape Gradio and wave want."""
+        """-> (sample rate, int16 samples), the shape Gradio and wave want.
+
+        Piper first. On this machine Smart App Control has started blocking
+        Piper's espeakbridge DLL (2026-10-01; it worked on 09-29 -- the block
+        drifts between files), so a blocked import falls back to Windows' own
+        signed speech engine. That has English voices only unless a Hindi voice
+        is installed (Settings > Time & language > Speech); without one a Hindi
+        reply returns no audio rather than English-accented nonsense.
+        """
         lang = lang or script_of(text)
-        v = self.voice(lang)
-        chunks = list(v.synthesize(text))
-        if not chunks:                           # punctuation only, or empty
+        if not getattr(self, "_piper_blocked", False):
+            try:
+                v = self.voice(lang)
+                chunks = list(v.synthesize(text))
+                if not chunks:                       # punctuation only, or empty
+                    return 22_050, np.zeros(0, dtype=np.int16)
+                return chunks[0].sample_rate, np.concatenate([c.audio_int16_array for c in chunks])
+            except (ImportError, OSError) as e:
+                print(f"Piper unavailable ({str(e)[:80]}); using the Windows voice", file=sys.stderr)
+                self._piper_blocked = True
+        return windows_say(text, lang)
+
+
+def windows_say(text: str, lang: str) -> tuple[int, np.ndarray]:
+    """Speak through System.Speech (SAPI), Microsoft-signed, so Smart App Control
+    allows it. Returns empty audio if no installed voice matches the language."""
+    import subprocess
+    import tempfile
+    culture = "hi-IN" if lang == "hi" else "en-US"
+    with tempfile.TemporaryDirectory() as d:
+        txt, wav = Path(d) / "say.txt", Path(d) / "say.wav"
+        txt.write_text(text, encoding="utf-8")
+        ps = ("Add-Type -AssemblyName System.Speech; "
+              "$s = New-Object System.Speech.Synthesis.SpeechSynthesizer; "
+              f"$v = $s.GetInstalledVoices() | ? {{ $_.VoiceInfo.Culture.Name -eq '{culture}' }} | Select -First 1; "
+              "if (-not $v) { exit 3 }; $s.SelectVoice($v.VoiceInfo.Name); "
+              f"$s.SetOutputToWaveFile('{wav}'); "
+              f"$s.Speak([IO.File]::ReadAllText('{txt}', [Text.Encoding]::UTF8)); $s.Dispose()")
+        r = subprocess.run(["powershell", "-NoProfile", "-Command", ps], capture_output=True)
+        if r.returncode != 0 or not wav.exists():
             return 22_050, np.zeros(0, dtype=np.int16)
-        return chunks[0].sample_rate, np.concatenate([c.audio_int16_array for c in chunks])
+        with wave.open(str(wav)) as f:
+            return f.getframerate(), np.frombuffer(f.readframes(f.getnframes()), dtype=np.int16).copy()
 
 
 def write_wav(path: str | Path, rate: int, samples: np.ndarray) -> Path:

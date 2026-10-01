@@ -41,8 +41,11 @@ CKPTS = {
     "caption": "ckpt_caption_f30k_e2.pt",
     "vqa": "ckpt_vqa_f30k.pt",
 }
-BRAIN = "release/AnuLM-Hindi-QA-400M"
-READER = "ckpt_rc_pointer.pt"
+# Newest measured models first, older ones as fallbacks (docs/RESULTS.md section 35).
+_HERE = Path(__file__).parent
+BRAIN = "ckpt_chat_v2.pt" if (_HERE / "ckpt_chat_v2.pt").exists() else "release/AnuLM-Hindi-QA-400M"
+READER = "ckpt_rc_pointer_v2.pt" if (_HERE / "ckpt_rc_pointer_v2.pt").exists() else "ckpt_rc_pointer.pt"
+DECIDER = "ckpt_decide.pt"
 BRAIN_HUB = "toonist/AnuLM-Hindi-QA-400M"
 
 
@@ -112,6 +115,10 @@ class Models:
         from voice import TTS
         return self._get("tts", TTS)
 
+    def decider(self):
+        from decide import Decide
+        return self._get("decide", lambda: Decide(str(HERE / DECIDER), self.device))
+
 
 def as_question(heard: str) -> str:
     """Speech recognition returns "what animal is this"; the VQA model was
@@ -122,6 +129,23 @@ def as_question(heard: str) -> str:
         return q
     q = q[0].upper() + q[1:]
     return q if q[-1] in "?.!।" else q + "?"
+
+
+def speech_or_none(models: Models, text: str):
+    """(rate, samples) for Gradio, or None when nothing could be voiced -- e.g.
+    a Hindi reply on a machine with no Hindi voice once Piper is blocked."""
+    if not text:
+        return None
+    rate, samples = models.mouth().say(text)
+    return (rate, samples) if len(samples) else None
+
+
+def chat_text(models: Models, text: str, max_tokens: int = 200) -> tuple[str, float]:
+    """The chat model in its own words (no lookup)."""
+    from voice import speakable
+    t0 = time.time()
+    out = models.brain().generate(text, max_tokens, 0.3, 40, 0, mode="question", repetition_penalty=1.15)
+    return speakable(out["completion"]), time.time() - t0
 
 
 def answer_text(models: Models, text: str, max_tokens: int = 120) -> tuple[str, float]:
@@ -175,10 +199,11 @@ def build(models: Models) -> gr.Blocks:
                     return h["text"], "", None, f"hear {t_hear:.2f}s"
                 reply, t_think = answer_text(models, as_question(h["text"]))
                 t1 = time.time()
-                rate, samples = models.mouth().say(reply) if reply else (22050, None)
+                spoken = speech_or_none(models, reply)
                 t_say = time.time() - t1
-                return (h["text"], reply, (rate, samples) if samples is not None else None,
-                        f"hear {t_hear:.2f}s · think {t_think:.2f}s · speak {t_say:.2f}s")
+                note = "" if spoken else " · no voice for this language installed (text only)"
+                return (h["text"], reply, spoken,
+                        f"hear {t_hear:.2f}s · think {t_think:.2f}s · speak {t_say:.2f}s{note}")
 
             go_listen.click(do_listen, [audio, lang, speak_back],
                             [heard, said, voice_out, listen_meta])
@@ -219,7 +244,7 @@ def build(models: Models) -> gr.Blocks:
                     out = caption(vl, tower, tok, image, device=models.device)
                     parts.append(f"caption (Flickr30k-trained) {time.time() - t1:.2f}s")
                 out = out or "(nothing)"
-                spoken = models.mouth().say(out) if out != "(nothing)" else None
+                spoken = speech_or_none(models, out) if out != "(nothing)" else None
                 return q, out, spoken, " · ".join(parts)
 
             go_look.click(do_look, [img, question, spoken_q], [question, seen, look_voice, look_meta])
@@ -232,20 +257,67 @@ def build(models: Models) -> gr.Blocks:
         with gr.Tab("Chat"):
             q_in = gr.Textbox(label="ask in English, Hindi or about Python", lines=2,
                               placeholder="भारत की राजधानी क्या है?")
+            chat_mode = gr.Radio([("Look it up (facts, from Wikipedia)", "lookup"),
+                                  ("Just talk (the chat model's own words)", "chat")],
+                                 value="lookup", label="how to answer")
             go_chat = gr.Button("Ask", variant="primary")
             a_out = gr.Textbox(label="AnuLM", lines=6)
             chat_meta = gr.Markdown()
 
-            def do_chat(q):
+            def do_chat(q, mode):
                 if not q or not q.strip():
                     return "", ""
+                if mode == "chat":
+                    reply, t = chat_text(models, q.strip())
+                    return reply, f"{t:.2f}s · chat model {Path(models.brain_source).name}"
                 reply, t = answer_text(models, q.strip(), max_tokens=200)
-                return reply, f"{t:.2f}s · {models.brain_source}"
+                return reply, f"{t:.2f}s · reader {READER}"
 
-            go_chat.click(do_chat, [q_in], [a_out, chat_meta])
-            gr.Markdown("*The question-answering model was tuned on questions mined from "
-                        "Wikipedia and Python docstrings. Open-ended chat is not trained yet; "
-                        "see TODO.md item 4.*")
+            go_chat.click(do_chat, [q_in, chat_mode], [a_out, chat_meta])
+            gr.Markdown("*Look it up: our reader points at the answer inside Wikipedia passages "
+                        "(answers facts it was never told). Just talk: the chat model, tuned on "
+                        "23k human-written instructions; fluent and on topic, but its facts from "
+                        "memory are unreliable.*")
+
+        with gr.Tab("Decide"):
+            gr.Markdown("A *System One* decision, like TypeSafe's Jev: no text is generated. The "
+                        "message and all 77 banking intents go through the model **once**; it "
+                        "returns a calibrated probability for every intent, and hands the case to "
+                        "a person when it is not confident enough. Trained on BANKING77: 89.2% "
+                        "accurate on 3,080 unseen queries; at confidence 0.7 it answers 84% of "
+                        "them at 96.3% accuracy.")
+            with gr.Row():
+                with gr.Column():
+                    msg = gr.Textbox(label="customer message", lines=3,
+                                     placeholder="I still haven't received my new card")
+                    thr = gr.Slider(0.3, 0.99, value=0.7, step=0.01, label="hand to a human below this confidence")
+                    go_dec = gr.Button("Decide", variant="primary")
+                    gr.Examples([["I still haven't received my new card"],
+                                 ["Why was I charged twice for the same coffee?"],
+                                 ["The exchange rate on my transfer looks wrong"],
+                                 ["How do I top up with Apple Pay?"],
+                                 ["I think someone stole my phone and my card"]], [msg])
+                with gr.Column():
+                    choice = gr.Label(label="intent (top 3)", num_top_classes=3)
+                    action = gr.Markdown()
+                    typed = gr.JSON(label="typed output")
+
+            def do_decide(m, t):
+                if not m or not m.strip():
+                    return None, "", None
+                d = models.decider()
+                d.threshold = float(t)
+                t0 = time.time()
+                out = d(m.strip())
+                ms = (time.time() - t0) * 1000
+                if out["action"] == "auto-route":
+                    verdict = "**auto-route** to `" + out["choice"] + "`"
+                else:
+                    verdict = "**send to a human** (not confident enough)"
+                return ({k.replace("_", " "): v for k, v in out["probabilities"].items()},
+                        f"{verdict} · confidence {out['confidence']:.2f} · {ms:.0f} ms", out)
+
+            go_dec.click(do_decide, [msg, thr], [choice, action, typed])
     return demo
 
 
