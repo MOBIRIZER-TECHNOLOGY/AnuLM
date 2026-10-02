@@ -53,11 +53,23 @@ DATA = HERE / "data" / "banking77"
 
 
 # --------------------------------------------------------------------- data
-def load_split(name: str) -> list[tuple[str, str]]:
+def load_split(name: str, task: str = "banking77") -> list[tuple[str, str]]:
+    """(text, label) rows. MASSIVE (Amazon, CC BY 4.0) intents in Hindi or
+    English, 60 labels; only train and validation are on disk, so its
+    validation split serves as the test set (training holds out its own
+    validation rows from train)."""
+    if task.startswith("massive-"):
+        lang = {"massive-hi": "hi-IN", "massive-en": "en-US"}[task]
+        split = {"train": "train", "test": "validation"}[name]
+        rows = [json.loads(l) for l in open(HERE / "data" / "decide_general" / f"massive_{lang}" / f"{split}.jsonl",
+                                            encoding="utf-8")]
+        return [(r["text"], r["label_text"]) for r in rows]
     return [(r["text"], r["category"]) for r in csv.DictReader(open(DATA / f"{name}.csv", encoding="utf-8"))]
 
 
-def labels() -> list[str]:
+def labels(task: str = "banking77") -> list[str]:
+    if task.startswith("massive-"):
+        return sorted({l for _, l in load_split("train", task)})
     return json.load(open(DATA / "categories.json"))
 
 
@@ -448,8 +460,8 @@ def train(a):
         fit_memory(d.model)
     if a.grad_ckpt and d.kind != "hf":
         d.model.enable_gradient_checkpointing()
-    labs = labels()
-    rows = load_split("train")
+    labs = labels(a.task)
+    rows = load_split("train", a.task)
     rng.shuffle(rows)
     if a.limit:
         rows = rows[:a.limit]
@@ -498,7 +510,7 @@ def train(a):
             if acc > best:
                 best = acc
                 t = fit_temperature(lv, yv)
-                d.save(a.out, temperature=t, step=step, val_accuracy=acc, labels=labs, base_ckpt=a.ckpt)
+                d.save(a.out, temperature=t, step=step, val_accuracy=acc, labels=labs, base_ckpt=a.ckpt, task=a.task)
                 flag = f"  <- saved (temperature {t:.2f})"
             print(f"  eval @ {step:5d} | val accuracy {100 * acc:.2f}%{flag}", flush=True)
             d.train()
@@ -507,14 +519,15 @@ def train(a):
 
 def evaluate(a):
     d, tok, ck = load(a.ckpt, a.device)
-    labs = ck.get("labels") or labels()
-    test = make_examples(load_split("test")[:a.limit or None], tok, labs)
+    task = ck.get("task", "banking77")
+    labs = ck.get("labels") or labels(task)
+    test = make_examples(load_split("test", task)[:a.limit or None], tok, labs)
     y = torch.tensor([e[2] for e in test])
     logits = predict_logits(d, test, tok, a.device)
     t = float(d.temperature)
     for name, temp in (("raw (T=1)", 1.0), (f"calibrated (T={t:.2f}, fitted on val)", t)):
         m = metrics(F.softmax(logits / temp, 1), y)
-        print(f"\n{name}: accuracy {100 * m['accuracy']:.2f}% on {m['n']} test queries | "
+        print(f"\n{name}: accuracy {100 * m['accuracy']:.2f}% on {m['n']} {task} test queries | "
               f"ECE {100 * m['ece']:.2f}% | Brier {m['brier']:.4f} | mean confidence {100 * m['mean_confidence']:.1f}%")
         for k, v in m.items():
             if k.startswith("answer_if"):
@@ -532,7 +545,7 @@ def evaluate(a):
             predict_logits(d, [e], tok, a.device, bs=1)
         if a.device.startswith("cuda"):
             torch.cuda.synchronize()
-    print(f"\nlatency: {1000 * (time.time() - t0) / len(ex):.1f} ms per query on {a.device} (77 options, one pass)")
+    print(f"\nlatency: {1000 * (time.time() - t0) / len(ex):.1f} ms per query on {a.device} ({len(labs)} options, one pass)")
 
 
 class Decide:
@@ -601,6 +614,7 @@ def main():
                    help="head / lora keep the backbone unchanged, so the same checkpoint can still chat")
     t.add_argument("--lora-rank", type=int, default=16)
     t.add_argument("--head-lr", type=float, default=1e-3)
+    t.add_argument("--task", choices=("banking77", "massive-hi", "massive-en"), default="banking77")
     t.add_argument("--limit", type=int, default=0, help="use only this many training queries (smoke tests)")
     t.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     g = sub.add_parser("train-general", help="many tasks, BANKING77 excluded, for a zero-shot test")

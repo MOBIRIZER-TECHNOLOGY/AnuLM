@@ -2844,3 +2844,36 @@ chat model, and greedy generation through it identical token for token.
 * LoRA adds about 10 ms per query (57 vs 47), from the adapters' extra
   matrix products; merging them into the weights would remove that but
   would change the chat model, which is the point to avoid.
+
+## 38. Decide in Hindi: AnuLM against ModernBERT
+
+ModernBERT-base (section 36) is an English and code encoder. Its tokenizer
+splits Devanagari into byte fragments: a MASSIVE Hindi message is 30.3
+tokens for it against 9.1 for AnuLM's multi32k (English: 7.0 against 7.5).
+To measure what that costs, both were trained on MASSIVE (Amazon, CC BY 4.0)
+intent detection, 60 intents, in Hindi and, as a control, in English.
+`decide.py train --task massive-hi | massive-en`; 10,514 training messages,
+1,000 held out from train for model selection and temperature. MASSIVE's
+test split is not on disk, so its validation split (2,033 messages, never
+used in training) is the test set. Option names are the English intent
+names in both languages. One seed per run.
+
+| MASSIVE intents, 60 | Hindi | ECE (cal.) | conf >= 0.7: answers / accuracy | English | ms/query |
+| --- | --- | --- | --- | --- | --- |
+| ModernBERT-base, full fine-tune (borrowed) | 67.5% | 2.92% | 52.0% / 92.2% | **88.1%** | 14 |
+| **AnuLM chat model + LoRA** (the app's) | **82.6%** | 2.36% | 74.3% / 94.5% | 85.1% | 56 |
+| AnuLM demo base, full fine-tune | **84.0%** | 3.50% | 79.4% / 93.9% | - | 48 |
+
+* **In Hindi AnuLM wins by 15-16 points**, with the same method as
+  ModernBERT (full fine-tune: 84.0% against 67.5%) and with the app's
+  adapter alone (82.6%). Calibrated, it handles three in four Hindi
+  messages automatically at 94.5% accuracy; ModernBERT, about half.
+* **In English ModernBERT wins by 3 points** (88.1% against 85.1%), as on
+  BANKING77 (section 36). The swing between the two languages, about 18
+  points, is the Hindi pretraining and tokenizer.
+* AnuLM drops 2.5 points from English to Hindi; ModernBERT drops 20.6.
+* ModernBERT stays about 4x faster in both languages.
+
+This is the case for a model of one's own: on the language it was built
+for, a 174M-active from-scratch model trained on one consumer GPU beats a
+mature open English encoder by a wide margin.
