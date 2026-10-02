@@ -544,6 +544,33 @@ class Decide:
         self.device, self.threshold = device, threshold
         self.labels = ck.get("labels") or labels()
 
+    @classmethod
+    def on(cls, model, tok, ckpt: str, device: str, threshold: float = 0.7):
+        """Decide on a model that is already loaded (the chat model), from a
+        --mode head / lora checkpoint: only the head and adapters are added,
+        so one copy of the weights serves chat and decisions. Refuses if the
+        loaded model is not the backbone the adapter was trained on."""
+        ck = torch.load(ckpt, map_location="cpu", weights_only=False)
+        assert ck.get("mode") in ("head", "lora"), f"{ckpt} is a full fine-tune; it has its own weights"
+        if "model" in ck:
+            live = model.state_dict()
+            diff = [k for k, v in ck["model"].items() if not torch.equal(live[k].cpu().to(v.dtype), v)]
+            assert not diff, f"the loaded model differs from {ckpt}'s backbone ({len(diff)} tensors)"
+        d = Decider(model, "causal", tok.eos_id)
+        d.freeze(ck["mode"], ck.get("lora_rank", 16))
+        if "lora" in ck:
+            d.lora.load_state_dict(ck["lora"])
+        d.head.load_state_dict(ck["decide_head"])
+        d.temperature.fill_(ck.get("temperature", 1.0))
+        d.head.to(device)
+        if d.lora is not None:
+            d.lora.to(device)
+        d.eval()
+        self = cls.__new__(cls)
+        self.d, self.tok, self.device, self.threshold = d, tok, device, threshold
+        self.labels = ck.get("labels") or labels()
+        return self
+
     @torch.no_grad()
     def __call__(self, message: str, options: list[str] | None = None, top: int = 3) -> dict:
         options = options or self.labels

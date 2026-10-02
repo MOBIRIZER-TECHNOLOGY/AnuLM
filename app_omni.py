@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import threading
 import time
 from pathlib import Path
 
@@ -47,9 +48,13 @@ BRAIN = "ckpt_chat_v2.pt" if (_HERE / "ckpt_chat_v2.pt").exists() else "release/
 READER = "ckpt_rc_pointer_v2.pt" if (_HERE / "ckpt_rc_pointer_v2.pt").exists() else "ckpt_rc_pointer.pt"
 # Decide backbones (docs/RESULTS.md section 36). ModernBERT is an open
 # pretrained encoder, not this project's model, and is labelled so in the UI.
-DECIDE_OWN = "AnuLM (our own, from scratch)"
+# AnuLM decides with the chat model itself plus a 6.6 MB LoRA adapter
+# (section 37): one copy of the weights for both tabs.
+DECIDE_OWN = "AnuLM (our own, from scratch; the chat model + adapter)"
 DECIDE_MB = "ModernBERT-base (borrowed open model, not from scratch)"
-DECIDERS = {DECIDE_OWN: "ckpt_decide.pt", DECIDE_MB: "ckpt_decide_modernbert.pt"}
+DECIDE_ADAPTER = "ckpt_decide_chat_lora.pt"
+DECIDERS = {DECIDE_OWN: DECIDE_ADAPTER if (_HERE / DECIDE_ADAPTER).exists() else "ckpt_decide.pt",
+            DECIDE_MB: "ckpt_decide_modernbert.pt"}
 BRAIN_HUB = "toonist/AnuLM-Hindi-QA-400M"
 
 
@@ -60,6 +65,9 @@ class Models:
         self.device = device
         self.brain_source = brain
         self._m: dict[str, object] = {}
+        # Chat and Decide share the chat model's weights; Decide switches its
+        # adapters on for a forward pass, so the two never run at once.
+        self.shared = threading.Lock()
 
     def _get(self, key, make):
         if key not in self._m:
@@ -121,7 +129,13 @@ class Models:
 
     def decider(self, which: str = DECIDE_OWN):
         from decide import Decide
-        return self._get(f"decide:{which}", lambda: Decide(str(HERE / DECIDERS[which]), self.device))
+        path = str(HERE / DECIDERS[which])
+        if which == DECIDE_OWN and DECIDERS[which] == DECIDE_ADAPTER and self.brain_source == BRAIN:
+            def make():
+                eng = self.brain()
+                return Decide.on(eng.model, eng.tok, path, self.device)
+            return self._get(f"decide:{which}", make)
+        return self._get(f"decide:{which}", lambda: Decide(path, self.device))
 
 
 def as_question(heard: str) -> str:
@@ -148,7 +162,9 @@ def chat_text(models: Models, text: str, max_tokens: int = 200) -> tuple[str, fl
     """The chat model in its own words (no lookup)."""
     from voice import speakable
     t0 = time.time()
-    out = models.brain().generate(text, max_tokens, 0.3, 40, 0, mode="question", repetition_penalty=1.15)
+    eng = models.brain()
+    with models.shared:
+        out = eng.generate(text, max_tokens, 0.3, 40, 0, mode="question", repetition_penalty=1.15)
     return speakable(out["completion"]), time.time() - t0
 
 
@@ -164,7 +180,8 @@ def answer_text(models: Models, text: str, max_tokens: int = 120) -> tuple[str, 
         if out["answer"]:
             return f"{out['answer']}  (from Wikipedia: {out['sources'][0]})", time.time() - t0
     eng = models.brain()
-    out = eng.generate(text, max_tokens, 0.3, 40, 0, mode="question", repetition_penalty=1.15)
+    with models.shared:
+        out = eng.generate(text, max_tokens, 0.3, 40, 0, mode="question", repetition_penalty=1.15)
     return "(not found in Wikipedia; from memory) " + speakable(out["completion"]), time.time() - t0
 
 
@@ -287,10 +304,11 @@ def build(models: Models) -> gr.Blocks:
             gr.Markdown("A *System One* decision, like TypeSafe's Jev: no text is generated. The "
                         "message and all 77 banking intents go through the model **once**; it "
                         "returns a calibrated probability for every intent, and hands the case to "
-                        "a person when it is not confident enough. Trained on BANKING77, on 3,080 "
-                        "unseen queries: **AnuLM** 89.2% accurate (at confidence 0.7 it answers 84% "
-                        "at 96.3%), 53 ms; **ModernBERT-base**, an open model used as a reference, "
-                        "90.8% (88% at 95.9%), 12 ms.")
+                        "a person when it is not confident enough. On 3,080 unseen BANKING77 "
+                        "queries: **AnuLM** is the same model as the Chat tab plus a 6.6 MB "
+                        "adapter: 86.4% accurate, and at confidence 0.7 it answers 80% at 94.7%. "
+                        "**ModernBERT-base**, an open model used as a reference: 90.8% (88% at "
+                        "95.9%), about 4x faster.")
             with gr.Row():
                 with gr.Column():
                     msg = gr.Textbox(label="customer message", lines=3,
@@ -316,7 +334,8 @@ def build(models: Models) -> gr.Blocks:
                 d = models.decider(which or DECIDE_OWN)
                 d.threshold = float(t)
                 t0 = time.time()
-                out = d(m.strip())
+                with models.shared:
+                    out = d(m.strip())
                 ms = (time.time() - t0) * 1000
                 if out["action"] == "auto-route":
                     verdict = "**auto-route** to `" + out["choice"] + "`"
@@ -338,7 +357,10 @@ def main() -> None:
     p.add_argument("--port", type=int, default=7863)
     p.add_argument("--share", action="store_true", help="public gradio link")
     args = p.parse_args()
-    missing = [c for c in CKPTS.values() if not (HERE / c).exists()]
+    # Checkpoints and their tokenizers are saved with repo-relative paths;
+    # launched from elsewhere, the chat model silently fell back to the Hub one.
+    os.chdir(HERE)
+    missing =[c for c in CKPTS.values() if not (HERE / c).exists()]
     if missing:
         print(f"note: {', '.join(missing)} not found; those tabs will fail until trained "
               f"(docs/SPEECH.md has the commands)")
