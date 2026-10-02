@@ -108,6 +108,7 @@ CPU wheel silently reports cuda unavailable.
 
 | doc | what's in it |
 | --- | --- |
+| [docs/API.md](docs/API.md) | `api.py`: every demo model behind OpenAI-compatible endpoints (chat with streaming, vision, speech in and out) plus typed decisions and Wikipedia lookup; works with the `openai` client and LangChain (`langchain_anulm.py`). What is borrowed, the limits, the error contract. |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | How Sarvam 30B/105B are built — MLA, GQA, sparse MoE, aux-loss-free routing, YaRN — and (§10) which of those choices held up when rebuilt and trained at nano scale. The research output. |
 | [docs/RESULTS.md](docs/RESULTS.md) | Every experiment run here, with numbers: §1–21 the Hindi ladder, §22 three languages, §23 question answering in all three, §24 English ↔ Hindi translation (chrF 41.5 / 43.4 on FLORES-200), §25 the Python coder, finished: MBPP 12.5%, HumanEval 4.9%. |
 | [docs/MODEL_CARD.md](docs/MODEL_CARD.md) | The finished Python coder on one page: every data source with its size and share, the architecture as read from the checkpoint, the training run, the benchmark numbers with the prompt mode that produced each, and how to try it. |

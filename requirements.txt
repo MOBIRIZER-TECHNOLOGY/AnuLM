@@ -31,6 +31,16 @@ pyarrow>=15
 # gradio>=5
 # huggingface_hub>=0.30
 
+# Optional: the OpenAI-compatible API (api.py, docs/API.md). It imports
+# app_omni's model loaders, so the demo's packages above are needed too.
+# python-multipart is for audio uploads. openai and langchain-openai only for
+# clients and experiments/api_check.py; neither pulls in torch.
+# fastapi>=0.110
+# uvicorn>=0.29
+# python-multipart>=0.0.9
+# openai>=1.40              # client side
+# langchain-openai>=0.2     # client side: langchain_anulm.py
+
 # Optional: the speech work (voice.py, audio_codec.py, speech_*.py,
 # eval_speech.py, app_voice.py). None of it is imported by the text training,
 # sampling or serving paths.

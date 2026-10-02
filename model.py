@@ -1051,7 +1051,7 @@ class AnuLM(nn.Module):
     @torch.no_grad()
     def generate(self, idx, max_new_tokens: int, temperature: float = 1.0,
                  top_k: int | None = None, eos_id: int | None = None, use_cache: bool = True,
-                 repetition_penalty: float = 1.0):
+                 repetition_penalty: float = 1.0, on_token=None):
         """Incremental decoding. The prompt is prefilled once; every later step
         runs a single token against the KV cache. Once the context is full
         (block_size tokens) the cache is rebuilt from the last block_size tokens
@@ -1065,6 +1065,9 @@ class AnuLM(nn.Module):
         a negative one, for every token already in the sequence) discourages the
         loops a small model falls into at low temperature. 1.0 is off, and the
         default, so nothing above changes.
+
+        `on_token`, if given, is called with each new (B, 1) token tensor as it
+        is sampled (api.py streams replies with it); returning True stops.
         """
         B = idx.shape[0]
         bs = self.cfg.block_size
@@ -1093,6 +1096,8 @@ class AnuLM(nn.Module):
                 nxt = torch.where(done[:, None], torch.full_like(nxt, eos_id), nxt)
             idx = torch.cat((idx, nxt), dim=1)
             pending = nxt
+            if on_token is not None and on_token(nxt):
+                break
             if eos_id is not None:
                 done |= nxt[:, 0] == eos_id
                 if bool(done.all()):

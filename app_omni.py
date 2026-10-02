@@ -201,7 +201,9 @@ def build(models: Models) -> gr.Blocks:
             "# AnuLM Omni\n"
             "A 400M sparse mixture-of-experts model, trained from scratch on one consumer "
             "GPU, that **listens**, **looks** and **answers** in English and Hindi. "
-            "The hearing, seeing and answering are all this project's own models.")
+            "The language model behind every tab is this project's own; hearing and seeing "
+            "read frozen pretrained encoders (Whisper-small, SigLIP), lookup uses the "
+            "multilingual-e5-small retriever, and the voice is Piper.")
 
         with gr.Tab("Listen & reply"):
             with gr.Row():
