@@ -99,8 +99,51 @@ class Decider(nn.Module):
         nn.init.normal_(self.head.weight, std=0.02)
         nn.init.zeros_(self.head.bias)
         self.register_buffer("temperature", torch.ones(()))
+        # "full": every weight trains. "head" / "lora": the backbone stays
+        # exactly as loaded, so one checkpoint can still chat (section 37).
+        self.mode, self.lora, self.lora_rank, self._lora_on = "full", None, 0, False
+
+    def freeze(self, mode: str, rank: int = 16):
+        """Keep the backbone's weights fixed. "lora" adds low-rank adapters to
+        the dense linears (attention, shared expert, layer 0's MLP; not the
+        routed experts) through forward hooks, so the backbone's own modules
+        and state dict are untouched and the adapters act only inside
+        hidden(): generation through the same model is unchanged."""
+        self.mode = mode
+        for p in self.model.parameters():
+            p.requires_grad_(False)
+        if mode != "lora":
+            return
+        self.lora_rank, targets = rank, {}
+        for name, mod in self.model.named_modules():
+            if isinstance(mod, nn.Linear) and name != "lm_head" and ".experts." not in name:
+                targets[name.replace(".", "__")] = mod
+        self.lora = nn.ModuleDict({k: LoRA(m.in_features, m.out_features, rank) for k, m in targets.items()})
+        for k, mod in targets.items():
+            mod.register_forward_hook(self._lora_hook(k))
+
+    def _lora_hook(self, key):
+        def hook(mod, inp, out):
+            return out + self.lora[key](inp[0]).to(out.dtype) if self._lora_on else out
+        return hook
+
+    def train(self, mode: bool = True):
+        super().train(mode)
+        if self.mode != "full":
+            self.model.eval()                  # frozen: no router statistics, no bias updates
+        return self
 
     def hidden(self, idx):
+        if self.mode == "head":
+            with torch.no_grad():
+                return self._hidden(idx)
+        self._lora_on = self.lora is not None
+        try:
+            return self._hidden(idx)
+        finally:
+            self._lora_on = False
+
+    def _hidden(self, idx):
         # Real tokens: everything but padding (position 0 is the start token,
         # which for AnuLM shares its id with the padding).
         attn = idx != self.pad_id
@@ -121,11 +164,13 @@ class Decider(nn.Module):
         return m.norm(x)
 
     def balance(self):
-        if hasattr(self.model, "update_expert_biases"):
+        if self.mode == "full" and hasattr(self.model, "update_expert_biases"):
             self.model.update_expert_biases()
 
     def save(self, path, **extra):
-        state = {"decide_head": self.head.state_dict(), "kind": self.kind, **extra}
+        state = {"decide_head": self.head.state_dict(), "kind": self.kind, "mode": self.mode, **extra}
+        if self.lora is not None:
+            state.update(lora=self.lora.state_dict(), lora_rank=self.lora_rank)
         if self.kind == "hf":
             state.update(hf_backbone=self.hf_path, hf_state=self.model.state_dict())
         else:
@@ -139,6 +184,22 @@ class Decider(nn.Module):
         g = h.gather(1, pos[..., None].expand(-1, -1, h.shape[-1]))
         logits = self.head(g).squeeze(-1).float()
         return logits if mask is None else logits.masked_fill(~mask, float("-inf"))
+
+
+class LoRA(nn.Module):
+    """x -> B(A(x)) * alpha / r, B starting at zero so training starts from
+    the frozen model (Hu et al. 2021)."""
+
+    def __init__(self, n_in: int, n_out: int, r: int = 16, alpha: float = 32.0):
+        super().__init__()
+        self.A = nn.Linear(n_in, r, bias=False)
+        self.B = nn.Linear(r, n_out, bias=False)
+        nn.init.normal_(self.A.weight, std=1 / r)
+        nn.init.zeros_(self.B.weight)
+        self.scale = alpha / r
+
+    def forward(self, x):
+        return self.B(self.A(x)) * self.scale
 
 
 def batchify(examples, tok, pad, with_mask=False):
@@ -198,6 +259,10 @@ def load(ckpt: str, device: str):
         tp = Path(cfg.tokenizer_path)
         tok = load_tokenizer(tp if tp.is_absolute() or tp.exists() else HERE / tp)
         d = Decider(m, "bidir" if ck.get("bidirectional") else "causal", tok.eos_id)
+    if ck.get("mode", "full") != "full":
+        d.freeze(ck["mode"], ck.get("lora_rank", 16))
+        if "lora" in ck:
+            d.lora.load_state_dict(ck["lora"])
     if "decide_head" in ck:
         d.head.load_state_dict(ck["decide_head"])
         d.temperature.fill_(ck.get("temperature", 1.0))
@@ -391,9 +456,15 @@ def train(a):
     n_val = min(1000, len(rows) // 10)
     val_rows, train_rows = rows[:n_val], rows[n_val:]
     val = make_examples(val_rows, tok, labs)                       # canonical order, as at test
-    opt = torch.optim.AdamW([{"params": d.model.parameters(), "lr": a.lr},
-                             {"params": d.head.parameters(), "lr": 1e-3}], betas=(0.9, 0.95),
+    if a.mode != "full":
+        d.freeze(a.mode, a.lora_rank)
+        d.to(a.device)
+    body = {"full": d.model.parameters(), "head": [], "lora": d.lora.parameters() if d.lora else []}[a.mode]
+    groups = [{"params": list(body), "lr": a.lr}, {"params": d.head.parameters(), "lr": a.head_lr}]
+    opt = torch.optim.AdamW([g for g in groups if g["params"]], betas=(0.9, 0.95),
                             weight_decay=0.0, fused=a.device.startswith("cuda"))
+    n_train = sum(p.numel() for g in opt.param_groups for p in g["params"])
+    print(f"mode {a.mode}: training {n_train:,} parameters", flush=True)
     steps = int(len(train_rows) * a.epochs) // a.batch_size
     base = [g["lr"] for g in opt.param_groups]
     ac = torch.autocast("cuda", dtype=torch.bfloat16, enabled=a.device.startswith("cuda"))
@@ -499,6 +570,10 @@ def main():
     t.add_argument("--lr", type=float, default=3e-5)
     t.add_argument("--eval-every", type=int, default=500)
     t.add_argument("--grad-ckpt", action="store_true")
+    t.add_argument("--mode", choices=("full", "head", "lora"), default="full",
+                   help="head / lora keep the backbone unchanged, so the same checkpoint can still chat")
+    t.add_argument("--lora-rank", type=int, default=16)
+    t.add_argument("--head-lr", type=float, default=1e-3)
     t.add_argument("--limit", type=int, default=0, help="use only this many training queries (smoke tests)")
     t.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     g = sub.add_parser("train-general", help="many tasks, BANKING77 excluded, for a zero-shot test")

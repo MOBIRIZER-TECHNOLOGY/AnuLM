@@ -2807,3 +2807,40 @@ What it shows:
 * Trained on the task, all three land within 1.6 points of each other and
   close to fine-tuned BERT (93.6%). For a fixed task with labelled data the
   backbone matters little; for zero-shot, pretraining scale does.
+
+## 37. One model that chats and decides
+
+The chat model (section 35) writes text; the Decide models (sections 34, 36)
+were full fine-tunes, so their weights no longer match the chat model and
+two copies were needed. `decide.py train --mode` now offers two ways to keep
+the chat model's weights fixed and add decisions on top:
+
+* `--mode head`: train only the decision head, a linear layer (1,025
+  parameters) on the chat model's hidden states.
+* `--mode lora`: low-rank adapters (rank 16, 1.66M parameters, 0.4% of the
+  model) on the attention, shared-expert and layer-0 linears, attached as
+  forward hooks that are on only while making a decision.
+
+All three trained on the chat model (`ckpt_chat_v2.pt`) with the same data,
+recipe and seed; BANKING77 test, 3,080 queries:
+
+| on the chat model | trains | accuracy | ECE (cal.) | conf >= 0.7: answers / accuracy | ms/query | still chats |
+| --- | --- | --- | --- | --- | --- | --- |
+| head only | 1,025 | 37.9% | 5.74% | 14.3% / 78.0% | 51 | yes |
+| **LoRA** | 1.66M | **86.4%** | **1.96%** | 79.8% / 94.7% | 57 | **yes** |
+| full fine-tune | 398M | 89.9% | 1.62% | 85.5% / 96.5% | 47 | no |
+| (section 34: full, on the demo base) | 398M | 89.2% | 2.38% | 84.4% / 96.3% | 53 | no |
+
+For head and LoRA, the saved backbone was checked to be bit-identical to the
+chat model, and greedy generation through it identical token for token.
+
+* **LoRA is the one to use**: 3.5 points below a full fine-tune, equally
+  well calibrated, and the same file still chats. The cost is 1.66M extra
+  parameters (6.6 MB) per decision task instead of a second 398M model.
+* **Head only does not work** (37.9%). The chat model's hidden state at
+  the end of an option's name does not, by itself, say whether the option
+  fits; the model has to learn to look. Without any trainable backbone
+  weights it cannot.
+* LoRA adds about 10 ms per query (57 vs 47), from the adapters' extra
+  matrix products; merging them into the weights would remove that but
+  would change the chat model, which is the point to avoid.
