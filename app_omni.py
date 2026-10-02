@@ -53,8 +53,15 @@ READER = "ckpt_rc_pointer_v2.pt" if (_HERE / "ckpt_rc_pointer_v2.pt").exists() e
 DECIDE_OWN = "AnuLM (our own, from scratch; the chat model + adapter)"
 DECIDE_MB = "ModernBERT-base (borrowed open model, not from scratch)"
 DECIDE_ADAPTER = "ckpt_decide_chat_lora.pt"
-DECIDERS = {DECIDE_OWN: DECIDE_ADAPTER if (_HERE / DECIDE_ADAPTER).exists() else "ckpt_decide.pt",
-            DECIDE_MB: "ckpt_decide_modernbert.pt"}
+# Two routing tasks, each an adapter on the same chat model (section 38).
+TASK_BANK = "Banking support (English, 77 intents)"
+TASK_HI = "Hindi assistant commands (MASSIVE, 60 intents)"
+DECIDE_TASKS = {
+    TASK_BANK: {DECIDE_OWN: DECIDE_ADAPTER if (_HERE / DECIDE_ADAPTER).exists() else "ckpt_decide.pt",
+                DECIDE_MB: "ckpt_decide_modernbert.pt"},
+    TASK_HI: {DECIDE_OWN: "ckpt_decide_lora_hi.pt", DECIDE_MB: "ckpt_decide_mb_hi.pt"},
+}
+DECIDE_ADAPTERS = {DECIDE_ADAPTER, "ckpt_decide_lora_hi.pt"}     # --mode lora on ckpt_chat_v2.pt
 BRAIN_HUB = "toonist/AnuLM-Hindi-QA-400M"
 
 
@@ -127,15 +134,18 @@ class Models:
         from voice import TTS
         return self._get("tts", TTS)
 
-    def decider(self, which: str = DECIDE_OWN):
+    def decider(self, which: str = DECIDE_OWN, task: str = TASK_BANK):
+        """Our model's adapters attach to the loaded chat model; each has its
+        own hooks, switched on only for its own forward pass."""
         from decide import Decide
-        path = str(HERE / DECIDERS[which])
-        if which == DECIDE_OWN and DECIDERS[which] == DECIDE_ADAPTER and self.brain_source == BRAIN:
+        name = DECIDE_TASKS[task][which]
+        path, key = str(HERE / name), f"decide:{task}:{which}"
+        if which == DECIDE_OWN and name in DECIDE_ADAPTERS and self.brain_source == BRAIN:
             def make():
                 eng = self.brain()
                 return Decide.on(eng.model, eng.tok, path, self.device)
-            return self._get(f"decide:{which}", make)
-        return self._get(f"decide:{which}", lambda: Decide(path, self.device))
+            return self._get(key, make)
+        return self._get(key, lambda: Decide(path, self.device))
 
 
 def as_question(heard: str) -> str:
@@ -302,36 +312,50 @@ def build(models: Models) -> gr.Blocks:
 
         with gr.Tab("Decide"):
             gr.Markdown("A *System One* decision, like TypeSafe's Jev: no text is generated. The "
-                        "message and all 77 banking intents go through the model **once**; it "
-                        "returns a calibrated probability for every intent, and hands the case to "
-                        "a person when it is not confident enough. On 3,080 unseen BANKING77 "
-                        "queries: **AnuLM** is the same model as the Chat tab plus a 6.6 MB "
-                        "adapter: 86.4% accurate, and at confidence 0.7 it answers 80% at 94.7%. "
-                        "**ModernBERT-base**, an open model used as a reference: 90.8% (88% at "
-                        "95.9%), about 4x faster.")
+                        "message and every option go through the model **once**; it returns a "
+                        "calibrated probability for each, and hands the case to a person when it "
+                        "is not confident enough. **AnuLM** is the same model as the Chat tab, "
+                        "with a 6.6 MB adapter per task. **ModernBERT-base** is an open English "
+                        "model used as a reference.\n\n"
+                        "| unseen test messages | AnuLM | ModernBERT |\n|---|---|---|\n"
+                        "| Banking, English (3,080) | 86.4% | **90.8%** |\n"
+                        "| Assistant commands, **Hindi** (2,033) | **82.6%** | 67.5% |\n\n"
+                        "ModernBERT is about 4x faster; in Hindi it reads byte fragments, "
+                        "3.3x the tokens.")
             with gr.Row():
                 with gr.Column():
-                    msg = gr.Textbox(label="customer message", lines=3,
+                    task = gr.Radio([k for k, v in DECIDE_TASKS.items() if (HERE / v[DECIDE_OWN]).exists()],
+                                    value=TASK_BANK, label="task")
+                    msg = gr.Textbox(label="message", lines=3,
                                      placeholder="I still haven't received my new card")
-                    backbone = gr.Radio([k for k, v in DECIDERS.items() if (HERE / v).exists()],
-                                        value=DECIDE_OWN, label="model")
+                    backbone = gr.Radio([DECIDE_OWN, DECIDE_MB], value=DECIDE_OWN, label="model")
                     thr = gr.Slider(0.3, 0.99, value=0.7, step=0.01, label="hand to a human below this confidence")
                     go_dec = gr.Button("Decide", variant="primary")
-                    gr.Examples([["I still haven't received my new card"],
-                                 ["Why was I charged twice for the same coffee?"],
-                                 ["The exchange rate on my transfer looks wrong"],
-                                 ["How do I top up with Apple Pay?"],
-                                 ["I think someone stole my phone and my card"],
-                                 ["Someone is using my card right now, block it!"]], [msg])
+                    gr.Examples([["I still haven't received my new card", TASK_BANK],
+                                 ["Why was I charged twice for the same coffee?", TASK_BANK],
+                                 ["How do I top up with Apple Pay?", TASK_BANK],
+                                 ["Someone is using my card right now, block it!", TASK_BANK],
+                                 ["कल सुबह सात बजे का अलार्म लगा दो", TASK_HI],
+                                 ["आज की ताज़ा खबरें सुनाओ", TASK_HI],
+                                 # From MASSIVE's Hindi test set: AnuLM right at >= 0.9,
+                                 # ModernBERT wrong (162 such messages; 9 the other way).
+                                 ["क्या धूप वाला दिन है", TASK_HI],
+                                 ["दस बजे मुझे उठाओ", TASK_HI],
+                                 ["मेरी अगली बैठक कब है", TASK_HI],
+                                 ["तीन गुना सात क्या है", TASK_HI],
+                                 ["नए ईमेल की जाँच करें", TASK_HI]], [msg, task])
                 with gr.Column():
                     choice = gr.Label(label="intent (top 3)", num_top_classes=3)
                     action = gr.Markdown()
                     typed = gr.JSON(label="typed output")
 
-            def do_decide(m, t, which):
+            def do_decide(m, t, which, tk=TASK_BANK):
                 if not m or not m.strip():
                     return None, "", None
-                d = models.decider(which or DECIDE_OWN)
+                which, tk = which or DECIDE_OWN, tk or TASK_BANK
+                if not (HERE / DECIDE_TASKS[tk][which]).exists():
+                    return None, f"{which} has no trained model for this task here", None
+                d = models.decider(which, tk)
                 d.threshold = float(t)
                 t0 = time.time()
                 with models.shared:
@@ -343,9 +367,9 @@ def build(models: Models) -> gr.Blocks:
                     verdict = "**send to a human** (not confident enough)"
                 return ({k.replace("_", " "): v for k, v in out["probabilities"].items()},
                         f"{verdict} · confidence {out['confidence']:.2f} · {ms:.0f} ms · {which}",
-                        {**out, "model": which})
+                        {**out, "model": which, "task": tk})
 
-            go_dec.click(do_decide, [msg, thr, backbone], [choice, action, typed])
+            go_dec.click(do_decide, [msg, thr, backbone, task], [choice, action, typed])
     return demo
 
 
