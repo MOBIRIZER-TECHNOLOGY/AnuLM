@@ -114,24 +114,52 @@ class Decider(nn.Module):
         # "full": every weight trains. "head" / "lora": the backbone stays
         # exactly as loaded, so one checkpoint can still chat (section 37).
         self.mode, self.lora, self.lora_rank, self._lora_on = "full", None, 0, False
+        self.lora_targets, self.lora_alpha = "dense", 32.0
 
-    def freeze(self, mode: str, rank: int = 16):
-        """Keep the backbone's weights fixed. "lora" adds low-rank adapters to
-        the dense linears (attention, shared expert, layer 0's MLP; not the
-        routed experts) through forward hooks, so the backbone's own modules
-        and state dict are untouched and the adapters act only inside
-        hidden(): generation through the same model is unchanged."""
+    LORA_TARGETS = ("qv", "attn", "dense", "all")
+
+    def freeze(self, mode: str, rank: int = 16, targets: str = "dense", alpha: float | None = None):
+        """Keep the backbone's weights fixed. "lora" adds low-rank adapters
+        through forward hooks, so the backbone's own modules and state dict are
+        untouched and the adapters act only inside hidden(): generation
+        through the same model is unchanged. Which linears get one:
+
+          qv     Q and V only (Hu et al. 2021). AnuLM fuses Q, K and V into one
+                 query_key_value matrix, so the adapter writes into its Q and V
+                 output slices and leaves K's alone (LoRAQV).
+          attn   query_key_value (Q, K, V) and the output projection, every layer.
+          dense  every linear except lm_head and the routed experts: attention,
+                 layer 0's MLP, any shared expert (the default, sections 37-38).
+          all    dense plus every routed expert. The grouped MoE kernel never
+                 calls the expert modules, so this switches the MoE layers to
+                 the sparse path (slower; an experiment, not for serving).
+        """
+        assert targets in self.LORA_TARGETS, targets
         self.mode = mode
         for p in self.model.parameters():
             p.requires_grad_(False)
         if mode != "lora":
             return
-        self.lora_rank, targets = rank, {}
+        alpha = 2.0 * rank if alpha is None else alpha
+        self.lora_rank, self.lora_targets, self.lora_alpha = rank, targets, alpha
+        cfg, mods = self.model.cfg, {}
         for name, mod in self.model.named_modules():
-            if isinstance(mod, nn.Linear) and name != "lm_head" and ".experts." not in name:
-                targets[name.replace(".", "__")] = mod
-        self.lora = nn.ModuleDict({k: LoRA(m.in_features, m.out_features, rank) for k, m in targets.items()})
-        for k, mod in targets.items():
+            if not isinstance(mod, nn.Linear) or name == "lm_head":
+                continue
+            attn = name.endswith(("attn.query_key_value", "attn.dense"))
+            if (targets == "qv" and name.endswith("attn.query_key_value")) or (targets == "attn" and attn) \
+                    or (targets == "dense" and ".experts." not in name) or targets == "all":
+                mods[name.replace(".", "__")] = mod
+        assert mods, f"no linears matched lora targets {targets!r}"
+        if targets == "all":
+            for m in self.model.modules():
+                if hasattr(m, "impl") and hasattr(m, "experts"):
+                    m.impl, m._stacked = "sparse", None
+        q, kv = cfg.n_head * cfg.head_dim, getattr(cfg, "n_kv_head", cfg.n_head) * cfg.head_dim
+        self.lora = nn.ModuleDict({
+            k: LoRAQV(m.in_features, q, kv, rank, alpha) if targets == "qv"
+            else LoRA(m.in_features, m.out_features, rank, alpha) for k, m in mods.items()})
+        for k, mod in mods.items():
             mod.register_forward_hook(self._lora_hook(k))
 
     def _lora_hook(self, key):
@@ -182,7 +210,8 @@ class Decider(nn.Module):
     def save(self, path, **extra):
         state = {"decide_head": self.head.state_dict(), "kind": self.kind, "mode": self.mode, **extra}
         if self.lora is not None:
-            state.update(lora=self.lora.state_dict(), lora_rank=self.lora_rank)
+            state.update(lora=self.lora.state_dict(), lora_rank=self.lora_rank,
+                         lora_targets=self.lora_targets, lora_alpha=self.lora_alpha)
         if self.kind == "hf":
             state.update(hf_backbone=self.hf_path, hf_state=self.model.state_dict())
         else:
@@ -212,6 +241,28 @@ class LoRA(nn.Module):
 
     def forward(self, x):
         return self.B(self.A(x)) * self.scale
+
+
+class LoRAQV(nn.Module):
+    """LoRA on a fused query_key_value projection that adapts Q and V only:
+    one shared down-projection, an up-projection into each of the Q and V
+    output slices, and nothing written into K's slice. The fused output is
+    laid out [Q | K | V] (GQAttention.forward splits it that way)."""
+
+    def __init__(self, n_in: int, q: int, kv: int, r: int = 16, alpha: float = 32.0):
+        super().__init__()
+        self.A = nn.Linear(n_in, r, bias=False)
+        self.Bq = nn.Linear(r, q, bias=False)
+        self.Bv = nn.Linear(r, kv, bias=False)
+        nn.init.normal_(self.A.weight, std=1 / r)
+        nn.init.zeros_(self.Bq.weight)
+        nn.init.zeros_(self.Bv.weight)
+        self.scale, self.kv = alpha / r, kv
+
+    def forward(self, x):
+        h = self.A(x)
+        k = h.new_zeros(*h.shape[:-1], self.kv)
+        return torch.cat([self.Bq(h), k, self.Bv(h)], -1) * self.scale
 
 
 def batchify(examples, tok, pad, with_mask=False):
@@ -272,7 +323,7 @@ def load(ckpt: str, device: str):
         tok = load_tokenizer(tp if tp.is_absolute() or tp.exists() else HERE / tp)
         d = Decider(m, "bidir" if ck.get("bidirectional") else "causal", tok.eos_id)
     if ck.get("mode", "full") != "full":
-        d.freeze(ck["mode"], ck.get("lora_rank", 16))
+        d.freeze(ck["mode"], ck.get("lora_rank", 16), ck.get("lora_targets", "dense"), ck.get("lora_alpha", 32.0))
         if "lora" in ck:
             d.lora.load_state_dict(ck["lora"])
     if "decide_head" in ck:
@@ -469,7 +520,7 @@ def train(a):
     val_rows, train_rows = rows[:n_val], rows[n_val:]
     val = make_examples(val_rows, tok, labs)                       # canonical order, as at test
     if a.mode != "full":
-        d.freeze(a.mode, a.lora_rank)
+        d.freeze(a.mode, a.lora_rank, a.lora_targets, a.lora_alpha)
         d.to(a.device)
     body = {"full": d.model.parameters(), "head": [], "lora": d.lora.parameters() if d.lora else []}[a.mode]
     groups = [{"params": list(body), "lr": a.lr}, {"params": d.head.parameters(), "lr": a.head_lr}]
@@ -570,7 +621,7 @@ class Decide:
             diff = [k for k, v in ck["model"].items() if not torch.equal(live[k].cpu().to(v.dtype), v)]
             assert not diff, f"the loaded model differs from {ckpt}'s backbone ({len(diff)} tensors)"
         d = Decider(model, "causal", tok.eos_id)
-        d.freeze(ck["mode"], ck.get("lora_rank", 16))
+        d.freeze(ck["mode"], ck.get("lora_rank", 16), ck.get("lora_targets", "dense"), ck.get("lora_alpha", 32.0))
         if "lora" in ck:
             d.lora.load_state_dict(ck["lora"])
         d.head.load_state_dict(ck["decide_head"])
@@ -613,6 +664,9 @@ def main():
     t.add_argument("--mode", choices=("full", "head", "lora"), default="full",
                    help="head / lora keep the backbone unchanged, so the same checkpoint can still chat")
     t.add_argument("--lora-rank", type=int, default=16)
+    t.add_argument("--lora-alpha", type=float, default=None, help="default 2 x rank")
+    t.add_argument("--lora-targets", choices=Decider.LORA_TARGETS, default="dense",
+                   help="qv: Q and V only; attn: Q, K, V, output; dense: + layer 0 MLP; all: + experts")
     t.add_argument("--head-lr", type=float, default=1e-3)
     t.add_argument("--task", choices=("banking77", "massive-hi", "massive-en"), default="banking77")
     t.add_argument("--limit", type=int, default=0, help="use only this many training queries (smoke tests)")

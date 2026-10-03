@@ -10,9 +10,10 @@
 > there gives the Linux equivalents of the Task Scheduler pattern below.
 
 > **Open 2026-09-28: base-v2 pretraining is running unattended until about
-> 2026-10-08.** Two scheduled tasks own it and restart everything by
-> themselves; see "Base v2 pretraining" below for what they do, how to check
-> on the run, and how to pause it for a demo.
+> 2026-10-09 07:00** (the demo and test pauses moved it from 10-08). Two
+> scheduled tasks own it and restart everything by themselves; see "Base v2
+> pretraining" below for what they do, how to check on the run, and how to
+> pause it for a demo. Then follow "After base v2" below.
 
 > **Closed again 2026-09-19 06:29.** The long-context run finished its
 > 10,000 steps unattended overnight and its tasks are disabled; the section
@@ -201,7 +202,7 @@ that session ends. That is fine, because `anulm_coder` will pick it
 back up at the next half-hour boundary. From the first task-started run
 onward, sessions are irrelevant.
 
-## Base v2 pretraining (started 2026-09-28 12:03, ends ~2026-10-08)
+## Base v2 pretraining (started 2026-09-28 12:03, ends ~2026-10-09)
 
 The project's own from-scratch base, trained on 11.3B tokens of English,
 Hindi and Python (`experiments/build_v2.py` → `data/v2/`): the combo preset
@@ -275,6 +276,55 @@ the best checkpoint by itself when the resume point will not load. Disable
 `anulm_v2` and stop training as above. Copy a
 `backups\v2\ckpt_base_v2_step<N>_<date>.pt.last` over `ckpt_base_v2.pt.last`.
 Enable and run `anulm_v2`. The run continues from step N.
+
+## After base v2: post-training on the final base (from ~2026-10-09)
+
+The demo models were all post-trained on `ckpt_demo_v2.pt`, a copy of the
+run decayed early at 700k -> 800k (held-out loss 3.39). When the run ends
+(`v2_done.marker`; `ckpt_base_v2.pt` is the best checkpoint), redo every
+post-training step on the final base, measure each against the demo version,
+and swap a model into the app only if it is better. About a day of GPU time;
+nothing else needs the card by then.
+
+| # | step | command | time | compare against |
+| --- | --- | --- | --- | --- |
+| 1 | score the final base | `type v2_train_run.log \| findstr "eval @"` (last line) | - | demo base 3.393 |
+| 2 | chat (full fine-tune) | `python finetune.py --ckpt ckpt_base_v2.pt --qa data/chat_train.jsonl --heldout data/chat_heldout.jsonl --out ckpt_chat_v3.pt --epochs 2 --batch-size 4 --lr 5e-5 --grad-ckpt --eval-every 500 --log-every 100`, then `experiments/chat_samples.py` | ~15 min | `ckpt_chat_v2.pt`, same samples |
+| 3 | lookup reader | `python rc_pointer.py train --ckpt ckpt_base_v2.pt --out ckpt_rc_pointer_v3.pt --epochs 1 --batch-size 8 --lr 5e-5 --eval-every 1000`; `python rc_pointer.py eval --ckpt ckpt_rc_pointer_v3.pt --n 300` | ~1.5 h | SQuAD F1 57.2, demo 6/20 |
+| 4 | **LoRA comparison** (below) | on `ckpt_chat_v3.pt`, BANKING77 | ~1.5 h | each other |
+| 5 | Decide adapters with the winner | banking and `--task massive-hi`, on `ckpt_chat_v3.pt` | ~25 min | 86.4% / 82.6% |
+| 6 | Decide general (zero-shot) | `python decide.py train-general --ckpt ckpt_base_v2.pt --out ckpt_decide_general_v3.pt`; eval on BANKING77 | ~25 min | 43.2% (Jev 80.1%) |
+| 7 | speech and vision decoders | retrain on the new base as in `docs/SPEECH.md` and `vision_encoder.py train` | hours | WER 8.2% en / 48.4% hi; current captions |
+| 8 | ship | point `BRAIN`, `READER`, `DECIDE_TASKS`, `CKPTS` in `app_omni.py` at the winners; run `experiments/api_check.py` (51 checks) and the app test; write `docs/RESULTS.md` sections | ~1 h | - |
+
+Step 5 needs step 2: an adapter fits the exact chat model it was trained
+on, and `Decide.on` refuses to attach it to any other.
+
+### The LoRA comparison (step 4)
+
+The current adapters use rank 16, alpha 32, targets `dense` (every linear but
+`lm_head` and the routed experts), lr 2e-4, no dropout: one seed of standard
+defaults, 3.5 points below a full fine-tune (86.4% vs 89.9%). Compare on
+BANKING77, same data, seed and schedule, scoring the held-out test:
+
+| run | `decide.py train --ckpt ckpt_chat_v3.pt --mode lora ...` | adapter params | question it answers |
+| --- | --- | --- | --- |
+| A | `--lora-targets qv` | 0.74M | the original LoRA recipe (Hu et al. 2021): Q and V only. AnuLM fuses Q, K and V, so the adapter writes into the Q and V slices of `query_key_value` and leaves K alone |
+| B | `--lora-targets attn` | 1.47M | does adapting K and the output projection add anything over Q+V? |
+| C | `--lora-targets dense` | 1.66M | the current default (B plus layer 0's MLP) |
+| D | `--lora-targets all` | 28.3M | do the routed experts matter? Switches MoE to the sparse path, so slower to train and to serve |
+| E | `--lora-targets dense --lora-rank 32` | 3.3M | more capacity at the same targets (alpha defaults to 2 x rank) |
+| F | `--lora-targets dense --lora-rank 64` | 6.6M | |
+| G-H | the best of A-F with `--lr 1e-4`, then `--lr 4e-4` | | learning-rate sensitivity |
+| ref | `--mode full` | 398M | the ceiling (89.9% on the demo chat model) |
+
+Each run ~10 min (D longer). Every run also takes `--out
+ckpt_decide_lora_<run>.pt`, then `python decide.py eval --ckpt ...`.
+Report accuracy, calibrated ECE, coverage at 0.7 and ms per query for all
+of them, including the losers, in `docs/RESULTS.md`. Pick the winner by
+held-out accuracy; if two are within ~0.5 points (one seed), take the
+smaller adapter. If D wins, check its serving speed before shipping it: the
+sparse MoE path is slower than the grouped one the app uses.
 
 ## Translation demo (docs/TRANSLATE_PLAN.md) — done
 
