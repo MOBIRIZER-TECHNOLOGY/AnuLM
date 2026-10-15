@@ -10,7 +10,8 @@
 > there gives the Linux equivalents of the Task Scheduler pattern below.
 
 > **Open 2026-09-28: base-v2 pretraining is running unattended until about
-> 2026-10-09 07:00** (the demo and test pauses moved it from 10-08). Two
+> 2026-10-16 evening, ending at step 1,900,000** (shortened on 2026-10-15; see
+> "Base v2 pretraining"). Two
 > scheduled tasks own it and restart everything by themselves; see "Base v2
 > pretraining" below for what they do, how to check on the run, and how to
 > pause it for a demo. Then follow "After base v2" below.
@@ -202,15 +203,29 @@ that session ends. That is fine, because `anulm_coder` will pick it
 back up at the next half-hour boundary. From the first task-started run
 onward, sessions are irrelevant.
 
-## Base v2 pretraining (started 2026-09-28 12:03, ends ~2026-10-09)
+## Base v2 pretraining (started 2026-09-28 12:03, ends ~2026-10-16 at step 1,900,000)
 
 The project's own from-scratch base, trained on 11.3B tokens of English,
 Hindi and Python (`experiments/build_v2.py` → `data/v2/`): the combo preset
-(398M total / 174M active), 1,024-token windows, 2,750,000 steps, plain
-AdamW with a warmup-stable-decay schedule. The learning rate holds at its
-peak until step 2,200,000 (~2026-10-06 17:00) and decays over the last 20%,
-which is where most of the remaining gain comes. `docs/RESULTS.md` §32-33 say
-why each choice was made.
+(398M total / 174M active), 1,024-token windows, plain AdamW with a
+warmup-stable-decay schedule. `docs/RESULTS.md` §32-33 say why each choice
+was made.
+
+**Shortened on 2026-10-15.** Planned for 2,750,000 steps with the decay over
+the last 20% (from 2,200,000). On 2026-10-05 18:57 the PC was shut down at
+step ~1,595,000; training resumed after the next login on 10-06 but stopped
+again that evening while the GPU was in use by other work, and `anulm_v2` was
+disabled, so nothing ran from 10-06 to 10-15. The resume point (1,590,000)
+was intact. With the held-out loss flat at the peak learning rate (3.99 at
+700k, 3.97 at 1.59M), the user chose to start the final decay at the resume
+point instead of finishing the plan: `--steps 1900000 --decay-frac 0.1631579`
+puts the decay start at exactly 1,590,000 and takes the learning rate
+linearly from 6e-4 to 6e-5 over 310,000 steps (~29 h), 7.8B tokens in all.
+
+**Windows Update restarts the PC at ~01:30** on update nights (10-14, 10-15),
+and the tasks fire only after someone logs in, so a nightly restart stops
+training until the next login. Pause updates for the length of a run
+(Settings > Windows Update > Pause updates).
 
 ### What restarts itself
 
@@ -277,7 +292,7 @@ the best checkpoint by itself when the resume point will not load. Disable
 `backups\v2\ckpt_base_v2_step<N>_<date>.pt.last` over `ckpt_base_v2.pt.last`.
 Enable and run `anulm_v2`. The run continues from step N.
 
-## After base v2: post-training on the final base (from ~2026-10-09)
+## After base v2: post-training on the final base (from ~2026-10-16)
 
 The demo models were all post-trained on `ckpt_demo_v2.pt`, a copy of the
 run decayed early at 700k -> 800k (held-out loss 3.39). When the run ends

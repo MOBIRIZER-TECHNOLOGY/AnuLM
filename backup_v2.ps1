@@ -34,7 +34,7 @@ try {
 # Milestones for the "watch it learn" page: the first backup at or past each
 # of these steps also keeps its best checkpoint (1.6 GB) in milestones\,
 # which is never pruned -- the rolling copies below are.
-$milestones = 700000, 1000000, 1500000, 2000000, 2200000, 2500000, 2750000
+$milestones = 700000, 1000000, 1500000, 1750000, 1900000     # run shortened to 1.9M on 2026-10-15
 if ($step -ne "unknown") {
     $mdir = Join-Path $dir "milestones"
     New-Item -ItemType Directory -Force $mdir | Out-Null

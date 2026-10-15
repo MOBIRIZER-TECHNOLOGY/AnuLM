@@ -13,15 +13,17 @@
 #   * --schedule wsd: a run of days can be extended without re-declaring the cosine
 #   * validation held out by document hash at build time, all sources in proportion
 #   * plain AdamW: Muon + the lab ideas gave 0.044 at 400M for 43% of the speed
-# 2,750,000 steps x 4 x 1,024 = 11.26B tokens, ~0.99 of an epoch; at the measured
-# 13.8k tok/s, ~9.5 days.
+# Planned: 2,750,000 steps x 4 x 1,024 = 11.26B tokens, ~0.99 of an epoch, ~9.5 days.
+# Shortened 2026-10-15 to 1,900,000 steps (7.8B tokens, 0.69 of an epoch): the run
+# lost 6-15 Oct to a shutdown and a disabled task, and the final linear decay now
+# starts at the resume point, 1,900,000 x (1 - 0.1631579) = 1,590,000.
 export PATH="/usr/bin:/bin:$PATH"
 cd "$(dirname "$0")/.." || exit 1
 export PYTHONIOENCODING=utf-8
 STOP=${1:-}
 COMMON="--preset 350m --device cuda --moe-impl grouped --data data/v2/meta.json --out ckpt_base_v2.pt \
-  --block-size 1024 --batch-size 4 --steps 2750000 --lr 6e-4 --min-lr 6e-5 --warmup 2000 \
-  --schedule wsd --decay-frac 0.2 --eval-every 10000 --eval-windows 400 --log-every 1000 \
+  --block-size 1024 --batch-size 4 --steps 1900000 --lr 6e-4 --min-lr 6e-5 --warmup 2000 \
+  --schedule wsd --decay-frac 0.1631579 --eval-every 10000 --eval-windows 400 --log-every 1000 \
   --seed 2026 --seq-balance-alpha 1e-4 --router-z-alpha 1e-3"
 PRESET="num_experts=24 moe_intermediate_size=192 num_experts_per_tok=4 num_shared_experts=0 sliding_window=256 max_window_layers=10 bias_update_rate=3e-3"
 RESUME=""; [ -s ckpt_base_v2.pt.last ] && RESUME="--resume"
