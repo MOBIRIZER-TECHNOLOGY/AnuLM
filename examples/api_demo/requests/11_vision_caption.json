@@ -1,0 +1,21 @@
+{
+  "title": "Vision: caption an image (image only, no text)",
+  "method": "POST",
+  "path": "/v1/chat/completions",
+  "body": {
+    "model": "anulm-vision",
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "@data/astronaut.jpg"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

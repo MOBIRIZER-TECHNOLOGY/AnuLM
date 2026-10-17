@@ -1,0 +1,44 @@
+{
+  "request": {
+    "title": "Chat (Hindi)",
+    "method": "POST",
+    "path": "/v1/chat/completions",
+    "body": {
+      "model": "anulm-chat",
+      "messages": [
+        {
+          "role": "user",
+          "content": "सुबह जल्दी उठने के तीन फ़ायदे बताइए।"
+        }
+      ],
+      "max_tokens": 100,
+      "temperature": 0.7,
+      "repetition_penalty": 1.3,
+      "seed": 7
+    }
+  },
+  "status": 200,
+  "content_type": "application/json",
+  "body": {
+    "id": "chatcmpl-f0c5eaf6179643728a9760f0",
+    "object": "chat.completion",
+    "created": 1792262827,
+    "model": "anulm-chat",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "शाम को जल्दी उठना एक प्रकार का खेल है। इसे करना या जाना बहुत ही सामान्य बात है लेकिन कुछ लोग इसका मजाक उड़ा देते हैं क्योंकि वह अपने साथ हुए दुविधाओं और थके हुए काम की वजह से किसी कारण से नहीं सोते हैं।"
+        },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 17,
+      "completion_tokens": 53,
+      "total_tokens": 70
+    }
+  },
+  "seconds": 2.201
+}

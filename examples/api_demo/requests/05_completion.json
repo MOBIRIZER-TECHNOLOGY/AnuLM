@@ -1,0 +1,14 @@
+{
+  "title": "Raw text completion, cut at the first full stop",
+  "method": "POST",
+  "path": "/v1/completions",
+  "body": {
+    "model": "anulm-chat",
+    "prompt": "The three primary colours are",
+    "max_tokens": 32,
+    "temperature": 0,
+    "stop": [
+      "."
+    ]
+  }
+}

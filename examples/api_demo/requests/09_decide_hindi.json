@@ -1,0 +1,10 @@
+{
+  "title": "Decide: Hindi assistant intents",
+  "method": "POST",
+  "path": "/v1/decide",
+  "body": {
+    "model": "anulm-decide-hindi",
+    "input": "कल सुबह छह बजे का अलार्म लगा दो",
+    "top": 3
+  }
+}

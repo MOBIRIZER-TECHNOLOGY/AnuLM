@@ -1,0 +1,75 @@
+{
+  "model": "anulm-decide-hindi",
+  "data": "data/hindi_queries.csv",
+  "n": 8,
+  "accuracy": 1.0,
+  "auto_routed": 8,
+  "accuracy_when_auto_routed": 1.0,
+  "seconds": 2.686,
+  "rows": [
+    {
+      "query": "कल सुबह छह बजे का अलार्म लगा दो",
+      "expected": "alarm_set",
+      "choice": "alarm_set",
+      "confidence": 0.9491,
+      "action": "auto-route",
+      "correct": true
+    },
+    {
+      "query": "आज दिल्ली में मौसम कैसा रहेगा",
+      "expected": "weather_query",
+      "choice": "weather_query",
+      "confidence": 0.9986,
+      "action": "auto-route",
+      "correct": true
+    },
+    {
+      "query": "कोई पुराना हिंदी गाना चलाओ",
+      "expected": "play_music",
+      "choice": "play_music",
+      "confidence": 0.9644,
+      "action": "auto-route",
+      "correct": true
+    },
+    {
+      "query": "अभी कितने बजे हैं",
+      "expected": "datetime_query",
+      "choice": "datetime_query",
+      "confidence": 0.885,
+      "action": "auto-route",
+      "correct": true
+    },
+    {
+      "query": "कमरे की बत्ती बंद कर दो",
+      "expected": "iot_hue_lightoff",
+      "choice": "iot_hue_lightoff",
+      "confidence": 0.8351,
+      "action": "auto-route",
+      "correct": true
+    },
+    {
+      "query": "आज की ताज़ा ख़बरें सुनाओ",
+      "expected": "news_query",
+      "choice": "news_query",
+      "confidence": 0.9989,
+      "action": "auto-route",
+      "correct": true
+    },
+    {
+      "query": "पनीर बटर मसाला कैसे बनाते हैं",
+      "expected": "cooking_recipe",
+      "choice": "cooking_recipe",
+      "confidence": 0.99,
+      "action": "auto-route",
+      "correct": true
+    },
+    {
+      "query": "मेरे लिए कल मुंबई की ट्रेन का टिकट बुक करो",
+      "expected": "transport_ticket",
+      "choice": "transport_ticket",
+      "confidence": 0.9938,
+      "action": "auto-route",
+      "correct": true
+    }
+  ]
+}

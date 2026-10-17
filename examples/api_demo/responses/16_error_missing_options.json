@@ -1,0 +1,22 @@
+{
+  "request": {
+    "title": "Error: anulm-decide-general without options",
+    "method": "POST",
+    "path": "/v1/decide",
+    "body": {
+      "model": "anulm-decide-general",
+      "input": "where is my parcel"
+    }
+  },
+  "status": 400,
+  "content_type": "application/json",
+  "body": {
+    "error": {
+      "message": "anulm-decide-general needs an options list.",
+      "type": "invalid_request_error",
+      "param": "options",
+      "code": null
+    }
+  },
+  "seconds": 0.001
+}

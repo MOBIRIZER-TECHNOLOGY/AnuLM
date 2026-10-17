@@ -1,0 +1,5 @@
+{
+  "title": "List every model and which parts are borrowed",
+  "method": "GET",
+  "path": "/v1/models"
+}

@@ -1,0 +1,25 @@
+{
+  "title": "Vision: ask a question about the image (short answer)",
+  "method": "POST",
+  "path": "/v1/chat/completions",
+  "body": {
+    "model": "anulm-vision",
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "What color is the flag?"
+          },
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "@data/astronaut.jpg"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

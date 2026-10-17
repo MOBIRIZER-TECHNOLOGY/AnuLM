@@ -1,0 +1,61 @@
+{
+  "request": {
+    "title": "Decide: route banking messages (a batch of three)",
+    "method": "POST",
+    "path": "/v1/decide",
+    "body": {
+      "model": "anulm-decide-banking",
+      "input": [
+        "I still haven't received my new card",
+        "My card was stolen this morning",
+        "hi, quick question"
+      ],
+      "threshold": 0.7,
+      "top": 3
+    }
+  },
+  "status": 200,
+  "content_type": "application/json",
+  "body": {
+    "object": "decision",
+    "model": "anulm-decide-banking",
+    "from_scratch": true,
+    "results": [
+      {
+        "input": "I still haven't received my new card",
+        "choice": "card_arrival",
+        "probabilities": {
+          "card_arrival": 0.9221,
+          "get_physical_card": 0.014,
+          "getting_virtual_card": 0.0105
+        },
+        "confidence": 0.9221,
+        "action": "auto-route"
+      },
+      {
+        "input": "My card was stolen this morning",
+        "choice": "lost_or_stolen_card",
+        "probabilities": {
+          "lost_or_stolen_card": 0.8627,
+          "lost_or_stolen_phone": 0.1162,
+          "compromised_card": 0.0144
+        },
+        "confidence": 0.8627,
+        "action": "auto-route"
+      },
+      {
+        "input": "hi, quick question",
+        "choice": "extra_charge_on_statement",
+        "probabilities": {
+          "extra_charge_on_statement": 0.1758,
+          "get_physical_card": 0.0963,
+          "unable_to_verify_identity": 0.0857
+        },
+        "confidence": 0.1758,
+        "action": "send to human"
+      }
+    ],
+    "seconds": 0.956
+  },
+  "seconds": 1.467
+}

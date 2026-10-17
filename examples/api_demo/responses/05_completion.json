@@ -1,0 +1,38 @@
+{
+  "request": {
+    "title": "Raw text completion, cut at the first full stop",
+    "method": "POST",
+    "path": "/v1/completions",
+    "body": {
+      "model": "anulm-chat",
+      "prompt": "The three primary colours are",
+      "max_tokens": 32,
+      "temperature": 0,
+      "stop": [
+        "."
+      ]
+    }
+  },
+  "status": 200,
+  "content_type": "application/json",
+  "body": {
+    "id": "cmpl-7dcdcc784fec4740a290c104",
+    "object": "text_completion",
+    "created": 1792262831,
+    "model": "anulm-chat",
+    "choices": [
+      {
+        "index": 0,
+        "text": " red, yellow, and blue",
+        "logprobs": null,
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 5,
+      "completion_tokens": 7,
+      "total_tokens": 12
+    }
+  },
+  "seconds": 0.302
+}

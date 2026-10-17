@@ -1,0 +1,11 @@
+{
+  "title": "Speech to text (multipart upload of the WAV from step 13)",
+  "method": "POST",
+  "path": "/v1/audio/transcriptions",
+  "multipart": {
+    "file": "@responses/13_text_to_speech.wav",
+    "model": "anulm-asr",
+    "language": "en",
+    "response_format": "verbose_json"
+  }
+}

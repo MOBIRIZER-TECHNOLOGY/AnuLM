@@ -1,0 +1,14 @@
+{
+  "title": "Error: unknown model (OpenAI-style error body)",
+  "method": "POST",
+  "path": "/v1/chat/completions",
+  "body": {
+    "model": "gpt-4o",
+    "messages": [
+      {
+        "role": "user",
+        "content": "hello"
+      }
+    ]
+  }
+}

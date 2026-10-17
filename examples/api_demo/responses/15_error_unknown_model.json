@@ -1,0 +1,27 @@
+{
+  "request": {
+    "title": "Error: unknown model (OpenAI-style error body)",
+    "method": "POST",
+    "path": "/v1/chat/completions",
+    "body": {
+      "model": "gpt-4o",
+      "messages": [
+        {
+          "role": "user",
+          "content": "hello"
+        }
+      ]
+    }
+  },
+  "status": 404,
+  "content_type": "application/json",
+  "body": {
+    "error": {
+      "message": "Model 'gpt-4o' is not served by this endpoint; use one of: anulm-chat, anulm-answer, anulm-vision",
+      "type": "invalid_request_error",
+      "param": "model",
+      "code": "model_not_found"
+    }
+  },
+  "seconds": 0.002
+}

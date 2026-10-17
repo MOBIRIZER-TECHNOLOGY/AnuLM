@@ -1,0 +1,23 @@
+{
+  "request": {
+    "title": "Speech to text (multipart upload of the WAV from step 13)",
+    "method": "POST",
+    "path": "/v1/audio/transcriptions",
+    "multipart": {
+      "file": "@responses/13_text_to_speech.wav",
+      "model": "anulm-asr",
+      "language": "en",
+      "response_format": "verbose_json"
+    }
+  },
+  "status": 200,
+  "content_type": "application/json",
+  "body": {
+    "task": "transcribe",
+    "language": "en",
+    "duration": 2.67,
+    "text": "my card was strollin this morning please block it",
+    "segments": []
+  },
+  "seconds": 5.671
+}

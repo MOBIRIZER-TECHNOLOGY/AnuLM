@@ -1,0 +1,9 @@
+query,expected
+कल सुबह छह बजे का अलार्म लगा दो,alarm_set
+आज दिल्ली में मौसम कैसा रहेगा,weather_query
+कोई पुराना हिंदी गाना चलाओ,play_music
+अभी कितने बजे हैं,datetime_query
+कमरे की बत्ती बंद कर दो,iot_hue_lightoff
+आज की ताज़ा ख़बरें सुनाओ,news_query
+पनीर बटर मसाला कैसे बनाते हैं,cooking_recipe
+मेरे लिए कल मुंबई की ट्रेन का टिकट बुक करो,transport_ticket

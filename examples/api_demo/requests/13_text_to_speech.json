@@ -1,0 +1,11 @@
+{
+  "title": "Text to speech (returns WAV)",
+  "method": "POST",
+  "path": "/v1/audio/speech",
+  "save_as": "13_text_to_speech.wav",
+  "body": {
+    "model": "system-tts",
+    "input": "My card was stolen this morning, please block it.",
+    "response_format": "wav"
+  }
+}

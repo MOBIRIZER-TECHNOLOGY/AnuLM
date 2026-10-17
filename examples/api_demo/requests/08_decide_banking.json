@@ -1,0 +1,15 @@
+{
+  "title": "Decide: route banking messages (a batch of three)",
+  "method": "POST",
+  "path": "/v1/decide",
+  "body": {
+    "model": "anulm-decide-banking",
+    "input": [
+      "I still haven't received my new card",
+      "My card was stolen this morning",
+      "hi, quick question"
+    ],
+    "threshold": 0.7,
+    "top": 3
+  }
+}

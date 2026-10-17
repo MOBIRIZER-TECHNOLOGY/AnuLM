@@ -1,0 +1,17 @@
+query,expected
+I still haven't received my new card,card_arrival
+My card was stolen this morning,lost_or_stolen_card
+What exchange rate do you use for euros?,exchange_rate
+I sent money to my brother three days ago and he still hasn't got it,transfer_not_received_by_recipient
+I typed the wrong PIN too many times and now it's blocked,pin_blocked
+My top-up didn't go through,top_up_failed
+Why was I charged a fee for taking cash out of the ATM?,cash_withdrawal_charge
+The shop said my card was declined,declined_card_payment
+How do I change my PIN?,change_pin
+How do I activate the card you sent me?,activate_my_card
+I want my money back for this purchase,request_refund
+The ATM gave me less cash than I asked for,wrong_amount_of_cash_received
+Can I add my card to Apple Pay?,apple_pay_or_google_pay
+There's a direct debit on my statement I don't recognise,direct_debit_payment_not_recognised
+I think someone else has been using my card details,compromised_card
+How old do you have to be to open an account?,age_limit

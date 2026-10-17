@@ -1,0 +1,26 @@
+{
+  "request": {
+    "title": "Wikipedia lookup with sources (/v1/answer)",
+    "method": "POST",
+    "path": "/v1/answer",
+    "body": {
+      "question": "Who built the Taj Mahal?"
+    }
+  },
+  "status": 200,
+  "content_type": "application/json",
+  "body": {
+    "object": "answer",
+    "question": "Who built the Taj Mahal?",
+    "answer": "Shah Jahan",
+    "found": true,
+    "sources": [
+      "Taj Mahal",
+      "Taj Mahal",
+      "Taj Mahal"
+    ],
+    "from": "wikipedia",
+    "seconds": 11.98
+  },
+  "seconds": 15.467
+}

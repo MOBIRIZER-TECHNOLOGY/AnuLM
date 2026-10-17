@@ -1,0 +1,51 @@
+{
+  "request": {
+    "title": "Vision: ask a question about the image (short answer)",
+    "method": "POST",
+    "path": "/v1/chat/completions",
+    "body": {
+      "model": "anulm-vision",
+      "messages": [
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "What color is the flag?"
+            },
+            {
+              "type": "image_url",
+              "image_url": {
+                "url": "@data/astronaut.jpg"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "status": 200,
+  "content_type": "application/json",
+  "body": {
+    "id": "chatcmpl-6e0acda4acfa4fefb541b586",
+    "object": "chat.completion",
+    "created": 1792262864,
+    "model": "anulm-vision",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "red"
+        },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "total_tokens": 0
+    }
+  },
+  "seconds": 5.045
+}

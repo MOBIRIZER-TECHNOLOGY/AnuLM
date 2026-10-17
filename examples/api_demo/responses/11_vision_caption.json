@@ -1,0 +1,47 @@
+{
+  "request": {
+    "title": "Vision: caption an image (image only, no text)",
+    "method": "POST",
+    "path": "/v1/chat/completions",
+    "body": {
+      "model": "anulm-vision",
+      "messages": [
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "image_url",
+              "image_url": {
+                "url": "@data/astronaut.jpg"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "status": 200,
+  "content_type": "application/json",
+  "body": {
+    "id": "chatcmpl-d36056e500a549dca35f4693",
+    "object": "chat.completion",
+    "created": 1792262859,
+    "model": "anulm-vision",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "A woman in a orange jumpsuit is smiling and smiling."
+        },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "total_tokens": 0
+    }
+  },
+  "seconds": 6.56
+}

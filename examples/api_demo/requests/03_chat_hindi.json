@@ -1,0 +1,18 @@
+{
+  "title": "Chat (Hindi)",
+  "method": "POST",
+  "path": "/v1/chat/completions",
+  "body": {
+    "model": "anulm-chat",
+    "messages": [
+      {
+        "role": "user",
+        "content": "सुबह जल्दी उठने के तीन फ़ायदे बताइए।"
+      }
+    ],
+    "max_tokens": 100,
+    "temperature": 0.7,
+    "repetition_penalty": 1.3,
+    "seed": 7
+  }
+}

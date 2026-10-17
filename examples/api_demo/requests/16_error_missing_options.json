@@ -1,0 +1,9 @@
+{
+  "title": "Error: anulm-decide-general without options",
+  "method": "POST",
+  "path": "/v1/decide",
+  "body": {
+    "model": "anulm-decide-general",
+    "input": "where is my parcel"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "request": {
+    "title": "The same lookup through the OpenAI chat endpoint (anulm-answer)",
+    "method": "POST",
+    "path": "/v1/chat/completions",
+    "body": {
+      "model": "anulm-answer",
+      "messages": [
+        {
+          "role": "user",
+          "content": "भारत की राजधानी क्या है?"
+        }
+      ]
+    }
+  },
+  "status": 200,
+  "content_type": "application/json",
+  "body": {
+    "id": "chatcmpl-a453701a9d8946518df94eee",
+    "object": "chat.completion",
+    "created": 1792262847,
+    "model": "anulm-answer",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "नई दिल्ली"
+        },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "total_tokens": 0
+    },
+    "sources": [
+      "दिल्ली",
+      "भारत की राजधानियों की सूची",
+      "नई दिल्ली"
+    ]
+  },
+  "seconds": 0.321
+}

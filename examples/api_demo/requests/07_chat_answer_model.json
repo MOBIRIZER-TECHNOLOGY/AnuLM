@@ -1,0 +1,14 @@
+{
+  "title": "The same lookup through the OpenAI chat endpoint (anulm-answer)",
+  "method": "POST",
+  "path": "/v1/chat/completions",
+  "body": {
+    "model": "anulm-answer",
+    "messages": [
+      {
+        "role": "user",
+        "content": "भारत की राजधानी क्या है?"
+      }
+    ]
+  }
+}

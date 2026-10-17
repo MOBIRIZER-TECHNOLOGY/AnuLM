@@ -1,0 +1,44 @@
+{
+  "request": {
+    "title": "Chat (English)",
+    "method": "POST",
+    "path": "/v1/chat/completions",
+    "body": {
+      "model": "anulm-chat",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Give me three tips for saving money every month."
+        }
+      ],
+      "max_tokens": 60,
+      "temperature": 0.7,
+      "repetition_penalty": 1.3,
+      "seed": 7
+    }
+  },
+  "status": 200,
+  "content_type": "application/json",
+  "body": {
+    "id": "chatcmpl-120a7a60325e4c0d834815b1",
+    "object": "chat.completion",
+    "created": 1792262824,
+    "model": "anulm-chat",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "Here are three tips.\n1. Set a goal and prioritize your goals\n2. Make your budget manageable\n3. Don't spend too much money on your home and the things you use\n4. Use clear, specific language to describe your actions\n5. Practice while you are traveling\n6. Consider yourself ready to spend your money"
+        },
+        "finish_reason": "length"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 16,
+      "completion_tokens": 60,
+      "total_tokens": 76
+    }
+  },
+  "seconds": 5.704
+}

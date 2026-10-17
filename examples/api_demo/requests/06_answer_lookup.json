@@ -1,0 +1,8 @@
+{
+  "title": "Wikipedia lookup with sources (/v1/answer)",
+  "method": "POST",
+  "path": "/v1/answer",
+  "body": {
+    "question": "Who built the Taj Mahal?"
+  }
+}

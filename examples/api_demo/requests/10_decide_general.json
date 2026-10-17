@@ -1,0 +1,21 @@
+{
+  "title": "Decide: zero-shot with your own options",
+  "method": "POST",
+  "path": "/v1/decide",
+  "body": {
+    "model": "anulm-decide-general",
+    "input": [
+      "The delivery came two weeks late and the box was crushed",
+      "Thank you, the staff were wonderful",
+      "Do you ship to Canada?"
+    ],
+    "options": [
+      "complaint about a delivery",
+      "praise for the service",
+      "question about a product",
+      "request to place an order"
+    ],
+    "threshold": 0.7,
+    "top": 2
+  }
+}

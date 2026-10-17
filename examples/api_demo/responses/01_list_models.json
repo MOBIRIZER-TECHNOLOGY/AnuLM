@@ -1,0 +1,127 @@
+{
+  "request": {
+    "title": "List every model and which parts are borrowed",
+    "method": "GET",
+    "path": "/v1/models"
+  },
+  "status": 200,
+  "content_type": "application/json",
+  "body": {
+    "object": "list",
+    "data": [
+      {
+        "id": "anulm-chat",
+        "object": "model",
+        "created": 1792262819,
+        "owned_by": "anulm",
+        "from_scratch": true,
+        "endpoints": [
+          "/v1/chat/completions",
+          "/v1/completions"
+        ],
+        "description": "The chat model: AnuLM (398M total / 174M active MoE) pretrained from scratch, instruction-tuned on 23k human-written pairs (22% Hindi). Fluent and on topic; facts from memory are unreliable -- use anulm-answer for facts. Single-turn: it answers the last user message. Context 1,024 tokens."
+      },
+      {
+        "id": "anulm-answer",
+        "object": "model",
+        "created": 1792262819,
+        "owned_by": "anulm",
+        "from_scratch": false,
+        "endpoints": [
+          "/v1/chat/completions",
+          "/v1/answer"
+        ],
+        "description": "Looks the answer up: retrieves Simple English + Hindi Wikipedia passages with multilingual-e5-small (borrowed, MIT) and AnuLM's own pointer reader picks the answer span (SQuAD F1 57.2). Falls back to anulm-chat, and says so, when nothing is found. The reader nearly always finds some span: questions Wikipedia cannot answer (\"what did I eat today?\") get a confident wrong one."
+      },
+      {
+        "id": "anulm-vision",
+        "object": "model",
+        "created": 1792262819,
+        "owned_by": "anulm",
+        "from_scratch": false,
+        "endpoints": [
+          "/v1/chat/completions"
+        ],
+        "description": "Captions an image, or answers a question about it. AnuLM language model trained on Flickr30k / A-OKVQA, reading a frozen pretrained SigLIP ViT-B/16 image encoder (Google, borrowed). English. Send the image as a base64 data URL."
+      },
+      {
+        "id": "anulm-asr",
+        "object": "model",
+        "created": 1792262819,
+        "owned_by": "anulm",
+        "from_scratch": false,
+        "endpoints": [
+          "/v1/audio/transcriptions"
+        ],
+        "description": "Speech recognition, English (WER 8.2% LibriSpeech) and Hindi (WER 48.4% FLEURS). AnuLM decoder trained here, reading a frozen pretrained Whisper-small encoder (OpenAI, borrowed)."
+      },
+      {
+        "id": "system-tts",
+        "object": "model",
+        "created": 1792262819,
+        "owned_by": "anulm",
+        "from_scratch": false,
+        "endpoints": [
+          "/v1/audio/speech"
+        ],
+        "description": "Text to speech with Piper voices (English and Hindi; borrowed, not an AnuLM model). When Windows Smart App Control blocks Piper it falls back to Windows' own voices, which are English only unless a Hindi voice is installed; Hindi then returns 422."
+      },
+      {
+        "id": "anulm-decide-banking",
+        "object": "model",
+        "created": 1792262819,
+        "owned_by": "anulm",
+        "from_scratch": true,
+        "endpoints": [
+          "/v1/decide"
+        ],
+        "description": "BANKING77 intents (77, English): the chat model plus a 6.6 MB LoRA adapter. 86.4% accurate; at confidence >= 0.7 it answers 80% of queries at 94.7%."
+      },
+      {
+        "id": "anulm-decide-hindi",
+        "object": "model",
+        "created": 1792262819,
+        "owned_by": "anulm",
+        "from_scratch": true,
+        "endpoints": [
+          "/v1/decide"
+        ],
+        "description": "MASSIVE assistant intents (60) in Hindi: the chat model plus a 6.6 MB LoRA adapter. 82.6% accurate (ModernBERT: 67.5%)."
+      },
+      {
+        "id": "anulm-decide-general",
+        "object": "model",
+        "created": 1792262819,
+        "owned_by": "anulm",
+        "from_scratch": true,
+        "endpoints": [
+          "/v1/decide"
+        ],
+        "description": "Any option list, zero-shot: trained on CLINC, MASSIVE and DBpedia label sets. Weak: 43.2% on BANKING77 never seen in training, but calibrated (ECE 3.7%) -- trust only high-confidence answers. A separate 398M model."
+      },
+      {
+        "id": "modernbert-decide-banking",
+        "object": "model",
+        "created": 1792262819,
+        "owned_by": "anulm",
+        "from_scratch": false,
+        "endpoints": [
+          "/v1/decide"
+        ],
+        "description": "Reference: ModernBERT-base (Answer.AI, Apache 2.0, borrowed) fine-tuned on BANKING77. 90.8%, about 4x faster than AnuLM."
+      },
+      {
+        "id": "modernbert-decide-hindi",
+        "object": "model",
+        "created": 1792262819,
+        "owned_by": "anulm",
+        "from_scratch": false,
+        "endpoints": [
+          "/v1/decide"
+        ],
+        "description": "Reference: ModernBERT-base (borrowed) fine-tuned on MASSIVE Hindi. 67.5%: its English tokenizer reads Hindi as byte fragments."
+      }
+    ]
+  },
+  "seconds": 0.001
+}

@@ -1,0 +1,54 @@
+[
+  {
+    "object": "answer",
+    "question": "Who built the Taj Mahal?",
+    "answer": "Shah Jahan",
+    "found": true,
+    "sources": [
+      "Taj Mahal",
+      "Taj Mahal",
+      "Taj Mahal"
+    ],
+    "from": "wikipedia",
+    "seconds": 0.59
+  },
+  {
+    "object": "answer",
+    "question": "What is the capital of Japan?",
+    "answer": "Japan",
+    "found": true,
+    "sources": [
+      "Capital of Japan",
+      "Japan",
+      "Japan"
+    ],
+    "from": "wikipedia",
+    "seconds": 0.494
+  },
+  {
+    "object": "answer",
+    "question": "भारत की राजधानी क्या है?",
+    "answer": "नई दिल्ली",
+    "found": true,
+    "sources": [
+      "दिल्ली",
+      "भारत की राजधानियों की सूची",
+      "नई दिल्ली"
+    ],
+    "from": "wikipedia",
+    "seconds": 0.462
+  },
+  {
+    "object": "answer",
+    "question": "What did I eat for breakfast today?",
+    "answer": "Breakfast cereal",
+    "found": true,
+    "sources": [
+      "Breakfast",
+      "Bacon and eggs",
+      "Breakfast cereal"
+    ],
+    "from": "wikipedia",
+    "seconds": 0.669
+  }
+]
