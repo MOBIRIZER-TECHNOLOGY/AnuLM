@@ -2877,3 +2877,92 @@ names in both languages. One seed per run.
 This is the case for a model of one's own: on the language it was built
 for, a 174M-active from-scratch model trained on one consumer GPU beats a
 mature open English encoder by a wide margin.
+
+## 39. Post-training on base v2: speech, vision, chat and Decide
+
+Base v2 (`ckpt_base_v2.pt`, 1.9M steps, held-out loss 3.3523 against the
+demo base's 3.393) replaced the demo base under every post-trained model
+(`experiments/post_v2.py`, `experiments/omni_v3.py`; logs under `logs/`).
+Each new model was scored beside the one it replaced on the same held-out
+set before the swap. One seed throughout.
+
+| model | measure | before | after |
+| --- | --- | --- | --- |
+| speech to text, English | WER, 100 held-out LibriSpeech clips | 8.4% | **7.1%** |
+| speech to text, Hindi | WER, the first 50 FLEURS dev clips | 51.0% | **35.0%** (36.5% on all 657 dev + test) |
+| captions | held-out loss, 20 Flickr30k val images | 2.704 | **2.617** |
+| image questions | A-OKVQA val, 4-way multiple choice (1,145) | 40.9% | **43.5%** |
+| chat | held-out answer loss (300 prompts) | 3.2000 | **3.1445** |
+| Decide, BANKING77 | test accuracy (3,080), recipe F below | 86.4% | **89.0%** |
+| Decide, MASSIVE Hindi | test accuracy (2,033), recipe F | 82.6% | **84.5%** |
+
+* The speech and vision decoders read the same frozen encoders as before
+  (Whisper-small, SigLIP); only the language model under them changed, grown
+  with the audio and image vocabulary by `speech_vocab.py`. Uncontended they
+  train at 0.29 s/step (ASR) and 0.26 s/step (vision, batch 8); the 2.4 h per
+  ASR epoch recorded earlier was measured while sharing the GPU.
+* Captions: on 10 distinct val images the new captioner was better on about
+  8 and worse on 1, which fell into a greedy loop ("white and white ...").
+  `caption()` now applies a repetition penalty of 1.2: on 20 distinct images
+  it changed 9 captions, none for the worse, and ended loops such as
+  "curling curling curling". A no-repeat bigram block also dropped articles
+  ("a man in white shirt") and is not used.
+
+**The LoRA comparison** (BANKING77 on `ckpt_chat_v3.pt`, lr 2e-4 unless
+given; rank 16 unless given):
+
+| run | adapter | params | accuracy | ms/query |
+| --- | --- | --- | --- | --- |
+| A | Q and V only | 0.74M | 83.34% | |
+| B | attention | 1.47M | 87.01% | |
+| C | dense (every linear but lm_head and routed experts) | 1.66M | 88.02% | |
+| D | all, routed experts included | 28.3M | 90.23% | 255 |
+| E | dense, rank 32 | 3.3M | 88.70% | |
+| **F** | **dense, rank 64** (shipped) | **6.6M** | **89.03%** | **56** |
+| G | D at lr 1e-4 | 28.3M | 88.77% | |
+| H | D at lr 4e-4 | 28.3M | 90.65% | |
+| ref | full fine-tune, lr 3e-5 | 398M | 90.29% | 52 |
+
+* Adapting the routed experts (D, H) matches a full fine-tune, but the
+  adapter switches the MoE to its sparse path, about 5x slower to serve.
+  F is 1.2 points under D at a fifth of the latency, and is what the app
+  serves. In Hindi F scores 84.46% against D's 84.65%.
+* Adding K and the output projection to Q+V is worth 3.7 points; rank past
+  16 is worth about one more.
+
+The API benchmark (`examples/api_demo/benchmark.py`, 1,480 timed requests on
+held-out data) records the served models end to end: Decide ~58 ms a query,
+ASR ~0.11 x real time, chat ~30 tokens/s.
+
+## 40. More Indian data, one night: it did not help
+
+`experiments/indic_v4.py` tried the two cheapest sources of more Hindi:
+
+| change | measure | v3 | v4 |
+| --- | --- | --- | --- |
+| Hindi ASR: + the second IndicTTS speaker (7,971 -> 13,679 clips), same recipe | WER, 657 FLEURS clips | **36.5%** | 38.2% |
+| chat: + 28.5k Hindi pairs from ai4bharat/indic-instruct (22% -> 65% Hindi) | held-out answer loss | **3.1445** | 3.5662 |
+| Decide F on that chat model | BANKING77 / MASSIVE-hi | **89.03% / 84.46%** | 88.31% / 84.16% |
+
+* **More of one studio voice made real speakers worse.** IndicTTS is a
+  single speaker per gender reading clearly; FLEURS is many real speakers.
+  The ASR's own held-out loss fell (it holds out IndicTTS clips too) while
+  the FLEURS WER rose. What Hindi ASR needs is many speakers (Kathbath:
+  150 h, 121 speakers, gated).
+* **Mostly-synthetic chat data diluted the model.** The added pairs are
+  machine-translated (Dolly, OASST) or answered by Llama-2-70B (Anudesh).
+  Hindi replies became more fluent but longer and repetitive, with stock
+  openers ("नमस्ते! मुझे आपकी सहायता करने में खुशी हो रही है"), and English
+  replies got worse ("Stay in the car" among health tips). A smaller share,
+  10-20%, is the next thing to try.
+* **Two data traps.** indic-instruct's Dolly has instruction / context /
+  response columns where the other subsets have a messages list, and a
+  reader written for one silently dropped it (13,605 pairs). And
+  indic-align's Anudesh is mostly Marathi: Devanagari is shared by Marathi,
+  Nepali and Sanskrit, so a script test is not a language test; Hindi
+  against Marathi function words is.
+* **Measure on enough clips.** Hindi WER on 50 FLEURS dev clips moved by
+  several points between runs; this section uses dev + test, 657 clips.
+
+Nothing from v4 was shipped. The second download batch (`data/extra_hi/`,
+283k rows) waits for the smaller-share chat run.
