@@ -522,8 +522,14 @@ def train(a):
     rng.shuffle(rows)
     if a.limit:
         rows = rows[:a.limit]
-    n_val = min(1000, len(rows) // 10)
-    val_rows, train_rows = rows[:n_val], rows[n_val:]
+    own_val = HERE / "data" / "decide_general" / "india_banking" / "val.jsonl"
+    if a.task == "india-banking" and own_val.exists():
+        # Template-written data: a random cut of train shares its phrasings, scores ~99% and
+        # fits a temperature far too low (ECE 17%). Its own val uses phrasings in no other split.
+        val_rows, train_rows = load_split("val", a.task), rows
+    else:
+        n_val = min(1000, len(rows) // 10)
+        val_rows, train_rows = rows[:n_val], rows[n_val:]
     val = make_examples(val_rows, tok, labs)                       # canonical order, as at test
     if a.mode != "full":
         d.freeze(a.mode, a.lora_rank, a.lora_targets, a.lora_alpha)

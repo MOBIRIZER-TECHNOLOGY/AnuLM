@@ -293,35 +293,36 @@ def casual(s: str, rng: random.Random, lang: str) -> str:
 def main():
     rng = random.Random(0)
     OUT.mkdir(parents=True, exist_ok=True)
-    train, test = [], []
+    # Per intent and language: the last two templates are test, the one before is validation
+    # (model selection and the confidence temperature), the rest train. No phrasing is shared.
+    train, val, test = [], [], []
     for intent, by_lang in T.items():
         for lang, temps in by_lang.items():
             for i, t in enumerate(temps):
-                is_test = i >= len(temps) - 2
-                n = 3 if is_test else 8 if "{" in t else 2
+                split = test if i >= len(temps) - 2 else val if i == len(temps) - 3 else train
+                n = 3 if split is not train else 8 if "{" in t else 2
                 seen = set()
                 for _ in range(n * 3):
                     s = casual(fill(t, rng), rng, lang)
                     if s in seen:
                         continue
                     seen.add(s)
-                    (test if is_test else train).append({"text": s, "label_text": intent, "lang": lang,
-                                                         "synthetic": True})
+                    split.append({"text": s, "label_text": intent, "lang": lang, "synthetic": True})
                     if len(seen) >= n:
                         break
-    rng.shuffle(train)
-    rng.shuffle(test)
-    for name, rows in (("train", train), ("test", test)):
+    for rows in (train, val, test):
+        rng.shuffle(rows)
+    for name, rows in (("train", train), ("val", val), ("test", test)):
         (OUT / f"{name}.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows),
                                            encoding="utf-8")
     (OUT / "README.md").write_text(
         "# india_banking (SYNTHETIC)\n\nWritten for the AnuLM demo by `experiments/make_india_banking.py`: "
         f"{len(T)} intents of Indian retail banking (UPI, IFSC, KYC, Aadhaar, EMI, ...) in English, Hindi and "
-        f"Hinglish. {len(train)} train / {len(test)} test messages. Not customer data. Test messages use "
-        "phrasings that never appear in train, so the score measures generalisation to new wordings of these "
+        f"Hinglish. {len(train)} train / {len(val)} val / {len(test)} test messages. Not customer data. Val and test use "
+        "phrasings that appear in no other split, so the score measures generalisation to new wordings of these "
         "intents, not accuracy on real traffic.\n", encoding="utf-8")
     from collections import Counter
-    print(f"{len(T)} intents; train {len(train)}, test {len(test)}; test by lang {dict(Counter(r['lang'] for r in test))}")
+    print(f"{len(T)} intents; train {len(train)}, val {len(val)}, test {len(test)}; test by lang {dict(Counter(r['lang'] for r in test))}")
 
 
 if __name__ == "__main__":
