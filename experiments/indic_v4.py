@@ -187,11 +187,16 @@ def prep_chat():
     for name in ("anudesh", "wikihow", "dolly", "oasst1"):
         n = 0
         for r in pq.read_table(ROOT / "data" / "indic_instruct" / f"{name}-hi.parquet").to_pylist():
-            msgs = r.get("messages") or []
-            if len(msgs) < 2 or msgs[0].get("role") != "user" or msgs[1].get("role") != "assistant":
-                dropped += 1
-                continue
-            q, a = (msgs[0].get("content") or "").strip(), (msgs[1].get("content") or "").strip()
+            if "instruction" in r:                       # dolly: instruction / context / response columns
+                ctx = (r.get("context") or "").strip()
+                q = (r.get("instruction") or "").strip() + (f"\n\n{ctx}" if ctx else "")
+                a = (r.get("response") or "").strip()
+            else:                                        # the others: a messages list
+                msgs = r.get("messages") or []
+                if len(msgs) < 2 or msgs[0].get("role") != "user" or msgs[1].get("role") != "assistant":
+                    dropped += 1
+                    continue
+                q, a = (msgs[0].get("content") or "").strip(), (msgs[1].get("content") or "").strip()
             k = _norm_q(q)
             if not q or not a or k in held or k in seen or len(q) > 1500 or len(a) > 3000:
                 dropped += 1
