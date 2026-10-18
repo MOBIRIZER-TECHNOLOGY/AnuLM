@@ -243,9 +243,9 @@ def build(models: Models) -> gr.Blocks:
 
             go_listen.click(do_listen, [audio, lang, speak_back],
                             [heard, said, voice_out, listen_meta])
-            gr.Markdown("*Speech recognition: WER 8.2% English (LibriSpeech), 48.4% Hindi "
-                        "(FLEURS, unseen speakers). It struggles most with names on very "
-                        "short clips.*")
+            gr.Markdown("*Speech recognition: WER 7.0% English (100 held-out LibriSpeech clips), "
+                        "37.4% Hindi (100 FLEURS clips, unseen speakers), about 0.11 x real time; "
+                        "the Benchmark tab has every transcript. It struggles most with names.*")
 
         with gr.Tab("Look"):
             with gr.Row():
@@ -375,6 +375,9 @@ def build(models: Models) -> gr.Blocks:
                         {**out, "model": which, "task": tk})
 
             go_dec.click(do_decide, [msg, thr, backbone, task], [choice, action, typed])
+
+        import app_benchmark
+        app_benchmark.wire_initial(demo, app_benchmark.add_tab())
     return demo
 
 
