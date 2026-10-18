@@ -23,22 +23,22 @@ responses the server actually returned. The full guide is
 `benchmark.py` sends every request one at a time to the running API and
 saves each one (request, response, HTTP status, client-side milliseconds,
 score) to `benchmark/<test>.jsonl`, with totals in `benchmark/summary.json`.
-Recorded 2026-10-18 on an RTX 5070 Ti; latency excludes each model's first
+Recorded 2026-10-18 18:56 on an RTX 5070 Ti, serving chat v3 with the recipe-F adapters; latency excludes each model's first
 (cold) request, which is reported separately.
 
 | test | data | n | score | p50 | p95 |
 | --- | --- | ---: | ---: | ---: | ---: |
-| banking intents (AnuLM + LoRA) | BANKING77 test | 300 | 86.0% | 58 ms | 82 ms |
-| banking intents (ModernBERT reference) | same 300 | 300 | 91.7% | 19 ms | 28 ms |
-| Hindi intents | MASSIVE hi-IN | 300 | 84.3% | 62 ms | 81 ms |
-| zero-shot intents, all 77 labels | BANKING77 test | 50 | 38.0% | 52 ms | 67 ms |
-| Wikipedia lookup | `data/rag_demo_questions.jsonl` | 20 | 30.0% found | 57 ms | 1.2 s |
-| speech to text, English | LibriSpeech held-out | 100 | WER 7.0% | 1.5 s | 1.8 s |
-| speech to text, Hindi | FLEURS dev | 100 | WER 37.4% | 0.95 s | 1.9 s |
-| image captions | Flickr30k val | 50 | (read them) | 507 ms | 807 ms |
-| image questions, free-form exact match | A-OKVQA val | 200 | 13.5% | 122 ms | 187 ms |
-| chat, English + Hindi | `chat_heldout.jsonl` | 40 | 30 tokens/s | 1.7 s | 3.9 s |
-| text to speech | 20 sentences | 20 | 0.05 × real time | 47 ms | 58 ms |
+| banking intents (AnuLM chat v3 + LoRA F) | BANKING77 test | 300 | 87.0% | 60 ms | 92 ms |
+| banking intents (ModernBERT reference) | same 300 | 300 | 91.7% | 17 ms | 27 ms |
+| Hindi intents | MASSIVE hi-IN | 300 | 86.7% | 61 ms | 83 ms |
+| zero-shot intents, all 77 labels | BANKING77 test | 50 | 38.0% | 57 ms | 84 ms |
+| Wikipedia lookup | `data/rag_demo_questions.jsonl` | 20 | 40.0% found | 59 ms | 2.2 s |
+| speech to text, English | LibriSpeech held-out | 100 | WER 7.0% | 1.4 s | 1.8 s |
+| speech to text, Hindi | FLEURS dev | 100 | WER 37.4% | 0.96 s | 1.7 s |
+| image captions | Flickr30k val | 50 | (read them) | 523 ms | 823 ms |
+| image questions, free-form exact match | A-OKVQA val | 200 | 13.5% | 122 ms | 184 ms |
+| chat, English + Hindi | `chat_heldout.jsonl` | 40 | 30 tokens/s | 1.5 s | 3.9 s |
+| text to speech | 20 sentences | 20 | 0.05 × real time | 46 ms | 55 ms |
 
 Speech recognition runs at about 0.11 × real time (a 12 s clip in 1.3 s).
 WER uses `eval_speech.normalise`, which keeps Devanagari vowel signs; image
