@@ -118,6 +118,12 @@ def massive_hi_rows(data, seed=0):
     return rows
 
 
+def india_rows(data):
+    """SYNTHETIC Indian-banking test messages (experiments/make_india_banking.py), all 214."""
+    p = data / "decide_general" / "india_banking" / "test.jsonl"
+    return [(r["text"], r["label_text"]) for r in map(json.loads, open(p, encoding="utf-8"))]
+
+
 def suite_answer(c, data, n):
     out = []
     for l in list(open(data / "rag_demo_questions.jsonl", encoding="utf-8"))[:n]:
@@ -257,6 +263,8 @@ SUITES = {
                                   lambda c, d, n: suite_decide(c, d, n, "modernbert-decide-banking", banking_rows(d))),
     "decide_hindi": (300, "Decide: MASSIVE Hindi intents (AnuLM + LoRA)",
                      lambda c, d, n: suite_decide(c, d, n, "anulm-decide-hindi", massive_hi_rows(d))),
+    "decide_india": (214, "Decide: Indian banking, English/Hindi/Hinglish (synthetic test set)",
+                     lambda c, d, n: suite_decide(c, d, n, "anulm-decide-india-banking", india_rows(d))),
     "decide_general": (50, "Decide: zero-shot over all 77 BANKING77 labels",
                        lambda c, d, n: suite_decide(c, d, n, "anulm-decide-general", *general_rows(d))),
     "answer": (20, "Lookup: Wikipedia answers with sources", suite_answer),

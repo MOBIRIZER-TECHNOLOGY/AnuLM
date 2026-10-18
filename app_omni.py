@@ -54,9 +54,11 @@ _HERE = Path(__file__).parent
 # BANKING77 89.03% at 56 ms, MASSIVE-hi 84.46% at 54 ms, vs 86.4% / 82.6% for v2.
 if (_HERE / "ckpt_chat_v3.pt").exists():
     BRAIN, DECIDE_ADAPTER, DECIDE_ADAPTER_HI = "ckpt_chat_v3.pt", "ckpt_decide_lora_F.pt", "ckpt_decide_lora_hi_F.pt"
+    DECIDE_ADAPTER_IN = "ckpt_decide_lora_india_F.pt"
 else:
     BRAIN = "ckpt_chat_v2.pt" if (_HERE / "ckpt_chat_v2.pt").exists() else "release/AnuLM-Hindi-QA-400M"
     DECIDE_ADAPTER, DECIDE_ADAPTER_HI = "ckpt_decide_chat_lora.pt", "ckpt_decide_lora_hi.pt"
+    DECIDE_ADAPTER_IN = "ckpt_decide_lora_india_F.pt"     # trained on v3 only: absent here, the task hides
 READER = "ckpt_rc_pointer_v2.pt" if (_HERE / "ckpt_rc_pointer_v2.pt").exists() else "ckpt_rc_pointer.pt"
 # Decide backbones (docs/RESULTS.md section 36). ModernBERT is an open
 # pretrained encoder, not this project's model, and is labelled so in the UI.
@@ -67,12 +69,15 @@ DECIDE_MB = "ModernBERT-base (borrowed open model, not from scratch)"
 # Two routing tasks, each an adapter on the same chat model (section 38).
 TASK_BANK = "Banking support (English, 77 intents)"
 TASK_HI = "Hindi assistant commands (MASSIVE, 60 intents)"
+# SYNTHETIC: experiments/make_india_banking.py, written for the demo (UPI, IFSC, KYC, ...).
+TASK_IN = "Indian banking: UPI, KYC, Aadhaar, EMI (English, Hindi, Hinglish; 20 intents, synthetic data)"
 DECIDE_TASKS = {
     TASK_BANK: {DECIDE_OWN: DECIDE_ADAPTER if (_HERE / DECIDE_ADAPTER).exists() else "ckpt_decide.pt",
                 DECIDE_MB: "ckpt_decide_modernbert.pt"},
     TASK_HI: {DECIDE_OWN: DECIDE_ADAPTER_HI, DECIDE_MB: "ckpt_decide_mb_hi.pt"},
+    TASK_IN: {DECIDE_OWN: DECIDE_ADAPTER_IN, DECIDE_MB: "ckpt_decide_mb_india.pt"},
 }
-DECIDE_ADAPTERS = {DECIDE_ADAPTER, DECIDE_ADAPTER_HI}     # --mode lora on BRAIN
+DECIDE_ADAPTERS = {DECIDE_ADAPTER, DECIDE_ADAPTER_HI, DECIDE_ADAPTER_IN}     # --mode lora on BRAIN
 BRAIN_HUB = "toonist/AnuLM-Hindi-QA-400M"
 
 
@@ -356,7 +361,14 @@ def build(models: Models) -> gr.Blocks:
                                  ["दस बजे मुझे उठाओ", TASK_HI],
                                  ["मेरी अगली बैठक कब है", TASK_HI],
                                  ["तीन गुना सात क्या है", TASK_HI],
-                                 ["नए ईमेल की जाँच करें", TASK_HI]], [msg, task])
+                                 ["नए ईमेल की जाँच करें", TASK_HI]]
+                                + ([  # Indian banking, phrased unlike anything in its training set
+                                    ["PhonePe se 2000 bheje, paisa kat gaya par dukaan wale ko nahi mila", TASK_IN],
+                                    ["मेरा यूपीआई पिन ब्लॉक हो गया है, नया कैसे बनाऊं", TASK_IN],
+                                    ["My KYC is pending and the account got frozen", TASK_IN],
+                                    ["gas subsidy nahi aa rahi, aadhaar link check karna hai", TASK_IN],
+                                    ["एटीएम से कैश नहीं निकला पर 5000 कट गए", TASK_IN]]
+                                   if (HERE / DECIDE_ADAPTER_IN).exists() else []), [msg, task])
                 with gr.Column():
                     choice = gr.Label(label="intent (top 3)", num_top_classes=3)
                     action = gr.Markdown()

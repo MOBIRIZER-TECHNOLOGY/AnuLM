@@ -107,6 +107,14 @@ MODELS: dict[str, dict] = {
         "description": "MASSIVE assistant intents (60) in Hindi: the chat model plus a rank-64 LoRA "
                        "adapter. 84.5% accurate (ModernBERT: 67.5%).",
     },
+    "anulm-decide-india-banking": {
+        "endpoints": ["/v1/decide"],
+        "from_scratch": True, "task": A.TASK_IN, "backbone": A.DECIDE_OWN,
+        "description": "Indian retail banking, 20 intents (UPI failures, debited-not-credited, NEFT/IMPS, IFSC, "
+                       "KYC, Aadhaar/PAN linking, card block, ATM, EMI, ...) in English, Hindi and Hinglish: "
+                       "the chat model plus a rank-64 LoRA adapter. Trained on SYNTHETIC messages written "
+                       "for the demo; replace with a bank's own labelled queries before real use.",
+    },
     "anulm-decide-general": {
         "endpoints": ["/v1/decide"],
         "from_scratch": True, "ckpt": "ckpt_decide_general.pt",
