@@ -64,11 +64,17 @@ def load_split(name: str, task: str = "banking77") -> list[tuple[str, str]]:
         rows = [json.loads(l) for l in open(HERE / "data" / "decide_general" / f"massive_{lang}" / f"{split}.jsonl",
                                             encoding="utf-8")]
         return [(r["text"], r["label_text"]) for r in rows]
+    if task == "india-banking":
+        # SYNTHETIC: written for the demo by experiments/make_india_banking.py (UPI, IFSC,
+        # KYC, ... in English, Hindi and Hinglish); its test phrasings never appear in train.
+        rows = [json.loads(l) for l in open(HERE / "data" / "decide_general" / "india_banking" / f"{name}.jsonl",
+                                            encoding="utf-8")]
+        return [(r["text"], r["label_text"]) for r in rows]
     return [(r["text"], r["category"]) for r in csv.DictReader(open(DATA / f"{name}.csv", encoding="utf-8"))]
 
 
 def labels(task: str = "banking77") -> list[str]:
-    if task.startswith("massive-"):
+    if task.startswith("massive-") or task == "india-banking":
         return sorted({l for _, l in load_split("train", task)})
     return json.load(open(DATA / "categories.json"))
 
@@ -668,7 +674,7 @@ def main():
     t.add_argument("--lora-targets", choices=Decider.LORA_TARGETS, default="dense",
                    help="qv: Q and V only; attn: Q, K, V, output; dense: + layer 0 MLP; all: + experts")
     t.add_argument("--head-lr", type=float, default=1e-3)
-    t.add_argument("--task", choices=("banking77", "massive-hi", "massive-en"), default="banking77")
+    t.add_argument("--task", choices=("banking77", "massive-hi", "massive-en", "india-banking"), default="banking77")
     t.add_argument("--limit", type=int, default=0, help="use only this many training queries (smoke tests)")
     t.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     g = sub.add_parser("train-general", help="many tasks, BANKING77 excluded, for a zero-shot test")
