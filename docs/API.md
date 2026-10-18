@@ -46,8 +46,8 @@ Bind to `0.0.0.0` only with a key set.
 | `anulm-vision` | chat | captions and image questions: AnuLM decoder on a frozen SigLIP ViT-B/16 (Google) | no (image encoder) |
 | `anulm-asr` | audio/transcriptions | English and Hindi speech: AnuLM decoder on a frozen Whisper-small encoder (OpenAI) | no (audio encoder) |
 | `system-tts` | audio/speech | Piper voices (or Windows' own) | no |
-| `anulm-decide-banking` | `/v1/decide` | 77 BANKING77 intents: the chat model + a 6.6 MB LoRA adapter | yes |
-| `anulm-decide-hindi` | `/v1/decide` | 60 MASSIVE intents in Hindi: the chat model + a 6.6 MB adapter | yes |
+| `anulm-decide-banking` | `/v1/decide` | 77 BANKING77 intents: the chat model + a rank-64 LoRA adapter | yes |
+| `anulm-decide-hindi` | `/v1/decide` | 60 MASSIVE intents in Hindi: the chat model + a rank-64 adapter | yes |
 | `anulm-decide-general` | `/v1/decide` | any option list, zero-shot (a separate 398M model) | yes |
 | `modernbert-decide-banking` | `/v1/decide` | reference: ModernBERT-base fine-tuned on BANKING77 | no |
 | `modernbert-decide-hindi` | `/v1/decide` | reference: ModernBERT-base fine-tuned on MASSIVE Hindi | no |
@@ -56,8 +56,8 @@ Measured quality (docs/RESULTS.md sections 33-38):
 
 | model | result |
 | --- | --- |
-| `anulm-decide-banking` | 86.4% on 3,080 test queries; at confidence >= 0.7 it answers 80% at 94.7% |
-| `anulm-decide-hindi` | 82.6% on 2,033 Hindi test messages (ModernBERT: 67.5%) |
+| `anulm-decide-banking` | 89.0% on 3,080 test queries; at confidence >= 0.7 it answers 83.5% at 96.2% |
+| `anulm-decide-hindi` | 84.5% on 2,033 Hindi test messages (ModernBERT: 67.5%) |
 | `anulm-decide-general` | 43.2% on BANKING77 never seen in training; calibrated (ECE 3.7%) |
 | `modernbert-decide-banking` | 90.8%, about 4x faster than AnuLM |
 | `anulm-answer` | SQuAD F1 57.2 |

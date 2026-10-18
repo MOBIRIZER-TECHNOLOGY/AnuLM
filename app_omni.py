@@ -47,24 +47,32 @@ CKPTS = {
 }
 # Newest measured models first, older ones as fallbacks (docs/RESULTS.md section 35).
 _HERE = Path(__file__).parent
-BRAIN = "ckpt_chat_v2.pt" if (_HERE / "ckpt_chat_v2.pt").exists() else "release/AnuLM-Hindi-QA-400M"
+# The chat model and its Decide adapters go together: an adapter attaches only
+# to the exact chat model it was trained on (Decide.on refuses any other).
+# v3 is the chat model fine-tuned on base v2 (held-out answer loss 3.1445 vs
+# 3.2000), with recipe-F adapters (dense, rank 64; logs/post_v2, logs/indic_v4):
+# BANKING77 89.03% at 56 ms, MASSIVE-hi 84.46% at 54 ms, vs 86.4% / 82.6% for v2.
+if (_HERE / "ckpt_chat_v3.pt").exists():
+    BRAIN, DECIDE_ADAPTER, DECIDE_ADAPTER_HI = "ckpt_chat_v3.pt", "ckpt_decide_lora_F.pt", "ckpt_decide_lora_hi_F.pt"
+else:
+    BRAIN = "ckpt_chat_v2.pt" if (_HERE / "ckpt_chat_v2.pt").exists() else "release/AnuLM-Hindi-QA-400M"
+    DECIDE_ADAPTER, DECIDE_ADAPTER_HI = "ckpt_decide_chat_lora.pt", "ckpt_decide_lora_hi.pt"
 READER = "ckpt_rc_pointer_v2.pt" if (_HERE / "ckpt_rc_pointer_v2.pt").exists() else "ckpt_rc_pointer.pt"
 # Decide backbones (docs/RESULTS.md section 36). ModernBERT is an open
 # pretrained encoder, not this project's model, and is labelled so in the UI.
-# AnuLM decides with the chat model itself plus a 6.6 MB LoRA adapter
-# (section 37): one copy of the weights for both tabs.
+# AnuLM decides with the chat model itself plus a LoRA adapter (section 37):
+# one copy of the weights for both tabs.
 DECIDE_OWN = "AnuLM (our own, from scratch; the chat model + adapter)"
 DECIDE_MB = "ModernBERT-base (borrowed open model, not from scratch)"
-DECIDE_ADAPTER = "ckpt_decide_chat_lora.pt"
 # Two routing tasks, each an adapter on the same chat model (section 38).
 TASK_BANK = "Banking support (English, 77 intents)"
 TASK_HI = "Hindi assistant commands (MASSIVE, 60 intents)"
 DECIDE_TASKS = {
     TASK_BANK: {DECIDE_OWN: DECIDE_ADAPTER if (_HERE / DECIDE_ADAPTER).exists() else "ckpt_decide.pt",
                 DECIDE_MB: "ckpt_decide_modernbert.pt"},
-    TASK_HI: {DECIDE_OWN: "ckpt_decide_lora_hi.pt", DECIDE_MB: "ckpt_decide_mb_hi.pt"},
+    TASK_HI: {DECIDE_OWN: DECIDE_ADAPTER_HI, DECIDE_MB: "ckpt_decide_mb_hi.pt"},
 }
-DECIDE_ADAPTERS = {DECIDE_ADAPTER, "ckpt_decide_lora_hi.pt"}     # --mode lora on ckpt_chat_v2.pt
+DECIDE_ADAPTERS = {DECIDE_ADAPTER, DECIDE_ADAPTER_HI}     # --mode lora on BRAIN
 BRAIN_HUB = "toonist/AnuLM-Hindi-QA-400M"
 
 
@@ -320,13 +328,13 @@ def build(models: Models) -> gr.Blocks:
                         "message and every option go through the model **once**; it returns a "
                         "calibrated probability for each, and hands the case to a person when it "
                         "is not confident enough. **AnuLM** is the same model as the Chat tab, "
-                        "with a 6.6 MB adapter per task. **ModernBERT-base** is an open English "
+                        "with a small LoRA adapter per task. **ModernBERT-base** is an open English "
                         "model used as a reference.\n\n"
                         "| unseen test messages | AnuLM | ModernBERT |\n|---|---|---|\n"
-                        "| Banking, English (3,080) | 86.4% | **90.8%** |\n"
-                        "| Assistant commands, **Hindi** (2,033) | **82.6%** | 67.5% |\n\n"
-                        "ModernBERT is about 4x faster; in Hindi it reads byte fragments, "
-                        "3.3x the tokens.")
+                        "| Banking, English (3,080) | 89.0% | **90.8%** |\n"
+                        "| Assistant commands, **Hindi** (2,033) | **84.5%** | 67.5% |\n\n"
+                        "AnuLM answers in about 55 ms, ModernBERT in about 20; in Hindi ModernBERT "
+                        "reads byte fragments, 3.3x the tokens.")
             with gr.Row():
                 with gr.Column():
                     task = gr.Radio([k for k, v in DECIDE_TASKS.items() if (HERE / v[DECIDE_OWN]).exists()],

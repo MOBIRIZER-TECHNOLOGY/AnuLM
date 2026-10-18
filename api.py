@@ -98,14 +98,14 @@ MODELS: dict[str, dict] = {
     "anulm-decide-banking": {
         "endpoints": ["/v1/decide"],
         "from_scratch": True, "task": A.TASK_BANK, "backbone": A.DECIDE_OWN,
-        "description": "BANKING77 intents (77, English): the chat model plus a 6.6 MB LoRA adapter. "
-                       "86.4% accurate; at confidence >= 0.7 it answers 80% of queries at 94.7%.",
+        "description": "BANKING77 intents (77, English): the chat model plus a rank-64 LoRA adapter. "
+                       "89.0% accurate; at confidence >= 0.7 it answers 83.5% of queries at 96.2%.",
     },
     "anulm-decide-hindi": {
         "endpoints": ["/v1/decide"],
         "from_scratch": True, "task": A.TASK_HI, "backbone": A.DECIDE_OWN,
-        "description": "MASSIVE assistant intents (60) in Hindi: the chat model plus a 6.6 MB LoRA "
-                       "adapter. 82.6% accurate (ModernBERT: 67.5%).",
+        "description": "MASSIVE assistant intents (60) in Hindi: the chat model plus a rank-64 LoRA "
+                       "adapter. 84.5% accurate (ModernBERT: 67.5%).",
     },
     "anulm-decide-general": {
         "endpoints": ["/v1/decide"],
