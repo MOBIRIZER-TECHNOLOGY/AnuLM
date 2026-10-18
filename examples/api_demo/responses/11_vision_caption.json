@@ -23,16 +23,16 @@
   "status": 200,
   "content_type": "application/json",
   "body": {
-    "id": "chatcmpl-d36056e500a549dca35f4693",
+    "id": "chatcmpl-fc470f3486bb41b7b3ff3a25",
     "object": "chat.completion",
-    "created": 1792262859,
+    "created": 1792304237,
     "model": "anulm-vision",
     "choices": [
       {
         "index": 0,
         "message": {
           "role": "assistant",
-          "content": "A woman in a orange jumpsuit is smiling and smiling."
+          "content": "A woman in a red uniform is standing next to a black and white flag."
         },
         "finish_reason": "stop"
       }
@@ -43,5 +43,5 @@
       "total_tokens": 0
     }
   },
-  "seconds": 6.56
+  "seconds": 5.393
 }

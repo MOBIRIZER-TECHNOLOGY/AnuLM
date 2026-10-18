@@ -2,30 +2,26 @@
 anulm-chat, anulm-answer, anulm-vision, anulm-asr, system-tts, anulm-decide-banking, anulm-decide-hindi, anulm-decide-general, modernbert-decide-banking, modernbert-decide-hindi
 
 ### chat.completions.create(anulm-chat)
-Here are three tips.
-1. Set a goal and prioritize your goals
-2. Make your budget manageable
-3. Don't spend too much money on your home and the things you use
-4. Use clear, specific language to describe your actions
-5. Practice while you are traveling
-6. Consider yourself ready to spend your money
+You can save money by using a small saving account or a credit card. Here are some tips:
+1) Make the purchase or purchase process short and easy to follow. This is an important step in making your own money.
+2) Understand your requirements, such as your budget, your financial situation and
 usage: CompletionUsage(completion_tokens=60, prompt_tokens=16, total_tokens=76, completion_tokens_details=None, prompt_tokens_details=None)
 
 ### chat.completions.create(stream=True)
-40 chunks:  भारत का अर्थ है भारत। यह अर्थ नहीं की आप भारत से दूर हो गये आपको भारत से प्रेम है। यहाँ तक भारत में आप भारत को लेकर कुछ भी कहते है लेकिन भारत तो अपने आप में एक
+10 chunks:  भारत भारत का देश है। यह भारत की राजधानी है।
 
 ### chat.completions.create(anulm-answer)
 Shah Jahan  (sources: ['Taj Mahal', 'Taj Mahal', 'Taj Mahal'])
 
 ### chat.completions.create(anulm-vision, image only)
-A woman in a orange jumpsuit is smiling and smiling.
+A woman in a red uniform is standing next to a black and white flag.
 
 ### completions.create()
 ' red, yellow, and blue'
 
 ### audio.speech.create() -> audio.transcriptions.create()
 said:  Please send me a new debit card.
-heard: he sent him on and on on on for for for
+heard: please send me a new devot heart
 
 ### an unknown model raises
 NotFoundError: Error code: 404 - {'error': {'message': "Model 'gpt-4o' is not served by this endpoint; use one of: anulm-chat, anulm-answer, anulm-vision", 'type': 'invalid_request_error', 'param': 'model', 'code': 'model_not_found'}}

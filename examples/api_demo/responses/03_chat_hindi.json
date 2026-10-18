@@ -20,25 +20,25 @@
   "status": 200,
   "content_type": "application/json",
   "body": {
-    "id": "chatcmpl-f0c5eaf6179643728a9760f0",
+    "id": "chatcmpl-e2169cad9fab42ceaf0c0232",
     "object": "chat.completion",
-    "created": 1792262827,
+    "created": 1792304210,
     "model": "anulm-chat",
     "choices": [
       {
         "index": 0,
         "message": {
           "role": "assistant",
-          "content": "शाम को जल्दी उठना एक प्रकार का खेल है। इसे करना या जाना बहुत ही सामान्य बात है लेकिन कुछ लोग इसका मजाक उड़ा देते हैं क्योंकि वह अपने साथ हुए दुविधाओं और थके हुए काम की वजह से किसी कारण से नहीं सोते हैं।"
+          "content": "सुबह जल्दी उठना एक प्रकार की सैर है। यह एक समय में कम से कम 5 बार आराम करने का माध्यम होती है, और इसका महत्व अधिक होता है क्योंकि, ये सभी फ़ीचर पिगमेंट्री, मिक्स्ड शेड्स, और वाइड एंगल्स के लिए अच्छा होते हैं।"
         },
         "finish_reason": "stop"
       }
     ],
     "usage": {
       "prompt_tokens": 17,
-      "completion_tokens": 53,
-      "total_tokens": 70
+      "completion_tokens": 60,
+      "total_tokens": 77
     }
   },
-  "seconds": 2.201
+  "seconds": 1.922
 }

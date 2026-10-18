@@ -156,6 +156,8 @@ def transcript(base: str, runs: list, evals: list) -> str:
               f"in {out['seconds']} s", "", "```bash", curl(base, r), "```", ""]
         if "body" in r:
             L += ["Request:", "", "```json", json.dumps(shorten(r["body"]), ensure_ascii=False, indent=2), "```", ""]
+        if "reference" in r:
+            L += [f"Reference transcript: *{r['reference']}*", ""]
         L += ["Response:", "", "```json", json.dumps(shorten(body), ensure_ascii=False, indent=2), "```", ""]
     if evals:
         L += ["## Sample data scored through /v1/decide", ""]

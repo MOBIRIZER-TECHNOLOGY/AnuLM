@@ -16,9 +16,9 @@
   "status": 200,
   "content_type": "application/json",
   "body": {
-    "id": "chatcmpl-a453701a9d8946518df94eee",
+    "id": "chatcmpl-c8f67b3538d145109f0d19b5",
     "object": "chat.completion",
-    "created": 1792262847,
+    "created": 1792304227,
     "model": "anulm-answer",
     "choices": [
       {
@@ -41,5 +41,5 @@
       "नई दिल्ली"
     ]
   },
-  "seconds": 0.321
+  "seconds": 0.054
 }

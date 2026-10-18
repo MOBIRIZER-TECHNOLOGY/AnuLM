@@ -25,37 +25,37 @@
         "input": "I still haven't received my new card",
         "choice": "card_arrival",
         "probabilities": {
-          "card_arrival": 0.9221,
-          "get_physical_card": 0.014,
-          "getting_virtual_card": 0.0105
+          "card_arrival": 0.9212,
+          "get_physical_card": 0.0131,
+          "getting_virtual_card": 0.0107
         },
-        "confidence": 0.9221,
+        "confidence": 0.9212,
         "action": "auto-route"
       },
       {
         "input": "My card was stolen this morning",
         "choice": "lost_or_stolen_card",
         "probabilities": {
-          "lost_or_stolen_card": 0.8627,
-          "lost_or_stolen_phone": 0.1162,
-          "compromised_card": 0.0144
+          "lost_or_stolen_card": 0.8749,
+          "lost_or_stolen_phone": 0.1052,
+          "compromised_card": 0.0136
         },
-        "confidence": 0.8627,
+        "confidence": 0.8749,
         "action": "auto-route"
       },
       {
         "input": "hi, quick question",
         "choice": "extra_charge_on_statement",
         "probabilities": {
-          "extra_charge_on_statement": 0.1758,
-          "get_physical_card": 0.0963,
-          "unable_to_verify_identity": 0.0857
+          "extra_charge_on_statement": 0.1818,
+          "get_physical_card": 0.0969,
+          "unable_to_verify_identity": 0.0851
         },
-        "confidence": 0.1758,
+        "confidence": 0.1818,
         "action": "send to human"
       }
     ],
-    "seconds": 0.956
+    "seconds": 0.22
   },
-  "seconds": 1.467
+  "seconds": 0.939
 }

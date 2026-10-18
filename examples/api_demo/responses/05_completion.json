@@ -16,9 +16,9 @@
   "status": 200,
   "content_type": "application/json",
   "body": {
-    "id": "cmpl-7dcdcc784fec4740a290c104",
+    "id": "cmpl-a8c569d26b2d49a888b1b8e6",
     "object": "text_completion",
-    "created": 1792262831,
+    "created": 1792304214,
     "model": "anulm-chat",
     "choices": [
       {
@@ -34,5 +34,5 @@
       "total_tokens": 12
     }
   },
-  "seconds": 0.302
+  "seconds": 0.253
 }

@@ -31,34 +31,34 @@
         "input": "The delivery came two weeks late and the box was crushed",
         "choice": "complaint about a delivery",
         "probabilities": {
-          "complaint about a delivery": 0.9507,
-          "praise for the service": 0.0312
+          "complaint about a delivery": 0.9504,
+          "praise for the service": 0.0314
         },
-        "confidence": 0.9507,
+        "confidence": 0.9504,
         "action": "auto-route"
       },
       {
         "input": "Thank you, the staff were wonderful",
         "choice": "praise for the service",
         "probabilities": {
-          "praise for the service": 0.9786,
-          "question about a product": 0.0108
+          "praise for the service": 0.9788,
+          "complaint about a delivery": 0.0104
         },
-        "confidence": 0.9786,
+        "confidence": 0.9788,
         "action": "auto-route"
       },
       {
         "input": "Do you ship to Canada?",
         "choice": "praise for the service",
         "probabilities": {
-          "praise for the service": 0.6605,
-          "request to place an order": 0.1805
+          "praise for the service": 0.6664,
+          "request to place an order": 0.1838
         },
-        "confidence": 0.6605,
+        "confidence": 0.6664,
         "action": "send to human"
       }
     ],
-    "seconds": 0.384
+    "seconds": 0.186
   },
-  "seconds": 3.559
+  "seconds": 3.553
 }

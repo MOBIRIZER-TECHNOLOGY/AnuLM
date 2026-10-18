@@ -1,0 +1,11 @@
+{
+  "title": "Speech to text, English: a real held-out LibriSpeech clip",
+  "method": "POST",
+  "path": "/v1/audio/transcriptions",
+  "reference": "i have travelled a good deal and seen much grander things",
+  "multipart": {
+    "file": "@data/speech_en_librispeech.wav",
+    "model": "anulm-asr",
+    "language": "en"
+  }
+}

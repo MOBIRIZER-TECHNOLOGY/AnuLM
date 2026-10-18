@@ -27,16 +27,16 @@
   "status": 200,
   "content_type": "application/json",
   "body": {
-    "id": "chatcmpl-6e0acda4acfa4fefb541b586",
+    "id": "chatcmpl-dd44848fbcb940c390de9826",
     "object": "chat.completion",
-    "created": 1792262864,
+    "created": 1792304242,
     "model": "anulm-vision",
     "choices": [
       {
         "index": 0,
         "message": {
           "role": "assistant",
-          "content": "red"
+          "content": "blue"
         },
         "finish_reason": "stop"
       }
@@ -47,5 +47,5 @@
       "total_tokens": 0
     }
   },
-  "seconds": 5.045
+  "seconds": 4.617
 }

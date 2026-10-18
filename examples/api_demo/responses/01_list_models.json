@@ -12,7 +12,7 @@
       {
         "id": "anulm-chat",
         "object": "model",
-        "created": 1792262819,
+        "created": 1792304203,
         "owned_by": "anulm",
         "from_scratch": true,
         "endpoints": [
@@ -24,7 +24,7 @@
       {
         "id": "anulm-answer",
         "object": "model",
-        "created": 1792262819,
+        "created": 1792304203,
         "owned_by": "anulm",
         "from_scratch": false,
         "endpoints": [
@@ -36,7 +36,7 @@
       {
         "id": "anulm-vision",
         "object": "model",
-        "created": 1792262819,
+        "created": 1792304203,
         "owned_by": "anulm",
         "from_scratch": false,
         "endpoints": [
@@ -47,7 +47,7 @@
       {
         "id": "anulm-asr",
         "object": "model",
-        "created": 1792262819,
+        "created": 1792304203,
         "owned_by": "anulm",
         "from_scratch": false,
         "endpoints": [
@@ -58,7 +58,7 @@
       {
         "id": "system-tts",
         "object": "model",
-        "created": 1792262819,
+        "created": 1792304203,
         "owned_by": "anulm",
         "from_scratch": false,
         "endpoints": [
@@ -69,7 +69,7 @@
       {
         "id": "anulm-decide-banking",
         "object": "model",
-        "created": 1792262819,
+        "created": 1792304203,
         "owned_by": "anulm",
         "from_scratch": true,
         "endpoints": [
@@ -80,7 +80,7 @@
       {
         "id": "anulm-decide-hindi",
         "object": "model",
-        "created": 1792262819,
+        "created": 1792304203,
         "owned_by": "anulm",
         "from_scratch": true,
         "endpoints": [
@@ -91,7 +91,7 @@
       {
         "id": "anulm-decide-general",
         "object": "model",
-        "created": 1792262819,
+        "created": 1792304203,
         "owned_by": "anulm",
         "from_scratch": true,
         "endpoints": [
@@ -102,7 +102,7 @@
       {
         "id": "modernbert-decide-banking",
         "object": "model",
-        "created": 1792262819,
+        "created": 1792304203,
         "owned_by": "anulm",
         "from_scratch": false,
         "endpoints": [
@@ -113,7 +113,7 @@
       {
         "id": "modernbert-decide-hindi",
         "object": "model",
-        "created": 1792262819,
+        "created": 1792304203,
         "owned_by": "anulm",
         "from_scratch": false,
         "endpoints": [
@@ -123,5 +123,5 @@
       }
     ]
   },
-  "seconds": 0.001
+  "seconds": 0.002
 }

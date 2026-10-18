@@ -1,0 +1,19 @@
+{
+  "request": {
+    "title": "Speech to text, Hindi: a real FLEURS dev clip",
+    "method": "POST",
+    "path": "/v1/audio/transcriptions",
+    "reference": "अमेरिकी राष्ट्रपति जॉर्ज डब्ल्यू बुश ने घोषणा का स्वागत किया",
+    "multipart": {
+      "file": "@data/speech_hi_fleurs.wav",
+      "model": "anulm-asr",
+      "language": "hi"
+    }
+  },
+  "status": 200,
+  "content_type": "application/json",
+  "body": {
+    "text": "अमेरिकी राष्ट्रपति और की राष्ट्रपति डुए बुश ने कोसना का स्वागत किया"
+  },
+  "seconds": 5.62
+}

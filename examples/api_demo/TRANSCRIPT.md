@@ -1,12 +1,12 @@
 # AnuLM API: real requests and responses
 
-Recorded 2026-10-18 00:18 against `http://127.0.0.1:8000` by `run_demo.py`.
+Recorded 2026-10-18 11:47 against `http://127.0.0.1:8000` by `run_demo.py`.
 Every block below is what the server actually returned; ids, timings and sampled
 text change from run to run. Long base64 strings are shortened.
 
 ## 01. List every model and which parts are borrowed
 
-`GET /v1/models` → **200** in 0.001 s
+`GET /v1/models` → **200** in 0.002 s
 
 ```bash
 curl http://127.0.0.1:8000/v1/models
@@ -96,7 +96,7 @@ Response:
 
 ## 02. Chat (English)
 
-`POST /v1/chat/completions` → **200** in 5.704 s
+`POST /v1/chat/completions` → **200** in 5.756 s
 
 ```bash
 curl http://127.0.0.1:8000/v1/chat/completions -H "Content-Type: application/json" \
@@ -125,16 +125,16 @@ Response:
 
 ```json
 {
-  "id": "chatcmpl-120a7a60325e4c0d834815b1",
+  "id": "chatcmpl-ceb223f07c7c47b29f3b9262",
   "object": "chat.completion",
-  "created": 1792262824,
+  "created": 1792304208,
   "model": "anulm-chat",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Here are three tips.\n1. Set a goal and prioritize your goals\n2. Make your budget manageable\n3. Don't spend too much money on your home and the things you use\n4. Use clear, specific language to describe your actions\n5. Practice while you are traveling\n6. Consider yourself ready to spend your money"
+        "content": "You can save money by using a small saving account or a credit card. Here are some tips:\n1) Make the purchase or purchase process short and easy to follow. This is an important step in making your own money.\n2) Understand your requirements, such as your budget, your financial situation and"
       },
       "finish_reason": "length"
     }
@@ -149,7 +149,7 @@ Response:
 
 ## 03. Chat (Hindi)
 
-`POST /v1/chat/completions` → **200** in 2.201 s
+`POST /v1/chat/completions` → **200** in 1.922 s
 
 ```bash
 curl http://127.0.0.1:8000/v1/chat/completions -H "Content-Type: application/json" \
@@ -178,31 +178,31 @@ Response:
 
 ```json
 {
-  "id": "chatcmpl-f0c5eaf6179643728a9760f0",
+  "id": "chatcmpl-e2169cad9fab42ceaf0c0232",
   "object": "chat.completion",
-  "created": 1792262827,
+  "created": 1792304210,
   "model": "anulm-chat",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "शाम को जल्दी उठना एक प्रकार का खेल है। इसे करना या जाना बहुत ही सामान्य बात है लेकिन कुछ लोग इसका मजाक उड़ा देते हैं क्योंकि वह अपने साथ हुए दुविधाओं और थके हुए काम की वजह से किसी कारण से नहीं सोते हैं।"
+        "content": "सुबह जल्दी उठना एक प्रकार की सैर है। यह एक समय में कम से कम 5 बार आराम करने का माध्यम होती है, और इसका महत्व अधिक होता है क्योंकि, ये सभी फ़ीचर पिगमेंट्री, मिक्स्ड शेड्स, और वाइड एंगल्स के लिए अच्छा होते हैं।"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 17,
-    "completion_tokens": 53,
-    "total_tokens": 70
+    "completion_tokens": 60,
+    "total_tokens": 77
   }
 }
 ```
 
 ## 04. Chat, streamed (server-sent events)
 
-`POST /v1/chat/completions` → **200** in 1.877 s
+`POST /v1/chat/completions` → **200** in 2.06 s
 
 ```bash
 curl http://127.0.0.1:8000/v1/chat/completions -H "Content-Type: application/json" \
@@ -235,12 +235,12 @@ Response:
 
 ```json
 {
-  "assembled_text": " My question is how many days have passed since I was born, and since my birth so far, I'm in a state of monsoon drought. The day of being born is usually the last day after which the weather is warm enough",
+  "assembled_text": " You have in mind that there are no other countries or ancient civilizations. There are only two worlds on Earth which has a geographical location. It is called Nile and it is an artificial island. The name Monterey comes from",
   "events": [
     {
-      "id": "chatcmpl-20eaffbd9043496ca40d131d",
+      "id": "chatcmpl-eeec9f7cdcdf459d9726cb2f",
       "object": "chat.completion.chunk",
-      "created": 1792262829,
+      "created": 1792304212,
       "model": "anulm-chat",
       "choices": [
         {
@@ -254,15 +254,15 @@ Response:
       ]
     },
     {
-      "id": "chatcmpl-20eaffbd9043496ca40d131d",
+      "id": "chatcmpl-eeec9f7cdcdf459d9726cb2f",
       "object": "chat.completion.chunk",
-      "created": 1792262829,
+      "created": 1792304212,
       "model": "anulm-chat",
       "choices": [
         {
           "index": 0,
           "delta": {
-            "content": " My"
+            "content": " You"
           },
           "finish_reason": null
         }
@@ -270,9 +270,9 @@ Response:
     },
     "... 48 more chunks ...",
     {
-      "id": "chatcmpl-20eaffbd9043496ca40d131d",
+      "id": "chatcmpl-eeec9f7cdcdf459d9726cb2f",
       "object": "chat.completion.chunk",
-      "created": 1792262829,
+      "created": 1792304212,
       "model": "anulm-chat",
       "choices": [],
       "usage": {
@@ -288,7 +288,7 @@ Response:
 
 ## 05. Raw text completion, cut at the first full stop
 
-`POST /v1/completions` → **200** in 0.302 s
+`POST /v1/completions` → **200** in 0.253 s
 
 ```bash
 curl http://127.0.0.1:8000/v1/completions -H "Content-Type: application/json" \
@@ -313,9 +313,9 @@ Response:
 
 ```json
 {
-  "id": "cmpl-7dcdcc784fec4740a290c104",
+  "id": "cmpl-a8c569d26b2d49a888b1b8e6",
   "object": "text_completion",
-  "created": 1792262831,
+  "created": 1792304214,
   "model": "anulm-chat",
   "choices": [
     {
@@ -335,7 +335,7 @@ Response:
 
 ## 06. Wikipedia lookup with sources (/v1/answer)
 
-`POST /v1/answer` → **200** in 15.467 s
+`POST /v1/answer` → **200** in 12.618 s
 
 ```bash
 curl http://127.0.0.1:8000/v1/answer -H "Content-Type: application/json" \
@@ -364,13 +364,13 @@ Response:
     "Taj Mahal"
   ],
   "from": "wikipedia",
-  "seconds": 11.98
+  "seconds": 8.991
 }
 ```
 
 ## 07. The same lookup through the OpenAI chat endpoint (anulm-answer)
 
-`POST /v1/chat/completions` → **200** in 0.321 s
+`POST /v1/chat/completions` → **200** in 0.054 s
 
 ```bash
 curl http://127.0.0.1:8000/v1/chat/completions -H "Content-Type: application/json" \
@@ -395,9 +395,9 @@ Response:
 
 ```json
 {
-  "id": "chatcmpl-a453701a9d8946518df94eee",
+  "id": "chatcmpl-c8f67b3538d145109f0d19b5",
   "object": "chat.completion",
-  "created": 1792262847,
+  "created": 1792304227,
   "model": "anulm-answer",
   "choices": [
     {
@@ -424,7 +424,7 @@ Response:
 
 ## 08. Decide: route banking messages (a batch of three)
 
-`POST /v1/decide` → **200** in 1.467 s
+`POST /v1/decide` → **200** in 0.939 s
 
 ```bash
 curl http://127.0.0.1:8000/v1/decide -H "Content-Type: application/json" \
@@ -458,43 +458,43 @@ Response:
       "input": "I still haven't received my new card",
       "choice": "card_arrival",
       "probabilities": {
-        "card_arrival": 0.9221,
-        "get_physical_card": 0.014,
-        "getting_virtual_card": 0.0105
+        "card_arrival": 0.9212,
+        "get_physical_card": 0.0131,
+        "getting_virtual_card": 0.0107
       },
-      "confidence": 0.9221,
+      "confidence": 0.9212,
       "action": "auto-route"
     },
     {
       "input": "My card was stolen this morning",
       "choice": "lost_or_stolen_card",
       "probabilities": {
-        "lost_or_stolen_card": 0.8627,
-        "lost_or_stolen_phone": 0.1162,
-        "compromised_card": 0.0144
+        "lost_or_stolen_card": 0.8749,
+        "lost_or_stolen_phone": 0.1052,
+        "compromised_card": 0.0136
       },
-      "confidence": 0.8627,
+      "confidence": 0.8749,
       "action": "auto-route"
     },
     {
       "input": "hi, quick question",
       "choice": "extra_charge_on_statement",
       "probabilities": {
-        "extra_charge_on_statement": 0.1758,
-        "get_physical_card": 0.0963,
-        "unable_to_verify_identity": 0.0857
+        "extra_charge_on_statement": 0.1818,
+        "get_physical_card": 0.0969,
+        "unable_to_verify_identity": 0.0851
       },
-      "confidence": 0.1758,
+      "confidence": 0.1818,
       "action": "send to human"
     }
   ],
-  "seconds": 0.956
+  "seconds": 0.22
 }
 ```
 
 ## 09. Decide: Hindi assistant intents
 
-`POST /v1/decide` → **200** in 0.842 s
+`POST /v1/decide` → **200** in 0.621 s
 
 ```bash
 curl http://127.0.0.1:8000/v1/decide -H "Content-Type: application/json" \
@@ -523,21 +523,21 @@ Response:
       "input": "कल सुबह छह बजे का अलार्म लगा दो",
       "choice": "alarm_set",
       "probabilities": {
-        "alarm_set": 0.9491,
-        "alarm_remove": 0.0438,
-        "alarm_query": 0.0064
+        "alarm_set": 0.9499,
+        "alarm_remove": 0.0428,
+        "alarm_query": 0.0066
       },
-      "confidence": 0.9491,
+      "confidence": 0.9499,
       "action": "auto-route"
     }
   ],
-  "seconds": 0.256
+  "seconds": 0.069
 }
 ```
 
 ## 10. Decide: zero-shot with your own options
 
-`POST /v1/decide` → **200** in 3.559 s
+`POST /v1/decide` → **200** in 3.553 s
 
 ```bash
 curl http://127.0.0.1:8000/v1/decide -H "Content-Type: application/json" \
@@ -577,40 +577,40 @@ Response:
       "input": "The delivery came two weeks late and the box was crushed",
       "choice": "complaint about a delivery",
       "probabilities": {
-        "complaint about a delivery": 0.9507,
-        "praise for the service": 0.0312
+        "complaint about a delivery": 0.9504,
+        "praise for the service": 0.0314
       },
-      "confidence": 0.9507,
+      "confidence": 0.9504,
       "action": "auto-route"
     },
     {
       "input": "Thank you, the staff were wonderful",
       "choice": "praise for the service",
       "probabilities": {
-        "praise for the service": 0.9786,
-        "question about a product": 0.0108
+        "praise for the service": 0.9788,
+        "complaint about a delivery": 0.0104
       },
-      "confidence": 0.9786,
+      "confidence": 0.9788,
       "action": "auto-route"
     },
     {
       "input": "Do you ship to Canada?",
       "choice": "praise for the service",
       "probabilities": {
-        "praise for the service": 0.6605,
-        "request to place an order": 0.1805
+        "praise for the service": 0.6664,
+        "request to place an order": 0.1838
       },
-      "confidence": 0.6605,
+      "confidence": 0.6664,
       "action": "send to human"
     }
   ],
-  "seconds": 0.384
+  "seconds": 0.186
 }
 ```
 
 ## 11. Vision: caption an image (image only, no text)
 
-`POST /v1/chat/completions` → **200** in 6.56 s
+`POST /v1/chat/completions` → **200** in 5.393 s
 
 ```bash
 # replace "@data/..." with a data URL: data:image/jpeg;base64,$(base64 -w0 data/astronaut.jpg)
@@ -643,16 +643,16 @@ Response:
 
 ```json
 {
-  "id": "chatcmpl-d36056e500a549dca35f4693",
+  "id": "chatcmpl-fc470f3486bb41b7b3ff3a25",
   "object": "chat.completion",
-  "created": 1792262859,
+  "created": 1792304237,
   "model": "anulm-vision",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "A woman in a orange jumpsuit is smiling and smiling."
+        "content": "A woman in a red uniform is standing next to a black and white flag."
       },
       "finish_reason": "stop"
     }
@@ -667,7 +667,7 @@ Response:
 
 ## 12. Vision: ask a question about the image (short answer)
 
-`POST /v1/chat/completions` → **200** in 5.045 s
+`POST /v1/chat/completions` → **200** in 4.617 s
 
 ```bash
 # replace "@data/..." with a data URL: data:image/jpeg;base64,$(base64 -w0 data/astronaut.jpg)
@@ -704,16 +704,16 @@ Response:
 
 ```json
 {
-  "id": "chatcmpl-6e0acda4acfa4fefb541b586",
+  "id": "chatcmpl-dd44848fbcb940c390de9826",
   "object": "chat.completion",
-  "created": 1792262864,
+  "created": 1792304242,
   "model": "anulm-vision",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "red"
+        "content": "blue"
       },
       "finish_reason": "stop"
     }
@@ -728,7 +728,7 @@ Response:
 
 ## 13. Text to speech (returns WAV)
 
-`POST /v1/audio/speech` → **200** in 2.248 s
+`POST /v1/audio/speech` → **200** in 1.627 s
 
 ```bash
 curl http://127.0.0.1:8000/v1/audio/speech -H "Content-Type: application/json" \
@@ -750,13 +750,13 @@ Response:
 ```json
 {
   "saved_to": "responses/13_text_to_speech.wav",
-  "bytes": 117804
+  "bytes": 125484
 }
 ```
 
 ## 14. Speech to text (multipart upload of the WAV from step 13)
 
-`POST /v1/audio/transcriptions` → **200** in 5.671 s
+`POST /v1/audio/transcriptions` → **200** in 4.672 s
 
 ```bash
 curl http://127.0.0.1:8000/v1/audio/transcriptions -F file=@responses/13_text_to_speech.wav -F model=anulm-asr -F language=en -F response_format=verbose_json
@@ -768,15 +768,51 @@ Response:
 {
   "task": "transcribe",
   "language": "en",
-  "duration": 2.67,
-  "text": "my card was strollin this morning please block it",
+  "duration": 2.84,
+  "text": "my card was stolen this morning please block it",
   "segments": []
 }
 ```
 
-## 15. Error: unknown model (OpenAI-style error body)
+## 15. Speech to text, English: a real held-out LibriSpeech clip
 
-`POST /v1/chat/completions` → **404** in 0.002 s
+`POST /v1/audio/transcriptions` → **200** in 0.458 s
+
+```bash
+curl http://127.0.0.1:8000/v1/audio/transcriptions -F file=@data/speech_en_librispeech.wav -F model=anulm-asr -F language=en
+```
+
+Reference transcript: *i have travelled a good deal and seen much grander things*
+
+Response:
+
+```json
+{
+  "text": "i have travelled a good deal and seen much grandder things"
+}
+```
+
+## 16. Speech to text, Hindi: a real FLEURS dev clip
+
+`POST /v1/audio/transcriptions` → **200** in 5.62 s
+
+```bash
+curl http://127.0.0.1:8000/v1/audio/transcriptions -F file=@data/speech_hi_fleurs.wav -F model=anulm-asr -F language=hi
+```
+
+Reference transcript: *अमेरिकी राष्ट्रपति जॉर्ज डब्ल्यू बुश ने घोषणा का स्वागत किया*
+
+Response:
+
+```json
+{
+  "text": "अमेरिकी राष्ट्रपति और की राष्ट्रपति डुए बुश ने कोसना का स्वागत किया"
+}
+```
+
+## 17. Error: unknown model (OpenAI-style error body)
+
+`POST /v1/chat/completions` → **404** in 0.001 s
 
 ```bash
 curl http://127.0.0.1:8000/v1/chat/completions -H "Content-Type: application/json" \
@@ -810,7 +846,7 @@ Response:
 }
 ```
 
-## 16. Error: anulm-decide-general without options
+## 18. Error: anulm-decide-general without options
 
 `POST /v1/decide` → **400** in 0.001 s
 
@@ -848,16 +884,16 @@ Response:
 | query | expected | choice | confidence | action |
 |---|---|---|---|---|
 | I still haven't received my new card | card_arrival | card_arrival | 0.92 | auto-route |
-| My card was stolen this morning | lost_or_stolen_card | lost_or_stolen_card | 0.86 | auto-route |
+| My card was stolen this morning | lost_or_stolen_card | lost_or_stolen_card | 0.87 | auto-route |
 | What exchange rate do you use for euros? | exchange_rate | exchange_rate | 0.99 | auto-route |
 | I sent money to my brother three days ago and he still hasn't got it | transfer_not_received_by_recipient | transfer_not_received_by_recipient | 0.94 | auto-route |
 | I typed the wrong PIN too many times and now it's blocked | pin_blocked | pin_blocked | 1.00 | auto-route |
-| My top-up didn't go through | top_up_failed | top_up_failed | 0.78 | auto-route |
+| My top-up didn't go through | top_up_failed | top_up_failed | 0.73 | auto-route |
 | Why was I charged a fee for taking cash out of the ATM? | cash_withdrawal_charge | cash_withdrawal_charge | 1.00 | auto-route |
-| The shop said my card was declined | declined_card_payment | declined_card_payment | 0.83 | auto-route |
+| The shop said my card was declined | declined_card_payment | declined_card_payment | 0.82 | auto-route |
 | How do I change my PIN? | change_pin | change_pin | 1.00 | auto-route |
 | How do I activate the card you sent me? | activate_my_card | activate_my_card | 0.97 | auto-route |
-| I want my money back for this purchase | request_refund | request_refund | 0.95 | auto-route |
+| I want my money back for this purchase | request_refund | request_refund | 0.93 | auto-route |
 | The ATM gave me less cash than I asked for | wrong_amount_of_cash_received | wrong_amount_of_cash_received | 1.00 | auto-route |
 | Can I add my card to Apple Pay? | apple_pay_or_google_pay | apple_pay_or_google_pay | 1.00 | auto-route |
 | There's a direct debit on my statement I don't recognise | direct_debit_payment_not_recognised | direct_debit_payment_not_recognised | 1.00 | auto-route |
@@ -870,9 +906,9 @@ Response:
 |---|---|---|---|---|
 | कल सुबह छह बजे का अलार्म लगा दो | alarm_set | alarm_set | 0.95 | auto-route |
 | आज दिल्ली में मौसम कैसा रहेगा | weather_query | weather_query | 1.00 | auto-route |
-| कोई पुराना हिंदी गाना चलाओ | play_music | play_music | 0.96 | auto-route |
-| अभी कितने बजे हैं | datetime_query | datetime_query | 0.89 | auto-route |
-| कमरे की बत्ती बंद कर दो | iot_hue_lightoff | iot_hue_lightoff | 0.84 | auto-route |
+| कोई पुराना हिंदी गाना चलाओ | play_music | play_music | 0.97 | auto-route |
+| अभी कितने बजे हैं | datetime_query | datetime_query | 0.88 | auto-route |
+| कमरे की बत्ती बंद कर दो | iot_hue_lightoff | iot_hue_lightoff | 0.82 | auto-route |
 | आज की ताज़ा ख़बरें सुनाओ | news_query | news_query | 1.00 | auto-route |
 | पनीर बटर मसाला कैसे बनाते हैं | cooking_recipe | cooking_recipe | 0.99 | auto-route |
 | मेरे लिए कल मुंबई की ट्रेन का टिकट बुक करो | transport_ticket | transport_ticket | 0.99 | auto-route |

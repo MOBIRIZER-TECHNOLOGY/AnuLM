@@ -20,16 +20,16 @@
   "status": 200,
   "content_type": "application/json",
   "body": {
-    "id": "chatcmpl-120a7a60325e4c0d834815b1",
+    "id": "chatcmpl-ceb223f07c7c47b29f3b9262",
     "object": "chat.completion",
-    "created": 1792262824,
+    "created": 1792304208,
     "model": "anulm-chat",
     "choices": [
       {
         "index": 0,
         "message": {
           "role": "assistant",
-          "content": "Here are three tips.\n1. Set a goal and prioritize your goals\n2. Make your budget manageable\n3. Don't spend too much money on your home and the things you use\n4. Use clear, specific language to describe your actions\n5. Practice while you are traveling\n6. Consider yourself ready to spend your money"
+          "content": "You can save money by using a small saving account or a credit card. Here are some tips:\n1) Make the purchase or purchase process short and easy to follow. This is an important step in making your own money.\n2) Understand your requirements, such as your budget, your financial situation and"
         },
         "finish_reason": "length"
       }
@@ -40,5 +40,5 @@
       "total_tokens": 76
     }
   },
-  "seconds": 5.704
+  "seconds": 5.756
 }

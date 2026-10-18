@@ -5,13 +5,13 @@
   "accuracy": 1.0,
   "auto_routed": 16,
   "accuracy_when_auto_routed": 1.0,
-  "seconds": 7.57,
+  "seconds": 1.08,
   "rows": [
     {
       "query": "I still haven't received my new card",
       "expected": "card_arrival",
       "choice": "card_arrival",
-      "confidence": 0.9221,
+      "confidence": 0.9212,
       "action": "auto-route",
       "correct": true
     },
@@ -19,7 +19,7 @@
       "query": "My card was stolen this morning",
       "expected": "lost_or_stolen_card",
       "choice": "lost_or_stolen_card",
-      "confidence": 0.8627,
+      "confidence": 0.8749,
       "action": "auto-route",
       "correct": true
     },
@@ -27,7 +27,7 @@
       "query": "What exchange rate do you use for euros?",
       "expected": "exchange_rate",
       "choice": "exchange_rate",
-      "confidence": 0.9919,
+      "confidence": 0.9912,
       "action": "auto-route",
       "correct": true
     },
@@ -35,7 +35,7 @@
       "query": "I sent money to my brother three days ago and he still hasn't got it",
       "expected": "transfer_not_received_by_recipient",
       "choice": "transfer_not_received_by_recipient",
-      "confidence": 0.9391,
+      "confidence": 0.9352,
       "action": "auto-route",
       "correct": true
     },
@@ -43,7 +43,7 @@
       "query": "I typed the wrong PIN too many times and now it's blocked",
       "expected": "pin_blocked",
       "choice": "pin_blocked",
-      "confidence": 0.9995,
+      "confidence": 0.9996,
       "action": "auto-route",
       "correct": true
     },
@@ -51,7 +51,7 @@
       "query": "My top-up didn't go through",
       "expected": "top_up_failed",
       "choice": "top_up_failed",
-      "confidence": 0.7769,
+      "confidence": 0.7333,
       "action": "auto-route",
       "correct": true
     },
@@ -59,7 +59,7 @@
       "query": "Why was I charged a fee for taking cash out of the ATM?",
       "expected": "cash_withdrawal_charge",
       "choice": "cash_withdrawal_charge",
-      "confidence": 0.9982,
+      "confidence": 0.9983,
       "action": "auto-route",
       "correct": true
     },
@@ -67,7 +67,7 @@
       "query": "The shop said my card was declined",
       "expected": "declined_card_payment",
       "choice": "declined_card_payment",
-      "confidence": 0.8264,
+      "confidence": 0.8211,
       "action": "auto-route",
       "correct": true
     },
@@ -75,7 +75,7 @@
       "query": "How do I change my PIN?",
       "expected": "change_pin",
       "choice": "change_pin",
-      "confidence": 0.9993,
+      "confidence": 0.9992,
       "action": "auto-route",
       "correct": true
     },
@@ -83,7 +83,7 @@
       "query": "How do I activate the card you sent me?",
       "expected": "activate_my_card",
       "choice": "activate_my_card",
-      "confidence": 0.9725,
+      "confidence": 0.9724,
       "action": "auto-route",
       "correct": true
     },
@@ -91,7 +91,7 @@
       "query": "I want my money back for this purchase",
       "expected": "request_refund",
       "choice": "request_refund",
-      "confidence": 0.9467,
+      "confidence": 0.9276,
       "action": "auto-route",
       "correct": true
     },
@@ -115,7 +115,7 @@
       "query": "There's a direct debit on my statement I don't recognise",
       "expected": "direct_debit_payment_not_recognised",
       "choice": "direct_debit_payment_not_recognised",
-      "confidence": 0.9978,
+      "confidence": 0.9986,
       "action": "auto-route",
       "correct": true
     },
@@ -123,7 +123,7 @@
       "query": "I think someone else has been using my card details",
       "expected": "compromised_card",
       "choice": "compromised_card",
-      "confidence": 0.9694,
+      "confidence": 0.9702,
       "action": "auto-route",
       "correct": true
     },
@@ -131,7 +131,7 @@
       "query": "How old do you have to be to open an account?",
       "expected": "age_limit",
       "choice": "age_limit",
-      "confidence": 0.9958,
+      "confidence": 0.9961,
       "action": "auto-route",
       "correct": true
     }

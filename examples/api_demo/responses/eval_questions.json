@@ -10,7 +10,7 @@
       "Taj Mahal"
     ],
     "from": "wikipedia",
-    "seconds": 0.59
+    "seconds": 0.157
   },
   {
     "object": "answer",
@@ -23,7 +23,7 @@
       "Japan"
     ],
     "from": "wikipedia",
-    "seconds": 0.494
+    "seconds": 0.162
   },
   {
     "object": "answer",
@@ -36,7 +36,7 @@
       "नई दिल्ली"
     ],
     "from": "wikipedia",
-    "seconds": 0.462
+    "seconds": 0.223
   },
   {
     "object": "answer",
@@ -49,6 +49,6 @@
       "Breakfast cereal"
     ],
     "from": "wikipedia",
-    "seconds": 0.669
+    "seconds": 0.17
   }
 ]

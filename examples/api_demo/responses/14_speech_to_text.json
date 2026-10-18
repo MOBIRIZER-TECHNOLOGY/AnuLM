@@ -15,9 +15,9 @@
   "body": {
     "task": "transcribe",
     "language": "en",
-    "duration": 2.67,
-    "text": "my card was strollin this morning please block it",
+    "duration": 2.84,
+    "text": "my card was stolen this morning please block it",
     "segments": []
   },
-  "seconds": 5.671
+  "seconds": 4.672
 }

@@ -1,0 +1,14 @@
+{
+  "speech_en_librispeech.wav": {
+    "reference": "i have travelled a good deal and seen much grander things",
+    "source": "LibriSpeech train-clean-100, held-out split (CC BY 4.0)",
+    "original": "374-180298-0046.wav",
+    "seconds": 4.02
+  },
+  "speech_hi_fleurs.wav": {
+    "reference": "अमेरिकी राष्ट्रपति जॉर्ज डब्ल्यू बुश ने घोषणा का स्वागत किया",
+    "source": "Google FLEURS hi_in dev (CC BY 4.0)",
+    "original": "17521463387957509552.wav",
+    "seconds": 5.16
+  }
+}

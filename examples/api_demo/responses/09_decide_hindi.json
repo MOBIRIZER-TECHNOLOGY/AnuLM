@@ -20,15 +20,15 @@
         "input": "कल सुबह छह बजे का अलार्म लगा दो",
         "choice": "alarm_set",
         "probabilities": {
-          "alarm_set": 0.9491,
-          "alarm_remove": 0.0438,
-          "alarm_query": 0.0064
+          "alarm_set": 0.9499,
+          "alarm_remove": 0.0428,
+          "alarm_query": 0.0066
         },
-        "confidence": 0.9491,
+        "confidence": 0.9499,
         "action": "auto-route"
       }
     ],
-    "seconds": 0.256
+    "seconds": 0.069
   },
-  "seconds": 0.842
+  "seconds": 0.621
 }
