@@ -18,6 +18,40 @@ responses the server actually returned. The full guide is
 | `run_demo.py` | sends every request, saves the responses, scores the data, writes `TRANSCRIPT.md` |
 | `openai_client.py` | the same API through the official `openai` SDK and LangChain (output in `responses/openai_client.txt`) |
 
+## Benchmark: 1,480 timed requests on held-out data
+
+`benchmark.py` sends every request one at a time to the running API and
+saves each one (request, response, HTTP status, client-side milliseconds,
+score) to `benchmark/<test>.jsonl`, with totals in `benchmark/summary.json`.
+Recorded 2026-10-18 on an RTX 5070 Ti; latency excludes each model's first
+(cold) request, which is reported separately.
+
+| test | data | n | score | p50 | p95 |
+| --- | --- | ---: | ---: | ---: | ---: |
+| banking intents (AnuLM + LoRA) | BANKING77 test | 300 | 86.0% | 58 ms | 82 ms |
+| banking intents (ModernBERT reference) | same 300 | 300 | 91.7% | 19 ms | 28 ms |
+| Hindi intents | MASSIVE hi-IN | 300 | 84.3% | 62 ms | 81 ms |
+| zero-shot intents, all 77 labels | BANKING77 test | 50 | 38.0% | 52 ms | 67 ms |
+| Wikipedia lookup | `data/rag_demo_questions.jsonl` | 20 | 30.0% found | 57 ms | 1.2 s |
+| speech to text, English | LibriSpeech held-out | 100 | WER 7.0% | 1.5 s | 1.8 s |
+| speech to text, Hindi | FLEURS dev | 100 | WER 37.4% | 0.95 s | 1.9 s |
+| image captions | Flickr30k val | 50 | (read them) | 507 ms | 807 ms |
+| image questions, free-form exact match | A-OKVQA val | 200 | 13.5% | 122 ms | 187 ms |
+| chat, English + Hindi | `chat_heldout.jsonl` | 40 | 30 tokens/s | 1.7 s | 3.9 s |
+| text to speech | 20 sentences | 20 | 0.05 × real time | 47 ms | 58 ms |
+
+Speech recognition runs at about 0.11 × real time (a 12 s clip in 1.3 s).
+WER uses `eval_speech.normalise`, which keeps Devanagari vowel signs; image
+questions here are open-ended, so the score is far below the 43.5% four-way
+multiple choice. Run the models one group at a time on a 16 GB card: with
+every model loaded at once the card spills into shared memory and each
+request slows down by an order of magnitude.
+
+```bash
+python examples/api_demo/benchmark.py --only decide_banking,decide_hindi
+python examples/api_demo/benchmark.py --n-scale 0.1        # a 2-minute smoke test
+```
+
 ## Run it
 
 ```bash
