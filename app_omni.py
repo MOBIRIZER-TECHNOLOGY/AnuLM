@@ -36,11 +36,14 @@ import torch
 
 HERE = Path(__file__).parent
 
+# Retrained on base v2 (experiments/omni_v3.py, logs/omni_v3/), each beating the
+# model it replaced on the same eval: WER en 8.4 -> 7.1%, hi 51.0 -> 35.0%;
+# caption val loss 2.704 -> 2.617; VQA multiple choice 40.9 -> 43.5%.
 CKPTS = {
-    "asr_en": "ckpt_asr_ls100_e3.pt",
-    "asr_hi": "ckpt_asr_hi_mix2.pt",
-    "caption": "ckpt_caption_f30k_e2.pt",
-    "vqa": "ckpt_vqa_f30k.pt",
+    "asr_en": "ckpt_asr_en_v3.pt",
+    "asr_hi": "ckpt_asr_hi_v3.pt",
+    "caption": "ckpt_caption_v3.pt",
+    "vqa": "ckpt_vqa_v3.pt",
 }
 # Newest measured models first, older ones as fallbacks (docs/RESULTS.md section 35).
 _HERE = Path(__file__).parent

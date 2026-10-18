@@ -1511,17 +1511,22 @@ def chunked_loss_matches_the_full_loss_and_its_gradients():
 def cached_embeds_decoding_matches_prefix_replay():
     """decode_from_embeds with the KV cache must emit exactly what re-running
     the whole prefix every step emits -- for a prompt made of embeddings, as
-    the speech and vision paths build it, with and without n-gram blocking."""
+    the speech and vision paths build it, with and without n-gram blocking and
+    the repetition penalty."""
     for attn in ("gqa", "mla"):
         torch.manual_seed(1)
         m = AnuLM(tiny(attn=attn, block_size=64)).eval()
         prefix = torch.randn(9, m.cfg.hidden_size) * 0.5
-        for n in (0, 3):
-            a = m.decode_from_embeds(prefix, 20, stop=lambda t: False, no_repeat_ngram=n)
-            b = m.decode_from_embeds(prefix, 20, stop=lambda t: False, no_repeat_ngram=n,
-                                     use_cache=False)
-            assert a == b, f"{attn} n={n}: cached {a} vs replay {b}"
-            assert len(a) == 20
+        for rp in (1.5, 1.0):
+            for n in (0, 3):
+                a = m.decode_from_embeds(prefix, 20, stop=lambda t: False, no_repeat_ngram=n,
+                                         repetition_penalty=rp)
+                b = m.decode_from_embeds(prefix, 20, stop=lambda t: False, no_repeat_ngram=n,
+                                         use_cache=False, repetition_penalty=rp)
+                assert a == b, f"{attn} n={n} rp={rp}: cached {a} vs replay {b}"
+                assert len(a) == 20
+        assert a == m.decode_from_embeds(prefix, 20, stop=lambda t: False, no_repeat_ngram=3), \
+            "repetition_penalty=1.0 must be plain greedy"
         stop_at = a[4]
         c = m.decode_from_embeds(prefix, 20, stop=lambda t: t == stop_at)
         assert stop_at not in c and c == a[:a.index(stop_at)], "stop must end decoding"

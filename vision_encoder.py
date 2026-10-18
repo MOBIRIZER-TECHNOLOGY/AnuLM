@@ -52,6 +52,11 @@ import torch.nn as nn
 
 POOL = 2                        # 2x2 patch pooling: 196 patches -> 49
 DEFAULT_TOWER = "vit_base_patch16_siglip_224"
+# Caption decoding (see caption()). On 20 distinct Flickr30k val images 1.2
+# changed 9 captions, none for the worse, and ended "curling curling curling
+# ..." loops; adding a no-repeat bigram block also dropped articles ("a man in
+# white shirt"), so it is not used.
+REP_PENALTY = 1.2
 
 try:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -505,13 +510,18 @@ def load_trained(ckpt: str, device: str):
 
 @torch.no_grad()
 def caption(vl, tower, tok, image, max_tokens: int = 40, device: str = "cuda",
-            question: str | None = None, use_cache: bool = True) -> str:
+            question: str | None = None, use_cache: bool = True,
+            repetition_penalty: float = REP_PENALTY) -> str:
     """Greedy decoding after <|image|> patches <|/image|>, KV-cached: the image
     is prefilled once, then one position per token.
 
     With `question`, the prompt gets " Question: ... Answer:" exactly as
     `qa_ids` builds it for training, and the reply is a free-form answer --
     what a demo needs, where `mc_accuracy` can only rank given choices.
+
+    `repetition_penalty` (CTRL's rule over the tokens emitted so far) stops
+    the loops greedy decoding falls into ("getting his hair curled with a
+    curling curling curling ..."); 1.0 is plain greedy.
     """
     # In the projector's dtype, so a model cast to bf16 for serving works too.
     patches = tower.encode(image).to(device, next(vl.proj.parameters()).dtype)
@@ -527,7 +537,7 @@ def caption(vl, tower, tok, image, max_tokens: int = 40, device: str = "cuda",
     with autocast:
         out = vl.model.decode_from_embeds(
             prefix, max_tokens, stop=lambda t: t == tok.eos_id or t >= vl.vocab.text,
-            use_cache=use_cache)
+            use_cache=use_cache, repetition_penalty=repetition_penalty)
     return tok.decode(out).strip().split("\n")[0]
 
 

@@ -957,7 +957,7 @@ class AnuLM(nn.Module):
 
     @torch.no_grad()
     def decode_from_embeds(self, prefix, max_tokens: int, stop, no_repeat_ngram: int = 0,
-                           use_cache: bool = True) -> list[int]:
+                           use_cache: bool = True, repetition_penalty: float = 1.0) -> list[int]:
         """Greedy decoding after a prompt that is embeddings rather than ids.
 
         `prefix` is (T, D): projected audio or image features with their
@@ -965,6 +965,9 @@ class AnuLM(nn.Module):
         `stop(id)` ends decoding (EOS, or an id outside the text block).
         `no_repeat_ngram` > 0 blocks any token that would complete an n-gram
         already emitted -- the guard transcription needs against loops.
+        `repetition_penalty` > 1 applies `generate`'s CTRL rule to every token
+        already emitted (not the prefix, which is image or audio); captions
+        need it against "white and white ... white". 1.0 is off.
 
         With the cache, the prefix is prefilled once and each new token is a
         single-position step, where the uncached path re-ran all T prefix
@@ -976,6 +979,10 @@ class AnuLM(nn.Module):
         pos, out = prefix.shape[0], []
         for _ in range(max_tokens):
             scores = logits[0, -1].float()
+            if repetition_penalty != 1.0 and out:
+                ids = torch.tensor(sorted(set(out)), device=scores.device)
+                seen = scores[ids]
+                scores[ids] = torch.where(seen > 0, seen / repetition_penalty, seen * repetition_penalty)
             n = no_repeat_ngram
             if n and len(out) >= n - 1:
                 tail = tuple(out[len(out) - (n - 1):])
