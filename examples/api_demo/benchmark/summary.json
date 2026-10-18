@@ -175,9 +175,26 @@
       "ms_max": 4205.9,
       "tokens_per_s_mean": 29.9,
       "wall_seconds": 78.4
+    },
+    "decide_india": {
+      "suite": "decide_india",
+      "title": "Decide: Indian banking, English/Hindi/Hinglish (synthetic test set)",
+      "n": 214,
+      "ok": 214,
+      "errors": 0,
+      "cold_ms": 4903.3,
+      "ms_mean": 68.9,
+      "ms_p50": 66.3,
+      "ms_p95": 92.9,
+      "ms_min": 58.2,
+      "ms_max": 120.3,
+      "accuracy": 0.771,
+      "auto_routed": 154,
+      "accuracy_when_auto_routed": 0.8571,
+      "wall_seconds": 19.6
     }
   },
-  "recorded": "2026-10-18 18:56",
+  "recorded": "2026-10-18 20:55",
   "base_url": "http://127.0.0.1:8000",
   "device": "cuda"
 }

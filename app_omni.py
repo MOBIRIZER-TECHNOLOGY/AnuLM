@@ -362,8 +362,10 @@ def build(models: Models) -> gr.Blocks:
                                  ["मेरी अगली बैठक कब है", TASK_HI],
                                  ["तीन गुना सात क्या है", TASK_HI],
                                  ["नए ईमेल की जाँच करें", TASK_HI]]
-                                + ([  # Indian banking, phrased unlike anything in its training set
-                                    ["PhonePe se 2000 bheje, paisa kat gaya par dukaan wale ko nahi mila", TASK_IN],
+                                + ([  # Indian banking, phrased unlike anything in its training set;
+                                    # the aadhaar one is right but unsure (0.40) and goes to a person
+                                    ["paisa account se debit ho gaya lekin transaction failed dikha raha", TASK_IN],
+                                    ["GPay pe payment fail ho raha hai baar baar", TASK_IN],
                                     ["मेरा यूपीआई पिन ब्लॉक हो गया है, नया कैसे बनाऊं", TASK_IN],
                                     ["My KYC is pending and the account got frozen", TASK_IN],
                                     ["gas subsidy nahi aa rahi, aadhaar link check karna hai", TASK_IN],
