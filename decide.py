@@ -310,7 +310,8 @@ def load(ckpt: str, device: str):
     the folder of an open encoder (config.json + tokenizer.json)."""
     from hf_tok import load_tokenizer
     p = Path(ckpt)
-    if p.is_dir() and "config" not in json.load(open(p / "config.json", encoding="utf-8")):
+    if (p.is_dir() and not (p / "extras.safetensors").exists()
+            and "config" not in json.load(open(p / "config.json", encoding="utf-8"))):
         enc, tok = _hf_encoder(ckpt)                          # a fresh open encoder (export_hf.py
         d = Decider(enc, "hf", tok.pad_id)                    # folders nest AnuLM's under "config")
         d.hf_path = ckpt
@@ -318,7 +319,8 @@ def load(ckpt: str, device: str):
     ck = load_checkpoint(ckpt, "cpu")
     if "hf_backbone" in ck:                                   # a trained decider on an open encoder
         enc, tok = _hf_encoder(ck["hf_backbone"])
-        enc.load_state_dict(ck["hf_state"])
+        if "hf_state" in ck:                                  # an export ships it as the backbone's weights
+            enc.load_state_dict(ck["hf_state"])
         d = Decider(enc, "hf", tok.pad_id)
         d.hf_path = ck["hf_backbone"]
     else:
@@ -626,7 +628,7 @@ class Decide:
         --mode head / lora checkpoint: only the head and adapters are added,
         so one copy of the weights serves chat and decisions. Refuses if the
         loaded model is not the backbone the adapter was trained on."""
-        ck = torch.load(ckpt, map_location="cpu", weights_only=False)
+        ck = load_checkpoint(ckpt, "cpu", base=False)       # an exported adapter has no backbone copy
         assert ck.get("mode") in ("head", "lora"), f"{ckpt} is a full fine-tune; it has its own weights"
         if "model" in ck:
             live = model.state_dict()

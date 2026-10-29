@@ -1167,6 +1167,55 @@ def an_exported_qa_checkpoint_still_offers_its_question_mode():
 
 
 @test
+def an_export_keeps_what_makes_a_checkpoint_more_than_a_language_model():
+    """export_hf.py used to write `model` and `cfg` and nothing else, so a
+    speech model lost its projector, a Decide adapter its LoRA weights, head
+    and labels, and the folder still loaded -- as a plain language model. The
+    extras must come back under the keys the .pt had, and an adapter exported
+    without its backbone must find that backbone beside it."""
+    try:
+        from safetensors.torch import save_file  # noqa: F401
+    except ImportError:
+        print("    (skipped: safetensors not installed)", end="")
+        return
+    import sys as _sys, tempfile
+    from pathlib import Path as P
+    import export_hf
+    from model import load_checkpoint
+
+    torch.manual_seed(0)
+    cfg = tiny()
+    backbone = {k: v.clone() for k, v in AnuLM(cfg).state_dict().items()}
+    with tempfile.TemporaryDirectory() as d:
+        d = P(d)
+        torch.save({"model": backbone, "cfg": cfg, "step": 7}, d / "chat.pt")
+        adapter = {"model": backbone, "cfg": cfg, "step": 9, "mode": "lora", "lora_rank": 4,
+                   "labels": ["a", "b"], "temperature": 2.1,
+                   "lora": {"w.A": torch.randn(4, 32), "w.B": torch.randn(32, 4)},
+                   "decide_head": {"weight": torch.randn(1, 32)}}
+        torch.save(adapter, d / "adapter.pt")
+        argv = _sys.argv
+        try:
+            _sys.argv = ["export_hf.py", str(d / "chat.pt"), str(d / "Chat"), "--license", "mit"]
+            export_hf.main()
+            _sys.argv = ["export_hf.py", str(d / "adapter.pt"), str(d / "Adapter"), "--kind", "decide",
+                         "--license", "mit", "--adapter-of", str(d / "chat.pt"), "--base-model", "someone/Chat"]
+            export_hf.main()
+        finally:
+            _sys.argv = argv
+        assert not (d / "Adapter" / "model.safetensors").exists(), "an adapter export must not copy its backbone"
+        ck = load_checkpoint(d / "Adapter")
+        for k in ("mode", "lora_rank", "labels", "temperature", "step"):
+            assert ck[k] == adapter[k], (k, ck[k], adapter[k])
+        for g in ("lora", "decide_head"):
+            assert all(torch.equal(ck[g][n], v) for n, v in adapter[g].items()), g
+        # the backbone, from the folder named after --base-model beside the adapter
+        assert ck["cfg"].hidden_size == cfg.hidden_size
+        assert all(torch.allclose(ck["model"][k].float(), v, rtol=1e-2, atol=1e-2) for k, v in backbone.items())
+        assert "model" not in load_checkpoint(d / "Adapter", base=False)
+
+
+@test
 def eval_code_sandbox_contains_generated_code():
     """eval_code.py runs a language model's unreviewed output. These are the
     containment promises its docstring makes, and the ones that broke before:

@@ -1,7 +1,7 @@
 """
 Speech and vision decoders on the final base (TASKS.md "After base v2", step 7), unattended.
 
-    python experiments/omni_v3.py [--root C:/workspace/AnuLM]
+    python experiments/omni_v3.py [--root <checkout>]
 
   0. grow ckpt_base_v2.pt with the audio/image vocabulary -> ckpt_mm_init_v2.pt
   1. English ASR, LibriSpeech train-clean-100, 3 epochs   -> ckpt_asr_en_v3.pt

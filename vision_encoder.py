@@ -497,14 +497,16 @@ def load_trained(ckpt: str, device: str):
     from model import AnuLM, load_checkpoint
     from speech_vocab import vocab_of
     ck = load_checkpoint(ckpt, device)
-    if "proj" not in ck or "tower" not in ck:
+    # omni_train.py keeps the audio projector as `proj` and this one as `vision_proj`
+    proj = ck.get("vision_proj", ck.get("proj"))
+    if proj is None or "tower" not in ck:
         raise SystemExit(f"{ckpt} has no image projector")
     cfg = replace(ck["cfg"], moe_impl="grouped" if device.startswith("cuda") else "sparse")
     model = AnuLM(cfg).to(device).eval()
     model.load_state_dict(ck["model"])
     tower = VisionTower(ck["tower"], device)
     vl = VisionLanguage(model, vocab_of(ck), tower.dim, ck.get("pool", POOL)).to(device).eval()
-    vl.proj.load_state_dict(ck["proj"])
+    vl.proj.load_state_dict(proj)
     return vl, tower, load_tokenizer(cfg.tokenizer_path)
 
 

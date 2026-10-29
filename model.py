@@ -1089,6 +1089,10 @@ class AnuLM(nn.Module):
                 logits, _ = self(pending, cache=cache, start=start)
                 start += pending.shape[1]
             logits = logits[:, -1, :].float()
+            if getattr(self, "text_vocab", None):
+                # a model grown for speech and images (speech_vocab.py) writes
+                # text only here: its audio and image ids are never sampled
+                logits[:, self.text_vocab:] = -float("inf")
             if repetition_penalty != 1.0:
                 seen = logits.gather(1, idx)
                 seen = torch.where(seen > 0, seen / repetition_penalty, seen * repetition_penalty)
@@ -1146,29 +1150,55 @@ NanoSarvamConfig = AnuLMConfig
 NanoSarvam = AnuLM
 
 
-def load_checkpoint(path, map_location="cpu") -> dict:
+def load_checkpoint(path, map_location="cpu", base: bool = True) -> dict:
     """Load a training checkpoint (``.pt``) or a folder written by
     ``export_hf.py`` (``config.json`` + ``model.safetensors``) into the same
     dict shape: ``model`` (state dict), ``cfg`` (AnuLMConfig), and whatever
-    ``step``, ``val_loss``, ``qa_templates`` and ``base_ckpt`` were saved."""
+    ``step``, ``val_loss``, ``qa_templates`` and ``base_ckpt`` were saved.
+
+    A Hub repo id (``toonist/AnuLM-Omni-400M``) is downloaded first. A
+    folder's ``extras.safetensors`` and ``config.json["extras"]`` come back as
+    the top-level keys the ``.pt`` had (``proj``, ``lora``, ``decide_head``,
+    ``pointer_head``, ``labels``, ...). An adapter folder has no
+    ``model.safetensors``, only the id of the model it was trained on; with
+    ``base`` that model's ``model`` and ``cfg`` are loaded into the dict, and
+    without it they are left out (``decide.Decide.on`` brings its own)."""
     import json
+    import re
     from pathlib import Path as _P
     p = _P(path)
+    if not p.exists() and re.fullmatch(r"[\w.-]+/[\w.-]+", str(path).replace("\\", "/")):
+        from huggingface_hub import snapshot_download
+        p = _P(snapshot_download(str(path).replace("\\", "/")))
     if not p.is_dir():
         return torch.load(str(p), map_location=map_location, weights_only=False)
     from safetensors.torch import load_file
-    meta = json.loads((p / "config.json").read_text(encoding="utf-8"))
-    cfg_d = dict(meta["config"])
-    if cfg_d.get("tokenizer_path"):
-        cfg_d["tokenizer_path"] = str(p / cfg_d["tokenizer_path"])
-    known = {f.name for f in dataclasses.fields(AnuLMConfig)}
-    cfg = AnuLMConfig(**{k: v for k, v in cfg_d.items() if k in known})
     dev = map_location if isinstance(map_location, str) else str(map_location)
-    sd = load_file(str(p / "model.safetensors"), device=dev)
-    ck = {"model": sd, "cfg": cfg}
+    meta = json.loads((p / "config.json").read_text(encoding="utf-8"))
+    ck = {}
+    if "config" in meta:
+        cfg_d = dict(meta["config"])
+        if cfg_d.get("tokenizer_path"):
+            cfg_d["tokenizer_path"] = str(p / cfg_d["tokenizer_path"])
+        known = {f.name for f in dataclasses.fields(AnuLMConfig)}
+        ck["cfg"] = AnuLMConfig(**{k: v for k, v in cfg_d.items() if k in known})
+    if (p / "model.safetensors").exists():
+        ck["model"] = load_file(str(p / "model.safetensors"), device=dev)
     for k in ("step", "val_loss", "qa_templates", "base_ckpt"):
         if meta.get(k) is not None:
             ck[k] = meta[k]
+    extras = dict(meta.get("extras") or {})
+    if extras.get("hf_backbone"):                       # an open encoder's folder, shipped inside
+        extras["hf_backbone"] = str(p / extras["hf_backbone"])
+    ck.update(extras)
+    if (p / "extras.safetensors").exists():
+        for k, v in load_file(str(p / "extras.safetensors"), device=dev).items():
+            group, name = k.split("/", 1)
+            ck.setdefault(group, {})[name] = v
+    if "model" not in ck and base and extras.get("base_model"):
+        side = p.parent / extras["base_model"].split("/")[-1]   # downloaded side by side: no fetch
+        b = load_checkpoint(side if side.is_dir() else extras["base_model"], map_location)
+        ck["model"], ck["cfg"] = b["model"], b["cfg"]
     return ck
 
 

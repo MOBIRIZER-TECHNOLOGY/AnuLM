@@ -60,6 +60,7 @@ class Engine:
         self.cfg, self.device = cfg, device
         self.model = AnuLM(cfg).to(device).eval()
         self.model.load_state_dict(ck["model"])
+        self.model.text_vocab = ck.get("speech_text_vocab")      # set on the one joint model (omni_train.py)
         self.tok = None
         if getattr(cfg, "tokenizer_path", None):
             from bpe import BPE

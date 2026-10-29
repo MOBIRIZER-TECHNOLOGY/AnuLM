@@ -2,7 +2,7 @@
 Overnight 2026-10-18: Hindi speech recognition on many real speakers, and Indian-accented
 English measured. Unattended; nothing touches the app.
 
-    python experiments/speech_v5.py [--root C:/workspace/AnuLM]
+    python experiments/speech_v5.py [--root <checkout>]
 
   1. prep (CPU): Kathbath Hindi (ai4bharat, gated, m4a in parquet) -> 16 kHz clips; train split
      -> data/kathbath_hi/train.jsonl, valid -> data/kathbath_hi/test.jsonl (held out)

@@ -2,7 +2,7 @@
 Chat v5: the human-written chat data with a small share of clean Indian data (RESULTS 40's
 next step), then recipe-F Decide adapters on it. Unattended; nothing touches the app.
 
-    python experiments/chat_v5.py [--root C:/workspace/AnuLM]
+    python experiments/chat_v5.py [--root <checkout>]
 
   1. data/chat_train_v5.jsonl = chat_train.jsonl (23,022 human-written pairs) plus ~20%:
      3,000 WikiHow Hindi guides (native Hindi; questions percent-decoded -- in v4 they were

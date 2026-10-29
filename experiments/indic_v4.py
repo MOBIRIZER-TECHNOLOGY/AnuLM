@@ -1,7 +1,7 @@
 """
 More Indian data, one night, unattended (2026-10-18).
 
-    python experiments/indic_v4.py [--root C:/workspace/AnuLM]
+    python experiments/indic_v4.py [--root <checkout>]
 
   1. prep: the unused IndicTTS-Hindi speaker (gender=1) as 16 kHz clips;
      data/hindi_mix2/train.jsonl = hindi_mix (FLEURS train + speaker 0) + speaker 1
