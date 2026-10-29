@@ -73,7 +73,12 @@ HELD = {"chat": "data/chat_heldout.jsonl", "read": "data/rc_heldout.jsonl"}
 # separate model it replaces, not more. Baselines in the comments.
 GATES = {
     "wer_en": ("<=", 9.0),                 # asr_en_v3: 7.1% on the same 100 clips
-    "wer_hi_fleurs": ("<=", 40.0),         # asr_hi_v3: 36.5% on FLEURS dev+test (657)
+    # Hindi: the real-speaker data (Kathbath, MUCS) trades FLEURS for everything
+    # else -- speech_v5 on 2026-10-29: FLEURS 36.5 -> 39.6, Kathbath 37.0 -> 24.9,
+    # MUCS 79.2 -> 55.6. So the gate is the mean of the three, no worse than
+    # asr_hi_v3's 50.9, and FLEURS alone allowed that much slack and no more.
+    "wer_hi_mean": ("<=", 50.9),
+    "wer_hi_fleurs": ("<=", 43.0),
     "chat_heldout_loss": ("<=", 3.30),     # chat_v3: 3.146 by omni_eval.py
     "read_squad_en": (">=", 30.0),         # generative; the pointer reader was F1 57.2
     "intent_banking77": (">=", 80.0),      # the Decide adapter: 89.0%
@@ -223,6 +228,9 @@ def evaluate():
 
 
 def gates(res) -> dict:
+    hi = [res.get(k) for k in ("wer_hi_fleurs", "wer_hi_kathbath", "wer_hi_mucs")]
+    if all(v is not None for v in hi):
+        res["wer_hi_mean"] = round(sum(hi) / 3, 1)
     out = {}
     for k, (op, thr) in GATES.items():
         v = res.get(k)
@@ -237,14 +245,17 @@ def report():
     if bp.exists():
         base = json.loads(bp.read_text(encoding="utf-8"))
     g = gates(res)
-    earlier = {"wer_en": "7.1 (asr_en_v3)", "wer_hi_fleurs": "36.5 (asr_hi_v3)",
+    earlier = {"wer_en": "7.1 (asr_en_v3)", "wer_hi_fleurs": "36.5 (asr_hi_v3); 39.6 (v5)",
+               "wer_hi_kathbath": "37.0 (asr_hi_v3); 24.9 (v5)", "wer_hi_mucs": "79.2 (asr_hi_v3); 55.6 (v5)",
+               "wer_hi_mean": "50.9 (asr_hi_v3); 40.0 (v5)",
                "intent_banking77": "89.0 (Decide adapter)", "read_squad_en": "57.2 (pointer reader)"}
     lines = ["# AnuLM-Omni-400M: report", "",
              f"Written {time.strftime('%Y-%m-%d %H:%M')} by experiments/omni_one.py. One decoder, seven tasks.", "",
              "| measure | omni | chat model it started from | earlier separate model | gate | pass |",
              "|---|---|---|---|---|---|"]
     keys = ["chat_heldout_loss", "read_squad_en", "read_mlqa_hi", "intent_banking77", "intent_massive_hi",
-            "wer_en", "wer_hi_fleurs", "wer_hi_kathbath", "wer_hi_mucs", "vqa_acc", "caption_heldout_loss"]
+            "wer_en", "wer_hi_fleurs", "wer_hi_kathbath", "wer_hi_mucs", "wer_hi_mean", "vqa_acc",
+            "caption_heldout_loss"]
     for k in keys:
         gate = GATES.get(k)
         lines.append(f"| {k} | {res.get(k, '-')} | {base.get(k, '-')} | {earlier.get(k, '-')} | "
