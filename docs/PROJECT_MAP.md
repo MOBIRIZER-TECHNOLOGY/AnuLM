@@ -132,7 +132,7 @@ Full table in `docs/DATASETS.md`. In brief, by stage:
 Two consequences worth stating plainly. First, **no corpus is redistributed**:
 `data/` is gitignored and every set is rebuilt from its source, which is what
 makes each checkpoint reproducible. Second, **the corpus licences constrain the
-checkpoints, not the code** — the code is Apache 2.0, while the non-commercial
+checkpoints, not the code** — the code is MIT, while the non-commercial
 terms on Samanantar and `code_exercises` are why the released coder is
 CC BY-NC-SA and the translator CC BY-NC. `NOTICE` carries that mapping and
 `docs/PUBLISHING.md` §1 explains how each release licence was chosen.

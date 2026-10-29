@@ -13,6 +13,7 @@ by itself.
 | commit identity | GitHub no-reply address; no personal e-mail in history |
 | weights exported | **done**: four safetensors folders, 0.8 GB each, in `release/` (gitignored) |
 | weights on Hugging Face | **done**: toonist/AnuLM-Coder-400M, -Translate-400M, -Hindi-QA-400M, -Base-400M, and -Base-2K-400M (2026-09-19), each with its model card |
+| v0.2.0: the second release | **Base-v2 published 2026-10-29** as toonist/AnuLM-Base-v2-400M (public, CC BY-SA 4.0); the 11 per-task exports in `release/` were checked (§3c) but superseded by one jointly trained model, toonist/AnuLM-Omni-400M, which `experiments/omni_one.py` exports and publishes when its gates pass |
 | training data | **not uploaded, by design**: every corpus is re-fetched from its public source by the scripts; `docs/DATASETS.md` links each one with its licence |
 | Zenodo DOI | open: enable the repository at https://zenodo.org/account/settings/github/ and re-publish the release, or publish v0.1.1 |
 | hosted demo | Gradio Spaces need a PRO subscription (API returns 402 on free cpu-basic, 2026-09); `app.py` + `space/` are ready if that changes. `demo_colab.ipynb` is the free hosted route and is linked from the README |
@@ -40,6 +41,8 @@ optimizer state, are not — `TASKS.md` records what that means.
 | `AnuLM-Coder-400M` (`ckpt_coder_sft.pt`) and its base | Hugging Face | **CC BY-NC-SA 4.0** | tuned on jinaai/code_exercises, which is CC BY-NC-SA 4.0 and ChatGPT-generated |
 | `AnuLM-Translate-400M` (`ckpt_translate.pt`) | Hugging Face | **CC BY-NC 4.0**, research only | Samanantar is CC BY-NC 4.0; the IIT Bombay corpus is research-only |
 | `AnuLM-Hindi-QA-400M` (`ckpt_multi_qa.pt`) and `AnuLM-Base-400M` (`ckpt_multi36k.pt`) | Hugging Face | **CC BY-SA 4.0** | Wikipedia / Wikisource are CC BY-SA; C4 and fineweb-edu are ODC-BY |
+| `AnuLM-Base-v2-400M` (`ckpt_base_v2.pt`) | Hugging Face, published 2026-10-29 | **CC BY-SA 4.0** | Hindi Wikipedia (CC BY-SA) in pretraining; fineweb-edu and fineweb-2 are ODC-BY. Two open questions, disclosed in `NOTICE` §2: GPL/AGPL files in codeparrot-clean, and opc-sft-stage1's Infinity-Instruct (CC BY-SA 4.0) and ShareGPT/WildChat-derived subsets |
+| `AnuLM-Omni-400M` (`ckpt_omni.pt`) | Hugging Face, only if `experiments/omni_one.py`'s release gates pass | **CC BY-SA 4.0**, commercial use allowed | built for commercial use, from commercially usable data only (`NOTICE` §2): the share-alike sources are Wikipedia, SQuAD, MLQA, Dolly and MUCS 2021; the rest are CC BY, CC BY 2.0 photos (authors listed) or Apache 2.0. Flickr30k, COCO photos, IndicTTS and the synthetic Indian-banking set are left out. Inherits base v2's two open questions |
 | training data | not redistributed | each source's own | `experiments/*_fetch.sh` and `*_build.sh` rebuild every corpus from its public source |
 
 Each model card states the licence in its front matter and repeats the
@@ -163,6 +166,53 @@ api.upload_folder(folder_path="release/AnuLM-Coder-400M", repo_id="toonist/AnuLM
 **Never re-upload the weights to fix a small file.** The `.pt` checkpoints
 those exports came from no longer exist, so `release/` and the Hub are the
 only copies.
+
+## 3c. Models that are more than a language model (v0.2.0)
+
+The speech, vision, reader and Decide checkpoints, and the jointly trained
+Omni model, carry parts beside the backbone: a projector (`proj`,
+`vision_proj`), a pointer or classifier head, LoRA weights, labels and a
+calibration temperature. `export_hf.py --kind` writes those to
+`extras.safetensors` (float32, keys `group/name`) and the rest to
+`config.json["extras"]`; `model.load_checkpoint` puts them back as the
+top-level keys the `.pt` had, so `speech_encoder.load_trained`,
+`vision_encoder.load_trained`, `rc_pointer.PointerQA` and `decide.Decide`
+take an exported folder, or a Hub id, wherever they took a `.pt`.
+
+- `--adapter-of ckpt_chat_v3.pt` keeps only the adapter (27 MB instead of
+  1.6 GB), after checking the adapter's copy of the backbone equals that
+  file; on load the backbone is fetched from `--base-model`, or taken from a
+  folder of that name beside the adapter.
+- A ModernBERT decider ships its fine-tuned encoder in `backbone/` in
+  `transformers` format, beside a copy of the original config and tokenizer.
+- Only `--kind lm` gets the `transformers` layer (`auto_map`): for the others
+  `AutoModelForCausalLM` would load the backbone and silently drop the rest.
+
+AnuLM-Base-v2-400M is a plain `--kind lm` export carrying
+`docs/MODEL_CARD_BASE_V2.md`. The second release's other model is exported
+by `experiments/omni_one.py` (step 9), with the card it writes from
+`docs/MODEL_CARD_OMNI.md` plus the run's measured table:
+
+```bash
+python export_hf.py ckpt_omni.pt release/AnuLM-Omni-400M --kind omni --license cc-by-sa-4.0 --card logs/omni_one/card.md --base-model toonist/AnuLM-Base-v2-400M --repo toonist/AnuLM-Omni-400M
+```
+
+The 11 per-task folders that came before it (chat, three Decide adapters,
+two ModernBERT deciders, reader, English and Hindi ASR, caption, VQA) were
+exported to `release/` the same way and checked, then superseded by the Omni
+model; they are not published. What the check found is kept as the record
+that `--kind` and `--adapter-of` round-trip correctly.
+
+Checked on 2026-10-29 before anything was uploaded: each folder loaded back
+with `load_checkpoint` holds the same keys and metadata as its `.pt`, the
+heads, projectors and adapters bit-exact and the backbones within bfloat16
+rounding (max relative difference 4e-3); the banking adapter, loaded from
+its folder with the chat model beside it, made the same decisions as the
+`.pt` on 100 test queries (95.40% answered at confidence >= 0.7); the
+English speech model transcribed 20 clips word for word as the `.pt` did
+(WER 8.8%); the caption model's held-out loss on 3 Flickr30k test images went
+2.8643 -> 2.8612 and one greedy caption ran on by a few words -- the
+bfloat16 rounding, the same trade the 0.1.0 exports made.
 
 ## 4. Create the remotes
 

@@ -11,7 +11,11 @@ checkpoints: a Python coder (MBPP 12.5% pass@1), an English ↔ Hindi
 translator (chrF 41.5 / 43.4 on FLORES-200), a Hindi/English question
 answerer, the three-language base the last two were fine-tuned from, and that
 base continued at a 2,048-token context (§28 — better everywhere, though the
-long-context part of it was mostly free).
+long-context part of it was mostly free). The second release is one
+model for everything: AnuLM-Omni-400M chats, answers from passages, routes
+a message to an intent, transcribes English and Hindi speech, and describes
+and answers questions about photos, trained only on data that allows
+commercial use; [docs/OMNI.md](docs/OMNI.md) trains it from a fresh clone.
 `docs/MODEL_CARD.md` is the one-page summary of the coder, and there is a
 card per checkpoint beside it; `CITATION.cff` says how to cite the project.
 
@@ -22,8 +26,14 @@ card per checkpoint beside it; `CITATION.cff` says how to cite the project.
 | Hindi / English question answerer | [toonist/AnuLM-Hindi-QA-400M](https://huggingface.co/toonist/AnuLM-Hindi-QA-400M) | CC BY-SA 4.0 |
 | three-language base | [toonist/AnuLM-Base-400M](https://huggingface.co/toonist/AnuLM-Base-400M) | CC BY-SA 4.0 |
 | the same base at 2,048 tokens | [toonist/AnuLM-Base-2K-400M](https://huggingface.co/toonist/AnuLM-Base-2K-400M) | CC BY-SA 4.0 |
+| base v2: Hindi, English, Python, 11.3B tokens | [toonist/AnuLM-Base-v2-400M](https://huggingface.co/toonist/AnuLM-Base-v2-400M) | CC BY-SA 4.0 |
+| **one model**: chat, reading, intents, English + Hindi speech, images | toonist/AnuLM-Omni-400M (training; published when its release gates pass) | CC BY-SA 4.0 |
 
-A fifth repo, [toonist/AnuLM-Smoke-30B](https://huggingface.co/toonist/AnuLM-Smoke-30B),
+The one model holds the decoder and two small projectors; the speech and
+image encoders it reads through (Whisper-small, SigLIP) are frozen and come
+from their own sources.
+
+A further repo, [toonist/AnuLM-Smoke-30B](https://huggingface.co/toonist/AnuLM-Smoke-30B),
 is not a model to use: it is a 17M checkpoint trained for 200 steps on
 tinyshakespeare that exists to test the release pipeline end to end
 (`docs/MODEL_CARD_SMOKE.md`).
@@ -41,7 +51,11 @@ print(t.decode(m.generate(**t("def is_prime(n):", return_tensors="pt"), max_new_
 Keep it in float32, which the config asks for by default: the router's
 per-expert bias decides which experts fire, and rounding it to bfloat16
 changes that and collapses the output into repeated tokens. `modeling_anulm.py`
-warns if you force a 16-bit dtype.
+warns if you force a 16-bit dtype. Base v2 and the chat model load exactly
+like this. The Decide, reader, ASR, caption and VQA repos carry an adapter,
+a head or a projector beside the weights, so they load through this
+repository's code instead (`model.load_checkpoint` reads a released folder,
+extras included); each repo's card says how.
 
 ![AnuLM-Coder-400M writing a primality test in the demo](docs/media/demo-coder-1280.png)
 
@@ -50,7 +64,23 @@ Try it without installing anything: open
 run the three cells, pick a checkpoint, and a public link to the demo
 appears (the free tier is enough). A Hugging Face Space would be the
 same app, `app.py`, but Hugging Face now charges for hosting Gradio
-Spaces, so none is up; the files are ready in `space/`. Want to help? [TODO.md](TODO.md)
+Spaces, so none is up; the files are ready in `space/`.
+
+`app_omni.py` puts the second release on one page: *Listen & reply* (your
+speech → AnuLM speech recognition → an answer → a Piper voice), *Look*
+(a caption, or an answer about the image), *Chat* (looked up in Wikipedia by
+the reader, or in the chat model's own words) and *Decide* (a message routed
+to an intent, AnuLM's adapters beside the ModernBERT baseline). `pip install
+gradio faster-whisper piper-tts timm pillow`, then `python app_omni.py`; every
+model together fits a 16 GB card, and `--device cpu` runs without one. A
+fresh clone runs every tab on the one model, AnuLM-Omni-400M, downloaded from
+the Hub on first use (`omni.py` keeps a single copy of its decoder behind all
+of them); a checkout with `ckpt_omni.pt` uses that, and one with only the
+earlier per-task checkpoints (`ckpt_*.pt`) uses those. The Wikipedia lookup
+also needs the retrieval index, which `python rag.py build` makes and which is
+not uploaded; without it *Chat* answers in the model's own words only.
+
+Want to help? [TODO.md](TODO.md)
 lists the open work, several items need no GPU, and [CONTRIBUTING.md](CONTRIBUTING.md)
 says how; each item is also a GitHub issue.
 
@@ -93,6 +123,7 @@ python serve.py --ckpt ckpt_coder_sft.pt    # the Python coder: describe a funct
 python app.py   --ckpt ckpt_coder_sft.pt    # the same demo as a Gradio app (pip install gradio); what demo_colab.ipynb launches
 python app_vision.py                        # show it a photograph and read the caption (pip install timm pillow)
 python app_voice.py                         # talk to it: Whisper hears, Piper speaks (pip install faster-whisper piper-tts)
+python app_omni.py                          # listen, look, chat and decide on one page, all with AnuLM's own models
 ```
 
 New here? Run `python quickstart.py`: it reports what your install can and
@@ -112,7 +143,7 @@ CPU wheel silently reports cuda unavailable.
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | How Sarvam 30B/105B are built — MLA, GQA, sparse MoE, aux-loss-free routing, YaRN — and (§10) which of those choices held up when rebuilt and trained at nano scale. The research output. |
 | [docs/RESULTS.md](docs/RESULTS.md) | Every experiment run here, with numbers: §1–21 the Hindi ladder, §22 three languages, §23 question answering in all three, §24 English ↔ Hindi translation (chrF 41.5 / 43.4 on FLORES-200), §25 the Python coder, finished: MBPP 12.5%, HumanEval 4.9%. |
 | [docs/MODEL_CARD.md](docs/MODEL_CARD.md) | The finished Python coder on one page: every data source with its size and share, the architecture as read from the checkpoint, the training run, the benchmark numbers with the prompt mode that produced each, and how to try it. |
-| The other cards: [base](docs/MODEL_CARD_BASE.md), [base at 2K](docs/MODEL_CARD_BASE2K.md), [question answerer](docs/MODEL_CARD_HINDI_QA.md), [translator](docs/MODEL_CARD_TRANSLATE.md) | One page each — what the checkpoint does and does not do, its data and licence, its numbers, how to run it. `export_hf.py` copies these into the Hugging Face repos, so the card on the Hub and the card here are the same file. |
+| The other cards: [base](docs/MODEL_CARD_BASE.md), [base at 2K](docs/MODEL_CARD_BASE2K.md), [question answerer](docs/MODEL_CARD_HINDI_QA.md), [translator](docs/MODEL_CARD_TRANSLATE.md), [base v2](docs/MODEL_CARD_BASE_V2.md), [the one model](docs/MODEL_CARD_OMNI.md) ([how to train it](docs/OMNI.md)) | One page each — what the checkpoint does and does not do, its data and licence, its numbers, how to run it. `export_hf.py` copies these into the Hugging Face repos, so the card on the Hub and the card here are the same file. |
 | [docs/TUTORIAL.md](docs/TUTORIAL.md) | From a fresh machine to your own AnuLM: install, a first model in 20 min on CPU, then every real run in order with the time, disk, GPU and expected number for each. Start here. |
 | [docs/PROJECT_MAP.md](docs/PROJECT_MAP.md) | The project as a system: the 353M/151M-active preset, every pipeline stage and the file that owns it, the three ways a non-text modality reaches the backbone, where each corpus comes from and what is actually measured. Read it after ARCHITECTURE.md. |
 | [docs/DATASETS.md](docs/DATASETS.md) | Every data source with its link, licence, size, the script that fetches it and the checkpoint that used it; which licence each released checkpoint inherits. |
@@ -679,7 +710,8 @@ each (`gate_proj`, `up_proj`, `down_proj`). `nano_105b` reports 0, and so does
 The code here is MIT (`LICENSE`). The redistributed Sarvam files and the
 training-data terms are recorded in `NOTICE`, which is the file to read
 before any commercial use — **two of the translation corpora are
-non-commercial, and `ckpt_translate` is trained on them.**
+non-commercial, and `ckpt_translate` is trained on them**; likewise
+Flickr30k, under the caption and VQA models.
 
 Sarvam's models and code are Apache 2.0. The files under `sarvam/sarvam-30b/`
 and `sarvam/sarvam-105b/` are theirs, downloaded unmodified from
@@ -692,4 +724,11 @@ nanoGPT is a re-implementation of GPT-2. The training data are public:
 Wikimedia dumps, C4, codeparrot-clean, fineweb-edu, code_exercises,
 OpenCodeInstruct, glaive-code-assistant, Samanantar, the IIT Bombay
 English-Hindi corpus, FLORES-200, HumanEval and MBPP, each under its own
-licence; none is redistributed here (`data/` is gitignored).
+licence; none is redistributed here (`data/` is gitignored). The second
+release adds fineweb-2 Hindi, opc-sft-stage1, Dolly-15k, oasst2, Aya,
+BANKING77, MASSIVE, SQuAD, MLQA, LibriSpeech, FLEURS, IndicTTS-Hindi,
+Flickr30k and A-OKVQA, plus a synthetic Indian-banking set generated here;
+`docs/DATASETS.md` has every link and licence. The frozen encoders under the
+speech and vision models (Whisper-small, SigLIP) and the ModernBERT-base
+behind the two baseline repos are other people's models, listed in `NOTICE`
+§4.

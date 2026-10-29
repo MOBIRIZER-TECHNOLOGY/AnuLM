@@ -52,7 +52,7 @@ _HERE = Path(__file__).parent
 # v3 is the chat model fine-tuned on base v2 (held-out answer loss 3.1445 vs
 # 3.2000), with recipe-F adapters (dense, rank 64; logs/post_v2, logs/indic_v4):
 # BANKING77 89.03% at 56 ms, MASSIVE-hi 84.46% at 54 ms, vs 86.4% / 82.6% for v2.
-if (_HERE / "ckpt_chat_v3.pt").exists():
+if (_HERE / "ckpt_chat_v3.pt").exists() or not (_HERE / "ckpt_chat_v2.pt").exists():   # or a clone: the Hub's
     BRAIN, DECIDE_ADAPTER, DECIDE_ADAPTER_HI = "ckpt_chat_v3.pt", "ckpt_decide_lora_F.pt", "ckpt_decide_lora_hi_F.pt"
     DECIDE_ADAPTER_IN = "ckpt_decide_lora_india_F.pt"
 else:
@@ -79,6 +79,22 @@ DECIDE_TASKS = {
 }
 DECIDE_ADAPTERS = {DECIDE_ADAPTER, DECIDE_ADAPTER_HI, DECIDE_ADAPTER_IN}     # --mode lora on BRAIN
 BRAIN_HUB = "toonist/AnuLM-Hindi-QA-400M"
+# The one model (omni_train.py, docs/OMNI.md): every tab on one decoder. Used
+# when this checkout has it, or has none of the separate models above -- a
+# fresh clone, which then downloads it from the Hub on first use.
+# ANULM_OMNI=<path or Hub id> forces it.
+OMNI_HUB = "toonist/AnuLM-Omni-400M"
+OMNI = os.environ.get("ANULM_OMNI") or (
+    str(HERE / "ckpt_omni.pt") if (HERE / "ckpt_omni.pt").exists() else OMNI_HUB)
+USE_OMNI = (bool(os.environ.get("ANULM_OMNI")) or (HERE / "ckpt_omni.pt").exists()
+            or not (HERE / "ckpt_chat_v3.pt").exists())
+OMNI_TASKS = {TASK_BANK: "banking", TASK_HI: "massive-hi"}     # the intents it was trained on
+
+
+def have(name: str) -> bool:
+    if USE_OMNI:
+        return name in set(CKPTS.values()) | {READER} | {DECIDE_TASKS[t][DECIDE_OWN] for t in OMNI_TASKS}
+    return (HERE / name).exists()
 
 
 class Models:
@@ -113,11 +129,17 @@ class Models:
                     m._cached_len, m._cached_key = 0, None
         return module
 
+    def omni(self):
+        from omni import Omni
+        return self._get("omni", lambda: Omni(OMNI, self.device))
+
     def ear(self, lang: str):
         from voice import OwnASR
+        if USE_OMNI:                      # one ear for both languages, on the shared decoder
+            return self.omni().ear()
 
         def make():
-            asr = OwnASR(CKPTS[key], self.device)
+            asr = OwnASR(str(HERE / CKPTS[key]), self.device)
             self._half(asr.sm)
             return asr
         key = "asr_hi" if lang == "hi" else "asr_en"
@@ -126,21 +148,28 @@ class Models:
     def eye(self, task: str):
         from vision_encoder import load_trained
 
+        if USE_OMNI:
+            return self.omni().eye()
+
         def make():
-            vl, tower, tok = load_trained(CKPTS[task], self.device)
+            vl, tower, tok = load_trained(str(HERE / CKPTS[task]), self.device)
             return self._half(vl), tower, tok
         return self._get(task, make)
 
     def reader(self):
         """Our own from-scratch reader (rc_pointer.py) over dense retrieval of
         Simple English + Hindi Wikipedia (rag.py). None if either is missing."""
-        if not (HERE / READER).exists() or not (HERE / "data" / "rag" / "dense_e5s.npy").exists():
+        if not have(READER) or not (HERE / "data" / "rag" / "dense_e5s.npy").exists():
             return None
+        if USE_OMNI:
+            return self.omni().reader()
         from rc_pointer import PointerQA
         return self._get("reader", lambda: PointerQA(str(HERE / READER), self.device))
 
     def brain(self):
         from voice import load_engine
+        if USE_OMNI and self.brain_source == BRAIN:
+            return self.omni().engine
         src = self.brain_source
         if not os.path.exists(src) and src == BRAIN:
             src = BRAIN_HUB
@@ -154,6 +183,8 @@ class Models:
         """Our model's adapters attach to the loaded chat model; each has its
         own hooks, switched on only for its own forward pass."""
         from decide import Decide
+        if USE_OMNI:
+            return self.omni().decider(OMNI_TASKS[task])
         name = DECIDE_TASKS[task][which]
         path, key = str(HERE / name), f"decide:{task}:{which}"
         if which == DECIDE_OWN and name in DECIDE_ADAPTERS and self.brain_source == BRAIN:
@@ -342,7 +373,7 @@ def build(models: Models) -> gr.Blocks:
                         "reads byte fragments, 3.3x the tokens.")
             with gr.Row():
                 with gr.Column():
-                    task = gr.Radio([k for k, v in DECIDE_TASKS.items() if (HERE / v[DECIDE_OWN]).exists()],
+                    task = gr.Radio([k for k, v in DECIDE_TASKS.items() if have(v[DECIDE_OWN])],
                                     value=TASK_BANK, label="task")
                     msg = gr.Textbox(label="message", lines=3,
                                      placeholder="I still haven't received my new card")
@@ -370,7 +401,7 @@ def build(models: Models) -> gr.Blocks:
                                     ["My KYC is pending and the account got frozen", TASK_IN],
                                     ["gas subsidy nahi aa rahi, aadhaar link check karna hai", TASK_IN],
                                     ["एटीएम से कैश नहीं निकला पर 5000 कट गए", TASK_IN]]
-                                   if (HERE / DECIDE_ADAPTER_IN).exists() else []), [msg, task])
+                                   if have(DECIDE_ADAPTER_IN) else []), [msg, task])
                 with gr.Column():
                     choice = gr.Label(label="intent (top 3)", num_top_classes=3)
                     action = gr.Markdown()
@@ -380,7 +411,7 @@ def build(models: Models) -> gr.Blocks:
                 if not m or not m.strip():
                     return None, "", None
                 which, tk = which or DECIDE_OWN, tk or TASK_BANK
-                if not (HERE / DECIDE_TASKS[tk][which]).exists():
+                if not have(DECIDE_TASKS[tk][which]):
                     return None, f"{which} has no trained model for this task here", None
                 d = models.decider(which, tk)
                 d.threshold = float(t)
@@ -414,7 +445,7 @@ def main() -> None:
     # Checkpoints and their tokenizers are saved with repo-relative paths;
     # launched from elsewhere, the chat model silently fell back to the Hub one.
     os.chdir(HERE)
-    missing =[c for c in CKPTS.values() if not (HERE / c).exists()]
+    missing = [c for c in CKPTS.values() if not have(c)]
     if missing:
         print(f"note: {', '.join(missing)} not found; those tabs will fail until trained "
               f"(docs/SPEECH.md has the commands)")
