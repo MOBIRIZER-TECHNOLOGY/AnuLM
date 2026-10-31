@@ -257,6 +257,34 @@ repository already has 66 such tests; each is assigned to a chapter below.
   `eval_code_sandbox_contains_generated_code`.
 - **Lab notebook:** why AnuLM-Omni was not published on its first run.
 
+## Part V · Going further
+
+### 16 · Continued pre-training and longer context
+- **Topics:** resuming a finished run (`--rewarmup`) and why the final decay must be repeated; mixing
+  sources by remaining budget, held-out sets cut before mixing; loss by position; YaRN on a trained model.
+- **Code:** `train.py`, `mix_corpus.py`, `eval_context.py`, `model.py` (YaRN config).
+- **Lab notebook:** §28, 10,000 steps at 2,048, and the contaminated first evaluation.
+
+### 17 · Distillation
+- **Topics:** soft targets; the bigram teacher and its fade; a model teacher with temperature;
+  distillation as a data-efficiency tool.
+- **Code:** `bigram_teacher.py`, `train.py --bigram-teacher`; new: model-teacher distillation.
+
+### 18 · Chat: conversations and their data
+- **Topics:** multi-turn masking; grading every reply; packing conversations; `make_chat.py`'s sources;
+  a held-out split by question, not by row (4 of 300 held-out chat questions were in training).
+- **Code:** `make_chat.py`, `finetune.py`.
+
+### 19 · Reinforcement learning with checkable rewards
+- **Topics:** a program as the reward; GRPO's group-relative advantages; the KL estimate; rejection
+  sampling; why the signal runs out.
+- **Code:** new (the repository has no RL).
+
+### 20 · Training on many GPUs
+- **Topics:** data parallelism from scratch; sharding; broadcasting weights and buffers; averaging
+  gradients; unused experts (a hang); sharing the experts' load counts.
+- **Code:** new (the repository trains on one GPU); real `torch.distributed` on the CPU in the lab.
+
 ---
 
 ## What has to be built for the course

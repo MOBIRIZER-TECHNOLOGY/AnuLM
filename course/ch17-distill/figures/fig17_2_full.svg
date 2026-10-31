@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 330" width="720" height="330" role="img">
+<rect width="720" height="330" fill="#FBF8F3"/>
+<line x1="90.0" y1="220.0" x2="520.0" y2="220.0" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="224.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">1.75</text>
+<line x1="90.0" y1="170.0" x2="520.0" y2="170.0" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="174.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">2</text>
+<line x1="90.0" y1="120.0" x2="520.0" y2="120.0" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="124.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">2.25</text>
+<line x1="90.0" y1="70.0" x2="520.0" y2="70.0" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="74.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">2.5</text>
+<text x="137.8" y="268.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">200</text>
+<text x="233.3" y="268.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">400</text>
+<text x="328.9" y="268.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">600</text>
+<text x="424.4" y="268.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">800</text>
+<text x="520.0" y="268.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">1,000</text>
+<line x1="90.0" y1="250.0" x2="520.0" y2="250.0" stroke="#1F2433" stroke-width="1.2"/>
+<path d="M90.0,56.8 L137.8,138.9 L185.6,165.6 L233.3,178.5 L281.1,188.1 L328.9,201.7 L376.7,208.7 L424.4,212.5 L472.2,216.3 L520.0,221.7" fill="none" stroke="#8A8F98" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="520.0" cy="221.7" r="3.5" fill="#8A8F98"/>
+<path d="M90.0,41.2 L137.8,93.6 L185.6,129.1 L233.3,158.0 L281.1,180.2 L328.9,196.9 L376.7,203.9 L424.4,207.8 L472.2,211.1 L520.0,216.8" fill="none" stroke="#E8833A" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="520.0" cy="216.8" r="3.5" fill="#E8833A"/>
+<path d="M90.0,107.4 L137.8,147.5 L185.6,165.2 L233.3,176.3 L281.1,181.4 L328.9,192.4 L376.7,198.4 L424.4,202.6 L472.2,203.6 L520.0,208.2" fill="none" stroke="#D1495B" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="520.0" cy="208.2" r="3.5" fill="#D1495B"/>
+<path d="M90.0,66.5 L137.8,153.3 L185.6,183.7 L233.3,197.1 L281.1,204.1 L328.9,215.9 L376.7,221.8 L424.4,226.3 L472.2,229.2 L520.0,232.8" fill="none" stroke="#1F9E89" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="520.0" cy="232.8" r="3.5" fill="#1F9E89"/>
+<text x="305.0" y="288.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">training step</text>
+<text transform="translate(44.0,140.0) rotate(-90)" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" fill="#1F2433" text-anchor="middle">validation loss</text>
+<text x="532.0" y="212.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#D1495B" text-anchor="start">bigram as a prior 1.809</text>
+<text x="532.0" y="227.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#E8833A" text-anchor="start">bigram teacher 1.766</text>
+<text x="532.0" y="242.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#8A8F98" text-anchor="start">alone 1.742</text>
+<text x="532.0" y="257.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F9E89" text-anchor="start">model teacher 1.686</text>
+<text x="16.0" y="303.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 17.2  A student with 113,664 parameters on all of Shakespeare. The teacher, 1,029,248, scores 1.504.</text>
+<text x="16.0" y="318.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Measured in the lab.</text>
+</svg>

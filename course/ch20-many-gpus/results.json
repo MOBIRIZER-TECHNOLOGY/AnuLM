@@ -1,0 +1,29 @@
+{
+ "steps": 150,
+ "global_batch": 16,
+ "threads": 12,
+ "part1": {
+  "one_vs_two_after_one_step": 1.8905848264694214e-07,
+  "one_vs_two_weights": 0.020370472222566605,
+  "one_vs_two_biases": 0.021999962627887726,
+  "two_ranks_weights": 0.0,
+  "val": {
+   "one process": 2.095345199108124,
+   "two processes": 2.093220281600952
+  },
+  "secs": {
+   "one process": 13.751008987426758,
+   "two processes": 16.251641750335693
+  }
+ },
+ "part2": {
+  "ranks_weights": 0.0,
+  "ranks_biases": 0.007000001147389412,
+  "routing_differs": 0.02604166604578495,
+  "val": [
+   2.0910717844963074,
+   2.091081714630127
+  ],
+  "biases_vs_shared": 0.03900007903575897
+ }
+}

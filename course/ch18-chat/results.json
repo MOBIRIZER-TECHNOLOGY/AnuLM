@@ -1,0 +1,27 @@
+{
+ "steps": 1500,
+ "example": "User: what is 59 plus 63?\nAssistant: 122User: and plus 15?\nAssistant: 137",
+ "arms": {
+  "every reply": {
+   "first": 0.945,
+   "second": 0.895,
+   "second_given_right_first": 0.95
+  },
+  "last reply": {
+   "first": 0.01,
+   "second": 0.015,
+   "second_given_right_first": 0.925
+  },
+  "user too": {
+   "first": 0.965,
+   "second": 0.88,
+   "second_given_right_first": 0.915
+  }
+ },
+ "leak": {
+  "train": 23022,
+  "held": 300,
+  "question_in_train": 4,
+  "pair_in_train": 2
+ }
+}

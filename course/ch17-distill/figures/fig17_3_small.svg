@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 330" width="720" height="330" role="img">
+<rect width="720" height="330" fill="#FBF8F3"/>
+<line x1="90.0" y1="201.1" x2="520.0" y2="201.1" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="205.1" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">2</text>
+<line x1="90.0" y1="140.0" x2="520.0" y2="140.0" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="144.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">2.5</text>
+<line x1="90.0" y1="78.9" x2="520.0" y2="78.9" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="82.9" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">3</text>
+<text x="137.8" y="268.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">200</text>
+<text x="233.3" y="268.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">400</text>
+<text x="328.9" y="268.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">600</text>
+<text x="424.4" y="268.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">800</text>
+<text x="520.0" y="268.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">1,000</text>
+<line x1="90.0" y1="250.0" x2="520.0" y2="250.0" stroke="#1F2433" stroke-width="1.2"/>
+<path d="M90.0,121.4 L137.8,151.5 L185.6,151.9 L233.3,143.2 L281.1,131.7 L328.9,116.1 L376.7,99.1 L424.4,76.3 L472.2,61.1 L520.0,44.5" fill="none" stroke="#8A8F98" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="520.0" cy="44.5" r="3.5" fill="#8A8F98"/>
+<path d="M90.0,121.3 L137.8,150.7 L185.6,166.2 L233.3,171.6 L281.1,160.3 L328.9,134.2 L376.7,111.3 L424.4,88.4 L472.2,69.5 L520.0,53.2" fill="none" stroke="#E8833A" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="520.0" cy="53.2" r="3.5" fill="#E8833A"/>
+<path d="M90.0,129.9 L137.8,169.9 L185.6,182.2 L233.3,185.6 L281.1,187.8 L328.9,192.3 L376.7,193.0 L424.4,193.1 L472.2,194.1 L520.0,194.7" fill="none" stroke="#1F9E89" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="520.0" cy="194.7" r="3.5" fill="#1F9E89"/>
+<text x="305.0" y="288.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">training step</text>
+<text transform="translate(44.0,140.0) rotate(-90)" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" fill="#1F2433" text-anchor="middle">validation loss</text>
+<text x="532.0" y="48.5" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#8A8F98" text-anchor="start">alone 3.281</text>
+<text x="532.0" y="63.5" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#E8833A" text-anchor="start">bigram teacher 3.210</text>
+<text x="532.0" y="198.7" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F9E89" text-anchor="start">model teacher 2.053</text>
+<text x="16.0" y="318.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 17.3  The same student on the first 30,000 bytes only. Alone, it memorises them. Measured in the lab.</text>
+</svg>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 230" width="720" height="230" role="img">
+<rect width="720" height="230" fill="#FBF8F3"/>
+<rect x="16.0" y="50.0" width="272.0" height="36.0" rx="4" fill="#ECE7DF" stroke="#8A8F98" stroke-width="1"/>
+<text x="152.0" y="73.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="600" fill="#1F2433" text-anchor="middle">User: what is 23 plus 45?\nAssistant:</text>
+<rect x="291.0" y="50.0" width="40.0" height="36.0" rx="4" fill="#FBE3D0" stroke="#E8833A" stroke-width="1"/>
+<text x="311.0" y="73.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="600" fill="#1F2433" text-anchor="middle"> 68</text>
+<rect x="334.0" y="50.0" width="44.0" height="36.0" rx="4" fill="#FBE3D0" stroke="#E8833A" stroke-width="1"/>
+<text x="356.0" y="73.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="600" fill="#1F2433" text-anchor="middle">EOS</text>
+<rect x="381.0" y="50.0" width="232.0" height="36.0" rx="4" fill="#ECE7DF" stroke="#8A8F98" stroke-width="1"/>
+<text x="497.0" y="73.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="600" fill="#1F2433" text-anchor="middle">User: and plus 17?\nAssistant:</text>
+<rect x="616.0" y="50.0" width="40.0" height="36.0" rx="4" fill="#FBE3D0" stroke="#E8833A" stroke-width="1"/>
+<text x="636.0" y="73.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="600" fill="#1F2433" text-anchor="middle"> 85</text>
+<rect x="659.0" y="50.0" width="44.0" height="36.0" rx="4" fill="#FBE3D0" stroke="#E8833A" stroke-width="1"/>
+<text x="681.0" y="73.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="600" fill="#1F2433" text-anchor="middle">EOS</text>
+<text x="16.0" y="36.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#8A8F98" text-anchor="start">one conversation, one row: the model reads all of it</text>
+<rect x="16.0" y="112.0" width="14.0" height="14.0" rx="3" fill="#ECE7DF" stroke="#8A8F98" stroke-width="1"/>
+<text x="36.0" y="124.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">the user&#x27;s words and the template: read, never graded</text>
+<rect x="16.0" y="138.0" width="14.0" height="14.0" rx="3" fill="#FBE3D0" stroke="#E8833A" stroke-width="1"/>
+<text x="36.0" y="150.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">every reply and its EOS: graded, in every turn</text>
+<text x="16.0" y="184.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#D1495B" text-anchor="start">In a real chat each reply is the last one when it is written: grade them all.</text>
+<text x="16.0" y="218.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 18.1  Chapter 9&#x27;s mask, over several turns.</text>
+</svg>

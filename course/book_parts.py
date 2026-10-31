@@ -24,6 +24,9 @@ PARTS = [
      "Teach the model to answer, cheaply, by preference, and to decide and look things up."),
     ("IV", "Multimodal and shipping", ["ch13-senses", "ch14-one-model", "ch15-shipping"],
      "Give it ears and eyes, put every skill in one model, find what that broke, and release it."),
+    ("V", "Going further", ["ch16-continue", "ch17-distill", "ch18-chat", "ch19-rl", "ch20-many-gpus"],
+     "Keep pre-training and read longer windows, learn from a teacher, hold a conversation, practise "
+     "with a checker as the reward, and train on more than one GPU."),
 ]
 
 BLURB = {
@@ -42,6 +45,11 @@ BLURB = {
     "ch13-senses": "New ids for speech, projected vectors for pictures, and whether it looks.",
     "ch14-one-model": "Many tasks in one model, and the regression its score hid.",
     "ch15-shipping": "Release folders, precision, and gates that decide.",
+    "ch16-continue": "Resuming a finished run, mixing sources honestly, and YaRN on a trained model.",
+    "ch17-distill": "A bigram teacher and a model teacher, and when a teacher is worth having.",
+    "ch18-chat": "Conversations of several turns, which replies to grade, and a held-out set that leaked.",
+    "ch19-rl": "GRPO with a program as the reward, against rejection sampling.",
+    "ch20-many-gpus": "Data parallelism from scratch, and the two bugs only experts have.",
 }
 
 # (index entry, regex, case-sensitive?[, only these chapters])
@@ -78,6 +86,11 @@ TERMS = [
     ("vocabulary, growing", r"\bvocabular", False), ("warmup", r"\bwarm-?up", False),
     ("weight decay", r"weight decay", False), ("Whisper", r"\bWhisper\b", True),
     ("WSD (warmup-stable-decay)", r"\bWSD\b|warmup-stable-decay", False), ("YaRN", r"\bYaRN\b", True),
+    ("all-reduce", r"all-reduce|all_reduce", False), ("data parallelism", r"data.parallel|DistributedDataParallel", False),
+    ("distillation", r"\bdistil", False), ("GRPO", r"\bGRPO\b", True),
+    ("rejection sampling", r"rejection sampling", False), ("rewarmup", r"\brewarm", False),
+    ("conversations, multi-turn", r"\bconversations?\b", False), ("reward", r"\brewards?\b", False),
+    ("KL divergence", r"\bKL\b", True), ("held-out leak", r"\bleak", False),
 ]
 
 CSS = """

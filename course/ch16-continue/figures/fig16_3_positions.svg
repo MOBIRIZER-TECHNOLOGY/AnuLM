@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" width="720" height="340" role="img">
+<rect width="720" height="340" fill="#FBF8F3"/>
+<line x1="90.0" y1="231.7" x2="520.0" y2="231.7" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="235.7" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">1.5</text>
+<line x1="90.0" y1="185.8" x2="520.0" y2="185.8" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="189.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">1.75</text>
+<line x1="90.0" y1="140.0" x2="520.0" y2="140.0" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="144.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">2</text>
+<line x1="90.0" y1="94.2" x2="520.0" y2="94.2" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="98.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">2.25</text>
+<line x1="90.0" y1="48.3" x2="520.0" y2="48.3" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="52.3" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">2.5</text>
+<text x="90.0" y="268.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">1</text>
+<text x="233.3" y="268.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">2</text>
+<text x="376.7" y="268.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">3</text>
+<text x="520.0" y="268.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">4</text>
+<line x1="90.0" y1="250.0" x2="520.0" y2="250.0" stroke="#1F2433" stroke-width="1.2"/>
+<path d="M90.0,227.0 L233.3,180.4 L376.7,116.1 L520.0,42.7" fill="none" stroke="#D1495B" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="520.0" cy="42.7" r="3.5" fill="#D1495B"/>
+<path d="M90.0,207.3 L233.3,197.9 L376.7,196.0 L520.0,208.1" fill="none" stroke="#E8833A" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="520.0" cy="208.1" r="3.5" fill="#E8833A"/>
+<path d="M90.0,223.8 L233.3,223.3 L376.7,220.4 L520.0,235.0" fill="none" stroke="#8A8F98" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="520.0" cy="235.0" r="3.5" fill="#8A8F98"/>
+<path d="M90.0,223.9 L233.3,222.4 L376.7,219.8 L520.0,235.0" fill="none" stroke="#1F9E89" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="520.0" cy="235.0" r="3.5" fill="#1F9E89"/>
+<text x="305.0" y="288.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">quarter of the 512-byte window</text>
+<text transform="translate(44.0,140.0) rotate(-90)" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" fill="#1F2433" text-anchor="middle">loss</text>
+<line x1="161.7" y1="30.0" x2="161.7" y2="250.0" stroke="#ECE7DF" stroke-width="1"/>
+<text x="94.0" y="44.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start">trained</text>
+<text x="94.0" y="58.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start">length</text>
+<text x="532.0" y="46.7" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#D1495B" text-anchor="start">plain RoPE 2.53</text>
+<text x="532.0" y="212.1" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#E8833A" text-anchor="start">YaRN, no training 1.63</text>
+<text x="532.0" y="239.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F9E89" text-anchor="start">trained, YaRN 1.48</text>
+<text x="532.0" y="254.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#8A8F98" text-anchor="start">trained, plain 1.48</text>
+<text x="16.0" y="313.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 16.3  Chapter 8&#x27;s model, trained on 128 bytes, reading 512. Each point is the mean loss over a quarter of</text>
+<text x="16.0" y="328.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">the window. Measured in the lab.</text>
+</svg>

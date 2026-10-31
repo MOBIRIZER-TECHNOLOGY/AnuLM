@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 330" width="720" height="330" role="img">
+<rect width="720" height="330" fill="#FBF8F3"/>
+<rect x="160.0" y="59.3" width="44.0" height="160.7" rx="3" fill="#3B4CCA" stroke="none" stroke-width="0"/>
+<text x="182.0" y="53.3" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">94.5%</text>
+<text x="182.0" y="238.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">1st</text>
+<rect x="212.0" y="67.8" width="44.0" height="152.2" rx="3" fill="#1F9E89" stroke="none" stroke-width="0"/>
+<text x="234.0" y="61.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">89.5%</text>
+<text x="234.0" y="238.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">2nd</text>
+<text x="208.0" y="260.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="middle">every reply</text>
+<rect x="330.0" y="218.3" width="44.0" height="1.7" rx="3" fill="#3B4CCA" stroke="none" stroke-width="0"/>
+<text x="352.0" y="212.3" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">1.0%</text>
+<text x="352.0" y="238.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">1st</text>
+<rect x="382.0" y="217.4" width="44.0" height="2.5" rx="3" fill="#1F9E89" stroke="none" stroke-width="0"/>
+<text x="404.0" y="211.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">1.5%</text>
+<text x="404.0" y="238.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">2nd</text>
+<text x="378.0" y="260.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="middle">last reply</text>
+<rect x="500.0" y="56.0" width="44.0" height="164.0" rx="3" fill="#3B4CCA" stroke="none" stroke-width="0"/>
+<text x="522.0" y="50.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">96.5%</text>
+<text x="522.0" y="238.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">1st</text>
+<rect x="552.0" y="70.4" width="44.0" height="149.6" rx="3" fill="#1F9E89" stroke="none" stroke-width="0"/>
+<text x="574.0" y="64.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">88.0%</text>
+<text x="574.0" y="238.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">2nd</text>
+<text x="548.0" y="260.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="middle">user too</text>
+<text x="16.0" y="60.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#8A8F98" text-anchor="start">held-out</text>
+<text x="16.0" y="76.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#8A8F98" text-anchor="start">conversations</text>
+<text x="16.0" y="92.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#8A8F98" text-anchor="start">answered right</text>
+<text x="16.0" y="303.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 18.2  Chapter 9&#x27;s model, taught two-turn conversations three ways. The second reply is read after the</text>
+<text x="16.0" y="318.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">model&#x27;s own first one. Measured in the lab.</text>
+</svg>

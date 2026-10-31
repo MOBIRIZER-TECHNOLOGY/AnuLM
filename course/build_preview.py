@@ -22,7 +22,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import book_parts  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
-DEFAULT = ["ch01-smallest-model", "ch02-data", "ch03-tokenizer", "ch04-skeleton", "ch05-positions", "ch06-attention", "ch07-experts", "ch08-pretrain", "ch09-sft", "ch10-lora-qlora", "ch11-dpo", "ch12-decide-rag", "ch13-senses", "ch14-one-model", "ch15-shipping"]
+DEFAULT = ["ch01-smallest-model", "ch02-data", "ch03-tokenizer", "ch04-skeleton", "ch05-positions", "ch06-attention", "ch07-experts", "ch08-pretrain", "ch09-sft", "ch10-lora-qlora", "ch11-dpo", "ch12-decide-rag", "ch13-senses", "ch14-one-model", "ch15-shipping",
+           "ch16-continue", "ch17-distill", "ch18-chat", "ch19-rl", "ch20-many-gpus"]
 
 
 def inline(s: str) -> str:

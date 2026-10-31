@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" width="720" height="420" role="img">
+<rect width="720" height="420" fill="#FBF8F3"/>
+<line x1="90.0" y1="146.7" x2="540.0" y2="146.7" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="150.7" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">90</text>
+<line x1="90.0" y1="88.3" x2="540.0" y2="88.3" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="92.3" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">95</text>
+<line x1="90.0" y1="30.0" x2="540.0" y2="30.0" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="34.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">100</text>
+<text x="90.0" y="188.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">0</text>
+<text x="202.5" y="188.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">50</text>
+<text x="315.0" y="188.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">100</text>
+<text x="427.5" y="188.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">150</text>
+<text x="540.0" y="188.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">200</text>
+<line x1="90.0" y1="170.0" x2="540.0" y2="170.0" stroke="#1F2433" stroke-width="1.2"/>
+<path d="M90.0,133.5 L202.5,49.0 L315.0,44.6 L427.5,53.3 L540.0,54.8" fill="none" stroke="#1F9E89" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="540.0" cy="54.8" r="3.5" fill="#1F9E89"/>
+<path d="M90.0,133.5 L202.5,43.1 L315.0,40.2 L427.5,34.4 L540.0,32.9" fill="none" stroke="#3B4CCA" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="540.0" cy="32.9" r="3.5" fill="#3B4CCA"/>
+<text transform="translate(44.0,100.0) rotate(-90)" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" fill="#1F2433" text-anchor="middle">sampled right (%)</text>
+<text x="550.0" y="58.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F9E89" text-anchor="start">GRPO 97.9%</text>
+<text x="550.0" y="26.9" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#3B4CCA" text-anchor="start">rejection sampling 99.8%</text>
+<line x1="90.0" y1="340.0" x2="540.0" y2="340.0" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="344.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">0</text>
+<line x1="90.0" y1="296.0" x2="540.0" y2="296.0" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="300.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">10</text>
+<line x1="90.0" y1="252.0" x2="540.0" y2="252.0" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="256.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">20</text>
+<text x="90.0" y="358.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">50</text>
+<text x="240.0" y="358.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">100</text>
+<text x="390.0" y="358.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">150</text>
+<text x="540.0" y="358.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">200</text>
+<line x1="90.0" y1="340.0" x2="540.0" y2="340.0" stroke="#1F2433" stroke-width="1.2"/>
+<path d="M90.0,264.1 L240.0,292.7 L390.0,299.3 L540.0,309.2" fill="none" stroke="#1F9E89" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="540.0" cy="309.2" r="3.5" fill="#1F9E89"/>
+<path d="M90.0,286.1 L240.0,308.1 L390.0,320.2 L540.0,325.7" fill="none" stroke="#3B4CCA" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="540.0" cy="325.7" r="3.5" fill="#3B4CCA"/>
+<text x="315.0" y="378.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">step</text>
+<text transform="translate(44.0,285.0) rotate(-90)" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" fill="#1F2433" text-anchor="middle">groups with signal (%)</text>
+<text x="16.0" y="393.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 19.2  Chapter 9&#x27;s model, 8 sums × 8 samples a step. Top: 4 samples per held-out sum at temperature 1.</text>
+<text x="16.0" y="408.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Bottom: groups not all right or all wrong. Measured in the lab.</text>
+</svg>

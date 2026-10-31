@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 370" width="720" height="370" role="img">
+<rect width="720" height="370" fill="#FBF8F3"/>
+<rect x="260.0" y="20.0" width="200.0" height="40.0" rx="8" fill="#ECE7DF" stroke="#8A8F98" stroke-width="1.5"/>
+<text x="360.0" y="44.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">a batch of 16 windows</text>
+<line x1="360.0" y1="62.0" x2="180.0" y2="96.0" stroke="#8A8F98" stroke-width="1.2"/>
+<polygon points="180.0,96.0 184.8,92.4 185.8,97.6" fill="#8A8F98"/>
+<rect x="60.0" y="98.0" width="240.0" height="40.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="180.0" y="122.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">rank 0: its 8 windows (shard)</text>
+<rect x="60.0" y="152.0" width="240.0" height="40.0" rx="8" fill="#FBF8F3" stroke="#1F2433" stroke-width="1.5"/>
+<text x="180.0" y="176.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">forward, backward on its copy</text>
+<line x1="180.0" y1="140.0" x2="180.0" y2="150.0" stroke="#8A8F98" stroke-width="1.2"/>
+<polygon points="180.0,150.0 177.8,145.5 182.2,145.5" fill="#8A8F98"/>
+<line x1="360.0" y1="62.0" x2="540.0" y2="96.0" stroke="#8A8F98" stroke-width="1.2"/>
+<polygon points="540.0,96.0 534.2,97.6 535.2,92.4" fill="#8A8F98"/>
+<rect x="420.0" y="98.0" width="240.0" height="40.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="540.0" y="122.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">rank 1: its 8 windows (shard)</text>
+<rect x="420.0" y="152.0" width="240.0" height="40.0" rx="8" fill="#FBF8F3" stroke="#1F2433" stroke-width="1.5"/>
+<text x="540.0" y="176.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">forward, backward on its copy</text>
+<line x1="540.0" y1="140.0" x2="540.0" y2="150.0" stroke="#8A8F98" stroke-width="1.2"/>
+<polygon points="540.0,150.0 537.8,145.5 542.2,145.5" fill="#8A8F98"/>
+<rect x="60.0" y="210.0" width="600.0" height="46.0" rx="6" fill="#FBE3D0" stroke="#E8833A" stroke-width="1.5"/>
+<text x="360.0" y="230.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="middle">all-reduce: average the gradients, sum the experts&#x27; load counts</text>
+<text x="360.0" y="248.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">every parameter, in the same order on every rank; zeros for an expert that got no tokens</text>
+<line x1="180.0" y1="194.0" x2="180.0" y2="208.0" stroke="#8A8F98" stroke-width="1.2"/>
+<polygon points="180.0,208.0 177.8,203.5 182.2,203.5" fill="#8A8F98"/>
+<line x1="180.0" y1="258.0" x2="180.0" y2="276.0" stroke="#8A8F98" stroke-width="1.2"/>
+<polygon points="180.0,276.0 177.8,271.5 182.2,271.5" fill="#8A8F98"/>
+<rect x="60.0" y="278.0" width="240.0" height="26.0" rx="8" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.5"/>
+<text x="180.0" y="294.9" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">the same step, the same bias update</text>
+<line x1="540.0" y1="194.0" x2="540.0" y2="208.0" stroke="#8A8F98" stroke-width="1.2"/>
+<polygon points="540.0,208.0 537.8,203.5 542.2,203.5" fill="#8A8F98"/>
+<line x1="540.0" y1="258.0" x2="540.0" y2="276.0" stroke="#8A8F98" stroke-width="1.2"/>
+<polygon points="540.0,276.0 537.8,271.5 542.2,271.5" fill="#8A8F98"/>
+<rect x="420.0" y="278.0" width="240.0" height="26.0" rx="8" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.5"/>
+<text x="540.0" y="294.9" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">the same step, the same bias update</text>
+<text x="16.0" y="343.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 20.1  Data-parallel training. The copies never diverge because every step starts from the same averaged</text>
+<text x="16.0" y="358.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">numbers.</text>
+</svg>

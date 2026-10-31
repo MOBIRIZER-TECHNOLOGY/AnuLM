@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" width="720" height="300" role="img">
+<rect width="720" height="300" fill="#FBF8F3"/>
+<text x="16.0" y="34.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#1F2433" text-anchor="start">after &quot;thou art a&quot;, the next byte is ...</text>
+<text x="30.0" y="66.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#8A8F98" text-anchor="start">the text says: &quot;n&quot; (and nothing else)</text>
+<rect x="30.0" y="94.0" width="34.0" height="120.0" rx="3" fill="#8A8F98" stroke="none" stroke-width="0"/>
+<text x="47.0" y="232.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">n</text>
+<text x="47.0" y="88.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#1F2433" text-anchor="middle">100%</text>
+<rect x="80.0" y="214.0" width="34.0" height="1.5" rx="3" fill="#8A8F98" stroke="none" stroke-width="0"/>
+<text x="97.0" y="232.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">g</text>
+<rect x="130.0" y="214.0" width="34.0" height="1.5" rx="3" fill="#8A8F98" stroke="none" stroke-width="0"/>
+<text x="147.0" y="232.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">b</text>
+<rect x="180.0" y="214.0" width="34.0" height="1.5" rx="3" fill="#8A8F98" stroke="none" stroke-width="0"/>
+<text x="197.0" y="232.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">s</text>
+<rect x="230.0" y="214.0" width="34.0" height="1.5" rx="3" fill="#8A8F98" stroke="none" stroke-width="0"/>
+<text x="247.0" y="232.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">f</text>
+<rect x="280.0" y="214.0" width="34.0" height="1.5" rx="3" fill="#8A8F98" stroke="none" stroke-width="0"/>
+<text x="297.0" y="232.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">m</text>
+<text x="380.0" y="66.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F9E89" text-anchor="start">a teacher says: these, this likely</text>
+<rect x="380.0" y="168.4" width="34.0" height="45.6" rx="3" fill="#1F9E89" stroke="none" stroke-width="0"/>
+<text x="397.0" y="232.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">n</text>
+<text x="397.0" y="162.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#1F2433" text-anchor="middle">38%</text>
+<rect x="430.0" y="193.6" width="34.0" height="20.4" rx="3" fill="#1F9E89" stroke="none" stroke-width="0"/>
+<text x="447.0" y="232.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">g</text>
+<text x="447.0" y="187.6" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#1F2433" text-anchor="middle">17%</text>
+<rect x="480.0" y="197.2" width="34.0" height="16.8" rx="3" fill="#1F9E89" stroke="none" stroke-width="0"/>
+<text x="497.0" y="232.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">b</text>
+<text x="497.0" y="191.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#1F2433" text-anchor="middle">14%</text>
+<rect x="530.0" y="199.6" width="34.0" height="14.4" rx="3" fill="#1F9E89" stroke="none" stroke-width="0"/>
+<text x="547.0" y="232.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">s</text>
+<text x="547.0" y="193.6" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#1F2433" text-anchor="middle">12%</text>
+<rect x="580.0" y="202.0" width="34.0" height="12.0" rx="3" fill="#1F9E89" stroke="none" stroke-width="0"/>
+<text x="597.0" y="232.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">f</text>
+<text x="597.0" y="196.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#1F2433" text-anchor="middle">10%</text>
+<rect x="630.0" y="203.2" width="34.0" height="10.8" rx="3" fill="#1F9E89" stroke="none" stroke-width="0"/>
+<text x="647.0" y="232.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">m</text>
+<text x="647.0" y="197.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#1F2433" text-anchor="middle">9%</text>
+<text x="30.0" y="262.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">Every position now teaches about every byte, not only the one that came next.</text>
+<text x="16.0" y="288.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 17.1  Hard and soft targets. The numbers are illustrative; the lab measures what the soft ones are worth.</text>
+</svg>

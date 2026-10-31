@@ -5,7 +5,7 @@ data, then post-train it every way that matters, on one consumer GPU or a
 laptop. Every figure is drawn from a real run, and every chapter has a lab
 you can finish on a CPU.
 
-**Status:** all fifteen chapters are drafted, each with its lab, figures and
+**Status:** all twenty chapters are drafted, each with its lab, figures and
 checks; every chapter's `--self-test` passes. `STYLE.md` is the style guide
 every chapter follows.
 
@@ -42,6 +42,12 @@ code, and the test that catches its silent failure.
 | 13 | Hearing and seeing | `speech_vocab.py`, `vision_encoder.py`, `omni_train.py`, `build/post.py`, `checks/ch13.py` | **written** |
 | 14 | One model for everything, and debugging it | `omni_train.py`, `experiments/omni_one.py`, `build/post.py`, `checks/ch14.py` | **written** |
 | 15 | Shipping | `export_hf.py`, `docs/PUBLISHING.md`, `build/post.py`, `checks/ch15.py` | **written** |
+| **Part V** | **Going further** | | |
+| 16 | Continued pre-training and longer context | `train.py --rewarmup`, `mix_corpus.py`, `eval_context.py`, `build/further.py`, `checks/ch16.py` | **written** |
+| 17 | Distillation | `bigram_teacher.py`, model teacher (new), `build/further.py`, `checks/ch17.py` | **written** |
+| 18 | Chat: conversations and their data | `make_chat.py`, `build/further.py`, `checks/ch18.py` | **written** |
+| 19 | Reinforcement learning with checkable rewards | GRPO (new), `build/further.py`, `checks/ch19.py` | **written** |
+| 20 | Training on many GPUs | data parallelism (new), `build/further.py`, `checks/ch20.py` | **written** |
 
 ## Run the labs
 
@@ -52,7 +58,7 @@ them in order:
 ```bash
 cd course/ch01-smallest-model && python lab.py && python make_figures.py
 cd ../ch08-pretrain   && python lab.py && python make_figures.py   # writes base.pt: Chapters 9-15 start here
-cd ../ch09-sft        && python lab.py && python make_figures.py   # writes sft.pt: Chapters 11 and 15 use it
+cd ../ch09-sft        && python lab.py && python make_figures.py   # writes sft.pt: Chapters 11, 15, 18 and 19 use it
 cd ../ch10-lora-qlora && python lab.py && python make_figures.py
 cd ..                 && python build_preview.py                   # -> preview/sample.html
 ```
@@ -63,7 +69,7 @@ with `python checks/chNN.py`, and see each check catch the bug it is for with
 `python checks/chNN.py --self-test`.
 
 Needed: PyTorch, plus numpy (from Chapter 9 on) and safetensors
-(Chapter 15). Lab data: Shakespeare (`data/input.txt`, public domain), a
+(Chapter 15). Chapter 20 starts two processes with `torch.distributed`. Lab data: Shakespeare (`data/input.txt`, public domain), a
 Hindi Wikipedia sample (`data/bench_hindi.txt`, CC BY-SA 4.0), BANKING77
 (`data/banking77`, CC BY 4.0), XQuAD and SQuAD passages
 (`ch12-decide-rag/data/`, CC BY-SA 4.0), and the repository's cached image
