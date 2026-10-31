@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 380" width="720" height="380" role="img">
+<rect width="720" height="380" fill="#FBF8F3"/>
+<line x1="110.0" y1="268.2" x2="650.0" y2="268.2" stroke="#ECE7DF" stroke-width="1"/>
+<text x="102.0" y="272.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">1.5</text>
+<line x1="110.0" y1="190.8" x2="650.0" y2="190.8" stroke="#ECE7DF" stroke-width="1"/>
+<text x="102.0" y="194.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">2</text>
+<line x1="110.0" y1="113.4" x2="650.0" y2="113.4" stroke="#ECE7DF" stroke-width="1"/>
+<text x="102.0" y="117.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">2.5</text>
+<text x="174.7" y="308.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">1</text>
+<text x="304.1" y="308.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">2</text>
+<text x="433.6" y="308.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">3</text>
+<text x="563.0" y="308.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">4</text>
+<line x1="110.0" y1="290.0" x2="650.0" y2="290.0" stroke="#1F2433" stroke-width="1.2"/>
+<path d="M110.0,290.0 L650.0,40.0" fill="none" stroke="#FBF8F3" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="650.0" cy="40.0" r="3.5" fill="#FBF8F3"/>
+<text x="380.0" y="328.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">loss on Hindi after 1,000 steps (lower: learned more)</text>
+<text transform="translate(64.0,165.0) rotate(-90)" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" fill="#1F2433" text-anchor="middle">loss on Shakespeare (lower: forgot less)</text>
+<line x1="110.0" y1="266.8" x2="650.0" y2="266.8" stroke="#8A8F98" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text x="646.0" y="260.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#8A8F98" text-anchor="end">base model on Shakespeare: 1.51</text>
+<circle cx="155.1" cy="129.4" r="6" fill="#3B4CCA"/>
+<text x="167.1" y="133.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#3B4CCA" text-anchor="start">full fine-tune  (0.85, 2.40)</text>
+<circle cx="572.3" cy="63.2" r="6" fill="#D1495B"/>
+<text x="560.3" y="67.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#D1495B" text-anchor="end">LoRA  (4.07, 2.82)</text>
+<circle cx="169.2" cy="153.1" r="6" fill="#E8833A"/>
+<text x="181.2" y="145.1" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#E8833A" text-anchor="start">LoRA + rows  (0.96, 2.24)</text>
+<circle cx="168.8" cy="158.4" r="6" fill="#1F9E89"/>
+<text x="180.8" y="174.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F9E89" text-anchor="start">QLoRA + rows  (0.95, 2.21)</text>
+<text x="16.0" y="353.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 10.5  What each method learned and forgot. The base model&#x27;s Hindi loss, 17.2, is off the chart to the</text>
+<text x="16.0" y="368.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">right. Measured in the lab.</text>
+</svg>

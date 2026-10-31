@@ -1,0 +1,51 @@
+{
+ "pt_bytes": 4155479,
+ "reference_accuracy": 0.945,
+ "exports": {
+  "export_hf's rule": {
+   "bytes": 4130077,
+   "bf16_numbers": 0,
+   "max_prob_change": 0.0,
+   "routing_changed": 0.0,
+   "accuracy": 0.945
+  },
+  "a lower bar": {
+   "bytes": 2074309,
+   "bf16_numbers": 1027840,
+   "max_prob_change": 0.738961398601532,
+   "routing_changed": 0.0019369369838386774,
+   "accuracy": 0.945
+  },
+  "all bfloat16": {
+   "bytes": 2071533,
+   "bf16_numbers": 1029296,
+   "max_prob_change": 0.7368069887161255,
+   "routing_changed": 0.0036036036908626556,
+   "accuracy": 0.945
+  }
+ },
+ "omni": {
+  "results": {
+   "chat_heldout_loss": 5.3181,
+   "read_squad_en": 24.6,
+   "intent_banking77": 90.0,
+   "wer_en": 12.2,
+   "wer_hi_fleurs": 48.8,
+   "wer_hi_kathbath": 35.5,
+   "wer_hi_mucs": 54.4,
+   "vqa_acc": 17.6,
+   "wer_hi_mean": 46.2
+  },
+  "gates": {
+   "wer_en": false,
+   "wer_hi_mean": true,
+   "wer_hi_fleurs": false,
+   "chat_heldout_loss": false,
+   "read_squad_en": false,
+   "intent_banking77": true,
+   "vqa_acc": true
+  },
+  "publish": false,
+  "report": "| measure | value | gate | pass |\n|---|---|---|---|\n| wer_en | 12.2 | <= 9.0 | **no** |\n| wer_hi_mean | 46.2 | <= 50.9 | yes |\n| wer_hi_fleurs | 48.8 | <= 43.0 | **no** |\n| chat_heldout_loss | 5.3181 | <= 3.3 | **no** |\n| read_squad_en | 24.6 | >= 30.0 | **no** |\n| intent_banking77 | 90.0 | >= 80.0 | yes |\n| vqa_acc | 17.6 | >= 10.0 | yes |\n\nRelease gates: **NOT all pass -- not published**\n"
+ }
+}

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400" role="img">
+<rect width="720" height="400" fill="#FBF8F3"/>
+<text x="16.0" y="30.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#8A8F98" text-anchor="start">chat held-out loss at the end of each probe (it started at 3.265; the gate is 3.30)</text>
+<text x="256.0" y="62.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="500" fill="#1F2433" text-anchor="end">one batch a step, chat only</text>
+<rect x="266.0" y="46.0" width="241.4" height="22.0" rx="4" fill="#D1495B" stroke="none" stroke-width="1.5"/>
+<text x="515.4" y="62.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">3.587</text>
+<text x="256.0" y="96.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="500" fill="#1F2433" text-anchor="end">accumulate 4, chat only</text>
+<rect x="266.0" y="80.0" width="219.8" height="22.0" rx="4" fill="#1F9E89" stroke="none" stroke-width="1.5"/>
+<text x="493.8" y="96.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">3.266</text>
+<text x="256.0" y="130.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="500" fill="#1F2433" text-anchor="end">one batch, lr ÷ 5, chat only</text>
+<rect x="266.0" y="114.0" width="225.2" height="22.0" rx="4" fill="#E8833A" stroke="none" stroke-width="1.5"/>
+<text x="499.2" y="130.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">3.345</text>
+<text x="256.0" y="164.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="500" fill="#1F2433" text-anchor="end">all tasks, one batch a step</text>
+<rect x="266.0" y="148.0" width="334.8" height="22.0" rx="4" fill="#D1495B" stroke="none" stroke-width="1.5"/>
+<text x="608.8" y="164.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">4.974</text>
+<text x="256.0" y="198.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="500" fill="#1F2433" text-anchor="end">… with projectors at a word&#x27;s scale</text>
+<rect x="266.0" y="182.0" width="332.9" height="22.0" rx="4" fill="#D1495B" stroke="none" stroke-width="1.5"/>
+<text x="606.9" y="198.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">4.946</text>
+<text x="256.0" y="232.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="500" fill="#1F2433" text-anchor="end">all tasks, accumulate 8, chat 7%</text>
+<rect x="266.0" y="216.0" width="239.0" height="22.0" rx="4" fill="#1F9E89" stroke="none" stroke-width="1.5"/>
+<text x="513.0" y="232.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">3.551</text>
+<text x="256.0" y="266.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="500" fill="#1F2433" text-anchor="end">… chat 25% of batches</text>
+<rect x="266.0" y="250.0" width="228.5" height="22.0" rx="4" fill="#1F9E89" stroke="none" stroke-width="1.5"/>
+<text x="502.5" y="266.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">3.395</text>
+<text x="256.0" y="300.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="500" fill="#1F2433" text-anchor="end">… chat 15%, lr ÷ 2</text>
+<rect x="266.0" y="284.0" width="226.6" height="22.0" rx="4" fill="#1F9E89" stroke="none" stroke-width="1.5"/>
+<text x="500.6" y="300.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">3.366</text>
+<line x1="488.1" y1="40.0" x2="488.1" y2="318.0" stroke="#1F2433" stroke-width="1.2" stroke-dasharray="4 4"/>
+<text x="492.1" y="332.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#1F2433" text-anchor="start">gate</text>
+<text x="16.0" y="373.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 14.2  The probes of 30 October 2026 (logs/ab_projscale). Chat only: 1,000 batches; all tasks: 3,000. One</text>
+<text x="16.0" y="388.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">batch a step drifted even with chat alone.</text>
+</svg>

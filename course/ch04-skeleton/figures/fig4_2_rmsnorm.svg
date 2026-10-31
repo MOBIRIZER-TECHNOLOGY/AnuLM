@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 318" width="720" height="318" role="img">
+<rect width="720" height="318" fill="#FBF8F3"/>
+<text x="134.0" y="34.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="middle">a vector x</text>
+<line x1="24.0" y1="150.0" x2="238.0" y2="150.0" stroke="#8A8F98" stroke-width="1"/>
+<rect x="30.0" y="92.8" width="18.0" height="57.2" rx="2" fill="#1F9E89" stroke="none" stroke-width="0"/>
+<text x="39.0" y="87.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="9" font-weight="400" fill="#8A8F98" text-anchor="middle">2.6</text>
+<rect x="56.0" y="150.0" width="18.0" height="26.4" rx="2" fill="#1F9E89" stroke="none" stroke-width="0"/>
+<text x="65.0" y="188.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="9" font-weight="400" fill="#8A8F98" text-anchor="middle">-1.2</text>
+<rect x="82.0" y="141.2" width="18.0" height="8.8" rx="2" fill="#1F9E89" stroke="none" stroke-width="0"/>
+<text x="91.0" y="136.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="9" font-weight="400" fill="#8A8F98" text-anchor="middle">0.4</text>
+<rect x="108.0" y="66.4" width="18.0" height="83.6" rx="2" fill="#1F9E89" stroke="none" stroke-width="0"/>
+<text x="117.0" y="61.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="9" font-weight="400" fill="#8A8F98" text-anchor="middle">3.8</text>
+<rect x="134.0" y="150.0" width="18.0" height="63.8" rx="2" fill="#1F9E89" stroke="none" stroke-width="0"/>
+<text x="143.0" y="225.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="9" font-weight="400" fill="#8A8F98" text-anchor="middle">-2.9</text>
+<rect x="160.0" y="130.2" width="18.0" height="19.8" rx="2" fill="#1F9E89" stroke="none" stroke-width="0"/>
+<text x="169.0" y="125.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="9" font-weight="400" fill="#8A8F98" text-anchor="middle">0.9</text>
+<rect x="186.0" y="150.0" width="18.0" height="6.6" rx="2" fill="#1F9E89" stroke="none" stroke-width="0"/>
+<text x="195.0" y="168.6" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="9" font-weight="400" fill="#8A8F98" text-anchor="middle">-0.3</text>
+<rect x="212.0" y="112.6" width="18.0" height="37.4" rx="2" fill="#1F9E89" stroke="none" stroke-width="0"/>
+<text x="221.0" y="107.6" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="9" font-weight="400" fill="#8A8F98" text-anchor="middle">1.7</text>
+<line x1="258.0" y1="120.0" x2="300.0" y2="120.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="300.0,120.0 293.7,123.0 293.7,117.0" fill="#8A8F98"/>
+<text x="279.0" y="110.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">÷ 2.09</text>
+<text x="420.0" y="34.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="middle">x / rms(x)</text>
+<line x1="310.0" y1="150.0" x2="524.0" y2="150.0" stroke="#8A8F98" stroke-width="1"/>
+<rect x="316.0" y="124.0" width="18.0" height="26.0" rx="2" fill="#3B4CCA" stroke="none" stroke-width="0"/>
+<text x="325.0" y="119.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="9" font-weight="400" fill="#8A8F98" text-anchor="middle">1.2</text>
+<rect x="342.0" y="150.0" width="18.0" height="12.0" rx="2" fill="#3B4CCA" stroke="none" stroke-width="0"/>
+<text x="351.0" y="174.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="9" font-weight="400" fill="#8A8F98" text-anchor="middle">-0.6</text>
+<rect x="368.0" y="146.0" width="18.0" height="4.0" rx="2" fill="#3B4CCA" stroke="none" stroke-width="0"/>
+<text x="377.0" y="141.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="9" font-weight="400" fill="#8A8F98" text-anchor="middle">0.2</text>
+<rect x="394.0" y="112.0" width="18.0" height="38.0" rx="2" fill="#3B4CCA" stroke="none" stroke-width="0"/>
+<text x="403.0" y="107.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="9" font-weight="400" fill="#8A8F98" text-anchor="middle">1.8</text>
+<rect x="420.0" y="150.0" width="18.0" height="29.0" rx="2" fill="#3B4CCA" stroke="none" stroke-width="0"/>
+<text x="429.0" y="191.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="9" font-weight="400" fill="#8A8F98" text-anchor="middle">-1.4</text>
+<rect x="446.0" y="141.0" width="18.0" height="9.0" rx="2" fill="#3B4CCA" stroke="none" stroke-width="0"/>
+<text x="455.0" y="136.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="9" font-weight="400" fill="#8A8F98" text-anchor="middle">0.4</text>
+<rect x="472.0" y="150.0" width="18.0" height="3.0" rx="2" fill="#3B4CCA" stroke="none" stroke-width="0"/>
+<text x="481.0" y="165.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="9" font-weight="400" fill="#8A8F98" text-anchor="middle">-0.1</text>
+<rect x="498.0" y="133.0" width="18.0" height="17.0" rx="2" fill="#3B4CCA" stroke="none" stroke-width="0"/>
+<text x="507.0" y="128.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="9" font-weight="400" fill="#8A8F98" text-anchor="middle">0.8</text>
+<text x="420.0" y="262.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">root-mean-square is now exactly 1</text>
+<text x="560.0" y="60.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="start">rms(x) =</text>
+<text x="560.0" y="80.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="400" fill="#1F2433" text-anchor="start">√(mean(x²) + ε)</text>
+<text x="560.0" y="110.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">here 2.09</text>
+<text x="560.0" y="140.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">Then each of the D</text>
+<text x="560.0" y="158.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">numbers is multiplied</text>
+<text x="560.0" y="176.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">by its own learned</text>
+<text x="560.0" y="194.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">gain (weight), which</text>
+<text x="560.0" y="212.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">starts at 1.</text>
+<text x="16.0" y="291.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 4.2  RMSNorm rescales a vector to a root-mean-square of 1; its direction is unchanged. No mean is</text>
+<text x="16.0" y="306.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">subtracted, which is what separates it from LayerNorm.</text>
+</svg>

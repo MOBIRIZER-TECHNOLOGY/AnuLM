@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 280" width="720" height="280" role="img">
+<rect width="720" height="280" fill="#FBF8F3"/>
+<text x="210.0" y="214.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">Hindi passages</text>
+<rect x="120.0" y="60.0" width="48.0" height="130.0" rx="3" fill="#E9E9EB" stroke="none" stroke-width="0"/>
+<text x="144.0" y="54.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="middle">5</text>
+<text x="144.0" y="232.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">planted</text>
+<rect x="184.0" y="60.0" width="48.0" height="130.0" rx="3" fill="#1F9E89" stroke="none" stroke-width="0"/>
+<text x="208.0" y="54.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="middle">5</text>
+<text x="208.0" y="232.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">yours</text>
+<rect x="248.0" y="164.0" width="48.0" height="26.0" rx="3" fill="#D1495B" stroke="none" stroke-width="0"/>
+<text x="272.0" y="158.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="middle">1</text>
+<text x="272.0" y="232.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">repository</text>
+<text x="490.0" y="214.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">English passages</text>
+<rect x="400.0" y="60.0" width="48.0" height="130.0" rx="3" fill="#E9E9EB" stroke="none" stroke-width="0"/>
+<text x="424.0" y="54.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="middle">5</text>
+<text x="424.0" y="232.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">planted</text>
+<rect x="464.0" y="60.0" width="48.0" height="130.0" rx="3" fill="#1F9E89" stroke="none" stroke-width="0"/>
+<text x="488.0" y="54.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="middle">5</text>
+<text x="488.0" y="232.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">yours</text>
+<rect x="528.0" y="60.0" width="48.0" height="130.0" rx="3" fill="#D1495B" stroke="none" stroke-width="0"/>
+<text x="552.0" y="54.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="middle">5</text>
+<text x="552.0" y="232.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">repository</text>
+<line x1="100.0" y1="190.0" x2="660.0" y2="190.0" stroke="#1F2433" stroke-width="1.2"/>
+<text x="16.0" y="253.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 2.3  Benchmark passages hidden in the training text, and how many each matcher found. The repository&#x27;s</text>
+<text x="16.0" y="268.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">word pattern sees only Latin letters and digits. Measured in the lab.</text>
+</svg>

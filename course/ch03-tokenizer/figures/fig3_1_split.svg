@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 250" width="720" height="250" role="img">
+<rect width="720" height="250" fill="#FBF8F3"/>
+<text x="30.0" y="34.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#8A8F98" text-anchor="start">word</text>
+<text x="170.0" y="34.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#8A8F98" text-anchor="start">bytes</text>
+<text x="250.0" y="34.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#8A8F98" text-anchor="start">your tokens (1024-id vocabulary)</text>
+<text x="30.0" y="70.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="#1F2433" text-anchor="start">␣the</text>
+<text x="190.0" y="70.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="#8A8F98" text-anchor="middle">4</text>
+<rect x="250.0" y="52.0" width="48.0" height="26.0" rx="5" fill="#FBE3D0" stroke="#E8833A" stroke-width="1.2"/>
+<text x="274.0" y="70.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="14" font-weight="500" fill="#1F2433" text-anchor="middle">␣the</text>
+<text x="314.0" y="70.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">1 token</text>
+<text x="30.0" y="122.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="#1F2433" text-anchor="start">␣Romeo</text>
+<text x="190.0" y="122.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="#8A8F98" text-anchor="middle">6</text>
+<rect x="250.0" y="104.0" width="30.0" height="26.0" rx="5" fill="#FBE3D0" stroke="#E8833A" stroke-width="1.2"/>
+<text x="265.0" y="122.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="14" font-weight="500" fill="#1F2433" text-anchor="middle">␣R</text>
+<rect x="286.0" y="104.0" width="39.0" height="26.0" rx="5" fill="#FBE3D0" stroke="#E8833A" stroke-width="1.2"/>
+<text x="305.5" y="122.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="14" font-weight="500" fill="#1F2433" text-anchor="middle">ome</text>
+<rect x="331.0" y="104.0" width="22.0" height="26.0" rx="5" fill="#FBE3D0" stroke="#E8833A" stroke-width="1.2"/>
+<text x="342.0" y="122.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="14" font-weight="500" fill="#1F2433" text-anchor="middle">o</text>
+<text x="369.0" y="122.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">3 tokens</text>
+<text x="30.0" y="174.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="#1F2433" text-anchor="start">␣भारत</text>
+<text x="190.0" y="174.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="#8A8F98" text-anchor="middle">13</text>
+<rect x="250.0" y="156.0" width="57.0" height="26.0" rx="5" fill="#FBE3D0" stroke="#E8833A" stroke-width="1.2"/>
+<text x="278.5" y="174.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="14" font-weight="500" fill="#1F2433" text-anchor="middle">␣भारत</text>
+<text x="323.0" y="174.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">1 token</text>
+<text x="16.0" y="223.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 3.1  Real words split by the tokenizer the lab trains. A common word becomes one token; the 13 bytes of</text>
+<text x="16.0" y="238.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">भारत become one token too.</text>
+</svg>

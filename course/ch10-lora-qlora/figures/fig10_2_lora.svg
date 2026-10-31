@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 372" width="720" height="372" role="img">
+<rect width="720" height="372" fill="#FBF8F3"/>
+<text x="24.0" y="36.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="18" font-weight="700" fill="#1F9E89" text-anchor="start">x</text>
+<line x1="44.0" y1="31.0" x2="96.0" y2="31.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="96.0,31.0 89.7,34.0 89.7,28.0" fill="#8A8F98"/>
+<line x1="96.0" y1="31.0" x2="96.0" y2="230.0" stroke="#8A8F98" stroke-width="1.4"/>
+<line x1="96.0" y1="110.0" x2="130.0" y2="110.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="130.0,110.0 123.7,113.0 123.7,107.0" fill="#8A8F98"/>
+<line x1="96.0" y1="230.0" x2="130.0" y2="230.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="130.0,230.0 123.7,233.0 123.7,227.0" fill="#8A8F98"/>
+<rect x="132.0" y="50.0" width="150.0" height="150.0" rx="6" fill="#E9E9EB" stroke="#8A8F98" stroke-width="1.5"/>
+<text x="207.0" y="120.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="30" font-weight="700" fill="#8A8F98" text-anchor="middle">W</text>
+<text x="207.0" y="148.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#8A8F98" text-anchor="middle">frozen</text>
+<text x="207.0" y="216.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="400" fill="#8A8F98" text-anchor="middle">d × d</text>
+<rect x="132.0" y="218.0" width="150.0" height="22.0" rx="4" fill="#FBE3D0" stroke="#E8833A" stroke-width="1.5"/>
+<text x="207.0" y="233.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">A   (r × d)</text>
+<line x1="284.0" y1="229.0" x2="316.0" y2="229.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="316.0,229.0 309.7,232.0 309.7,226.0" fill="#8A8F98"/>
+<rect x="318.0" y="168.0" width="22.0" height="122.0" rx="4" fill="#FBE3D0" stroke="#E8833A" stroke-width="1.5"/>
+<text x="329.0" y="306.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="700" fill="#1F2433" text-anchor="middle">B</text>
+<text x="329.0" y="322.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">d × r</text>
+<line x1="284.0" y1="125.0" x2="398.0" y2="125.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="398.0,125.0 391.7,128.0 391.7,122.0" fill="#8A8F98"/>
+<line x1="342.0" y1="229.0" x2="398.0" y2="150.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="398.0,150.0 396.8,156.9 391.9,153.4" fill="#8A8F98"/>
+<rect x="400.0" y="108.0" width="44.0" height="44.0" rx="22" fill="#FBF8F3" stroke="#1F2433" stroke-width="1.5"/>
+<text x="422.0" y="137.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="22" font-weight="700" fill="#1F2433" text-anchor="middle">+</text>
+<line x1="446.0" y1="130.0" x2="486.0" y2="130.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="486.0,130.0 479.7,133.0 479.7,127.0" fill="#8A8F98"/>
+<text x="494.0" y="136.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="18" font-weight="700" fill="#3B4CCA" text-anchor="start">y</text>
+<text x="520.0" y="60.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="700" fill="#1F2433" text-anchor="start">y = W x + (α/r)·B A x</text>
+<text x="520.0" y="88.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">W stays as pre-training</text>
+<text x="520.0" y="108.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">left it. Only A and B learn.</text>
+<text x="520.0" y="128.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start"></text>
+<text x="520.0" y="148.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">With d = 1,024 and r = 16:</text>
+<text x="520.0" y="168.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">W has 1,048,576 numbers,</text>
+<text x="520.0" y="188.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">A and B 32,768 (3%).</text>
+<text x="520.0" y="208.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start"></text>
+<text x="520.0" y="228.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">B starts at zero, so</text>
+<text x="520.0" y="248.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">training begins at the</text>
+<text x="520.0" y="268.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">base model.</text>
+<text x="16.0" y="345.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 10.2  LoRA leaves the weight frozen (stone) and learns a thin correction B·A beside it (saffron: what</text>
+<text x="16.0" y="360.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">learns).</text>
+</svg>

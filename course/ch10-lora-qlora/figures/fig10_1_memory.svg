@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 280" width="720" height="280" role="img">
+<rect width="720" height="280" fill="#FBF8F3"/>
+<text x="138.0" y="72.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="600" fill="#1F2433" text-anchor="end">full fine-tune</text>
+<rect x="150.0" y="50.0" width="110.0" height="32.0" rx="3" fill="#3B4CCA" stroke="none" stroke-width="1.5"/>
+<rect x="260.0" y="50.0" width="110.0" height="32.0" rx="3" fill="#D1495B" stroke="none" stroke-width="1.5"/>
+<rect x="370.0" y="50.0" width="220.0" height="32.0" rx="3" fill="#F6D9DD" stroke="none" stroke-width="1.5"/>
+<text x="600.0" y="71.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#1F2433" text-anchor="start">6.4 GB</text>
+<text x="150.0" y="100.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start">weights 1.59 GB · gradients 1.59 GB · AdamW moments 3.18 GB</text>
+<text x="138.0" y="138.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="600" fill="#1F2433" text-anchor="end">LoRA</text>
+<rect x="150.0" y="116.0" width="110.0" height="32.0" rx="3" fill="#8A8F98" stroke="none" stroke-width="1.5"/>
+<rect x="260.0" y="116.0" width="3.0" height="32.0" rx="3" fill="#E8833A" stroke="none" stroke-width="1.5"/>
+<text x="273.0" y="137.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#1F2433" text-anchor="start">1.6 GB</text>
+<text x="150.0" y="166.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start">frozen weights 1.59 GB · adapters + their optimizer 23 MB</text>
+<text x="138.0" y="204.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="600" fill="#1F2433" text-anchor="end">QLoRA</text>
+<rect x="150.0" y="182.0" width="15.5" height="32.0" rx="3" fill="#8A8F98" stroke="none" stroke-width="1.5"/>
+<rect x="165.5" y="182.0" width="3.0" height="32.0" rx="3" fill="#E8833A" stroke="none" stroke-width="1.5"/>
+<text x="178.5" y="203.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#1F2433" text-anchor="start">0.25 GB</text>
+<text x="150.0" y="232.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start">frozen 4-bit weights 0.22 GB · adapters + their optimizer 23 MB</text>
+<text x="16.0" y="253.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 10.1  Memory to fine-tune the 398M AnuLM model before activations, worked out from its parameter count</text>
+<text x="16.0" y="268.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">(bytes per number × how many).</text>
+</svg>

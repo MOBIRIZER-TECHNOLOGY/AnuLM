@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" width="720" height="300" role="img">
+<rect width="720" height="300" fill="#FBF8F3"/>
+<rect x="16.0" y="50.0" width="232.0" height="34.0" rx="5" fill="#ECE7DF" stroke="#8A8F98" stroke-width="1.2"/>
+<text x="132.0" y="72.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="500" fill="#1F2433" text-anchor="middle">Message: How do I locate my card?</text>
+<rect x="254.0" y="50.0" width="128.0" height="34.0" rx="5" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.2"/>
+<text x="318.0" y="72.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="500" fill="#1F2433" text-anchor="middle">- card swallowed</text>
+<rect x="388.0" y="50.0" width="118.0" height="34.0" rx="5" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.2"/>
+<text x="447.0" y="72.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="500" fill="#1F2433" text-anchor="middle">- card arrival</text>
+<rect x="512.0" y="50.0" width="160.0" height="34.0" rx="5" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.2"/>
+<text x="592.0" y="72.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="500" fill="#1F2433" text-anchor="middle">- wrong exchange rate</text>
+<text x="16.0" y="36.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#8A8F98" text-anchor="start">one forward pass over the message and every option&#x27;s name</text>
+<circle cx="368.0" cy="84" r="4.5" fill="#E8833A"/>
+<line x1="368.0" y1="90.0" x2="368.0" y2="122.0" stroke="#E8833A" stroke-width="1.3"/>
+<polygon points="368.0,122.0 365.4,116.6 370.6,116.6" fill="#E8833A"/>
+<rect x="322.0" y="124.0" width="92.0" height="30.0" rx="8" fill="#FBE3D0" stroke="#E8833A" stroke-width="1.5"/>
+<text x="368.0" y="142.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">head → score</text>
+<line x1="368.0" y1="156.0" x2="368.0" y2="186.0" stroke="#8A8F98" stroke-width="1.2"/>
+<polygon points="368.0,186.0 365.4,180.6 370.6,180.6" fill="#8A8F98"/>
+<rect x="350.0" y="246.4" width="36.0" height="3.6" rx="3" fill="#D3EEE9" stroke="none" stroke-width="0"/>
+<text x="368.0" y="240.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">6%</text>
+<circle cx="492.0" cy="84" r="4.5" fill="#E8833A"/>
+<line x1="492.0" y1="90.0" x2="492.0" y2="122.0" stroke="#E8833A" stroke-width="1.3"/>
+<polygon points="492.0,122.0 489.4,116.6 494.6,116.6" fill="#E8833A"/>
+<rect x="446.0" y="124.0" width="92.0" height="30.0" rx="8" fill="#FBE3D0" stroke="#E8833A" stroke-width="1.5"/>
+<text x="492.0" y="142.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">head → score</text>
+<line x1="492.0" y1="156.0" x2="492.0" y2="186.0" stroke="#8A8F98" stroke-width="1.2"/>
+<polygon points="492.0,186.0 489.4,180.6 494.6,180.6" fill="#8A8F98"/>
+<rect x="474.0" y="197.2" width="36.0" height="52.8" rx="3" fill="#1F9E89" stroke="none" stroke-width="0"/>
+<text x="492.0" y="191.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">88%</text>
+<circle cx="658.0" cy="84" r="4.5" fill="#E8833A"/>
+<line x1="658.0" y1="90.0" x2="658.0" y2="122.0" stroke="#E8833A" stroke-width="1.3"/>
+<polygon points="658.0,122.0 655.4,116.6 660.6,116.6" fill="#E8833A"/>
+<rect x="612.0" y="124.0" width="92.0" height="30.0" rx="8" fill="#FBE3D0" stroke="#E8833A" stroke-width="1.5"/>
+<text x="658.0" y="142.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">head → score</text>
+<line x1="658.0" y1="156.0" x2="658.0" y2="186.0" stroke="#8A8F98" stroke-width="1.2"/>
+<polygon points="658.0,186.0 655.4,180.6 660.6,180.6" fill="#8A8F98"/>
+<rect x="640.0" y="246.4" width="36.0" height="3.6" rx="3" fill="#D3EEE9" stroke="none" stroke-width="0"/>
+<text x="658.0" y="240.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">6%</text>
+<text x="16.0" y="210.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#8A8F98" text-anchor="start">softmax over</text>
+<text x="16.0" y="226.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#8A8F98" text-anchor="start">the options</text>
+<text x="16.0" y="273.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 12.1  Decide. The hidden state at the last token of each option&#x27;s name has read the message and that</text>
+<text x="16.0" y="288.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">option; one linear head scores it.</text>
+</svg>

@@ -1,0 +1,12 @@
+{
+ "data": "input.txt",
+ "params": 460160,
+ "layers": 4,
+ "steps": 1500,
+ "seconds": 44,
+ "start_loss": 5.5623,
+ "final_loss": 2.484,
+ "bigram_loss": 2.4931,
+ "ch1_transformer_loss": 1.7505,
+ "ln_vocab": 5.5568
+}

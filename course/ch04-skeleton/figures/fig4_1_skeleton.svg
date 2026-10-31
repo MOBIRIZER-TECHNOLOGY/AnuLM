@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 470" width="720" height="470" role="img">
+<rect width="720" height="470" fill="#FBF8F3"/>
+<rect x="115.0" y="396.0" width="270.0" height="40.0" rx="8" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.5"/>
+<text x="250.0" y="420.6" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">token ids</text>
+<rect x="115.0" y="340.0" width="270.0" height="40.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="250.0" y="364.6" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">embed_tokens</text>
+<rect x="99.0" y="120.0" width="302.0" height="204.0" rx="12" fill="none" stroke="#3B4CCA" stroke-width="1.4" stroke-dasharray="6 5"/>
+<text x="411.0" y="226.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="14" font-weight="700" fill="#3B4CCA" text-anchor="start">× n_layer</text>
+<rect x="115.0" y="266.0" width="270.0" height="44.0" rx="8" fill="#FBF8F3" stroke="#8A8F98" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="250.0" y="286.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="600" fill="#8A8F98" text-anchor="middle">attention</text>
+<text x="250.0" y="301.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">Chapter 6</text>
+<rect x="115.0" y="196.0" width="270.0" height="36.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="250.0" y="218.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">post_attention_layernorm</text>
+<rect x="115.0" y="136.0" width="270.0" height="46.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="250.0" y="157.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">mlp: SwiGLU</text>
+<text x="250.0" y="172.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">Chapter 7 makes it experts</text>
+<rect x="115.0" y="70.0" width="270.0" height="36.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="250.0" y="92.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">norm</text>
+<rect x="115.0" y="18.0" width="270.0" height="36.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="250.0" y="40.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">lm_head → logits</text>
+<line x1="250.0" y1="396.0" x2="250.0" y2="382.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="250.0,382.0 253.0,388.3 247.0,388.3" fill="#8A8F98"/>
+<line x1="250.0" y1="340.0" x2="250.0" y2="312.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="250.0,312.0 253.0,318.3 247.0,318.3" fill="#8A8F98"/>
+<line x1="250.0" y1="266.0" x2="250.0" y2="234.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="250.0,234.0 253.0,240.3 247.0,240.3" fill="#8A8F98"/>
+<line x1="250.0" y1="196.0" x2="250.0" y2="184.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="250.0,184.0 253.0,190.3 247.0,190.3" fill="#8A8F98"/>
+<line x1="250.0" y1="136.0" x2="250.0" y2="108.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="250.0,108.0 253.0,114.3 247.0,114.3" fill="#8A8F98"/>
+<line x1="250.0" y1="70.0" x2="250.0" y2="56.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="250.0,56.0 253.0,62.3 247.0,62.3" fill="#8A8F98"/>
+<line x1="81.0" y1="300.0" x2="81.0" y2="128.0" stroke="#E8833A" stroke-width="2.2"/>
+<line x1="81.0" y1="128.0" x2="81.0" y2="122.0" stroke="#E8833A" stroke-width="1.6"/>
+<polygon points="81.0,122.0 84.0,128.3 78.0,128.3" fill="#E8833A"/>
+<text x="73.0" y="214.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#E8833A" text-anchor="end">residual</text>
+<text x="495.0" y="40.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#1F2433" text-anchor="start">What you build in this chapter</text>
+<text x="495.0" y="66.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">The model&#x27;s frame, with names</text>
+<text x="495.0" y="86.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">matching model.py exactly.</text>
+<text x="495.0" y="106.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start"></text>
+<text x="495.0" y="126.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">Each block adds what its MLP</text>
+<text x="495.0" y="146.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">makes of the normalised input</text>
+<text x="495.0" y="166.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">back onto x (the residual).</text>
+<text x="495.0" y="186.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start"></text>
+<text x="495.0" y="206.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">Attention, the part that lets a</text>
+<text x="495.0" y="226.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">position see earlier ones,</text>
+<text x="495.0" y="246.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">is left out on purpose:</text>
+<text x="495.0" y="266.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">the lab measures what the</text>
+<text x="495.0" y="286.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">frame can do without it.</text>
+<text x="16.0" y="443.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 4.1  The skeleton: embeddings, n residual blocks of norm and SwiGLU, a final norm and the output head.</text>
+<text x="16.0" y="458.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Attention slots in at Chapter 6.</text>
+</svg>

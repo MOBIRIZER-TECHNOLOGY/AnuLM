@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" width="720" height="420" role="img">
+<rect width="720" height="420" fill="#FBF8F3"/>
+<rect x="30.0" y="150.0" width="90.0" height="40.0" rx="8" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.5"/>
+<text x="75.0" y="174.6" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">token x</text>
+<rect x="170.0" y="150.0" width="100.0" height="40.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="220.0" y="174.6" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">router</text>
+<line x1="120.0" y1="170.0" x2="168.0" y2="170.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="168.0,170.0 161.7,173.0 161.7,167.0" fill="#8A8F98"/>
+<rect x="340.0" y="40.0" width="120.0" height="28.0" rx="8" fill="#FBF8F3" stroke="#ECE7DF" stroke-width="1.5"/>
+<text x="400.0" y="58.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#8A8F98" text-anchor="middle">expert 0</text>
+<rect x="340.0" y="76.0" width="120.0" height="28.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="400.0" y="94.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">expert 1  × 1.12</text>
+<line x1="270.0" y1="170.0" x2="338.0" y2="90.0" stroke="#3B4CCA" stroke-width="1.4"/>
+<polygon points="338.0,90.0 336.2,96.8 331.6,92.8" fill="#3B4CCA"/>
+<line x1="460.0" y1="90.0" x2="548.0" y2="170.0" stroke="#8A8F98" stroke-width="1.2"/>
+<polygon points="548.0,170.0 541.3,168.0 545.4,163.5" fill="#8A8F98"/>
+<rect x="340.0" y="112.0" width="120.0" height="28.0" rx="8" fill="#FBF8F3" stroke="#ECE7DF" stroke-width="1.5"/>
+<text x="400.0" y="130.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#8A8F98" text-anchor="middle">expert 2</text>
+<rect x="340.0" y="148.0" width="120.0" height="28.0" rx="8" fill="#FBF8F3" stroke="#ECE7DF" stroke-width="1.5"/>
+<text x="400.0" y="166.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#8A8F98" text-anchor="middle">expert 3</text>
+<rect x="340.0" y="184.0" width="120.0" height="28.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="400.0" y="202.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">expert 4  × 0.83</text>
+<line x1="270.0" y1="170.0" x2="338.0" y2="198.0" stroke="#3B4CCA" stroke-width="1.4"/>
+<polygon points="338.0,198.0 331.0,198.4 333.3,192.8" fill="#3B4CCA"/>
+<line x1="460.0" y1="198.0" x2="548.0" y2="170.0" stroke="#8A8F98" stroke-width="1.2"/>
+<polygon points="548.0,170.0 542.9,174.8 541.1,169.0" fill="#8A8F98"/>
+<rect x="340.0" y="220.0" width="120.0" height="28.0" rx="8" fill="#FBF8F3" stroke="#ECE7DF" stroke-width="1.5"/>
+<text x="400.0" y="238.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#8A8F98" text-anchor="middle">expert 5</text>
+<rect x="340.0" y="256.0" width="120.0" height="28.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="400.0" y="274.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">expert 6  × 0.55</text>
+<line x1="270.0" y1="170.0" x2="338.0" y2="270.0" stroke="#3B4CCA" stroke-width="1.4"/>
+<polygon points="338.0,270.0 331.9,266.5 337.0,263.1" fill="#3B4CCA"/>
+<line x1="460.0" y1="270.0" x2="548.0" y2="170.0" stroke="#8A8F98" stroke-width="1.2"/>
+<polygon points="548.0,170.0 546.1,176.7 541.6,172.7" fill="#8A8F98"/>
+<rect x="340.0" y="292.0" width="120.0" height="28.0" rx="8" fill="#FBF8F3" stroke="#ECE7DF" stroke-width="1.5"/>
+<text x="400.0" y="310.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#8A8F98" text-anchor="middle">expert 7</text>
+<rect x="340.0" y="346.0" width="120.0" height="28.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="400.0" y="364.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">shared expert</text>
+<line x1="145.0" y1="190.0" x2="145.0" y2="360.0" stroke="#8A8F98" stroke-width="1.2"/>
+<line x1="145.0" y1="360.0" x2="338.0" y2="360.0" stroke="#8A8F98" stroke-width="1.2"/>
+<polygon points="338.0,360.0 331.7,363.0 331.7,357.0" fill="#8A8F98"/>
+<line x1="460.0" y1="360.0" x2="552.0" y2="192.0" stroke="#8A8F98" stroke-width="1.2"/>
+<polygon points="552.0,192.0 551.6,199.0 546.3,196.1" fill="#8A8F98"/>
+<rect x="550.0" y="148.0" width="44.0" height="44.0" rx="22" fill="#FBF8F3" stroke="#1F2433" stroke-width="1.5"/>
+<text x="572.0" y="177.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="22" font-weight="700" fill="#1F2433" text-anchor="middle">+</text>
+<line x1="594.0" y1="170.0" x2="640.0" y2="170.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="640.0,170.0 633.7,173.0 633.7,167.0" fill="#8A8F98"/>
+<text x="648.0" y="175.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="16" font-weight="700" fill="#3B4CCA" text-anchor="start">y</text>
+<text x="16.0" y="393.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 7.1  A mixture-of-experts layer. The router picks 3 of 8 experts for this token and weights them (×</text>
+<text x="16.0" y="408.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">weight); the shared expert runs for every token. Weights here are illustrative.</text>
+</svg>

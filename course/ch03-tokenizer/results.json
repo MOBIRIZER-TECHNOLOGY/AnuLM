@@ -1,0 +1,89 @@
+{
+ "vocab": 1024,
+ "merges": 767,
+ "seconds_plain": 10.7,
+ "seconds_bpe_py": 0.4,
+ "identical": true,
+ "first": [
+  "�",
+  "�",
+  " �",
+  "ा",
+  "्",
+  "्�",
+  "े",
+  "ा�",
+  "ि",
+  " क",
+  "ि�",
+  "ी"
+ ],
+ "longest_en": [
+  "\n\nCORIOLANUS:",
+  " Servingman:",
+  "\n\nMENENIUS:",
+  "\n\nSICINIUS:",
+  "\n\nCOMINIUS:",
+  "\n\nVOLUMNIA:"
+ ],
+ "longest_hi": [
+  " आर्किमिडीज़",
+  "र्किमिडीज़",
+  "र्किमिडीज",
+  " उन्होंने",
+  " क्षेत्र",
+  " अंग्रेज"
+ ],
+ "fertility": {
+  "English": {
+   "bytes": {
+    "bytes_per_token": 1.0,
+    "chars_in_1024": 1024
+   },
+   "yours (1024)": {
+    "bytes_per_token": 2.07,
+    "chars_in_1024": 2119
+   },
+   "AnuLM 400M (32,768)": {
+    "bytes_per_token": 3.282,
+    "chars_in_1024": 3361
+   }
+  },
+  "Hindi": {
+   "bytes": {
+    "bytes_per_token": 1.0,
+    "chars_in_1024": 399
+   },
+   "yours (1024)": {
+    "bytes_per_token": 4.971,
+    "chars_in_1024": 1981
+   },
+   "AnuLM 400M (32,768)": {
+    "bytes_per_token": 10.311,
+    "chars_in_1024": 4109
+   }
+  }
+ },
+ "examples": {
+  " the": {
+   "bytes": 4,
+   "tokens": [
+    " the"
+   ]
+  },
+  " Romeo": {
+   "bytes": 6,
+   "tokens": [
+    " R",
+    "ome",
+    "o"
+   ]
+  },
+  " भारत": {
+   "bytes": 13,
+   "tokens": [
+    " भारत"
+   ]
+  }
+ }
+}

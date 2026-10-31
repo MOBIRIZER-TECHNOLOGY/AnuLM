@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" width="720" height="360" role="img">
+<rect width="720" height="360" fill="#FBF8F3"/>
+<line x1="90.0" y1="244.5" x2="560.0" y2="244.5" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="248.5" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">-40</text>
+<line x1="90.0" y1="193.4" x2="560.0" y2="193.4" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="197.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">-30</text>
+<line x1="90.0" y1="142.3" x2="560.0" y2="142.3" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="146.3" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">-20</text>
+<line x1="90.0" y1="91.3" x2="560.0" y2="91.3" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="95.3" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">-10</text>
+<line x1="90.0" y1="40.2" x2="560.0" y2="40.2" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="44.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">0</text>
+<text x="90.0" y="288.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">0</text>
+<text x="207.5" y="288.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">100</text>
+<text x="325.0" y="288.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">200</text>
+<text x="442.5" y="288.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">300</text>
+<text x="560.0" y="288.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">400</text>
+<line x1="90.0" y1="270.0" x2="560.0" y2="270.0" stroke="#1F2433" stroke-width="1.2"/>
+<path d="M90.0,41.8 L148.8,47.4 L207.5,49.1 L266.2,52.3 L325.0,54.8 L383.8,63.1 L442.5,78.3 L501.2,102.1 L560.0,110.0" fill="none" stroke="#D1495B" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="560.0" cy="110.0" r="3.5" fill="#D1495B"/>
+<path d="M90.0,41.8 L148.8,41.1 L207.5,40.9 L266.2,40.7 L325.0,41.3 L383.8,40.5 L442.5,40.6 L501.2,40.5 L560.0,40.8" fill="none" stroke="#1F9E89" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="560.0" cy="40.8" r="3.5" fill="#1F9E89"/>
+<text x="325.0" y="308.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">step</text>
+<text transform="translate(44.0,150.0) rotate(-90)" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" fill="#1F2433" text-anchor="middle">mean log-probability (held-out pairs)</text>
+<path d="M90.0,53.9 L148.8,106.0 L207.5,117.6 L266.2,127.3 L325.0,137.2 L383.8,156.8 L442.5,185.0 L501.2,223.1 L560.0,252.6" fill="none" stroke="#D1495B" stroke-width="2" stroke-dasharray="6 4"/>
+<path d="M90.0,53.9 L148.8,93.2 L207.5,103.2 L266.2,110.0 L325.0,115.9 L383.8,117.4 L442.5,122.5 L501.2,126.9 L560.0,131.3" fill="none" stroke="#1F9E89" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="572.0" y="44.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F9E89" text-anchor="start">dpo + sft: chosen -0.1</text>
+<text x="572.0" y="114.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#D1495B" text-anchor="start">dpo: chosen -13.7</text>
+<text x="572.0" y="135.3" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F9E89" text-anchor="start">dpo + sft: rejected -17.8</text>
+<text x="572.0" y="256.6" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#D1495B" text-anchor="start">dpo: rejected -41.6</text>
+<text x="16.0" y="333.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 11.3  Solid: the right answers; dashed: the wrong ones. Plain DPO widens the gap by pushing BOTH down.</text>
+<text x="16.0" y="348.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Measured in the lab.</text>
+</svg>

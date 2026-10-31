@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 450" width="720" height="450" role="img">
+<rect width="720" height="450" fill="#FBF8F3"/>
+<line x1="100.0" y1="173.2" x2="570.0" y2="173.2" stroke="#ECE7DF" stroke-width="1"/>
+<text x="92.0" y="177.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">1.525</text>
+<line x1="100.0" y1="142.3" x2="570.0" y2="142.3" stroke="#ECE7DF" stroke-width="1"/>
+<text x="92.0" y="146.3" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">1.55</text>
+<line x1="100.0" y1="111.5" x2="570.0" y2="111.5" stroke="#ECE7DF" stroke-width="1"/>
+<text x="92.0" y="115.5" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">1.575</text>
+<line x1="100.0" y1="80.6" x2="570.0" y2="80.6" stroke="#ECE7DF" stroke-width="1"/>
+<text x="92.0" y="84.6" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">1.6</text>
+<line x1="100.0" y1="49.8" x2="570.0" y2="49.8" stroke="#ECE7DF" stroke-width="1"/>
+<text x="92.0" y="53.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">1.625</text>
+<text x="100.0" y="192.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">0</text>
+<text x="197.9" y="192.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">500</text>
+<text x="295.8" y="192.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">1,000</text>
+<text x="393.8" y="192.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">1,500</text>
+<text x="491.7" y="192.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">2,000</text>
+<line x1="100.0" y1="174.0" x2="570.0" y2="174.0" stroke="#1F2433" stroke-width="1.2"/>
+<path d="M100.0,174.0 L139.2,95.9 L178.3,54.9 L217.5,34.0 L256.7,59.3 L295.8,62.1 L335.0,72.6 L374.2,75.1 L413.3,60.8 L452.5,58.9 L491.7,69.7 L530.8,82.6 L570.0,73.7" fill="none" stroke="#D1495B" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="570.0" cy="73.7" r="3.5" fill="#D1495B"/>
+<path d="M100.0,174.0 L139.2,103.6 L178.3,120.0 L217.5,120.5 L256.7,136.5 L295.8,123.2 L335.0,131.1 L374.2,129.4 L413.3,125.6 L452.5,127.9 L491.7,139.3 L530.8,133.1 L570.0,126.3" fill="none" stroke="#1F9E89" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="570.0" cy="126.3" r="3.5" fill="#1F9E89"/>
+<path d="M100.0,174.0 L139.2,146.3 L178.3,142.5 L217.5,145.7 L256.7,145.5 L295.8,144.2 L335.0,152.0 L374.2,142.5 L413.3,146.9 L452.5,148.5 L491.7,152.4 L530.8,154.6 L570.0,146.4" fill="none" stroke="#E8833A" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="570.0" cy="146.4" r="3.5" fill="#E8833A"/>
+<text transform="translate(54.0,104.0) rotate(-90)" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" fill="#1F2433" text-anchor="middle">Shakespeare loss</text>
+<text x="580.0" y="77.7" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#D1495B" text-anchor="start">one batch a step 1.61</text>
+<text x="580.0" y="130.3" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F9E89" text-anchor="start">accumulate 4 1.56</text>
+<text x="580.0" y="150.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#E8833A" text-anchor="start">one batch, lr / 4 1.55</text>
+<line x1="100.0" y1="345.0" x2="570.0" y2="345.0" stroke="#ECE7DF" stroke-width="1"/>
+<text x="92.0" y="349.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">0.4</text>
+<line x1="100.0" y1="306.7" x2="570.0" y2="306.7" stroke="#ECE7DF" stroke-width="1"/>
+<text x="92.0" y="310.7" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">0.6</text>
+<line x1="100.0" y1="268.3" x2="570.0" y2="268.3" stroke="#ECE7DF" stroke-width="1"/>
+<text x="92.0" y="272.3" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">0.8</text>
+<line x1="100.0" y1="230.0" x2="570.0" y2="230.0" stroke="#ECE7DF" stroke-width="1"/>
+<text x="92.0" y="234.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">1</text>
+<text x="100.0" y="368.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">0</text>
+<text x="197.9" y="368.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">500</text>
+<text x="295.8" y="368.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">1,000</text>
+<text x="393.8" y="368.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">1,500</text>
+<text x="491.7" y="368.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">2,000</text>
+<line x1="100.0" y1="350.0" x2="570.0" y2="350.0" stroke="#1F2433" stroke-width="1.2"/>
+<path d="M100.0,230.0 L139.2,343.0 L178.3,344.8 L217.5,344.7 L256.7,345.8 L295.8,346.4 L335.0,347.4 L374.2,347.7 L413.3,347.3 L452.5,347.5 L491.7,348.1 L530.8,348.8 L570.0,349.0" fill="none" stroke="#D1495B" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="570.0" cy="349.0" r="3.5" fill="#D1495B"/>
+<path d="M100.0,230.0 L139.2,332.5 L178.3,342.8 L217.5,346.0 L256.7,347.6 L295.8,347.7 L335.0,348.3 L374.2,348.6 L413.3,348.7 L452.5,349.2 L491.7,349.7 L530.8,349.7 L570.0,349.6" fill="none" stroke="#1F9E89" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="570.0" cy="349.6" r="3.5" fill="#1F9E89"/>
+<path d="M100.0,230.0 L139.2,331.1 L178.3,341.6 L217.5,345.5 L256.7,347.1 L295.8,347.7 L335.0,348.6 L374.2,348.6 L413.3,348.9 L452.5,349.3 L491.7,349.7 L530.8,350.0 L570.0,349.7" fill="none" stroke="#E8833A" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="570.0" cy="349.7" r="3.5" fill="#E8833A"/>
+<text x="335.0" y="388.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">batches seen</text>
+<text transform="translate(54.0,290.0) rotate(-90)" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" fill="#1F2433" text-anchor="middle">score (lower: better)</text>
+<text x="580.0" y="353.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#D1495B" text-anchor="start">one batch a step 0.379</text>
+<text x="580.0" y="368.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F9E89" text-anchor="start">accumulate 4 0.376</text>
+<text x="580.0" y="383.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#E8833A" text-anchor="start">one batch, lr / 4 0.376</text>
+<text x="16.0" y="423.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 14.3  The lab: the same 2,400 batches, three ways. Top: the skill to keep; bottom: the run&#x27;s one number.</text>
+<text x="16.0" y="438.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Measured in the lab.</text>
+</svg>

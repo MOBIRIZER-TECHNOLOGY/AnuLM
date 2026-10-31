@@ -1,0 +1,110 @@
+{
+ "pictures": 49345,
+ "train": 2000,
+ "test": 200,
+ "steps": 1200,
+ "example": "A paper and this at the top man is standing, he wore a coat, hat. Beside him another man is looking into the camera, at the bottom there are cameras with matter",
+ "matched": {
+  "right picture": 1.1002053916454315,
+  "wrong picture": 1.25565005838871,
+  "no picture": 1.3418623954057693,
+  "curve": [
+   [
+    200,
+    0.9416456297039986
+   ],
+   [
+    400,
+    0.8937497362494469
+   ],
+   [
+    600,
+    0.897721029818058
+   ],
+   [
+    800,
+    0.9495809823274612
+   ],
+   [
+    1000,
+    1.0076292976737022
+   ],
+   [
+    1200,
+    1.1002053916454315
+   ]
+  ],
+  "word_norm": 0.2874375581741333,
+  "projector_norm_at_start": 0.287426620721817,
+  "scale": [
+   11.313708305358887,
+   0.2874375581741333
+  ],
+  "shakespeare_before": 1.5038749158382416,
+  "shakespeare_after": 3.70278947353363,
+  "samples": [
+   [
+    "This is the image and there is a man standing and these are two objects and the picture.",
+    "A paper and this at the top man is standing, he wore a coat, hat. Beside him another man is looking into the camera, at the bottom there are cameras with matter"
+   ],
+   [
+    "A train on the road there are plants, there are some poles, there are some trucks on the ground.",
+    "An artillery tractor in the front, on the left side there is steering, in the background we can see glass."
+   ],
+   [
+    "This is a black and white image. In the middle of the image there are many people standing.",
+    "Group of people are standing on the ground. These people are wearing uniforms and hats."
+   ]
+  ]
+ },
+ "unit gain": {
+  "right picture": 1.2532123178243637,
+  "wrong picture": 1.4335914552211761,
+  "no picture": 1.4631179869174957,
+  "curve": [
+   [
+    200,
+    0.9505038261413574
+   ],
+   [
+    400,
+    0.9153440967202187
+   ],
+   [
+    600,
+    0.9610869660973549
+   ],
+   [
+    800,
+    1.0395356491208076
+   ],
+   [
+    1000,
+    1.1309715509414673
+   ],
+   [
+    1200,
+    1.2532123178243637
+   ]
+  ],
+  "word_norm": 0.2874375581741333,
+  "projector_norm_at_start": 11.313278198242188,
+  "scale": null,
+  "shakespeare_before": 1.5038749158382416,
+  "shakespeare_after": 3.8050163269042967,
+  "samples": [
+   [
+    "This image of a cardboard and there is a black color. In the center we can see text and right side of the image.",
+    "A paper and this at the top man is standing, he wore a coat, hat. Beside him another man is looking into the camera, at the bottom there are cameras with matter"
+   ],
+   [
+    "A couple of compose drint poons in it is wearing forwaors and there is a wall on the left side of the image there is a car, in bhist is riding a wall which is r",
+    "An artillery tractor in the front, on the left side there is steering, in the background we can see glass."
+   ],
+   [
+    "The person is in table and carrying and stand. In the background there are two plants.",
+    "Group of people are standing on the ground. These people are wearing uniforms and hats."
+   ]
+  ]
+ }
+}

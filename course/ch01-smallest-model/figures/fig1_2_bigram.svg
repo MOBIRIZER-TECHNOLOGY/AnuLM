@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 450" width="720" height="450" role="img">
+<rect width="720" height="450" fill="#FBF8F3"/>
+<text x="285.0" y="32.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#8A8F98" text-anchor="middle">next byte</text>
+<text x="30.0" y="235.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#8A8F98" text-anchor="start">this byte</text>
+<text x="135.0" y="60.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">e</text>
+<text x="165.0" y="60.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">t</text>
+<text x="195.0" y="60.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">a</text>
+<text x="225.0" y="60.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">o</text>
+<text x="255.0" y="60.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">i</text>
+<text x="285.0" y="60.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">n</text>
+<text x="315.0" y="60.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">s</text>
+<text x="345.0" y="60.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">h</text>
+<text x="375.0" y="60.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">r</text>
+<text x="405.0" y="60.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">␣</text>
+<text x="435.0" y="60.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">↵</text>
+<text x="108.0" y="89.5" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="end">e</text>
+<rect x="121.0" y="71.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.17" stroke="none" stroke-width="0"/>
+<rect x="151.0" y="71.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.15" stroke="none" stroke-width="0"/>
+<rect x="181.0" y="71.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.24" stroke="none" stroke-width="0"/>
+<rect x="211.0" y="71.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.07" stroke="none" stroke-width="0"/>
+<rect x="241.0" y="71.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.10" stroke="none" stroke-width="0"/>
+<rect x="271.0" y="71.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.27" stroke="none" stroke-width="0"/>
+<rect x="301.0" y="71.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.24" stroke="none" stroke-width="0"/>
+<rect x="331.0" y="71.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<rect x="361.0" y="71.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.39" stroke="none" stroke-width="0"/>
+<rect x="391.0" y="71.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.84" stroke="none" stroke-width="0"/>
+<rect x="421.0" y="71.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.10" stroke="none" stroke-width="0"/>
+<text x="108.0" y="119.5" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="end">t</text>
+<rect x="121.0" y="101.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.23" stroke="none" stroke-width="0"/>
+<rect x="151.0" y="101.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.09" stroke="none" stroke-width="0"/>
+<rect x="181.0" y="101.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.14" stroke="none" stroke-width="0"/>
+<rect x="211.0" y="101.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.29" stroke="none" stroke-width="0"/>
+<rect x="241.0" y="101.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.18" stroke="none" stroke-width="0"/>
+<rect x="271.0" y="101.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<rect x="301.0" y="101.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.10" stroke="none" stroke-width="0"/>
+<rect x="331.0" y="101.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.97" stroke="none" stroke-width="0"/>
+<rect x="361.0" y="101.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.13" stroke="none" stroke-width="0"/>
+<rect x="391.0" y="101.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.72" stroke="none" stroke-width="0"/>
+<rect x="421.0" y="101.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.09" stroke="none" stroke-width="0"/>
+<text x="108.0" y="149.5" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="end">a</text>
+<rect x="121.0" y="131.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<rect x="151.0" y="131.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.46" stroke="none" stroke-width="0"/>
+<rect x="181.0" y="131.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<rect x="211.0" y="131.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<rect x="241.0" y="131.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.17" stroke="none" stroke-width="0"/>
+<rect x="271.0" y="131.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.55" stroke="none" stroke-width="0"/>
+<rect x="301.0" y="131.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.24" stroke="none" stroke-width="0"/>
+<rect x="331.0" y="131.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<rect x="361.0" y="131.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.40" stroke="none" stroke-width="0"/>
+<rect x="391.0" y="131.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.19" stroke="none" stroke-width="0"/>
+<rect x="421.0" y="131.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<text x="108.0" y="179.5" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="end">o</text>
+<rect x="121.0" y="161.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.07" stroke="none" stroke-width="0"/>
+<rect x="151.0" y="161.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.22" stroke="none" stroke-width="0"/>
+<rect x="181.0" y="161.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.07" stroke="none" stroke-width="0"/>
+<rect x="211.0" y="161.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.16" stroke="none" stroke-width="0"/>
+<rect x="241.0" y="161.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.08" stroke="none" stroke-width="0"/>
+<rect x="271.0" y="161.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.32" stroke="none" stroke-width="0"/>
+<rect x="301.0" y="161.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.12" stroke="none" stroke-width="0"/>
+<rect x="331.0" y="161.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<rect x="361.0" y="161.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.40" stroke="none" stroke-width="0"/>
+<rect x="391.0" y="161.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.39" stroke="none" stroke-width="0"/>
+<rect x="421.0" y="161.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.07" stroke="none" stroke-width="0"/>
+<text x="108.0" y="209.5" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="end">i</text>
+<rect x="121.0" y="191.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.19" stroke="none" stroke-width="0"/>
+<rect x="151.0" y="191.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.42" stroke="none" stroke-width="0"/>
+<rect x="181.0" y="191.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.09" stroke="none" stroke-width="0"/>
+<rect x="211.0" y="191.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.15" stroke="none" stroke-width="0"/>
+<rect x="241.0" y="191.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<rect x="271.0" y="191.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.68" stroke="none" stroke-width="0"/>
+<rect x="301.0" y="191.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.50" stroke="none" stroke-width="0"/>
+<rect x="331.0" y="191.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<rect x="361.0" y="191.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.21" stroke="none" stroke-width="0"/>
+<rect x="391.0" y="191.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<rect x="421.0" y="191.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<text x="108.0" y="239.5" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="end">n</text>
+<rect x="121.0" y="221.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.27" stroke="none" stroke-width="0"/>
+<rect x="151.0" y="221.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.26" stroke="none" stroke-width="0"/>
+<rect x="181.0" y="221.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.11" stroke="none" stroke-width="0"/>
+<rect x="211.0" y="221.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.35" stroke="none" stroke-width="0"/>
+<rect x="241.0" y="221.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.11" stroke="none" stroke-width="0"/>
+<rect x="271.0" y="221.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.08" stroke="none" stroke-width="0"/>
+<rect x="301.0" y="221.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.15" stroke="none" stroke-width="0"/>
+<rect x="331.0" y="221.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<rect x="361.0" y="221.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.07" stroke="none" stroke-width="0"/>
+<rect x="391.0" y="221.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.54" stroke="none" stroke-width="0"/>
+<rect x="421.0" y="221.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.08" stroke="none" stroke-width="0"/>
+<text x="108.0" y="269.5" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="end">s</text>
+<rect x="121.0" y="251.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.36" stroke="none" stroke-width="0"/>
+<rect x="151.0" y="251.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.42" stroke="none" stroke-width="0"/>
+<rect x="181.0" y="251.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.13" stroke="none" stroke-width="0"/>
+<rect x="211.0" y="251.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.21" stroke="none" stroke-width="0"/>
+<rect x="241.0" y="251.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.17" stroke="none" stroke-width="0"/>
+<rect x="271.0" y="251.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<rect x="301.0" y="251.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.16" stroke="none" stroke-width="0"/>
+<rect x="331.0" y="251.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.23" stroke="none" stroke-width="0"/>
+<rect x="361.0" y="251.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<rect x="391.0" y="251.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.89" stroke="none" stroke-width="0"/>
+<rect x="421.0" y="251.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.11" stroke="none" stroke-width="0"/>
+<text x="108.0" y="299.5" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="end">h</text>
+<rect x="121.0" y="281.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="1.00" stroke="none" stroke-width="0"/>
+<rect x="151.0" y="281.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.13" stroke="none" stroke-width="0"/>
+<rect x="181.0" y="281.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.56" stroke="none" stroke-width="0"/>
+<rect x="211.0" y="281.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.33" stroke="none" stroke-width="0"/>
+<rect x="241.0" y="281.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.43" stroke="none" stroke-width="0"/>
+<rect x="271.0" y="281.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<rect x="301.0" y="281.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.07" stroke="none" stroke-width="0"/>
+<rect x="331.0" y="281.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<rect x="361.0" y="281.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.08" stroke="none" stroke-width="0"/>
+<rect x="391.0" y="281.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.33" stroke="none" stroke-width="0"/>
+<rect x="421.0" y="281.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.07" stroke="none" stroke-width="0"/>
+<text x="108.0" y="329.5" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="end">r</text>
+<rect x="121.0" y="311.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.59" stroke="none" stroke-width="0"/>
+<rect x="151.0" y="311.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.18" stroke="none" stroke-width="0"/>
+<rect x="181.0" y="311.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.20" stroke="none" stroke-width="0"/>
+<rect x="211.0" y="311.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.26" stroke="none" stroke-width="0"/>
+<rect x="241.0" y="311.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.22" stroke="none" stroke-width="0"/>
+<rect x="271.0" y="311.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.10" stroke="none" stroke-width="0"/>
+<rect x="301.0" y="311.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.21" stroke="none" stroke-width="0"/>
+<rect x="331.0" y="311.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<rect x="361.0" y="311.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.11" stroke="none" stroke-width="0"/>
+<rect x="391.0" y="311.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.63" stroke="none" stroke-width="0"/>
+<rect x="421.0" y="311.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.08" stroke="none" stroke-width="0"/>
+<text x="108.0" y="359.5" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="end">␣</text>
+<rect x="121.0" y="341.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.10" stroke="none" stroke-width="0"/>
+<rect x="151.0" y="341.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.44" stroke="none" stroke-width="0"/>
+<rect x="181.0" y="341.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.27" stroke="none" stroke-width="0"/>
+<rect x="211.0" y="341.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.18" stroke="none" stroke-width="0"/>
+<rect x="241.0" y="341.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.17" stroke="none" stroke-width="0"/>
+<rect x="271.0" y="341.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.14" stroke="none" stroke-width="0"/>
+<rect x="301.0" y="341.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.25" stroke="none" stroke-width="0"/>
+<rect x="331.0" y="341.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.25" stroke="none" stroke-width="0"/>
+<rect x="361.0" y="341.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.10" stroke="none" stroke-width="0"/>
+<rect x="391.0" y="341.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<rect x="421.0" y="341.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<text x="108.0" y="389.5" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#1F2433" text-anchor="end">↵</text>
+<rect x="121.0" y="371.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<rect x="151.0" y="371.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.08" stroke="none" stroke-width="0"/>
+<rect x="181.0" y="371.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.07" stroke="none" stroke-width="0"/>
+<rect x="211.0" y="371.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.07" stroke="none" stroke-width="0"/>
+<rect x="241.0" y="371.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.07" stroke="none" stroke-width="0"/>
+<rect x="271.0" y="371.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<rect x="301.0" y="371.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.07" stroke="none" stroke-width="0"/>
+<rect x="331.0" y="371.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.07" stroke="none" stroke-width="0"/>
+<rect x="361.0" y="371.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<rect x="391.0" y="371.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.06" stroke="none" stroke-width="0"/>
+<rect x="421.0" y="371.0" width="28.0" height="28.0" rx="3" fill="#1F9E89" fill-opacity="0.53" stroke="none" stroke-width="0"/>
+<text x="478.0" y="90.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#1F2433" text-anchor="start">How to read it</text>
+<text x="478.0" y="114.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">Each row is a byte; each square,</text>
+<text x="478.0" y="134.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">how often another byte follows it.</text>
+<text x="478.0" y="154.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">Darker means more often.</text>
+<text x="478.0" y="174.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start"></text>
+<text x="478.0" y="194.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">After a space (␣), t is likeliest:</text>
+<text x="478.0" y="214.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">the, to, that. After e, a space:</text>
+<text x="478.0" y="234.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">many words end in e.</text>
+<text x="478.0" y="254.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start"></text>
+<text x="478.0" y="274.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">Validation loss 2.49 nats/byte,</text>
+<text x="478.0" y="294.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">against 5.55 for a blind guess.</text>
+<text x="16.0" y="423.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 1.2  The bigram model is nothing but this table of counts, normalised row by row. Counted on the lab&#x27;s</text>
+<text x="16.0" y="438.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">training text.</text>
+</svg>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 260" width="720" height="260" role="img">
+<rect width="720" height="260" fill="#FBF8F3"/>
+<text x="200.0" y="40.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#8A8F98" text-anchor="middle">size</text>
+<text x="290.0" y="40.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#8A8F98" text-anchor="middle">in bfloat16</text>
+<text x="420.0" y="40.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#8A8F98" text-anchor="middle">experts changed</text>
+<text x="545.0" y="40.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#8A8F98" text-anchor="middle">max prob. change</text>
+<text x="650.0" y="40.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#8A8F98" text-anchor="middle">sums right</text>
+<rect x="16.0" y="50.0" width="688.0" height="32.0" rx="4" fill="#D3EEE9" stroke="#ECE7DF" stroke-width="1"/>
+<text x="28.0" y="71.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="start">export_hf&#x27;s rule</text>
+<text x="200.0" y="71.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">4.13 MB</text>
+<text x="290.0" y="71.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">0</text>
+<text x="420.0" y="71.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">0.00%</text>
+<text x="545.0" y="71.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">0.000</text>
+<text x="650.0" y="71.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">94.5%</text>
+<rect x="16.0" y="90.0" width="688.0" height="32.0" rx="4" fill="#FBF8F3" stroke="#ECE7DF" stroke-width="1"/>
+<text x="28.0" y="111.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="start">a lower bar</text>
+<text x="200.0" y="111.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">2.07 MB</text>
+<text x="290.0" y="111.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">1,027,840</text>
+<text x="420.0" y="111.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">0.19%</text>
+<text x="545.0" y="111.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">0.739</text>
+<text x="650.0" y="111.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">94.5%</text>
+<rect x="16.0" y="130.0" width="688.0" height="32.0" rx="4" fill="#FBF8F3" stroke="#ECE7DF" stroke-width="1"/>
+<text x="28.0" y="151.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="start">all bfloat16</text>
+<text x="200.0" y="151.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">2.07 MB</text>
+<text x="290.0" y="151.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">1,029,296</text>
+<text x="420.0" y="151.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">0.36%</text>
+<text x="545.0" y="151.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">0.737</text>
+<text x="650.0" y="151.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">94.5%</text>
+<text x="16.0" y="210.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">The .pt file: 4.16 MB. Chapter 9&#x27;s model got 94.5% of 200 held-out sums right before export.</text>
+<text x="16.0" y="248.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 15.2  The same exporter with three precision rules, on Chapter 9&#x27;s sums model. Measured in the lab.</text>
+</svg>

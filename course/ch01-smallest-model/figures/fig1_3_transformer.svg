@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 476" width="720" height="476" role="img">
+<rect width="720" height="476" fill="#FBF8F3"/>
+<rect x="100.0" y="380.0" width="260.0" height="44.0" rx="8" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.5"/>
+<text x="230.0" y="400.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="14" font-weight="600" fill="#1F2433" text-anchor="middle">bytes in</text>
+<text x="230.0" y="416.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#8A8F98" text-anchor="middle">one number 0-255 per byte</text>
+<rect x="100.0" y="318.0" width="260.0" height="44.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="230.0" y="338.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="14" font-weight="600" fill="#1F2433" text-anchor="middle">embedding + position</text>
+<text x="230.0" y="354.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#8A8F98" text-anchor="middle">each byte becomes 128 numbers</text>
+<rect x="100.0" y="238.0" width="260.0" height="44.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="230.0" y="258.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="14" font-weight="600" fill="#1F2433" text-anchor="middle">attention</text>
+<text x="230.0" y="274.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#8A8F98" text-anchor="middle">look back at earlier bytes</text>
+<rect x="100.0" y="186.0" width="260.0" height="44.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="230.0" y="206.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="14" font-weight="600" fill="#1F2433" text-anchor="middle">MLP</text>
+<text x="230.0" y="222.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#8A8F98" text-anchor="middle">think about what it found</text>
+<rect x="100.0" y="100.0" width="260.0" height="44.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="230.0" y="120.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="14" font-weight="600" fill="#1F2433" text-anchor="middle">output head</text>
+<text x="230.0" y="136.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#8A8F98" text-anchor="middle">a score for every next byte</text>
+<rect x="100.0" y="36.0" width="260.0" height="44.0" rx="8" fill="#FBE3D0" stroke="#E8833A" stroke-width="1.5"/>
+<text x="230.0" y="56.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="14" font-weight="600" fill="#1F2433" text-anchor="middle">probabilities out</text>
+<text x="230.0" y="72.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#8A8F98" text-anchor="middle">softmax of the scores</text>
+<rect x="82.0" y="170.0" width="296.0" height="124.0" rx="12" fill="none" stroke="#3B4CCA" stroke-width="1.4" stroke-dasharray="6 5"/>
+<text x="390.0" y="236.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="14" font-weight="700" fill="#3B4CCA" text-anchor="start">× 4 layers</text>
+<line x1="230.0" y1="380.0" x2="230.0" y2="362.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="230.0,362.0 233.0,368.3 227.0,368.3" fill="#8A8F98"/>
+<line x1="230.0" y1="318.0" x2="230.0" y2="300.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="230.0,300.0 233.0,306.3 227.0,306.3" fill="#8A8F98"/>
+<line x1="230.0" y1="238.0" x2="230.0" y2="230.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="230.0,230.0 233.0,236.3 227.0,236.3" fill="#8A8F98"/>
+<line x1="230.0" y1="186.0" x2="230.0" y2="166.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="230.0,166.0 233.0,172.3 227.0,172.3" fill="#8A8F98"/>
+<line x1="230.0" y1="100.0" x2="230.0" y2="80.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="230.0,80.0 233.0,86.3 227.0,86.3" fill="#8A8F98"/>
+<text x="470.0" y="60.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#1F2433" text-anchor="start">Sizes in the lab</text>
+<text x="470.0" y="84.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">875,520 parameters</text>
+<text x="470.0" y="104.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">128 numbers per byte (d)</text>
+<text x="470.0" y="124.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">4 layers, 4 heads</text>
+<text x="470.0" y="144.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">sees 128 bytes at a time</text>
+<text x="470.0" y="164.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start"></text>
+<text x="470.0" y="184.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">Attention is causal:</text>
+<text x="470.0" y="204.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">position t sees bytes 0..t only,</text>
+<text x="470.0" y="224.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">so it cannot cheat by reading</text>
+<text x="470.0" y="244.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">the answer.</text>
+<text x="16.0" y="449.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 1.3  The whole tiny transformer. Chapter 4 opens each block; here it is enough that each layer adds what</text>
+<text x="16.0" y="464.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">it finds to a running representation.</text>
+</svg>

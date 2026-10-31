@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" width="720" height="320" role="img">
+<rect width="720" height="320" fill="#FBF8F3"/>
+<text x="16.0" y="32.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#1F2433" text-anchor="start">the first AnuLM-Omni run, 30 October 2026: one model, seven tasks</text>
+<rect x="16.0" y="50.0" width="688.0" height="26.0" rx="4" fill="#F6D9DD" stroke="none" stroke-width="1.5"/>
+<text x="28.0" y="68.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">English speech, WER %</text>
+<text x="400.0" y="68.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="end">12.2</text>
+<text x="560.0" y="68.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#D1495B" text-anchor="middle">fail</text>
+<rect x="16.0" y="80.0" width="688.0" height="26.0" rx="4" fill="#D3EEE9" stroke="none" stroke-width="1.5"/>
+<text x="28.0" y="98.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">Hindi speech, mean WER %</text>
+<text x="400.0" y="98.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="end">46.2</text>
+<text x="560.0" y="98.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F9E89" text-anchor="middle">pass</text>
+<rect x="16.0" y="110.0" width="688.0" height="26.0" rx="4" fill="#F6D9DD" stroke="none" stroke-width="1.5"/>
+<text x="28.0" y="128.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">Hindi speech, FLEURS WER %</text>
+<text x="400.0" y="128.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="end">48.8</text>
+<text x="560.0" y="128.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#D1495B" text-anchor="middle">fail</text>
+<rect x="16.0" y="140.0" width="688.0" height="26.0" rx="4" fill="#F6D9DD" stroke="none" stroke-width="1.5"/>
+<text x="28.0" y="158.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">chat, held-out loss</text>
+<text x="400.0" y="158.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="end">5.3181</text>
+<text x="560.0" y="158.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#D1495B" text-anchor="middle">fail</text>
+<rect x="16.0" y="170.0" width="688.0" height="26.0" rx="4" fill="#F6D9DD" stroke="none" stroke-width="1.5"/>
+<text x="28.0" y="188.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">reading, SQuAD F1</text>
+<text x="400.0" y="188.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="end">24.6</text>
+<text x="560.0" y="188.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#D1495B" text-anchor="middle">fail</text>
+<rect x="16.0" y="200.0" width="688.0" height="26.0" rx="4" fill="#D3EEE9" stroke="none" stroke-width="1.5"/>
+<text x="28.0" y="218.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">intents, BANKING77 %</text>
+<text x="400.0" y="218.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="end">90.0</text>
+<text x="560.0" y="218.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F9E89" text-anchor="middle">pass</text>
+<rect x="16.0" y="230.0" width="688.0" height="26.0" rx="4" fill="#D3EEE9" stroke="none" stroke-width="1.5"/>
+<text x="28.0" y="248.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">image questions, accuracy %</text>
+<text x="400.0" y="248.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="end">17.6</text>
+<text x="560.0" y="248.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F9E89" text-anchor="middle">pass</text>
+<text x="16.0" y="286.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#D1495B" text-anchor="start">Not published: four of seven gates failed, although the run&#x27;s own score had improved by 41%.</text>
+<text x="16.0" y="293.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 15.3  experiments/omni_one.py&#x27;s gates on the run&#x27;s measurements (logs/omni_one/REPORT.md). --publish</text>
+<text x="16.0" y="308.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">uploads only if every gate passes.</text>
+</svg>

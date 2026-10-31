@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" width="720" height="420" role="img">
+<rect width="720" height="420" fill="#FBF8F3"/>
+<line x1="100.0" y1="132.2" x2="600.0" y2="132.2" stroke="#ECE7DF" stroke-width="1"/>
+<text x="92.0" y="136.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">0.6</text>
+<line x1="100.0" y1="88.5" x2="600.0" y2="88.5" stroke="#ECE7DF" stroke-width="1"/>
+<text x="92.0" y="92.5" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">0.8</text>
+<line x1="100.0" y1="44.9" x2="600.0" y2="44.9" stroke="#ECE7DF" stroke-width="1"/>
+<text x="92.0" y="48.9" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">1</text>
+<text x="100.0" y="172.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">0</text>
+<text x="200.0" y="172.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">20</text>
+<text x="300.0" y="172.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">40</text>
+<text x="400.0" y="172.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">60</text>
+<text x="500.0" y="172.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">80</text>
+<text x="600.0" y="172.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">100</text>
+<line x1="100.0" y1="154.0" x2="600.0" y2="154.0" stroke="#1F2433" stroke-width="1.2"/>
+<path d="M100.0,44.9 L150.0,117.1 L200.0,120.6 L250.0,121.1 L300.0,124.0 L350.0,126.5 L400.0,130.7 L450.0,131.4 L500.0,132.2 L550.0,134.3 L600.0,135.0" fill="none" stroke="#3B4CCA" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="600.0" cy="135.0" r="3.5" fill="#3B4CCA"/>
+<text transform="translate(54.0,94.0) rotate(-90)" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" fill="#1F2433" text-anchor="middle">score</text>
+<text x="610.0" y="139.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#3B4CCA" text-anchor="start">score 0.587: better</text>
+<line x1="100.0" y1="334.0" x2="600.0" y2="334.0" stroke="#ECE7DF" stroke-width="1"/>
+<text x="92.0" y="338.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">3</text>
+<line x1="100.0" y1="294.0" x2="600.0" y2="294.0" stroke="#ECE7DF" stroke-width="1"/>
+<text x="92.0" y="298.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">4</text>
+<line x1="100.0" y1="254.0" x2="600.0" y2="254.0" stroke="#ECE7DF" stroke-width="1"/>
+<text x="92.0" y="258.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">5</text>
+<line x1="100.0" y1="214.0" x2="600.0" y2="214.0" stroke="#ECE7DF" stroke-width="1"/>
+<text x="92.0" y="218.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">6</text>
+<text x="100.0" y="352.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">0</text>
+<text x="200.0" y="352.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">20</text>
+<text x="300.0" y="352.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">40</text>
+<text x="400.0" y="352.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">60</text>
+<text x="500.0" y="352.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">80</text>
+<text x="600.0" y="352.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">100</text>
+<line x1="100.0" y1="334.0" x2="600.0" y2="334.0" stroke="#1F2433" stroke-width="1.2"/>
+<line x1="100.0" y1="322.0" x2="600.0" y2="322.0" stroke="#1F9E89" stroke-width="1.4" stroke-dasharray="5 4"/>
+<text x="596.0" y="316.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F9E89" text-anchor="end">release gate 3.30</text>
+<path d="M100.0,323.4 L150.0,232.1 L200.0,230.4 L250.0,228.0 L300.0,228.2 L350.0,230.3 L400.0,235.1 L450.0,234.2 L500.0,235.5 L550.0,238.4 L600.0,238.4" fill="none" stroke="#D1495B" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="600.0" cy="238.4" r="3.5" fill="#D1495B"/>
+<text x="350.0" y="372.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">thousands of batches</text>
+<text transform="translate(54.0,274.0) rotate(-90)" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" fill="#1F2433" text-anchor="middle">chat held-out loss</text>
+<text x="610.0" y="242.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#D1495B" text-anchor="start">chat 5.39: worse</text>
+<text x="108.0" y="341.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#D1495B" text-anchor="start">start 3.27</text>
+<text x="16.0" y="393.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 14.1  The first AnuLM-Omni run (ckpt_omni_curve.csv). The score, a mean over seven tasks, improved by 41%</text>
+<text x="16.0" y="408.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">while chat, the skill it was meant to keep, got far worse.</text>
+</svg>

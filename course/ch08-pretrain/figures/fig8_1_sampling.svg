@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 210" width="720" height="210" role="img">
+<rect width="720" height="210" fill="#FBF8F3"/>
+<rect x="16.0" y="60.0" width="124.0" height="56.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="78.0" y="86.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">logits</text>
+<text x="78.0" y="100.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="10" font-weight="400" fill="#8A8F98" text-anchor="middle">one per token</text>
+<line x1="141.0" y1="88.0" x2="153.0" y2="88.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="153.0,88.0 146.7,91.0 146.7,85.0" fill="#8A8F98"/>
+<rect x="154.0" y="60.0" width="124.0" height="56.0" rx="8" fill="#FBF8F3" stroke="#1F2433" stroke-width="1.5"/>
+<text x="216.0" y="86.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">repetition penalty</text>
+<text x="216.0" y="100.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="10" font-weight="400" fill="#8A8F98" text-anchor="middle">seen tokens pushed down</text>
+<line x1="279.0" y1="88.0" x2="291.0" y2="88.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="291.0,88.0 284.7,91.0 284.7,85.0" fill="#8A8F98"/>
+<rect x="292.0" y="60.0" width="124.0" height="56.0" rx="8" fill="#FBF8F3" stroke="#1F2433" stroke-width="1.5"/>
+<text x="354.0" y="86.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">÷ temperature</text>
+<text x="354.0" y="100.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="10" font-weight="400" fill="#8A8F98" text-anchor="middle">&lt;1 sharper, &gt;1 flatter</text>
+<line x1="417.0" y1="88.0" x2="429.0" y2="88.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="429.0,88.0 422.7,91.0 422.7,85.0" fill="#8A8F98"/>
+<rect x="430.0" y="60.0" width="124.0" height="56.0" rx="8" fill="#FBF8F3" stroke="#1F2433" stroke-width="1.5"/>
+<text x="492.0" y="86.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">top-k</text>
+<text x="492.0" y="100.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="10" font-weight="400" fill="#8A8F98" text-anchor="middle">keep the k best</text>
+<line x1="555.0" y1="88.0" x2="567.0" y2="88.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="567.0,88.0 560.7,91.0 560.7,85.0" fill="#8A8F98"/>
+<rect x="568.0" y="60.0" width="124.0" height="56.0" rx="8" fill="#FBE3D0" stroke="#E8833A" stroke-width="1.5"/>
+<text x="630.0" y="86.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">softmax, sample</text>
+<text x="630.0" y="100.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="10" font-weight="400" fill="#8A8F98" text-anchor="middle">one token</text>
+<text x="16.0" y="150.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">Then append the token, feed only it through the KV cache, and repeat. When the cache is full,</text>
+<text x="16.0" y="168.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">rebuild it from the last block_size tokens: exactly what re-reading them would give.</text>
+<text x="16.0" y="183.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 8.1  One generation step, in model.py&#x27;s order. The same seed gives the same text in your model and in</text>
+<text x="16.0" y="198.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">model.py, which the checks prove.</text>
+</svg>

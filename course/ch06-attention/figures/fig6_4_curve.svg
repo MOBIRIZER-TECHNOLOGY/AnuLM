@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 372" width="720" height="372" role="img">
+<rect width="720" height="372" fill="#FBF8F3"/>
+<line x1="90.0" y1="280.0" x2="670.0" y2="280.0" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="284.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">1</text>
+<line x1="90.0" y1="227.9" x2="670.0" y2="227.9" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="231.9" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">2</text>
+<line x1="90.0" y1="175.8" x2="670.0" y2="175.8" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="179.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">3</text>
+<line x1="90.0" y1="123.8" x2="670.0" y2="123.8" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="127.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">4</text>
+<line x1="90.0" y1="71.7" x2="670.0" y2="71.7" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="75.7" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">5</text>
+<text x="90.0" y="298.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">0</text>
+<text x="283.3" y="298.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">500</text>
+<text x="476.7" y="298.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">1,000</text>
+<text x="670.0" y="298.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">1,500</text>
+<line x1="90.0" y1="280.0" x2="670.0" y2="280.0" stroke="#1F2433" stroke-width="1.2"/>
+<line x1="90.0" y1="202.2" x2="670.0" y2="202.2" stroke="#1F9E89" stroke-width="1.4" stroke-dasharray="5 4"/>
+<text x="666.0" y="196.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F9E89" text-anchor="end">bigram table 2.49</text>
+<path d="M90.0,42.4 L128.7,197.4 L167.3,200.9 L206.0,201.9 L244.7,201.5 L283.3,202.1 L322.0,202.3 L360.7,202.7 L399.3,202.4 L438.0,202.5 L476.7,202.6 L515.3,202.6 L554.0,202.5 L592.7,202.7 L631.3,202.7 L670.0,202.7" fill="none" stroke="#8A8F98" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="670.0" cy="202.7" r="3.5" fill="#8A8F98"/>
+<path d="M90.0,40.2 L128.7,213.2 L167.3,229.8 L206.0,238.2 L244.7,241.6 L283.3,243.6 L322.0,245.6 L360.7,247.5 L399.3,248.4 L438.0,249.3 L476.7,250.1 L515.3,250.5 L554.0,251.3 L592.7,251.5 L631.3,251.8 L670.0,251.8" fill="none" stroke="#E8833A" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="670.0" cy="251.8" r="3.5" fill="#E8833A"/>
+<text x="380.0" y="318.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">training step</text>
+<text transform="translate(44.0,155.0) rotate(-90)" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" fill="#1F2433" text-anchor="middle">validation loss (nats per byte)</text>
+<text x="438.0" y="176.7" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#8A8F98" text-anchor="start">Chapter 4&#x27;s skeleton: 2.48</text>
+<text x="438.0" y="273.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#E8833A" text-anchor="start">the same skeleton with attention: 1.54</text>
+<text x="16.0" y="345.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 6.4  Same sizes, data and steps as Chapter 4; only attention added. It passes the bigram ceiling within</text>
+<text x="16.0" y="360.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">100 steps. Measured in the lab (99 s on CPU).</text>
+</svg>

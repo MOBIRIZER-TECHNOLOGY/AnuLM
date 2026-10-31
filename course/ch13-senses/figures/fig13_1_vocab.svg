@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 280" width="720" height="280" role="img">
+<rect width="720" height="280" fill="#FBF8F3"/>
+<text x="40.0" y="36.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="700" fill="#1F2433" text-anchor="start">embed_tokens (reads ids)</text>
+<rect x="40.0" y="50.0" width="180.0" height="67.0" rx="3" fill="#ECE7DF" stroke="#8A8F98" stroke-width="1"/>
+<text x="48.0" y="87.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="400" fill="#1F2433" text-anchor="start">0 – 255</text>
+<text x="212.0" y="87.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#1F2433" text-anchor="end">the bytes</text>
+<rect x="40.0" y="120.0" width="180.0" height="27.0" rx="3" fill="#ECE7DF" stroke="#8A8F98" stroke-width="1"/>
+<text x="48.0" y="137.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="400" fill="#1F2433" text-anchor="start">256 – 258</text>
+<text x="212.0" y="137.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#1F2433" text-anchor="end">BOS, EOS, PAD</text>
+<rect x="40.0" y="150.0" width="180.0" height="21.0" rx="3" fill="#FBE3D0" stroke="#E8833A" stroke-width="1"/>
+<text x="48.0" y="164.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="400" fill="#1F2433" text-anchor="start">259</text>
+<text x="212.0" y="164.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="end">&lt;|image|&gt;</text>
+<rect x="40.0" y="174.0" width="180.0" height="21.0" rx="3" fill="#FBE3D0" stroke="#E8833A" stroke-width="1"/>
+<text x="48.0" y="188.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="400" fill="#1F2433" text-anchor="start">260</text>
+<text x="212.0" y="188.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="end">&lt;|/image|&gt;</text>
+<text x="400.0" y="36.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="700" fill="#1F2433" text-anchor="start">lm_head (writes ids)</text>
+<rect x="400.0" y="50.0" width="180.0" height="67.0" rx="3" fill="#ECE7DF" stroke="#8A8F98" stroke-width="1"/>
+<text x="408.0" y="87.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="400" fill="#1F2433" text-anchor="start">0 – 255</text>
+<text x="572.0" y="87.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#1F2433" text-anchor="end">the bytes</text>
+<rect x="400.0" y="120.0" width="180.0" height="27.0" rx="3" fill="#ECE7DF" stroke="#8A8F98" stroke-width="1"/>
+<text x="408.0" y="137.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="400" fill="#1F2433" text-anchor="start">256 – 258</text>
+<text x="572.0" y="137.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#1F2433" text-anchor="end">BOS, EOS, PAD</text>
+<rect x="400.0" y="150.0" width="180.0" height="21.0" rx="3" fill="#FBE3D0" stroke="#E8833A" stroke-width="1"/>
+<text x="408.0" y="164.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="400" fill="#1F2433" text-anchor="start">259</text>
+<text x="572.0" y="164.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="end">&lt;|image|&gt;</text>
+<rect x="400.0" y="174.0" width="180.0" height="21.0" rx="3" fill="#FBE3D0" stroke="#E8833A" stroke-width="1"/>
+<text x="408.0" y="188.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="400" fill="#1F2433" text-anchor="start">260</text>
+<text x="572.0" y="188.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="end">&lt;|/image|&gt;</text>
+<text x="40.0" y="230.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">New rows start at the mean of the trained rows, plus a little noise: a fresh random row would</text>
+<text x="40.0" y="248.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">start far from where the trained ones live. Grow both tables, or the model can read the new ids but never write them.</text>
+<text x="16.0" y="268.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 13.1  Two new ids for pictures. Every old id keeps its row, so on text the model is exactly what it was.</text>
+</svg>

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" width="720" height="340" role="img">
+<rect width="720" height="340" fill="#FBF8F3"/>
+<text x="60.0" y="34.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="start">sigmoid score (solid) and score + balancing bias (outline), per expert</text>
+<rect x="60.0" y="93.6" width="34.0" height="136.4" rx="2" fill="#DDE1F7" stroke="none" stroke-width="0"/>
+<rect x="57.0" y="93.6" width="40.0" height="2.5" rx="0" fill="#E8833A" stroke="none" stroke-width="0"/>
+<text x="77.0" y="246.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">0</text>
+<rect x="120.0" y="73.8" width="34.0" height="156.2" rx="2" fill="#DDE1F7" stroke="none" stroke-width="0"/>
+<rect x="117.0" y="100.2" width="40.0" height="2.5" rx="0" fill="#E8833A" stroke="none" stroke-width="0"/>
+<text x="137.0" y="246.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">1</text>
+<rect x="180.0" y="142.0" width="34.0" height="88.0" rx="2" fill="#DDE1F7" stroke="none" stroke-width="0"/>
+<rect x="177.0" y="131.0" width="40.0" height="2.5" rx="0" fill="#E8833A" stroke="none" stroke-width="0"/>
+<text x="197.0" y="246.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">2</text>
+<rect x="240.0" y="109.0" width="34.0" height="121.0" rx="2" fill="#3B4CCA" stroke="none" stroke-width="0"/>
+<rect x="237.0" y="87.0" width="40.0" height="2.5" rx="0" fill="#E8833A" stroke="none" stroke-width="0"/>
+<text x="257.0" y="246.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">3</text>
+<text x="257.0" y="79.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="10" font-weight="600" fill="#E8833A" text-anchor="middle">picked</text>
+<rect x="300.0" y="78.2" width="34.0" height="151.8" rx="2" fill="#3B4CCA" stroke="none" stroke-width="0"/>
+<rect x="297.0" y="73.8" width="40.0" height="2.5" rx="0" fill="#E8833A" stroke="none" stroke-width="0"/>
+<text x="317.0" y="246.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">4</text>
+<text x="317.0" y="65.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="10" font-weight="600" fill="#E8833A" text-anchor="middle">picked</text>
+<rect x="360.0" y="157.4" width="34.0" height="72.6" rx="2" fill="#DDE1F7" stroke="none" stroke-width="0"/>
+<rect x="357.0" y="157.4" width="40.0" height="2.5" rx="0" fill="#E8833A" stroke="none" stroke-width="0"/>
+<text x="377.0" y="246.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">5</text>
+<rect x="420.0" y="102.4" width="34.0" height="127.6" rx="2" fill="#3B4CCA" stroke="none" stroke-width="0"/>
+<rect x="417.0" y="89.2" width="40.0" height="2.5" rx="0" fill="#E8833A" stroke="none" stroke-width="0"/>
+<text x="437.0" y="246.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">6</text>
+<text x="437.0" y="81.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="10" font-weight="600" fill="#E8833A" text-anchor="middle">picked</text>
+<rect x="480.0" y="126.6" width="34.0" height="103.4" rx="2" fill="#DDE1F7" stroke="none" stroke-width="0"/>
+<rect x="477.0" y="133.2" width="40.0" height="2.5" rx="0" fill="#E8833A" stroke="none" stroke-width="0"/>
+<text x="497.0" y="246.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">7</text>
+<text x="60.0" y="266.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start">expert</text>
+<text x="548.0" y="74.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="start">Picked by score + bias:</text>
+<text x="548.0" y="94.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">experts 3, 4, 6</text>
+<text x="548.0" y="124.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="start">Weighted by score alone:</text>
+<text x="548.0" y="144.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">expert 3: 0.76</text>
+<text x="548.0" y="162.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">expert 4: 0.95</text>
+<text x="548.0" y="180.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">expert 6: 0.80</text>
+<text x="548.0" y="210.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start">(normalised, × 2.5)</text>
+<text x="548.0" y="236.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start">Expert 1 has the highest</text>
+<text x="548.0" y="252.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start">score, but its bias (it has</text>
+<text x="548.0" y="268.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start">been overloaded) drops it</text>
+<text x="548.0" y="284.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start">out of the top 3.</text>
+<text x="16.0" y="313.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 7.2  The router. The balancing bias (saffron) decides which experts are picked; the weights come from the</text>
+<text x="16.0" y="328.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">unbiased scores. Illustrative numbers.</text>
+</svg>

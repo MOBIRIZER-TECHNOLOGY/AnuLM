@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" width="720" height="320" role="img">
+<rect width="720" height="320" fill="#FBF8F3"/>
+<rect x="16.0" y="40.0" width="200.0" height="50.0" rx="8" fill="#ECE7DF" stroke="#8A8F98" stroke-width="1.5"/>
+<text x="116.0" y="63.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">prompt</text>
+<text x="116.0" y="78.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">Question: what is 44 plus 56?</text>
+<rect x="16.0" y="110.0" width="200.0" height="44.0" rx="8" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.5"/>
+<text x="116.0" y="136.6" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">chosen: 100</text>
+<rect x="16.0" y="170.0" width="200.0" height="44.0" rx="8" fill="#F6D9DD" stroke="#D1495B" stroke-width="1.5"/>
+<text x="116.0" y="196.6" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">rejected: 110</text>
+<rect x="280.0" y="70.0" width="170.0" height="56.0" rx="8" fill="#FBE3D0" stroke="#E8833A" stroke-width="1.5"/>
+<text x="365.0" y="96.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">policy</text>
+<text x="365.0" y="111.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">trains</text>
+<rect x="280.0" y="160.0" width="170.0" height="56.0" rx="8" fill="#E9E9EB" stroke="#8A8F98" stroke-width="1.5"/>
+<text x="365.0" y="186.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="600" fill="#1F2433" text-anchor="middle">reference</text>
+<text x="365.0" y="201.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">a frozen copy of the start</text>
+<line x1="218.0" y1="132.0" x2="278.0" y2="100.0" stroke="#8A8F98" stroke-width="1.2"/>
+<polygon points="278.0,100.0 274.5,104.8 272.0,100.2" fill="#8A8F98"/>
+<line x1="218.0" y1="192.0" x2="278.0" y2="186.0" stroke="#8A8F98" stroke-width="1.2"/>
+<polygon points="278.0,186.0 272.9,189.1 272.4,183.9" fill="#8A8F98"/>
+<text x="486.0" y="70.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#1F9E89" text-anchor="start">chosen: log p − log p_ref</text>
+<text x="486.0" y="88.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start">how much MORE likely than at the start</text>
+<text x="486.0" y="122.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#D1495B" text-anchor="start">rejected: log p − log p_ref</text>
+<text x="486.0" y="140.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start">the same, for the wrong answer</text>
+<line x1="452.0" y1="98.0" x2="480.0" y2="80.0" stroke="#8A8F98" stroke-width="1.2"/>
+<polygon points="480.0,80.0 476.9,85.1 474.0,80.7" fill="#8A8F98"/>
+<line x1="452.0" y1="188.0" x2="480.0" y2="132.0" stroke="#8A8F98" stroke-width="1.2"/>
+<polygon points="480.0,132.0 479.9,138.0 475.2,135.7" fill="#8A8F98"/>
+<rect x="486.0" y="168.0" width="218.0" height="66.0" rx="6" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="595.0" y="194.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">margin = β × (chosen − rejected)</text>
+<text x="595.0" y="218.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">loss = −log sigmoid(margin)</text>
+<text x="16.0" y="262.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#D1495B" text-anchor="start">Nothing in the loss says the chosen answer must stay likely: only that it gains on the rejected one.</text>
+<text x="16.0" y="293.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 11.1  DPO on one pair. At the start the policy is the reference, every margin is 0, and the loss is ln 2</text>
+<text x="16.0" y="308.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">= 0.693.</text>
+</svg>

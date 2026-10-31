@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 372" width="720" height="372" role="img">
+<rect width="720" height="372" fill="#FBF8F3"/>
+<line x1="90.0" y1="280.0" x2="670.0" y2="280.0" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="284.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">1</text>
+<line x1="90.0" y1="202.3" x2="670.0" y2="202.3" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="206.3" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">1.5</text>
+<line x1="90.0" y1="124.6" x2="670.0" y2="124.6" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="128.6" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">2</text>
+<line x1="90.0" y1="46.9" x2="670.0" y2="46.9" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="50.9" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">2.5</text>
+<text x="276.8" y="298.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">500</text>
+<text x="473.4" y="298.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">1,000</text>
+<text x="670.0" y="298.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">1,500</text>
+<line x1="90.0" y1="280.0" x2="670.0" y2="280.0" stroke="#1F2433" stroke-width="1.2"/>
+<path d="M90.0,30.0 L99.8,110.6 L109.7,107.2 L119.5,102.4 L129.3,100.1 L139.2,128.5 L149.0,101.3 L158.8,110.0 L168.6,111.7 L178.5,120.9 L188.3,134.3 L198.1,123.1 L208.0,134.1 L217.8,135.5 L227.6,123.7 L237.5,116.1 L247.3,117.9 L257.1,120.3 L266.9,131.5 L276.8,115.0 L286.6,125.4 L296.4,123.1 L306.3,125.4 L316.1,131.9 L325.9,143.0 L335.8,130.5 L345.6,131.0 L355.4,126.2 L365.3,130.2 L375.1,122.0 L384.9,128.7 L394.7,137.8 L404.6,138.1 L414.4,140.2 L424.2,144.2 L434.1,140.6 L443.9,149.5 L453.7,153.2 L463.6,148.6 L473.4,141.9 L483.2,143.3 L493.1,141.1 L502.9,150.6 L512.7,138.6 L522.5,147.2 L532.4,156.5 L542.2,149.2 L552.0,146.2 L561.9,144.5 L571.7,151.0 L581.5,153.1 L591.4,152.7 L601.2,158.2 L611.0,151.2 L620.8,152.3 L630.7,146.1 L640.5,152.0 L650.3,150.1 L660.2,151.2 L670.0,151.0" fill="none" stroke="#D1495B" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="670.0" cy="151.0" r="3.5" fill="#D1495B"/>
+<path d="M90.0,51.6 L99.8,66.0 L109.7,161.3 L119.5,129.4 L129.3,151.3 L139.2,182.7 L149.0,180.7 L158.8,181.8 L168.6,212.3 L178.5,241.6 L188.3,223.4 L198.1,244.7 L208.0,249.9 L217.8,250.0 L227.6,251.1 L237.5,258.7 L247.3,248.9 L257.1,257.0 L266.9,264.8 L276.8,265.4 L286.6,262.1 L296.4,263.8 L306.3,266.0 L316.1,246.3 L325.9,250.9 L335.8,254.5 L345.6,260.7 L355.4,262.6 L365.3,263.7 L375.1,262.1 L384.9,249.1 L394.7,257.8 L404.6,263.8 L414.4,257.8 L424.2,260.6 L434.1,270.4 L443.9,261.8 L453.7,264.9 L463.6,265.1 L473.4,264.8 L483.2,270.4 L493.1,266.2 L502.9,268.2 L512.7,272.1 L522.5,272.5 L532.4,271.0 L542.2,271.9 L552.0,274.1 L561.9,273.0 L571.7,270.2 L581.5,268.5 L591.4,270.4 L601.2,273.9 L611.0,271.8 L620.8,268.0 L630.7,272.4 L640.5,265.7 L650.3,268.8 L660.2,273.5 L670.0,273.8" fill="none" stroke="#E8833A" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="670.0" cy="273.8" r="3.5" fill="#E8833A"/>
+<text x="380.0" y="318.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">training step</text>
+<text transform="translate(44.0,155.0) rotate(-90)" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" fill="#1F2433" text-anchor="middle">worst layer: busiest expert ÷ average</text>
+<text x="664.0" y="139.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#D1495B" text-anchor="end">no balancing: 1.83x</text>
+<text x="664.0" y="261.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#E8833A" text-anchor="end">bias rule on: 1.04x</text>
+<text x="16.0" y="345.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 7.3  Load imbalance while training (1.0 = every expert equally busy). Without the bias rule the router</text>
+<text x="16.0" y="360.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">settles on favourites; with it, the load spreads. Measured in the lab.</text>
+</svg>

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 280" width="720" height="280" role="img">
+<rect width="720" height="280" fill="#FBF8F3"/>
+<text x="24.0" y="34.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#8A8F98" text-anchor="start">The text so far</text>
+<rect x="24.0" y="46.0" width="22.0" height="26.0" rx="5" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.2"/>
+<text x="35.0" y="64.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#1F2433" text-anchor="middle">T</text>
+<rect x="49.0" y="46.0" width="22.0" height="26.0" rx="5" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.2"/>
+<text x="60.0" y="64.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#1F2433" text-anchor="middle">o</text>
+<rect x="74.0" y="46.0" width="22.0" height="26.0" rx="5" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.2"/>
+<text x="85.0" y="64.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#1F2433" text-anchor="middle">␣</text>
+<rect x="99.0" y="46.0" width="22.0" height="26.0" rx="5" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.2"/>
+<text x="110.0" y="64.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#1F2433" text-anchor="middle">b</text>
+<rect x="124.0" y="46.0" width="22.0" height="26.0" rx="5" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.2"/>
+<text x="135.0" y="64.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#1F2433" text-anchor="middle">e</text>
+<rect x="149.0" y="46.0" width="22.0" height="26.0" rx="5" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.2"/>
+<text x="160.0" y="64.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#1F2433" text-anchor="middle">␣</text>
+<rect x="174.0" y="46.0" width="22.0" height="26.0" rx="5" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.2"/>
+<text x="185.0" y="64.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#1F2433" text-anchor="middle">o</text>
+<rect x="199.0" y="46.0" width="22.0" height="26.0" rx="5" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.2"/>
+<text x="210.0" y="64.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#1F2433" text-anchor="middle">r</text>
+<rect x="224.0" y="46.0" width="22.0" height="26.0" rx="5" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.2"/>
+<text x="235.0" y="64.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#1F2433" text-anchor="middle">␣</text>
+<rect x="249.0" y="46.0" width="22.0" height="26.0" rx="5" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.2"/>
+<text x="260.0" y="64.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#1F2433" text-anchor="middle">n</text>
+<rect x="274.0" y="46.0" width="22.0" height="26.0" rx="5" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.2"/>
+<text x="285.0" y="64.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#1F2433" text-anchor="middle">o</text>
+<rect x="299.0" y="46.0" width="22.0" height="26.0" rx="5" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.2"/>
+<text x="310.0" y="64.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#1F2433" text-anchor="middle">t</text>
+<rect x="324.0" y="46.0" width="22.0" height="26.0" rx="5" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.2"/>
+<text x="335.0" y="64.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#1F2433" text-anchor="middle">␣</text>
+<rect x="349.0" y="46.0" width="22.0" height="26.0" rx="5" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.2"/>
+<text x="360.0" y="64.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#1F2433" text-anchor="middle">t</text>
+<rect x="374.0" y="46.0" width="22.0" height="26.0" rx="5" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.2"/>
+<text x="385.0" y="64.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#1F2433" text-anchor="middle">o</text>
+<rect x="399.0" y="46.0" width="22.0" height="26.0" rx="5" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.2"/>
+<text x="410.0" y="64.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#1F2433" text-anchor="middle">␣</text>
+<rect x="424.0" y="46.0" width="22.0" height="26.0" rx="5" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.2"/>
+<text x="435.0" y="64.0" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#1F2433" text-anchor="middle">b</text>
+<rect x="150.0" y="130.0" width="200.0" height="64.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="250.0" y="160.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="#1F2433" text-anchor="middle">the model</text>
+<text x="250.0" y="177.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="400" fill="#8A8F98" text-anchor="middle">0.9M parameters</text>
+<line x1="250.0" y1="76.0" x2="250.0" y2="128.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="250.0,128.0 247.0,121.7 253.0,121.7" fill="#8A8F98"/>
+<text x="470.0" y="112.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#8A8F98" text-anchor="start">What comes next?</text>
+<line x1="352.0" y1="162.0" x2="446.0" y2="162.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="446.0,162.0 439.7,165.0 439.7,159.0" fill="#8A8F98"/>
+<text x="470.0" y="136.6" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#1F2433" text-anchor="end">e</text>
+<rect x="480.0" y="124.0" width="95.2" height="18.0" rx="4" fill="#E8833A" stroke="none" stroke-width="1.5"/>
+<text x="583.2" y="136.6" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">56%</text>
+<text x="470.0" y="162.6" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#1F2433" text-anchor="end">l</text>
+<rect x="480.0" y="150.0" width="17.5" height="18.0" rx="4" fill="#DDE1F7" stroke="none" stroke-width="1.5"/>
+<text x="505.5" y="162.6" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">10%</text>
+<text x="470.0" y="188.6" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#1F2433" text-anchor="end">o</text>
+<rect x="480.0" y="176.0" width="13.8" height="18.0" rx="4" fill="#DDE1F7" stroke="none" stroke-width="1.5"/>
+<text x="501.8" y="188.6" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">8%</text>
+<text x="470.0" y="214.6" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#1F2433" text-anchor="end">r</text>
+<rect x="480.0" y="202.0" width="12.3" height="18.0" rx="4" fill="#DDE1F7" stroke="none" stroke-width="1.5"/>
+<text x="500.3" y="214.6" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">7%</text>
+<text x="16.0" y="253.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 1.1  Given the bytes so far, the model returns a probability for each of the 256 possible next bytes.</text>
+<text x="16.0" y="268.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Measured on the lab&#x27;s trained model.</text>
+</svg>

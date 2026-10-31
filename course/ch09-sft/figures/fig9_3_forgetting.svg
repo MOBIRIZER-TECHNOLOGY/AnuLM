@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 250" width="720" height="250" role="img">
+<rect width="720" height="250" fill="#FBF8F3"/>
+<text x="22.0" y="30.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#8A8F98" text-anchor="start">validation loss on Shakespeare (lower: it still writes it)</text>
+<text x="162.0" y="61.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="500" fill="#1F2433" text-anchor="end">base, before</text>
+<rect x="172.0" y="46.0" width="76.6" height="22.0" rx="4" fill="#8A8F98" stroke="none" stroke-width="1.5"/>
+<text x="256.6" y="61.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">1.50</text>
+<text x="162.0" y="93.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="500" fill="#1F2433" text-anchor="end">answer-only</text>
+<rect x="172.0" y="78.0" width="433.2" height="22.0" rx="4" fill="#E8833A" stroke="none" stroke-width="1.5"/>
+<text x="613.2" y="93.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">8.51</text>
+<text x="162.0" y="125.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="500" fill="#1F2433" text-anchor="end">whole text</text>
+<rect x="172.0" y="110.0" width="450.0" height="22.0" rx="4" fill="#3B4CCA" stroke="none" stroke-width="1.5"/>
+<text x="630.0" y="125.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">8.83</text>
+<text x="16.0" y="223.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 9.3  The cost of a narrow fine-tune. Each model&#x27;s loss on Shakespeare it never trained on, before and</text>
+<text x="16.0" y="238.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">after 1,500 steps of sums. Measured in the lab.</text>
+</svg>

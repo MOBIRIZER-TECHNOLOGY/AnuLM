@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 250" width="720" height="250" role="img">
+<rect width="720" height="250" fill="#FBF8F3"/>
+<rect x="12.0" y="50.0" width="104.0" height="56.0" rx="8" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.5"/>
+<text x="64.0" y="76.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">your files</text>
+<text x="64.0" y="90.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="10" font-weight="400" fill="#8A8F98" text-anchor="middle">text, exports, dumps</text>
+<line x1="117.0" y1="78.0" x2="127.0" y2="78.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="127.0,78.0 120.7,81.0 120.7,75.0" fill="#8A8F98"/>
+<rect x="128.0" y="50.0" width="104.0" height="56.0" rx="8" fill="#FBF8F3" stroke="#1F2433" stroke-width="1.5"/>
+<text x="180.0" y="76.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">documents</text>
+<text x="180.0" y="90.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="10" font-weight="400" fill="#8A8F98" text-anchor="middle">split on DOC_SEP</text>
+<line x1="233.0" y1="78.0" x2="243.0" y2="78.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="243.0,78.0 236.7,81.0 236.7,75.0" fill="#8A8F98"/>
+<rect x="244.0" y="50.0" width="104.0" height="56.0" rx="8" fill="#FBF8F3" stroke="#1F2433" stroke-width="1.5"/>
+<text x="296.0" y="76.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">dedup</text>
+<text x="296.0" y="90.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="10" font-weight="400" fill="#8A8F98" text-anchor="middle">first copy only</text>
+<line x1="349.0" y1="78.0" x2="359.0" y2="78.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="359.0,78.0 352.7,81.0 352.7,75.0" fill="#8A8F98"/>
+<rect x="360.0" y="50.0" width="104.0" height="56.0" rx="8" fill="#FBF8F3" stroke="#1F2433" stroke-width="1.5"/>
+<text x="412.0" y="76.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">filter</text>
+<text x="412.0" y="90.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="10" font-weight="400" fill="#8A8F98" text-anchor="middle">prose, script</text>
+<line x1="465.0" y1="78.0" x2="475.0" y2="78.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="475.0,78.0 468.7,81.0 468.7,75.0" fill="#8A8F98"/>
+<rect x="476.0" y="50.0" width="104.0" height="56.0" rx="8" fill="#FBF8F3" stroke="#1F2433" stroke-width="1.5"/>
+<text x="528.0" y="76.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">split</text>
+<text x="528.0" y="90.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="10" font-weight="400" fill="#8A8F98" text-anchor="middle">interleaved</text>
+<line x1="581.0" y1="78.0" x2="591.0" y2="78.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="591.0,78.0 584.7,81.0 584.7,75.0" fill="#8A8F98"/>
+<rect x="592.0" y="50.0" width="104.0" height="56.0" rx="8" fill="#FBF8F3" stroke="#1F2433" stroke-width="1.5"/>
+<text x="644.0" y="76.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">decontaminate</text>
+<text x="644.0" y="90.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="10" font-weight="400" fill="#8A8F98" text-anchor="middle">13-word windows</text>
+<rect x="150.0" y="150.0" width="420.0" height="44.0" rx="8" fill="#FBE3D0" stroke="#E8833A" stroke-width="1.5"/>
+<text x="360.0" y="176.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">and before any of it: may you train on this, and sell what you train?</text>
+<text x="16.0" y="223.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 2.1  The pipeline. Each step has a function in course/build/data.py and a check that catches its silent</text>
+<text x="16.0" y="238.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">failure.</text>
+</svg>

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" width="720" height="360" role="img">
+<rect width="720" height="360" fill="#FBF8F3"/>
+<text x="180.0" y="36.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#1F2433" text-anchor="middle">a fast pair (pair 0)</text>
+<circle cx="180" cy="160" r="92" fill="none" stroke="#ECE7DF" stroke-width="1.5"/>
+<line x1="78.0" y1="160.0" x2="282.0" y2="160.0" stroke="#ECE7DF" stroke-width="1"/>
+<line x1="180.0" y1="58.0" x2="180.0" y2="262.0" stroke="#ECE7DF" stroke-width="1"/>
+<line x1="180.0" y1="160.0" x2="266.4" y2="128.5" stroke="#3B4CCA" stroke-width="2.0"/>
+<polygon points="266.4,128.5 261.5,133.5 259.5,127.8" fill="#3B4CCA"/>
+<text x="283.3" y="126.3" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#3B4CCA" text-anchor="middle">pos 0</text>
+<line x1="180.0" y1="160.0" x2="200.1" y2="70.2" stroke="#3B4CCA" stroke-width="1.4"/>
+<polygon points="200.1,70.2 201.7,77.1 195.8,75.7" fill="#3B4CCA"/>
+<text x="204.1" y="56.7" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#3B4CCA" text-anchor="middle">pos 1</text>
+<line x1="180.0" y1="160.0" x2="115.4" y2="94.5" stroke="#3B4CCA" stroke-width="1.4"/>
+<polygon points="115.4,94.5 121.9,96.9 117.6,101.2" fill="#3B4CCA"/>
+<text x="102.7" y="85.7" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#3B4CCA" text-anchor="middle">pos 2</text>
+<line x1="180.0" y1="160.0" x2="90.0" y2="179.0" stroke="#E8833A" stroke-width="2.0"/>
+<polygon points="90.0,179.0 95.5,174.8 96.8,180.7" fill="#E8833A"/>
+<text x="72.4" y="186.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#E8833A" text-anchor="middle">pos 3</text>
+<text x="180.0" y="292.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#8A8F98" text-anchor="middle">turns 1 rad per position</text>
+<text x="500.0" y="36.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#1F2433" text-anchor="middle">a slow pair</text>
+<circle cx="500" cy="160" r="92" fill="none" stroke="#ECE7DF" stroke-width="1.5"/>
+<line x1="398.0" y1="160.0" x2="602.0" y2="160.0" stroke="#ECE7DF" stroke-width="1"/>
+<line x1="500.0" y1="58.0" x2="500.0" y2="262.0" stroke="#ECE7DF" stroke-width="1"/>
+<line x1="500.0" y1="160.0" x2="586.4" y2="128.5" stroke="#3B4CCA" stroke-width="2.0"/>
+<polygon points="586.4,128.5 581.5,133.5 579.5,127.8" fill="#3B4CCA"/>
+<text x="603.3" y="126.3" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#3B4CCA" text-anchor="middle">pos 0</text>
+<line x1="500.0" y1="160.0" x2="582.0" y2="118.3" stroke="#3B4CCA" stroke-width="1.4"/>
+<polygon points="582.0,118.3 577.8,123.9 575.0,118.5" fill="#3B4CCA"/>
+<text x="598.1" y="114.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#3B4CCA" text-anchor="middle">pos 1</text>
+<line x1="500.0" y1="160.0" x2="576.4" y2="108.8" stroke="#3B4CCA" stroke-width="1.4"/>
+<polygon points="576.4,108.8 572.9,114.9 569.5,109.8" fill="#3B4CCA"/>
+<text x="591.4" y="102.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#3B4CCA" text-anchor="middle">pos 2</text>
+<line x1="500.0" y1="160.0" x2="569.8" y2="100.0" stroke="#E8833A" stroke-width="2.0"/>
+<polygon points="569.8,100.0 567.0,106.4 563.0,101.8" fill="#E8833A"/>
+<text x="583.4" y="92.3" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#E8833A" text-anchor="middle">pos 3</text>
+<text x="500.0" y="292.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#8A8F98" text-anchor="middle">turns 0.12 rad per position</text>
+<text x="16.0" y="333.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 5.1  RoPE treats each pair of numbers in a query or key as a 2-D vector and turns it by position ×</text>
+<text x="16.0" y="348.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">frequency. Pairs run from fast to slow, so together they encode position at many scales.</text>
+</svg>

@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" width="720" height="360" role="img">
+<rect width="720" height="360" fill="#FBF8F3"/>
+<text x="30.0" y="34.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#1F2433" text-anchor="start">AnuLM 400M: 16 query heads share 4 key/value heads</text>
+<rect x="60.0" y="150.0" width="110.0" height="34.0" rx="8" fill="#FBE3D0" stroke="#E8833A" stroke-width="1.5"/>
+<text x="115.0" y="171.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">k,v head 0</text>
+<rect x="42.0" y="60.0" width="32.0" height="30.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="58.0" y="78.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">q0</text>
+<line x1="58.0" y1="90.0" x2="115.0" y2="150.0" stroke="#8A8F98" stroke-width="1"/>
+<rect x="79.0" y="60.0" width="32.0" height="30.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="95.0" y="78.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">q1</text>
+<line x1="95.0" y1="90.0" x2="115.0" y2="150.0" stroke="#8A8F98" stroke-width="1"/>
+<rect x="116.0" y="60.0" width="32.0" height="30.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="132.0" y="78.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">q2</text>
+<line x1="132.0" y1="90.0" x2="115.0" y2="150.0" stroke="#8A8F98" stroke-width="1"/>
+<rect x="153.0" y="60.0" width="32.0" height="30.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="169.0" y="78.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">q3</text>
+<line x1="169.0" y1="90.0" x2="115.0" y2="150.0" stroke="#8A8F98" stroke-width="1"/>
+<rect x="220.0" y="150.0" width="110.0" height="34.0" rx="8" fill="#FBE3D0" stroke="#E8833A" stroke-width="1.5"/>
+<text x="275.0" y="171.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">k,v head 1</text>
+<rect x="202.0" y="60.0" width="32.0" height="30.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="218.0" y="78.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">q4</text>
+<line x1="218.0" y1="90.0" x2="275.0" y2="150.0" stroke="#8A8F98" stroke-width="1"/>
+<rect x="239.0" y="60.0" width="32.0" height="30.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="255.0" y="78.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">q5</text>
+<line x1="255.0" y1="90.0" x2="275.0" y2="150.0" stroke="#8A8F98" stroke-width="1"/>
+<rect x="276.0" y="60.0" width="32.0" height="30.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="292.0" y="78.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">q6</text>
+<line x1="292.0" y1="90.0" x2="275.0" y2="150.0" stroke="#8A8F98" stroke-width="1"/>
+<rect x="313.0" y="60.0" width="32.0" height="30.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="329.0" y="78.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">q7</text>
+<line x1="329.0" y1="90.0" x2="275.0" y2="150.0" stroke="#8A8F98" stroke-width="1"/>
+<rect x="380.0" y="150.0" width="110.0" height="34.0" rx="8" fill="#FBE3D0" stroke="#E8833A" stroke-width="1.5"/>
+<text x="435.0" y="171.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">k,v head 2</text>
+<rect x="362.0" y="60.0" width="32.0" height="30.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="378.0" y="78.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">q8</text>
+<line x1="378.0" y1="90.0" x2="435.0" y2="150.0" stroke="#8A8F98" stroke-width="1"/>
+<rect x="399.0" y="60.0" width="32.0" height="30.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="415.0" y="78.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">q9</text>
+<line x1="415.0" y1="90.0" x2="435.0" y2="150.0" stroke="#8A8F98" stroke-width="1"/>
+<rect x="436.0" y="60.0" width="32.0" height="30.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="452.0" y="78.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">q10</text>
+<line x1="452.0" y1="90.0" x2="435.0" y2="150.0" stroke="#8A8F98" stroke-width="1"/>
+<rect x="473.0" y="60.0" width="32.0" height="30.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="489.0" y="78.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">q11</text>
+<line x1="489.0" y1="90.0" x2="435.0" y2="150.0" stroke="#8A8F98" stroke-width="1"/>
+<rect x="540.0" y="150.0" width="110.0" height="34.0" rx="8" fill="#FBE3D0" stroke="#E8833A" stroke-width="1.5"/>
+<text x="595.0" y="171.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">k,v head 3</text>
+<rect x="522.0" y="60.0" width="32.0" height="30.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="538.0" y="78.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">q12</text>
+<line x1="538.0" y1="90.0" x2="595.0" y2="150.0" stroke="#8A8F98" stroke-width="1"/>
+<rect x="559.0" y="60.0" width="32.0" height="30.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="575.0" y="78.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">q13</text>
+<line x1="575.0" y1="90.0" x2="595.0" y2="150.0" stroke="#8A8F98" stroke-width="1"/>
+<rect x="596.0" y="60.0" width="32.0" height="30.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="612.0" y="78.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">q14</text>
+<line x1="612.0" y1="90.0" x2="595.0" y2="150.0" stroke="#8A8F98" stroke-width="1"/>
+<rect x="633.0" y="60.0" width="32.0" height="30.0" rx="8" fill="#DDE1F7" stroke="#3B4CCA" stroke-width="1.5"/>
+<text x="649.0" y="78.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#1F2433" text-anchor="middle">q15</text>
+<line x1="649.0" y1="90.0" x2="595.0" y2="150.0" stroke="#8A8F98" stroke-width="1"/>
+<text x="30.0" y="222.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="start">KV cache per token (20 layers, head dim 64, bf16)</text>
+<text x="190.0" y="250.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="500" fill="#1F2433" text-anchor="end">multi-head</text>
+<rect x="200.0" y="236.0" width="410.0" height="20.0" rx="4" fill="#E9E9EB" stroke="none" stroke-width="1.5"/>
+<text x="618.0" y="250.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">80 KiB</text>
+<text x="190.0" y="278.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="500" fill="#1F2433" text-anchor="end">grouped, as AnuLM</text>
+<rect x="200.0" y="264.0" width="102.5" height="20.0" rx="4" fill="#E8833A" stroke="none" stroke-width="1.5"/>
+<text x="310.5" y="278.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">20 KiB</text>
+<text x="190.0" y="306.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="500" fill="#1F2433" text-anchor="end">multi-query</text>
+<rect x="200.0" y="292.0" width="25.6" height="20.0" rx="4" fill="#E9E9EB" stroke="none" stroke-width="1.5"/>
+<text x="233.6" y="306.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">5 KiB</text>
+<text x="16.0" y="333.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 6.3  Grouped-query attention. Each key/value head serves a group of query heads, and only the shared</text>
+<text x="16.0" y="348.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">heads go in the cache: a quarter of multi-head attention&#x27;s memory at 4 groups.</text>
+</svg>

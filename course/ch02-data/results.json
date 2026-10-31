@@ -1,0 +1,37 @@
+{
+ "hindi_docs": 437,
+ "english_docs": 400,
+ "dedup": {
+  "in": 812,
+  "kept": 777,
+  "removed": 35,
+  "planted": 35
+ },
+ "filter": {
+  "docs_in": 407,
+  "docs_kept": 352,
+  "chars_in": 1472776,
+  "chars_kept": 1314941
+ },
+ "split": {
+  "corpus": 0.6869,
+  "tail": 0.0015,
+  "interleaved": 0.693
+ },
+ "contamination": {
+  "planted": {
+   "hindi": 5,
+   "english": 5
+  },
+  "yours": {
+   "hindi": 5,
+   "english": 5,
+   "false": 0
+  },
+  "repository": {
+   "hindi": 1,
+   "english": 5,
+   "false": 0
+  }
+ }
+}

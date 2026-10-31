@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" width="720" height="300" role="img">
+<rect width="720" height="300" fill="#FBF8F3"/>
+<text x="16.0" y="34.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#1F2433" text-anchor="start">matched: picture vectors start at norm 0.29</text>
+<text x="126.0" y="65.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="500" fill="#1F2433" text-anchor="end">right picture</text>
+<rect x="136.0" y="50.0" width="124.9" height="22.0" rx="4" fill="#1F9E89" stroke="none" stroke-width="1.5"/>
+<text x="268.9" y="65.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">1.100</text>
+<text x="126.0" y="97.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="500" fill="#1F2433" text-anchor="end">wrong picture</text>
+<rect x="136.0" y="82.0" width="142.6" height="22.0" rx="4" fill="#D1495B" stroke="none" stroke-width="1.5"/>
+<text x="286.6" y="97.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">1.256</text>
+<text x="126.0" y="129.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="500" fill="#1F2433" text-anchor="end">no picture</text>
+<rect x="136.0" y="114.0" width="152.4" height="22.0" rx="4" fill="#8A8F98" stroke="none" stroke-width="1.5"/>
+<text x="296.4" y="129.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">1.342</text>
+<text x="368.0" y="34.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#1F2433" text-anchor="start">unit gain: picture vectors start at norm 11.31</text>
+<text x="478.0" y="65.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="500" fill="#1F2433" text-anchor="end">right picture</text>
+<rect x="488.0" y="50.0" width="130.5" height="22.0" rx="4" fill="#1F9E89" stroke="none" stroke-width="1.5"/>
+<text x="626.5" y="65.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">1.253</text>
+<text x="478.0" y="97.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="500" fill="#1F2433" text-anchor="end">wrong picture</text>
+<rect x="488.0" y="82.0" width="149.3" height="22.0" rx="4" fill="#D1495B" stroke="none" stroke-width="1.5"/>
+<text x="645.3" y="97.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">1.434</text>
+<text x="478.0" y="129.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="500" fill="#1F2433" text-anchor="end">no picture</text>
+<rect x="488.0" y="114.0" width="152.4" height="22.0" rx="4" fill="#8A8F98" stroke="none" stroke-width="1.5"/>
+<text x="648.4" y="129.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">1.463</text>
+<text x="16.0" y="170.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">A word&#x27;s embedding has norm 0.29. Loss per byte of caption on 200 pictures neither model saw;</text>
+<text x="16.0" y="188.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">&quot;wrong picture&quot; gives each caption another test picture. Lower is better.</text>
+<text x="16.0" y="273.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 13.3  Does it look? If the model uses the picture, the right one must beat a wrong one. Measured in the</text>
+<text x="16.0" y="288.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">lab.</text>
+</svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 230" width="720" height="230" role="img">
+<rect width="720" height="230" fill="#FBF8F3"/>
+<text x="30.0" y="34.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#1F2433" text-anchor="start">share of Devanagari characters: Hindi articles first, then Shakespeare</text>
+<text x="190.0" y="70.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="500" fill="#1F2433" text-anchor="end">whole corpus</text>
+<rect x="200.0" y="54.0" width="295.4" height="24.0" rx="4" fill="#8A8F98" stroke="none" stroke-width="1.5"/>
+<text x="503.4" y="70.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">69%</text>
+<text x="190.0" y="106.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="500" fill="#1F2433" text-anchor="end">last 10% (the tail)</text>
+<rect x="200.0" y="90.0" width="2.0" height="24.0" rx="4" fill="#D1495B" stroke="none" stroke-width="1.5"/>
+<text x="208.6" y="106.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">0%</text>
+<text x="190.0" y="142.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="500" fill="#1F2433" text-anchor="end">interleaved 10%</text>
+<rect x="200.0" y="126.0" width="298.0" height="24.0" rx="4" fill="#1F9E89" stroke="none" stroke-width="1.5"/>
+<text x="506.0" y="142.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="start">69%</text>
+<text x="16.0" y="203.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 2.2  A validation set taken from the tail of a corpus built source by source contains one source only.</text>
+<text x="16.0" y="218.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Interleaving keeps the corpus&#x27;s own mix. Measured in the lab.</text>
+</svg>

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 372" width="720" height="372" role="img">
+<rect width="720" height="372" fill="#FBF8F3"/>
+<line x1="90.0" y1="241.5" x2="670.0" y2="241.5" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="245.5" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">1.5</text>
+<line x1="90.0" y1="145.4" x2="670.0" y2="145.4" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="149.4" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">2</text>
+<line x1="90.0" y1="49.2" x2="670.0" y2="49.2" stroke="#ECE7DF" stroke-width="1"/>
+<text x="82.0" y="53.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="end">2.5</text>
+<text x="255.7" y="298.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">500</text>
+<text x="462.9" y="298.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">1,000</text>
+<text x="670.0" y="298.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="middle">1,500</text>
+<line x1="90.0" y1="280.0" x2="670.0" y2="280.0" stroke="#1F2433" stroke-width="1.2"/>
+<path d="M90.0,90.9 L131.4,152.5 L172.9,183.3 L214.3,195.9 L255.7,203.2 L297.1,210.6 L338.6,217.8 L380.0,221.1 L421.4,224.3 L462.9,227.2 L504.3,228.7 L545.7,231.6 L587.1,232.6 L628.6,233.6 L670.0,233.7" fill="none" stroke="#8A8F98" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="670.0" cy="233.7" r="3.5" fill="#8A8F98"/>
+<path d="M90.0,93.9 L131.4,157.5 L172.9,188.7 L214.3,200.3 L255.7,206.2 L297.1,216.4 L338.6,222.7 L380.0,226.5 L421.4,229.3 L462.9,231.5 L504.3,233.7 L545.7,236.8 L587.1,237.6 L628.6,238.4 L670.0,238.6" fill="none" stroke="#D1495B" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="670.0" cy="238.6" r="3.5" fill="#D1495B"/>
+<path d="M90.0,93.2 L131.4,159.9 L172.9,190.2 L214.3,195.8 L255.7,209.7 L297.1,216.5 L338.6,224.1 L380.0,226.3 L421.4,229.5 L462.9,232.6 L504.3,235.2 L545.7,236.4 L587.1,237.8 L628.6,238.5 L670.0,238.6" fill="none" stroke="#E8833A" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="670.0" cy="238.6" r="3.5" fill="#E8833A"/>
+<text x="380.0" y="318.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F2433" text-anchor="middle">training step</text>
+<text transform="translate(44.0,155.0) rotate(-90)" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" fill="#1F2433" text-anchor="middle">validation loss (nats per byte)</text>
+<text x="338.6" y="58.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#8A8F98" text-anchor="start">dense: 1.541 (0.66M parameters, 0.66M active)</text>
+<text x="338.6" y="76.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#E8833A" text-anchor="start">balanced: 1.515 (1.03M parameters, 0.66M active)</text>
+<text x="338.6" y="94.8" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#D1495B" text-anchor="start">unbalanced: 1.516 (1.03M parameters, 0.66M active)</text>
+<text x="16.0" y="345.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 7.5  The same attention, data and steps; the same active MLP width per token. Measured in the lab,</text>
+<text x="16.0" y="360.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">starting from step 100.</text>
+</svg>

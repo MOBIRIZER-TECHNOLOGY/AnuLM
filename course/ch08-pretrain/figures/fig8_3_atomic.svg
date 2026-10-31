@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" width="720" height="300" role="img">
+<rect width="720" height="300" fill="#FBF8F3"/>
+<text x="30.0" y="40.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#D1495B" text-anchor="start">Writing in place</text>
+<rect x="30.0" y="56.0" width="190.0" height="40.0" rx="8" fill="#ECE7DF" stroke="#1F2433" stroke-width="1.5"/>
+<text x="125.0" y="80.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">run.last (step 41)</text>
+<line x1="222.0" y1="76.0" x2="270.0" y2="76.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="270.0,76.0 263.7,79.0 263.7,73.0" fill="#8A8F98"/>
+<rect x="272.0" y="56.0" width="190.0" height="40.0" rx="8" fill="#F6D9DD" stroke="#D1495B" stroke-width="1.5"/>
+<text x="367.0" y="80.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">run.last, half written</text>
+<text x="480.0" y="72.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#D1495B" text-anchor="start">crash here: both the old and</text>
+<text x="480.0" y="90.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#D1495B" text-anchor="start">the new resume point are gone</text>
+<text x="30.0" y="150.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#1F9E89" text-anchor="start">Write beside it, then rename</text>
+<rect x="30.0" y="166.0" width="190.0" height="40.0" rx="8" fill="#ECE7DF" stroke="#1F2433" stroke-width="1.5"/>
+<text x="125.0" y="190.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">run.last (step 41)</text>
+<rect x="272.0" y="166.0" width="190.0" height="40.0" rx="8" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.5"/>
+<text x="367.0" y="190.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">run.last.tmp, writing</text>
+<line x1="462.0" y1="186.0" x2="510.0" y2="186.0" stroke="#8A8F98" stroke-width="1.6"/>
+<polygon points="510.0,186.0 503.7,189.0 503.7,183.0" fill="#8A8F98"/>
+<rect x="512.0" y="166.0" width="180.0" height="40.0" rx="8" fill="#D3EEE9" stroke="#1F9E89" stroke-width="1.5"/>
+<text x="602.0" y="190.2" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1F2433" text-anchor="middle">os.replace → run.last</text>
+<text x="272.0" y="228.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F9E89" text-anchor="start">crash while writing: run.last is untouched (step 41).</text>
+<text x="272.0" y="246.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="12" font-weight="400" fill="#1F9E89" text-anchor="start">os.replace swaps the file in one indivisible move.</text>
+<text x="16.0" y="288.0" font-family="Inter, 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-size="11" font-weight="400" fill="#8A8F98" text-anchor="start" font-style="italic">Figure 8.3  Saving a checkpoint so that a crash can&#x27;t destroy the one you already have.</text>
+</svg>
