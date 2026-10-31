@@ -1,5 +1,6 @@
 """
-One self-contained HTML page with the sample chapters, styled as the book.
+One self-contained HTML page with the whole book: cover, contents, part pages,
+every chapter, and an index (book_parts.py), styled as the book.
 
     python build_preview.py                    # -> course/preview/sample.html
     python build_preview.py ch01-smallest-model ch10-lora-qlora
@@ -16,6 +17,9 @@ import html
 import re
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import book_parts  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 DEFAULT = ["ch01-smallest-model", "ch02-data", "ch03-tokenizer", "ch04-skeleton", "ch05-positions", "ch06-attention", "ch07-experts", "ch08-pretrain", "ch09-sft", "ch10-lora-qlora", "ch11-dpo", "ch12-decide-rag", "ch13-senses", "ch14-one-model", "ch15-shipping"]
@@ -34,6 +38,11 @@ def figure(path: Path) -> str:
     svg = path.read_text(encoding="utf-8")
     svg = re.sub(r'\swidth="\d+" height="\d+"', "", svg, count=1)          # scale to the column
     return f'<figure class="plate">{svg}</figure>'
+
+
+def anchor(chapter: str, heading: str) -> str:
+    """A section's id: unique across the book, since every chapter has a "Key takeaways"."""
+    return chapter + "--" + re.sub(r"[^a-z0-9]+", "-", heading.lower()).strip("-")
 
 
 def render(md: str, folder: Path) -> tuple[str, str]:
@@ -59,8 +68,7 @@ def render(md: str, folder: Path) -> tuple[str, str]:
         elif line.startswith("#"):
             level = len(line) - len(line.lstrip("#"))
             text = line[level:].strip()
-            anchor = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
-            out.append(f'<h{level} id="{anchor}">{inline(text)}</h{level}>')
+            out.append(f'<h{level} id="{anchor(folder.name, text)}">{inline(text)}</h{level}>')
             i += 1
         elif line.startswith("![]("):
             out.append(figure(folder / line[4:line.index(")")]))
@@ -169,35 +177,38 @@ def main() -> None:
     chapters = []
     for name in names:
         folder = HERE / name
-        title, body = render((folder / "chapter.md").read_text(encoding="utf-8"), folder)
+        md = (folder / "chapter.md").read_text(encoding="utf-8")
+        title, body = render(md, folder)
         num, _, rest = title.partition("·")
-        chapters.append((name, num.strip(), rest.strip() or title, body))
-    toc = "".join(f'<a href="#{n}">{num} · {t}</a>' for n, num, t, _ in chapters)
+        chapters.append({"name": name, "num": num.strip(), "title": rest.strip() or title, "body": body,
+                         "sections": book_parts.sections(md)})
     parts = [
+        '<meta charset="utf-8">',                       # also right when the file is opened or served on its own
+        '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">',
         "<title>Build Your Own LLM</title>",
         '<meta name="claude:viewport-fit-sides" content="cover">',
         '<link rel="preconnect" href="https://fonts.googleapis.com">',
-        '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;'
-        '8..60,600;8..60,700&family=Inter:wght@500;600;700&family=JetBrains+Mono:wght@400;600'
+        '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;'
+        '0,8..60,600;0,8..60,700;1,8..60,700&family=Inter:wght@500;600;700&family=JetBrains+Mono:wght@400;600'
         '&family=Noto+Serif+Devanagari:wght@400;600&display=swap">',
-        f"<style>{CSS}</style>",
+        f"<style>{CSS}{book_parts.CSS}</style>",
+        book_parts.cover(),
         '<main class="page">',
-        '<header class="cover"><div class="kicker">AnuLM lab · sample chapters</div>',
-        "<h1>Build Your Own LLM, from Scratch to Omni</h1>",
-        "<p>A hands-on course: pre-train a language model on your own data, then fine-tune it every "
-        "way that matters, on one consumer GPU or a laptop. Every figure is drawn from a real run.</p>",
-        f'<nav class="toc" aria-label="Chapters">{toc}</nav></header>',
+        book_parts.contents(chapters, anchor),
     ]
-    for name, num, t, body in chapters:
-        parts.append(f'<section class="chapter" id="{name}"><div class="chapter-num">{num}</div>'
-                     f"<h1>{html.escape(t)}</h1>{body}</section>")
-    parts.append('<footer>Draft for review. Code and labs: <code>course/</code> in the AnuLM repository. '
-                 "Default lab data: Shakespeare (public domain) and Hindi Wikipedia (CC BY-SA 4.0).</footer></main>")
+    for c in chapters:
+        parts.append(book_parts.part_page(c["name"]))
+        parts.append(f'<section class="chapter" id="{c["name"]}"><div class="chapter-num">{c["num"]}</div>'
+                     f'<h1>{html.escape(c["title"])}</h1>{c["body"]}</section>')
+    parts.append(book_parts.index(chapters, anchor))
+    parts.append('<footer>Draft edition, October 2026. Code, labs and checks: <code>course/</code> in the AnuLM '
+                 "repository. Lab data: Shakespeare (public domain), Hindi Wikipedia, XQuAD and SQuAD (CC BY-SA 4.0), "
+                 "BANKING77 and Localized Narratives (CC BY 4.0).</footer></main>")
     out = HERE / "preview" / "sample.html"
     out.parent.mkdir(exist_ok=True)
     # Chapter 1 shows the replacement character on purpose; write it as an entity
     # so it survives tools that treat a raw U+FFFD as damage.
-    out.write_text("\n".join(parts).replace("�", "&#xFFFD;"), encoding="utf-8")
+    out.write_text("\n".join(parts).replace("\ufffd", "&#xFFFD;"), encoding="utf-8")
     print("wrote", out)
 
 
