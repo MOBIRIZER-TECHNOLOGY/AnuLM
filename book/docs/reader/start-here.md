@@ -14,6 +14,17 @@ git clone https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM.git
 cd AnuLM
 ```
 
+If you are reviewing this draft **before pull request 18 is merged**, fetch its
+public review branch after cloning:
+
+```bash
+git fetch origin pull/18/head:review-organization
+git switch review-organization
+```
+
+After the pull request is merged, the normal `main` checkout contains this
+layout and those two review commands are unnecessary.
+
 The first example accepts the companion folder explicitly; the chapter examples
 use this layout:
 
