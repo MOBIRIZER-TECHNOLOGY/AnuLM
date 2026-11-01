@@ -7,8 +7,8 @@ Two endpoints with no OpenAI equivalent add typed decisions (`/v1/decide`)
 and Wikipedia lookup with sources (`/v1/answer`).
 
 ```bash
-python api.py                        # GPU if there is one; http://127.0.0.1:8000
-python api.py --device cpu --port 8000 --preload
+python -m anulm.apps.api                        # GPU if there is one; http://127.0.0.1:8000
+python -m anulm.apps.api --device cpu --port 8000 --preload
 ```
 
 * Interactive reference, every endpoint runnable in the browser: **`/docs`**
@@ -27,7 +27,7 @@ Unset by default (any key is accepted, so OpenAI clients that insist on a key
 still work). To require one:
 
 ```bash
-ANULM_API_KEY=your-secret python api.py --host 0.0.0.0
+ANULM_API_KEY=your-secret python -m anulm.apps.api --host 0.0.0.0
 ```
 
 Clients then send `Authorization: Bearer your-secret`; the OpenAI client does
@@ -263,7 +263,7 @@ and returns the decision; `batch` sends a list in one request. With
 
 ```python
 from langchain_core.runnables import RunnableBranch, RunnableLambda
-from langchain_anulm import AnuLMDecide, anulm_chat
+from anulm.integrations.langchain import AnuLMDecide, anulm_chat
 
 route = AnuLMDecide(model="anulm-decide-banking", threshold=0.7)
 answer = anulm_chat(max_tokens=80)

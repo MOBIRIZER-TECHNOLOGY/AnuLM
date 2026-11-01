@@ -2,7 +2,7 @@
 AnuLM API benchmark: hundreds of real requests on held-out test data, each one
 timed, every request and response saved.
 
-    python api.py                                    # terminal 1, repo root
+    python -m anulm.apps.api                                    # terminal 1, repo root
     python examples/api_demo/benchmark.py            # terminal 2, ~30 min on the GPU
     python examples/api_demo/benchmark.py --only asr_en,decide_banking --n-scale 0.2
 

@@ -11,7 +11,7 @@ python - <<'PY'
 # which is O(pages x signatures) and took the first attempt past an hour.
 import random, time
 from pathlib import Path
-from bpe import DOC_SEP
+from anulm.tokenization.bpe import DOC_SEP
 t0 = time.time()
 bench_titles = {d.split("\n", 1)[0].strip()
                 for d in Path("data/bench_wikisource.txt").read_text(encoding="utf-8").split(DOC_SEP) if d.strip()}
@@ -30,6 +30,6 @@ print(f"mixed: {len(docs)} docs, {len(text.encode('utf-8'))/1e6:.1f} MB = wikipe
       f"wikisource {sb/1e6:.0f} MB, interleaved; {time.time()-t0:.0f}s", flush=True)
 PY
 
-python -u bpe.py train --data data/mixed.txt --vocab 16384 --out data/hi16k_mixed.json 2>&1 | grep -E "trained|bytes/token|tokens/word|roundtrip"
-python -u bpe.py encode --tokenizer data/hi16k_mixed.json --data data/mixed.txt --out data/mixed.hi16k.bin 2>&1 | tail -1
+python -u -m anulm.tokenization.bpe train --data data/mixed.txt --vocab 16384 --out data/hi16k_mixed.json 2>&1 | grep -E "trained|bytes/token|tokens/word|roundtrip"
+python -u -m anulm.tokenization.bpe encode --tokenizer data/hi16k_mixed.json --data data/mixed.txt --out data/mixed.hi16k.bin 2>&1 | tail -1
 echo "=== BUILD DONE ==="

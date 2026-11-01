@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 560" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 18.1 · Three ways to dispatch</title>
+<desc id="d">Sparse: each expert gathers its own tokens (expert 2: tokens 0, 1, 3, 4) and runs once. Dense: every expert runs on all five tokens and a weight matrix with zeros removes the unchosen outputs. Grouped: the ten slots are sorted by expert into runs ending at offsets 3, 4, 8 and 10, and one grouped matrix multiply runs them all.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Three ways to dispatch the same ten slots</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">five tokens, A = 2, E = 4 · the example of ch18_dispatch_balance.py · expert 2 in gold · illustrative</text>
+<text x="20.0" y="86.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">sparse</text>
+<text x="20.0" y="102.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">nonzero per expert</text>
+<text x="20.0" y="116.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">one GEMM each</text>
+<text x="170.0" y="92.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">expert 0</text>
+<rect x="250.0" y="74.0" width="54.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>t0</title></rect>
+<text x="277.0" y="92.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">t0</text>
+<rect x="310.0" y="74.0" width="54.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>t2</title></rect>
+<text x="337.0" y="92.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">t2</text>
+<rect x="370.0" y="74.0" width="54.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>t3</title></rect>
+<text x="397.0" y="92.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">t3</text>
+<text x="500.0" y="92.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">→ (3, D) through expert 0</text>
+<text x="170.0" y="124.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">expert 1</text>
+<rect x="250.0" y="106.0" width="54.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>t2</title></rect>
+<text x="277.0" y="124.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">t2</text>
+<text x="500.0" y="124.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">→ (1, D) through expert 1</text>
+<text x="170.0" y="156.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">expert 2</text>
+<rect x="250.0" y="138.0" width="54.0" height="26.0" rx="5" fill="#D9A13B" class="f-gold"><title>t0</title></rect>
+<text x="277.0" y="156.0" class="f-onfill" fill="#13232A" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">t0</text>
+<rect x="310.0" y="138.0" width="54.0" height="26.0" rx="5" fill="#D9A13B" class="f-gold"><title>t1</title></rect>
+<text x="337.0" y="156.0" class="f-onfill" fill="#13232A" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">t1</text>
+<rect x="370.0" y="138.0" width="54.0" height="26.0" rx="5" fill="#D9A13B" class="f-gold"><title>t3</title></rect>
+<text x="397.0" y="156.0" class="f-onfill" fill="#13232A" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">t3</text>
+<rect x="430.0" y="138.0" width="54.0" height="26.0" rx="5" fill="#D9A13B" class="f-gold"><title>t4</title></rect>
+<text x="457.0" y="156.0" class="f-onfill" fill="#13232A" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">t4</text>
+<text x="500.0" y="156.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">→ (4, D) through expert 2</text>
+<text x="170.0" y="188.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">expert 3</text>
+<rect x="250.0" y="170.0" width="54.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>t1</title></rect>
+<text x="277.0" y="188.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">t1</text>
+<rect x="310.0" y="170.0" width="54.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>t4</title></rect>
+<text x="337.0" y="188.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">t4</text>
+<text x="500.0" y="188.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">→ (2, D) through expert 3</text>
+<line x1="20.0" y1="214.0" x2="740.0" y2="214.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="20.0" y="236.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">dense</text>
+<text x="20.0" y="252.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">every expert, every token</text>
+<text x="20.0" y="266.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">× an (N, E) weight matrix</text>
+<text x="277.0" y="238.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">e0</text>
+<text x="341.0" y="238.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">e1</text>
+<text x="405.0" y="238.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">e2</text>
+<text x="469.0" y="238.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">e3</text>
+<text x="236.0" y="264.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="end">t0</text>
+<rect x="250.0" y="246.0" width="54.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>1.5</title></rect>
+<text x="277.0" y="264.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1.5</text>
+<rect x="314.0" y="246.0" width="54.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>0</title></rect>
+<text x="341.0" y="264.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<rect x="378.0" y="246.0" width="54.0" height="26.0" rx="5" fill="#D9A13B" class="f-gold"><title>1</title></rect>
+<text x="405.0" y="264.0" class="f-onfill" fill="#13232A" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">1</text>
+<rect x="442.0" y="246.0" width="54.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>0</title></rect>
+<text x="469.0" y="264.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<text x="236.0" y="292.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="end">t1</text>
+<rect x="250.0" y="274.0" width="54.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>0</title></rect>
+<text x="277.0" y="292.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<rect x="314.0" y="274.0" width="54.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>0</title></rect>
+<text x="341.0" y="292.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<rect x="378.0" y="274.0" width="54.0" height="26.0" rx="5" fill="#D9A13B" class="f-gold"><title>2</title></rect>
+<text x="405.0" y="292.0" class="f-onfill" fill="#13232A" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">2</text>
+<rect x="442.0" y="274.0" width="54.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>0.5</title></rect>
+<text x="469.0" y="292.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.5</text>
+<text x="236.0" y="320.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="end">t2</text>
+<rect x="250.0" y="302.0" width="54.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>1.25</title></rect>
+<text x="277.0" y="320.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1.25</text>
+<rect x="314.0" y="302.0" width="54.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>1.25</title></rect>
+<text x="341.0" y="320.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1.25</text>
+<rect x="378.0" y="302.0" width="54.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>0</title></rect>
+<text x="405.0" y="320.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<rect x="442.0" y="302.0" width="54.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>0</title></rect>
+<text x="469.0" y="320.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<text x="236.0" y="348.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="end">t3</text>
+<rect x="250.0" y="330.0" width="54.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>1.5</title></rect>
+<text x="277.0" y="348.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1.5</text>
+<rect x="314.0" y="330.0" width="54.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>0</title></rect>
+<text x="341.0" y="348.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<rect x="378.0" y="330.0" width="54.0" height="26.0" rx="5" fill="#D9A13B" class="f-gold"><title>1</title></rect>
+<text x="405.0" y="348.0" class="f-onfill" fill="#13232A" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">1</text>
+<rect x="442.0" y="330.0" width="54.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>0</title></rect>
+<text x="469.0" y="348.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<text x="236.0" y="376.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="end">t4</text>
+<rect x="250.0" y="358.0" width="54.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>0</title></rect>
+<text x="277.0" y="376.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<rect x="314.0" y="358.0" width="54.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>0</title></rect>
+<text x="341.0" y="376.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<rect x="378.0" y="358.0" width="54.0" height="26.0" rx="5" fill="#D9A13B" class="f-gold"><title>2</title></rect>
+<text x="405.0" y="376.0" class="f-onfill" fill="#13232A" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">2</text>
+<rect x="442.0" y="358.0" width="54.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>0.5</title></rect>
+<text x="469.0" y="376.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.5</text>
+<text x="520.0" y="284.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">each expert runs on all 5 tokens;</text>
+<text x="520.0" y="302.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">a 0 weight removes its output</text>
+<text x="520.0" y="320.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">work: E/A = 2× the sparse path&#x27;s</text>
+<line x1="20.0" y1="394.0" x2="740.0" y2="394.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="20.0" y="416.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">grouped</text>
+<text x="20.0" y="432.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">sort slots by expert</text>
+<text x="20.0" y="446.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">one grouped_mm</text>
+<text x="20.0" y="460.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">per projection</text>
+<rect x="200.0" y="420.0" width="48.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>t0·e0</title></rect>
+<text x="224.0" y="438.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">t0·e0</text>
+<rect x="252.0" y="420.0" width="48.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>t2·e0</title></rect>
+<text x="276.0" y="438.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">t2·e0</text>
+<rect x="304.0" y="420.0" width="48.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>t3·e0</title></rect>
+<text x="328.0" y="438.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">t3·e0</text>
+<rect x="356.0" y="420.0" width="48.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>t2·e1</title></rect>
+<text x="380.0" y="438.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">t2·e1</text>
+<rect x="408.0" y="420.0" width="48.0" height="26.0" rx="5" fill="#D9A13B" class="f-gold"><title>t0·e2</title></rect>
+<text x="432.0" y="438.0" class="f-onfill" fill="#13232A" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">t0·e2</text>
+<rect x="460.0" y="420.0" width="48.0" height="26.0" rx="5" fill="#D9A13B" class="f-gold"><title>t1·e2</title></rect>
+<text x="484.0" y="438.0" class="f-onfill" fill="#13232A" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">t1·e2</text>
+<rect x="512.0" y="420.0" width="48.0" height="26.0" rx="5" fill="#D9A13B" class="f-gold"><title>t3·e2</title></rect>
+<text x="536.0" y="438.0" class="f-onfill" fill="#13232A" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">t3·e2</text>
+<rect x="564.0" y="420.0" width="48.0" height="26.0" rx="5" fill="#D9A13B" class="f-gold"><title>t4·e2</title></rect>
+<text x="588.0" y="438.0" class="f-onfill" fill="#13232A" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">t4·e2</text>
+<rect x="616.0" y="420.0" width="48.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>t1·e3</title></rect>
+<text x="640.0" y="438.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">t1·e3</text>
+<rect x="668.0" y="420.0" width="48.0" height="26.0" rx="5" fill="#F0F2F1" class="f-card"><title>t4·e3</title></rect>
+<text x="692.0" y="438.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">t4·e3</text>
+<line x1="198.0" y1="412.0" x2="198.0" y2="454.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5"/>
+<line x1="354.0" y1="412.0" x2="354.0" y2="454.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5"/>
+<line x1="406.0" y1="412.0" x2="406.0" y2="454.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5"/>
+<line x1="614.0" y1="412.0" x2="614.0" y2="454.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5"/>
+<line x1="718.0" y1="412.0" x2="718.0" y2="454.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5"/>
+<text x="354.0" y="470.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">3</text>
+<text x="406.0" y="470.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">4</text>
+<text x="614.0" y="470.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">8</text>
+<text x="718.0" y="470.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">10</text>
+<text x="200.0" y="470.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">offs:</text>
+<text x="200.0" y="500.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">Each run of rows meets its own expert&#x27;s matrix in one kernel call; shapes depend on N, A and E only.</text>
+</svg>

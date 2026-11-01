@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 41.1 · The four checkpoints</title>
+<desc id="d">Four cards in a row. Train: loss 5.62 at step 0 against ln 259 = 5.56, val 1.52 ± 0.03 after 1,000 steps. Trace: (2, 5) ids become a (2, 5, 32) stream and (2, 1, 64) logits. Extend, dashed as an extension: top-p passes three tests, the off-by-one version fails all three and the unnormalised one fails one. Test: 66 passed, then the released 397.7M model.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">The capstone in four checkpoints</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">each one prints a number you can compare against the book&#x27;s</text>
+<rect x="20.0" y="70.0" width="170.0" height="190.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>checkpoint 1 · train: train.py --preset 30b</title></rect>
+<text x="34.0" y="96.0" class="f-ink" fill="#17262E" font-size="14" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">1 · train</text>
+<text x="34.0" y="118.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">train.py --preset 30b</text>
+<line x1="34.0" y1="132.0" x2="176.0" y2="132.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="34.0" y="158.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">loss 5.62 at step 0</text>
+<text x="34.0" y="180.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', sans-serif" font-weight="400" text-anchor="start">(ln 259 = 5.56)</text>
+<text x="34.0" y="202.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', sans-serif" font-weight="400" text-anchor="start">val 1.52 ± 0.03</text>
+<line x1="191.0" y1="165.0" x2="199.0" y2="165.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="200.0" y="70.0" width="170.0" height="190.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>checkpoint 2 · trace: ch41_shapes.py</title></rect>
+<text x="214.0" y="96.0" class="f-ink" fill="#17262E" font-size="14" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">2 · trace</text>
+<text x="214.0" y="118.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">ch41_shapes.py</text>
+<line x1="214.0" y1="132.0" x2="356.0" y2="132.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="214.0" y="158.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">(2, 5) ids</text>
+<text x="214.0" y="180.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', sans-serif" font-weight="400" text-anchor="start">→ (2, 5, 32) stream</text>
+<text x="214.0" y="202.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', sans-serif" font-weight="400" text-anchor="start">→ (2, 1, 64) logits</text>
+<line x1="371.0" y1="165.0" x2="379.0" y2="165.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="380.0" y="70.0" width="170.0" height="190.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#0E9488" stroke-width="2" stroke-dasharray="6 4"><title>checkpoint 3 · extend: ch41_top_p.py</title></rect>
+<text x="394.0" y="96.0" class="f-ink" fill="#17262E" font-size="14" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">3 · extend</text>
+<text x="394.0" y="118.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">ch41_top_p.py</text>
+<line x1="394.0" y1="132.0" x2="536.0" y2="132.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="394.0" y="158.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">top-p: 3 tests pass</text>
+<text x="394.0" y="180.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', sans-serif" font-weight="400" text-anchor="start">off by one: fails 3</text>
+<text x="394.0" y="202.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', sans-serif" font-weight="400" text-anchor="start">no renorm: fails 1</text>
+<text x="394.0" y="246.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">EXTENSION</text>
+<line x1="551.0" y1="165.0" x2="559.0" y2="165.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="560.0" y="70.0" width="170.0" height="190.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>checkpoint 4 · test: test_model.py</title></rect>
+<text x="574.0" y="96.0" class="f-ink" fill="#17262E" font-size="14" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">4 · test</text>
+<text x="574.0" y="118.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">test_model.py</text>
+<line x1="574.0" y1="132.0" x2="716.0" y2="132.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="574.0" y="158.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">66 passed, 0 failed</text>
+<text x="574.0" y="180.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', sans-serif" font-weight="400" text-anchor="start">then the released</text>
+<text x="574.0" y="202.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', sans-serif" font-weight="400" text-anchor="start">model, 397.7M</text>
+<text x="20.0" y="286.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">Dashed: code this chapter adds; it is not in the repository.</text>
+</svg>

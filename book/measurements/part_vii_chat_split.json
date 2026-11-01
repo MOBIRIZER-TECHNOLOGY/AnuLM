@@ -1,0 +1,26 @@
+{
+ "train_rows": 23022,
+ "heldout_rows": 300,
+ "heldout_questions_in_train": 4,
+ "of_those_same_answer": 2,
+ "train_questions_seen_more_than_once": 279,
+ "of_those_repeated_20_or_more_times_identity": 11,
+ "leaked_questions_present_twice_or_more_in_dolly_train": 3,
+ "toy_twin_split_by_seed_0": true,
+ "packed": {
+  "rows": 3689,
+  "row_length": 1024,
+  "pairs": 23022,
+  "answer_share": 0.4743,
+  "answer_tokens": 1791532
+ },
+ "released_pair_loss": {
+  "precision": "fp32 on the CPU (moe_impl sparse)",
+  "eval": 2.5636,
+  "train": 2.5673,
+  "train_minus_aux": 2.5636,
+  "aux": 0.0038,
+  "seq_balance_alpha": 0.0001,
+  "router_z_alpha": 0.001
+ }
+}

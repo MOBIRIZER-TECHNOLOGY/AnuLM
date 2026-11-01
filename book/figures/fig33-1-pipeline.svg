@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 330" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 33.1 · Retrieve, then read</title>
+<desc id="d">A question goes to BM25, to a borrowed dense retriever, or to both fused by reciprocal rank; the top three passages go to a generative reader or to a pointer reader that scores answer spans.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Looking facts up: retrieve, then read</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">rag.py and rc_pointer.py · the reader that learned to read is highlighted</text>
+<rect x="20.0" y="130.0" width="100.0" height="60.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="70.0" y="152.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">question</text>
+<text x="70.0" y="170.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">text</text>
+<rect x="160.0" y="70.0" width="170.0" height="74.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="245.0" y="92.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">BM25</text>
+<text x="245.0" y="110.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">Retriever.bm25</text>
+<text x="245.0" y="125.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">932,648 chunks, numpy</text>
+<rect x="160.0" y="176.0" width="170.0" height="74.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#5E6E72" stroke-width="1.2" stroke-dasharray="5 4"></rect>
+<text x="245.0" y="198.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">dense, borrowed</text>
+<text x="245.0" y="216.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">Dense.search</text>
+<text x="245.0" y="231.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">multilingual-e5-small</text>
+<rect x="370.0" y="123.0" width="120.0" height="74.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="430.0" y="145.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">fusion</text>
+<text x="430.0" y="163.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">search(mode=</text>
+<text x="430.0" y="178.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">&#x27;hybrid&#x27;): RRF</text>
+<rect x="530.0" y="70.0" width="230.0" height="80.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="645.0" y="92.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">generative reader</text>
+<text x="645.0" y="110.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">RagQA: passages, then</text>
+<text x="645.0" y="125.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">question; generate</text>
+<rect x="530.0" y="176.0" width="230.0" height="80.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#7B5E8E" stroke-width="2.5"></rect>
+<text x="645.0" y="198.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">pointer reader</text>
+<text x="645.0" y="216.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">rc_pointer: question first;</text>
+<text x="645.0" y="231.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">start/end score per token</text>
+<line x1="120.0" y1="152.0" x2="158.0" y2="112.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="120.0" y1="168.0" x2="158.0" y2="210.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="330.0" y1="107.0" x2="368.0" y2="148.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="330.0" y1="213.0" x2="368.0" y2="172.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="490.0" y1="150.0" x2="528.0" y2="112.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="490.0" y1="170.0" x2="528.0" y2="212.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="645.0" y="167.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">either reads the top 3 passages</text>
+<text x="20.0" y="290.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">Dashed: a borrowed model, not this project&#x27;s. Fusion is optional: rag.py defaults to dense when its index exists,</text>
+<text x="20.0" y="307.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">else BM25. Each reader is a fine-tuned AnuLM; the pointer reads only text that is in the passages.</text>
+</svg>

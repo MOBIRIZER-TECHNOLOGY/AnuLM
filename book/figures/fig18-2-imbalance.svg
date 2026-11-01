@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 560" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 18.2 · What the bias buys</title>
+<desc id="d">For each of the 19 MoE layers, the imbalance with the stored biases (median 1.31×, worst 2.29× in layer 3) and with them removed (median 1.61×; layers 2 and 3 reach 5.96× and 6.00×).</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Imbalance per MoE layer, with and without the stored biases</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">busiest expert&#x27;s load / mean load · 32,768 held-out tokens · 1.0 is perfect · measured</text>
+<circle cx="114" cy="70" r="5" fill="#0E9488" class="f-teal"/>
+<text x="124.0" y="74.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">with the bias (as trained)</text>
+<circle cx="324" cy="70" r="5" fill="#C4532F" class="f-coral"/>
+<text x="334.0" y="74.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">bias removed</text>
+<line x1="110.0" y1="86.0" x2="110.0" y2="510.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="110.0" y="526.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1×</text>
+<line x1="219.6" y1="86.0" x2="219.6" y2="510.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="219.6" y="526.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">2×</text>
+<line x1="329.2" y1="86.0" x2="329.2" y2="510.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="329.2" y="526.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3×</text>
+<line x1="438.8" y1="86.0" x2="438.8" y2="510.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="438.8" y="526.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">4×</text>
+<line x1="548.5" y1="86.0" x2="548.5" y2="510.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="548.5" y="526.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">5×</text>
+<line x1="658.1" y1="86.0" x2="658.1" y2="510.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="658.1" y="526.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">6×</text>
+<text x="98.0" y="107.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">layer 1</text>
+<line x1="173.5" y1="103.0" x2="418.3" y2="103.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<circle cx="173.5" cy="103.0" r="5.5" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-teal f-ring"><title>layer 1, with the bias: 1.58×</title></circle>
+<circle cx="418.3" cy="103.0" r="5.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>layer 1, bias removed: 3.81×</title></circle>
+<text x="98.0" y="129.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">layer 2</text>
+<line x1="222.1" y1="125.0" x2="654.1" y2="125.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<circle cx="222.1" cy="125.0" r="5.5" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-teal f-ring"><title>layer 2, with the bias: 2.02×</title></circle>
+<circle cx="654.1" cy="125.0" r="5.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>layer 2, bias removed: 5.96×</title></circle>
+<text x="98.0" y="151.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">layer 3</text>
+<line x1="251.2" y1="147.0" x2="658.1" y2="147.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<circle cx="251.2" cy="147.0" r="5.5" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-teal f-ring"><title>layer 3, with the bias: 2.29×</title></circle>
+<circle cx="658.1" cy="147.0" r="5.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>layer 3, bias removed: 6.00×</title></circle>
+<text x="98.0" y="173.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">layer 4</text>
+<line x1="143.4" y1="169.0" x2="359.1" y2="169.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<circle cx="143.4" cy="169.0" r="5.5" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-teal f-ring"><title>layer 4, with the bias: 1.30×</title></circle>
+<circle cx="359.1" cy="169.0" r="5.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>layer 4, bias removed: 3.27×</title></circle>
+<text x="98.0" y="195.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">layer 5</text>
+<line x1="149.3" y1="191.0" x2="519.7" y2="191.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<circle cx="149.3" cy="191.0" r="5.5" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-teal f-ring"><title>layer 5, with the bias: 1.36×</title></circle>
+<circle cx="519.7" cy="191.0" r="5.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>layer 5, bias removed: 4.74×</title></circle>
+<text x="98.0" y="217.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">layer 6</text>
+<line x1="133.9" y1="213.0" x2="312.9" y2="213.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<circle cx="133.9" cy="213.0" r="5.5" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-teal f-ring"><title>layer 6, with the bias: 1.22×</title></circle>
+<circle cx="312.9" cy="213.0" r="5.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>layer 6, bias removed: 2.85×</title></circle>
+<text x="98.0" y="239.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">layer 7</text>
+<line x1="133.5" y1="235.0" x2="160.7" y2="235.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<circle cx="133.5" cy="235.0" r="5.5" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-teal f-ring"><title>layer 7, with the bias: 1.21×</title></circle>
+<circle cx="160.7" cy="235.0" r="5.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>layer 7, bias removed: 1.46×</title></circle>
+<text x="98.0" y="261.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">layer 8</text>
+<line x1="136.6" y1="257.0" x2="158.4" y2="257.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<circle cx="136.6" cy="257.0" r="5.5" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-teal f-ring"><title>layer 8, with the bias: 1.24×</title></circle>
+<circle cx="158.4" cy="257.0" r="5.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>layer 8, bias removed: 1.44×</title></circle>
+<text x="98.0" y="283.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">layer 9</text>
+<line x1="144.8" y1="279.0" x2="179.6" y2="279.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<circle cx="144.8" cy="279.0" r="5.5" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-teal f-ring"><title>layer 9, with the bias: 1.32×</title></circle>
+<circle cx="179.6" cy="279.0" r="5.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>layer 9, bias removed: 1.63×</title></circle>
+<text x="98.0" y="305.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">layer 10</text>
+<line x1="148.1" y1="301.0" x2="146.8" y2="301.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<circle cx="148.1" cy="301.0" r="5.5" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-teal f-ring"><title>layer 10, with the bias: 1.35×</title></circle>
+<circle cx="146.8" cy="301.0" r="5.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>layer 10, bias removed: 1.34×</title></circle>
+<text x="98.0" y="327.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">layer 11</text>
+<line x1="143.9" y1="323.0" x2="170.0" y2="323.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<circle cx="143.9" cy="323.0" r="5.5" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-teal f-ring"><title>layer 11, with the bias: 1.31×</title></circle>
+<circle cx="170.0" cy="323.0" r="5.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>layer 11, bias removed: 1.55×</title></circle>
+<text x="98.0" y="349.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">layer 12</text>
+<line x1="138.9" y1="345.0" x2="170.2" y2="345.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<circle cx="138.9" cy="345.0" r="5.5" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-teal f-ring"><title>layer 12, with the bias: 1.26×</title></circle>
+<circle cx="170.2" cy="345.0" r="5.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>layer 12, bias removed: 1.55×</title></circle>
+<text x="98.0" y="371.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">layer 13</text>
+<line x1="159.6" y1="367.0" x2="149.2" y2="367.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<circle cx="159.6" cy="367.0" r="5.5" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-teal f-ring"><title>layer 13, with the bias: 1.45×</title></circle>
+<circle cx="149.2" cy="367.0" r="5.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>layer 13, bias removed: 1.36×</title></circle>
+<text x="98.0" y="393.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">layer 14</text>
+<line x1="133.6" y1="389.0" x2="160.9" y2="389.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<circle cx="133.6" cy="389.0" r="5.5" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-teal f-ring"><title>layer 14, with the bias: 1.22×</title></circle>
+<circle cx="160.9" cy="389.0" r="5.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>layer 14, bias removed: 1.46×</title></circle>
+<text x="98.0" y="415.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">layer 15</text>
+<line x1="158.5" y1="411.0" x2="158.1" y2="411.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<circle cx="158.5" cy="411.0" r="5.5" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-teal f-ring"><title>layer 15, with the bias: 1.44×</title></circle>
+<circle cx="158.1" cy="411.0" r="5.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>layer 15, bias removed: 1.44×</title></circle>
+<text x="98.0" y="437.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">layer 16</text>
+<line x1="168.1" y1="433.0" x2="179.0" y2="433.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<circle cx="168.1" cy="433.0" r="5.5" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-teal f-ring"><title>layer 16, with the bias: 1.53×</title></circle>
+<circle cx="179.0" cy="433.0" r="5.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>layer 16, bias removed: 1.63×</title></circle>
+<text x="98.0" y="459.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">layer 17</text>
+<line x1="140.0" y1="455.0" x2="149.4" y2="455.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<circle cx="140.0" cy="455.0" r="5.5" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-teal f-ring"><title>layer 17, with the bias: 1.27×</title></circle>
+<circle cx="149.4" cy="455.0" r="5.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>layer 17, bias removed: 1.36×</title></circle>
+<text x="98.0" y="481.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">layer 18</text>
+<line x1="140.7" y1="477.0" x2="177.3" y2="477.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<circle cx="140.7" cy="477.0" r="5.5" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-teal f-ring"><title>layer 18, with the bias: 1.28×</title></circle>
+<circle cx="177.3" cy="477.0" r="5.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>layer 18, bias removed: 1.61×</title></circle>
+<text x="98.0" y="503.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">layer 19</text>
+<line x1="141.6" y1="499.0" x2="184.1" y2="499.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<circle cx="141.6" cy="499.0" r="5.5" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-teal f-ring"><title>layer 19, with the bias: 1.29×</title></circle>
+<circle cx="184.1" cy="499.0" r="5.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>layer 19, bias removed: 1.68×</title></circle>
+<text x="650.1" y="165.0" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">layer 3: one expert receives every token</text>
+<text x="110.0" y="550.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">median over layers: 1.31× with the bias, 1.61× without</text>
+</svg>

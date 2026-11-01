@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 5.3 · The gradient of cross-entropy</title>
+<desc id="d">p - y for logits 2.0, 1.0, 0.1 and true token 0: -0.341, +0.242, +0.099.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">∂ loss / ∂ z = p − y</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">logits (2.0, 1.0, 0.1), true token 0 · illustrative · checked against autograd</text>
+<line x1="280.0" y1="175.0" x2="720.0" y2="175.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1"/>
+<rect x="300.0" y="175.0" width="70.0" height="54.6" rx="3" fill="#C4532F" class="f-coral"><title>token 0: p = 0.6590, y = 1, p - y = -0.3410</title></rect>
+<text x="335.0" y="247.6" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">-0.341</text>
+<text x="335.0" y="280.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">token 0: p 0.659, y 1</text>
+<rect x="440.0" y="136.2" width="70.0" height="38.8" rx="3" fill="#0E9488" class="f-teal"><title>token 1: p = 0.2424, y = 0, p - y = +0.2424</title></rect>
+<text x="475.0" y="128.2" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">+0.242</text>
+<text x="475.0" y="280.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">token 1: p 0.242, y 0</text>
+<rect x="580.0" y="159.2" width="70.0" height="15.8" rx="3" fill="#0E9488" class="f-teal"><title>token 2: p = 0.0986, y = 0, p - y = +0.0986</title></rect>
+<text x="615.0" y="151.2" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">+0.099</text>
+<text x="615.0" y="280.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">token 2: p 0.099, y 0</text>
+<text x="20.0" y="120.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">positive: a descent step</text>
+<text x="20.0" y="138.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">lowers this logit</text>
+<text x="20.0" y="215.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">negative: a descent step</text>
+<text x="20.0" y="233.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">raises the true logit</text>
+</svg>

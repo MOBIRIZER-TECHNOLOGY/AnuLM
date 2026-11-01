@@ -296,7 +296,7 @@ The GPU cannot hold training and a fine-tune at once (~10 GB each against
 | 5 | phase 4 | same, `550000` | 16 h |
 | 6 | phase 5 | same, `run_coder_phase.cmd` with no argument | 16 h |
 | 7 | final instruction tune + pass@1 from step 700,000 | `coder_sft.sh` | 3 h capped / 8 h on all 1.38M pairs |
-| 8 | demo | `python serve.py --ckpt ckpt_coder_sft.pt` | minutes |
+| 8 | demo | `python -m anulm.inference.serve --ckpt ckpt_coder_sft.pt` | minutes |
 
 ### The phase boundaries are now vestigial
 

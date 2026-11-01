@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 28.1 · From logits to a token</title>
+<desc id="d">Seven steps in generate&#x27;s order: last row in fp32, text-vocabulary mask, repetition penalty, division by the temperature, top-k, softmax, multinomial. Top-p, dashed between top-k and softmax, is not in the repository.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">From the last logits to one token, in generate&#x27;s order</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">AnuLM.generate lines 1091–1105 · shapes and rules in each box · dashed: not in the repository</text>
+<rect x="30.0" y="80.0" width="150.0" height="52.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="105.0" y="102.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">last row, fp32</text>
+<text x="105.0" y="120.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">(B, V)</text>
+<rect x="215.0" y="80.0" width="150.0" height="52.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="290.0" y="102.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">text-vocab mask</text>
+<text x="290.0" y="120.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">audio, image → −∞</text>
+<line x1="180.0" y1="106.0" x2="213.0" y2="106.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.4" marker-end="url(#arrow)"/>
+<rect x="400.0" y="80.0" width="150.0" height="52.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="475.0" y="102.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">repetition penalty</text>
+<text x="475.0" y="120.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">÷ or × seen ids</text>
+<line x1="365.0" y1="106.0" x2="398.0" y2="106.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.4" marker-end="url(#arrow)"/>
+<rect x="585.0" y="80.0" width="150.0" height="52.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#0E9488" stroke-width="2.5"></rect>
+<text x="660.0" y="102.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">÷ temperature</text>
+<text x="660.0" y="120.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">max(T, 1e-5)</text>
+<line x1="550.0" y1="106.0" x2="583.0" y2="106.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.4" marker-end="url(#arrow)"/>
+<line x1="660.0" y1="132.0" x2="145.0" y2="186.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.4" marker-end="url(#arrow)"/>
+<rect x="30.0" y="190.0" width="150.0" height="52.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="105.0" y="212.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">top-k</text>
+<text x="105.0" y="230.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">below k-th → −∞</text>
+<rect x="215.0" y="190.0" width="150.0" height="52.0" rx="8" fill="#FFFFFF" class="f-paper" stroke="#5E6E72" stroke-width="1.2" stroke-dasharray="5 4"></rect>
+<text x="290.0" y="212.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">top-p</text>
+<text x="290.0" y="230.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">EXTENSION</text>
+<line x1="180.0" y1="216.0" x2="213.0" y2="216.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.4" marker-end="url(#arrow)" stroke-dasharray="4 3"/>
+<rect x="400.0" y="190.0" width="150.0" height="52.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="475.0" y="212.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">softmax</text>
+<text x="475.0" y="230.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">(B, V) probs</text>
+<line x1="365.0" y1="216.0" x2="398.0" y2="216.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.4" marker-end="url(#arrow)" stroke-dasharray="4 3"/>
+<rect x="585.0" y="190.0" width="150.0" height="52.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="660.0" y="212.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">multinomial</text>
+<text x="660.0" y="230.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">(B, 1) ids</text>
+<line x1="550.0" y1="216.0" x2="583.0" y2="216.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.4" marker-end="url(#arrow)"/>
+<text x="290.0" y="262.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">NOT IN THE REPO · Chapter 28.7&#x27;s patch</text>
+</svg>

@@ -1,0 +1,13 @@
+# Local environments, private reference material and generated editions.
+.venv/
+.work/
+.local/
+tmp/
+preview/
+validation/
+__pycache__/
+*.py[cod]
+*.pt
+*.pt.last
+*.safetensors
+/*.pdf

@@ -27,7 +27,7 @@ losing at most one eval interval.
 | 2 | Build 2M pairs both directions + FLORES devtest | `experiments/translate_build.sh` | 5 min | done 2026-09-10: 4M items, 493,370 packed rows |
 | 3 | Fine-tune from ckpt_multi36k, 1 pass, 61,672 steps | `experiments/translate_train.sh [stop]` | 6 h GPU | done 2026-09-10 14:12; held-out loss 4.05 -> 2.30 |
 | 4 | Score chrF, 300 sentences/direction | `experiments/translate_eval.sh` | 40 min | skipped for the full run; 50-sentence preview at step 48k was 44.5 / 43.0 |
-| 5 | Score chrF on all 1012 (the number to quote) | `python eval_translate.py ckpt_translate.pt --device cuda` | 55 min | **done 2026-09-10 15:00: 41.5 en->hi, 43.4 hi->en** (docs/RESULTS.md §24) |
+| 5 | Score chrF on all 1012 (the number to quote) | `python -m anulm.evaluation.eval_translate ckpt_translate.pt --device cuda` | 55 min | **done 2026-09-10 15:00: 41.5 en->hi, 43.4 hi->en** (docs/RESULTS.md §24) |
 | 6 | Demo: web UI translate mode | `serve.py --ckpt ckpt_translate.pt` | minutes | done: the page shows a *translate* mode whenever the checkpoint carries the direction templates |
 | 7 | Hand the GPU to the coder | `experiments/coder_train.sh 100000` ... | days 3-7 | done: the coder took the GPU 2026-09-10 15:29 and finished 2026-09-15 (docs/CODER_PLAN.md) |
 

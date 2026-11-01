@@ -1,0 +1,16 @@
+{
+ "device": "cuda",
+ "precision": "fp32 (moe_impl sparse; no bf16 experts)",
+ "tokens": 21,
+ "bias_update_rate": 0.003,
+ "router_bias_min": 215.97410583496094,
+ "router_bias_max": 798.1779174804688,
+ "router_bias_span_per_layer_min": 0.0179443359375,
+ "router_bias_span_per_layer_max": 0.2811279296875,
+ "adapters": 40,
+ "trainable": 1474560,
+ "step0_max_logit_diff": 0.0,
+ "adapted_vs_base_max_logit_diff": 0.3140082359313965,
+ "merged_vs_adapted_max_logit_diff": 1.33514404296875e-05,
+ "lora_left_after_merge": 0
+}

@@ -2,7 +2,7 @@
 AnuLM API demo: send every request in requests/, save each real response in
 responses/, score the sample data in data/, and write TRANSCRIPT.md.
 
-    python api.py --device cpu                       # terminal 1, from the repo root
+    python -m anulm.apps.api --device cpu                       # terminal 1, from the repo root
     python examples/api_demo/run_demo.py             # terminal 2
 
     python examples/api_demo/run_demo.py --only decide      # requests whose name contains "decide"
@@ -193,7 +193,7 @@ def main():
     try:
         s.get(base + "/health", timeout=5).raise_for_status()
     except requests.RequestException as e:
-        raise SystemExit(f"No AnuLM API at {base} ({e}). Start it with: python api.py --device cpu")
+        raise SystemExit(f"No AnuLM API at {base} ({e}). Start it with: python -m anulm.apps.api --device cpu")
 
     runs = []
     for f in sorted(REQ.glob("*.json")):

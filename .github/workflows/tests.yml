@@ -45,10 +45,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install --index-url https://download.pytorch.org/whl/cpu torch
           pip install -r requirements.txt
+          python -m pip install --no-deps -e .
           # Not a dependency of the model, training or serving -- only of the
           # transformers export, whose two tests skip themselves without it.
           # A skip that reports PASS is how an untested path looks tested.
-          pip install transformers
+          pip install transformers gradio
 
       # Left on each runner's default shell (PowerShell on Windows, bash on
       # Linux) on purpose: these are the commands a newcomer types, and they
@@ -60,13 +61,16 @@ jobs:
       # at all, which said only that something crashed, not what. This is the
       # same buffering gotcha docs/DEVELOPING.md warns about for piped runs.
       - name: Report the environment
-        run: python -u quickstart.py
+        run: python -u -m anulm.tools.quickstart
 
       - name: Shapes, forward and backward, no data
-        run: python -u model.py
+        run: python -u -m anulm.model
 
       - name: Test suite
-        run: python -u test_model.py
+        run: python -u -m tests.test_model
+
+      - name: Package and checkpoint compatibility
+        run: python -u -m unittest tests.test_layout
 
       - name: Train 50 steps end to end
         # Downloads tinyshakespeare, trains, evaluates, saves, and samples from
@@ -74,14 +78,14 @@ jobs:
         # of CPU. Catches breakage that unit tests cannot -- a bad data path,
         # a checkpoint that will not reload, a sampler that hangs.
         run: |
-          python -u train.py --preset 30b --steps 50 --eval-every 25 --out ckpt_ci.pt
-          python -u sample.py --ckpt ckpt_ci.pt --prompt "KING RICHARD II:" --tokens 40
+          python -u -m anulm.training.train --preset 30b --steps 50 --eval-every 25 --out ckpt_ci.pt
+          python -u -m anulm.inference.sample --ckpt ckpt_ci.pt --prompt "KING RICHARD II:" --tokens 40
 
       - name: Reload the checkpoint, and load every shipped tokenizer
         shell: bash          # one shell for the heredocs, on both runners
         run: |
           python - <<'PY'
-          from model import load_checkpoint, AnuLM
+          from anulm.model import load_checkpoint, AnuLM
           ck = load_checkpoint('ckpt_ci.pt')
           m = AnuLM(ck['cfg']).eval()
           m.load_state_dict(ck['model'])
@@ -94,7 +98,22 @@ jobs:
           # both must keep loading -- test_model.py pins this, and here it runs
           # against the tokenizers actually shipped in the repository.
           import glob
-          from bpe import BPE
+          from anulm.tokenization.bpe import BPE
           for f in sorted(glob.glob('data/*.json')):
               print(f, '->', len(BPE.load(f).merges), 'merges')
           PY
+
+  book:
+    name: Book structure
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: python -m pip install -r book/tools/requirements.txt
+      - run: python book/tools/build_preview.py
+      - run: python book/tools/build_preview.py --print --html-only
+      - run: python book/tools/verify_preview.py

@@ -1,0 +1,7 @@
+{
+ "text model": 3.379075,
+ "grown, full softmax": 3.443595,
+ "grown, text ids only": 3.379075,
+ "graded_tokens": 32732,
+ "sample": "64 x 512 of data/v2/val.u16, default_rng(0); moe_impl sparse; seed 0 growth"
+}

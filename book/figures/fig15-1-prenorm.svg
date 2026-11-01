@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 385" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 15.1 · Pre-norm and post-norm</title>
+<desc id="d">Left, as in model.py: each sublayer reads a normalised copy of the stream and its output is added back; the stream is never normalised. Right, drawn dashed because it is not in the repository: the sublayer&#x27;s output is added and the sum is normalised.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Where the norm sits: pre-norm (model.py) and post-norm</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">one block; the residual stream x runs down the left of each panel</text>
+<text x="30.0" y="80.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">Pre-norm · Block.forward</text>
+<line x1="70.0" y1="96.0" x2="70.0" y2="330.0" stroke="#17262E" class="f-ink-stroke" stroke-width="3"/>
+<rect x="120.0" y="110.0" width="170.0" height="40.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#D9A13B" stroke-width="2.5"></rect>
+<text x="205.0" y="135.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">input_layernorm</text>
+<rect x="310.0" y="110.0" width="100.0" height="40.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="360.0" y="135.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">attention</text>
+<line x1="70.0" y1="130.0" x2="118.0" y2="130.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.4" marker-end="url(#arrow)"/>
+<line x1="290.0" y1="130.0" x2="308.0" y2="130.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.4" marker-end="url(#arrow)"/>
+<line x1="360.0" y1="150.0" x2="360.0" y2="180.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.4"/>
+<line x1="360.0" y1="180.0" x2="80.0" y2="180.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.4" marker-end="url(#arrow)"/>
+<circle cx="70" cy="180" r="9" fill="#FFFFFF" stroke="#17262E" stroke-width="1.5" class="f-paper f-ink-stroke"/>
+<line x1="65.0" y1="180.0" x2="75.0" y2="180.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5"/>
+<line x1="70.0" y1="175.0" x2="70.0" y2="185.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5"/>
+<rect x="120.0" y="210.0" width="170.0" height="40.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#D9A13B" stroke-width="2.5"></rect>
+<text x="205.0" y="235.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">post_attention_layernorm</text>
+<rect x="310.0" y="210.0" width="100.0" height="40.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="360.0" y="235.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">MLP / MoE</text>
+<line x1="70.0" y1="230.0" x2="118.0" y2="230.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.4" marker-end="url(#arrow)"/>
+<line x1="290.0" y1="230.0" x2="308.0" y2="230.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.4" marker-end="url(#arrow)"/>
+<line x1="360.0" y1="250.0" x2="360.0" y2="280.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.4"/>
+<line x1="360.0" y1="280.0" x2="80.0" y2="280.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.4" marker-end="url(#arrow)"/>
+<circle cx="70" cy="280" r="9" fill="#FFFFFF" stroke="#17262E" stroke-width="1.5" class="f-paper f-ink-stroke"/>
+<line x1="65.0" y1="280.0" x2="75.0" y2="280.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5"/>
+<line x1="70.0" y1="275.0" x2="70.0" y2="285.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5"/>
+<text x="84.0" y="372.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">the stream itself is never normalised</text>
+<text x="420.0" y="80.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">Post-norm · NOT IN THE REPO</text>
+<line x1="470.0" y1="96.0" x2="470.0" y2="161.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="3" stroke-dasharray="6 4"/>
+<line x1="470.0" y1="179.0" x2="470.0" y2="190.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="3" stroke-dasharray="6 4"/>
+<rect x="540.0" y="100.0" width="110.0" height="40.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#5E6E72" stroke-width="1.2" stroke-dasharray="5 4"></rect>
+<text x="595.0" y="125.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">attention</text>
+<line x1="470.0" y1="120.0" x2="538.0" y2="120.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.4" marker-end="url(#arrow)" stroke-dasharray="4 3"/>
+<line x1="595.0" y1="140.0" x2="595.0" y2="170.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.4" stroke-dasharray="4 3"/>
+<line x1="595.0" y1="170.0" x2="480.0" y2="170.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.4" marker-end="url(#arrow)" stroke-dasharray="4 3"/>
+<circle cx="470" cy="170" r="9" fill="#FFFFFF" stroke="#17262E" stroke-width="1.5" class="f-paper f-ink-stroke"/>
+<line x1="465.0" y1="170.0" x2="475.0" y2="170.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5"/>
+<line x1="470.0" y1="165.0" x2="470.0" y2="175.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5"/>
+<rect x="415.0" y="190.0" width="110.0" height="32.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#5E6E72" stroke-width="1.2" stroke-dasharray="5 4"></rect>
+<text x="470.0" y="211.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">LayerNorm</text>
+<line x1="470.0" y1="222.0" x2="470.0" y2="291.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="3" stroke-dasharray="6 4"/>
+<line x1="470.0" y1="309.0" x2="470.0" y2="320.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="3" stroke-dasharray="6 4"/>
+<rect x="540.0" y="230.0" width="110.0" height="40.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#5E6E72" stroke-width="1.2" stroke-dasharray="5 4"></rect>
+<text x="595.0" y="255.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">FFN</text>
+<line x1="470.0" y1="250.0" x2="538.0" y2="250.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.4" marker-end="url(#arrow)" stroke-dasharray="4 3"/>
+<line x1="595.0" y1="270.0" x2="595.0" y2="300.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.4" stroke-dasharray="4 3"/>
+<line x1="595.0" y1="300.0" x2="480.0" y2="300.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.4" marker-end="url(#arrow)" stroke-dasharray="4 3"/>
+<circle cx="470" cy="300" r="9" fill="#FFFFFF" stroke="#17262E" stroke-width="1.5" class="f-paper f-ink-stroke"/>
+<line x1="465.0" y1="300.0" x2="475.0" y2="300.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5"/>
+<line x1="470.0" y1="295.0" x2="470.0" y2="305.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5"/>
+<rect x="415.0" y="320.0" width="110.0" height="32.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#5E6E72" stroke-width="1.2" stroke-dasharray="5 4"></rect>
+<text x="470.0" y="341.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">LayerNorm</text>
+<line x1="470.0" y1="352.0" x2="470.0" y2="362.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="3" stroke-dasharray="6 4"/>
+<text x="540.0" y="372.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">the stream itself is normalised</text>
+</svg>

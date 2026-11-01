@@ -15,7 +15,7 @@ import os  # noqa: E402
 os.chdir(ROOT)
 import torch  # noqa: E402
 
-from decide import Decide  # noqa: E402
+from anulm.tasks.decide import Decide  # noqa: E402
 
 ck = sys.argv[1] if len(sys.argv) > 1 else "ckpt_decide_general.pt"
 d = Decide(ck, "cuda" if torch.cuda.is_available() else "cpu", threshold=0.7)

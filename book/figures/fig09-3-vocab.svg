@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 310" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 9.3 · What the 32,511 merged tokens are</title>
+<desc id="d">Stacked histogram of merged-token lengths in bytes, Devanagari tokens and the rest. Totals: 2: 1596, 3: 2844, 4: 3777, 5: 3414, 6: 3522, 7: 3114, 8: 1823, 9: 2313, 10: 2552, 11: 615, 12: 1098, 13: 1711, 14: 172, 15: 381, 16: 3579. Devanagari: 3: 77, 4: 226, 5: 139, 6: 783, 7: 856, 8: 123, 9: 1126, 10: 1769, 11: 81, 12: 792, 13: 1543, 14: 48, 15: 298, 16: 3285.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">The 32,511 merged tokens of multi32k, by length in bytes</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">ASCII 21,117 · with Devanagari 11,146 · other 177 · not valid UTF-8 alone 71 · verified</text>
+<rect x="70.0" y="60.0" width="12.0" height="12.0" rx="2" fill="#0E9488" class="f-teal"></rect>
+<text x="88.0" y="70.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">contains Devanagari</text>
+<rect x="240.0" y="60.0" width="12.0" height="12.0" rx="2" fill="#C4532F" class="f-coral"></rect>
+<text x="258.0" y="70.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">all other merged tokens</text>
+<line x1="70.0" y1="246.0" x2="680.0" y2="246.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="250.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0</text>
+<line x1="70.0" y1="206.0" x2="680.0" y2="206.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="210.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">1,000</text>
+<line x1="70.0" y1="166.0" x2="680.0" y2="166.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="170.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">2,000</text>
+<line x1="70.0" y1="126.0" x2="680.0" y2="126.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="130.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">3,000</text>
+<line x1="70.0" y1="86.0" x2="680.0" y2="86.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="90.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">4,000</text>
+<rect x="73.0" y="246.0" width="34.7" height="0.0" rx="0" fill="#0E9488" class="f-teal"><title>2 bytes: 0 with Devanagari</title></rect>
+<rect x="73.0" y="182.2" width="34.7" height="63.8" rx="0" fill="#C4532F" class="f-coral"><title>2 bytes: 1,596 others</title></rect>
+<text x="90.3" y="262.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">2</text>
+<rect x="113.7" y="242.9" width="34.7" height="3.1" rx="0" fill="#0E9488" class="f-teal"><title>3 bytes: 77 with Devanagari</title></rect>
+<rect x="113.7" y="132.2" width="34.7" height="110.7" rx="0" fill="#C4532F" class="f-coral"><title>3 bytes: 2,767 others</title></rect>
+<text x="131.0" y="262.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3</text>
+<rect x="154.3" y="237.0" width="34.7" height="9.0" rx="0" fill="#0E9488" class="f-teal"><title>4 bytes: 226 with Devanagari</title></rect>
+<rect x="154.3" y="94.9" width="34.7" height="142.0" rx="0" fill="#C4532F" class="f-coral"><title>4 bytes: 3,551 others</title></rect>
+<text x="171.7" y="262.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">4</text>
+<rect x="195.0" y="240.4" width="34.7" height="5.6" rx="0" fill="#0E9488" class="f-teal"><title>5 bytes: 139 with Devanagari</title></rect>
+<rect x="195.0" y="109.4" width="34.7" height="131.0" rx="0" fill="#C4532F" class="f-coral"><title>5 bytes: 3,275 others</title></rect>
+<text x="212.3" y="262.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">5</text>
+<rect x="235.7" y="214.7" width="34.7" height="31.3" rx="0" fill="#0E9488" class="f-teal"><title>6 bytes: 783 with Devanagari</title></rect>
+<rect x="235.7" y="105.1" width="34.7" height="109.6" rx="0" fill="#C4532F" class="f-coral"><title>6 bytes: 2,739 others</title></rect>
+<text x="253.0" y="262.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">6</text>
+<rect x="276.3" y="211.8" width="34.7" height="34.2" rx="0" fill="#0E9488" class="f-teal"><title>7 bytes: 856 with Devanagari</title></rect>
+<rect x="276.3" y="121.4" width="34.7" height="90.3" rx="0" fill="#C4532F" class="f-coral"><title>7 bytes: 2,258 others</title></rect>
+<text x="293.7" y="262.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">7</text>
+<rect x="317.0" y="241.1" width="34.7" height="4.9" rx="0" fill="#0E9488" class="f-teal"><title>8 bytes: 123 with Devanagari</title></rect>
+<rect x="317.0" y="173.1" width="34.7" height="68.0" rx="0" fill="#C4532F" class="f-coral"><title>8 bytes: 1,700 others</title></rect>
+<text x="334.3" y="262.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">8</text>
+<rect x="357.7" y="201.0" width="34.7" height="45.0" rx="0" fill="#0E9488" class="f-teal"><title>9 bytes: 1,126 with Devanagari</title></rect>
+<rect x="357.7" y="153.5" width="34.7" height="47.5" rx="0" fill="#C4532F" class="f-coral"><title>9 bytes: 1,187 others</title></rect>
+<text x="375.0" y="262.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">9</text>
+<rect x="398.3" y="175.2" width="34.7" height="70.8" rx="0" fill="#0E9488" class="f-teal"><title>10 bytes: 1,769 with Devanagari</title></rect>
+<rect x="398.3" y="143.9" width="34.7" height="31.3" rx="0" fill="#C4532F" class="f-coral"><title>10 bytes: 783 others</title></rect>
+<text x="415.7" y="262.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">10</text>
+<rect x="439.0" y="242.8" width="34.7" height="3.2" rx="0" fill="#0E9488" class="f-teal"><title>11 bytes: 81 with Devanagari</title></rect>
+<rect x="439.0" y="221.4" width="34.7" height="21.4" rx="0" fill="#C4532F" class="f-coral"><title>11 bytes: 534 others</title></rect>
+<text x="456.3" y="262.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">11</text>
+<rect x="479.7" y="214.3" width="34.7" height="31.7" rx="0" fill="#0E9488" class="f-teal"><title>12 bytes: 792 with Devanagari</title></rect>
+<rect x="479.7" y="202.1" width="34.7" height="12.2" rx="0" fill="#C4532F" class="f-coral"><title>12 bytes: 306 others</title></rect>
+<text x="497.0" y="262.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">12</text>
+<rect x="520.3" y="184.3" width="34.7" height="61.7" rx="0" fill="#0E9488" class="f-teal"><title>13 bytes: 1,543 with Devanagari</title></rect>
+<rect x="520.3" y="177.6" width="34.7" height="6.7" rx="0" fill="#C4532F" class="f-coral"><title>13 bytes: 168 others</title></rect>
+<text x="537.7" y="262.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">13</text>
+<rect x="561.0" y="244.1" width="34.7" height="1.9" rx="0" fill="#0E9488" class="f-teal"><title>14 bytes: 48 with Devanagari</title></rect>
+<rect x="561.0" y="239.1" width="34.7" height="5.0" rx="0" fill="#C4532F" class="f-coral"><title>14 bytes: 124 others</title></rect>
+<text x="578.3" y="262.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">14</text>
+<rect x="601.7" y="234.1" width="34.7" height="11.9" rx="0" fill="#0E9488" class="f-teal"><title>15 bytes: 298 with Devanagari</title></rect>
+<rect x="601.7" y="230.8" width="34.7" height="3.3" rx="0" fill="#C4532F" class="f-coral"><title>15 bytes: 83 others</title></rect>
+<text x="619.0" y="262.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">15</text>
+<rect x="642.3" y="114.6" width="34.7" height="131.4" rx="0" fill="#0E9488" class="f-teal"><title>16+ bytes: 3,285 with Devanagari</title></rect>
+<rect x="642.3" y="102.8" width="34.7" height="11.8" rx="0" fill="#C4532F" class="f-coral"><title>16+ bytes: 294 others</title></rect>
+<text x="659.7" y="262.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">16+</text>
+<text x="375.0" y="280.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">bytes per merged token (16+ = 16 or more)</text>
+</svg>

@@ -30,7 +30,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 import torch  # noqa: E402
 
-from decide import batchify, encode, labels, load, load_split  # noqa: E402
+from anulm.tasks.decide import batchify, encode, labels, load, load_split  # noqa: E402
 
 
 def sync(dev):

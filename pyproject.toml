@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "anulm"
+version = "0.1.0"
+description = "A small, trainable mixture-of-experts language model"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+dependencies = ["torch>=2.1", "numpy>=1.24"]
+
+[project.optional-dependencies]
+demo = ["gradio>=5", "huggingface_hub>=0.30"]
+api = ["gradio>=5", "huggingface_hub>=0.30", "fastapi>=0.110", "uvicorn>=0.29", "python-multipart>=0.0.9"]
+export = ["safetensors>=0.4", "transformers>=4.46", "tokenizers>=0.20"]
+[project.scripts]
+anulm = "anulm.__main__:main"
+[tool.setuptools]
+py-modules = ["model"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["anulm*"]

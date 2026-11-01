@@ -19,6 +19,8 @@ English measured. Unattended; nothing touches the app.
 
 from __future__ import annotations
 
+from anulm.paths import PROJECT_ROOT, source_path
+
 import argparse
 import io
 import json
@@ -164,7 +166,7 @@ def prep_mucs(split: str):
     import numpy as np
     import soundfile as sf
     sys.path.insert(0, str(ROOT))
-    from audio_codec import read_wav
+    from anulm.multimodal.audio_codec import read_wav
     base = ROOT / "data" / "mucs_hi_en"
     tar = base / f"Hindi-English_{split}.tar.gz"
     deadline = time.time() + 3 * 3600
@@ -213,7 +215,7 @@ def prep_monsoon():
     import pyarrow.parquet as pq
     import soundfile as sf
     sys.path.insert(0, str(ROOT))
-    from audio_codec import resample
+    from anulm.multimodal.audio_codec import resample
     base = ROOT / "data" / "monsoon_en_in"
     clip_dir = base / "clips"
     clip_dir.mkdir(exist_ok=True)
@@ -247,7 +249,7 @@ def benchmark_india():
     if not (ROOT / "ckpt_decide_lora_india_F.pt").exists():
         return "no Indian-banking adapter; skipped"
     import urllib.request
-    api = subprocess.Popen([PY, "-u", str(ROOT / "api.py"), "--port", "8000"], cwd=str(ROOT),
+    api = subprocess.Popen([PY, "-u", str(source_path('api.py')), "--port", "8000"], cwd=str(ROOT),
                            stdout=open(LOGS / "api.log", "w"), stderr=subprocess.STDOUT,
                            env={**os.environ, "PYTHONIOENCODING": "utf-8"})
     try:
@@ -303,7 +305,7 @@ def main():
         time.sleep(30)
     once("4_benchmark_india", benchmark_india)
 
-    run("5_asr_hi", ["speech_encoder.py", "train", "--ckpt", "ckpt_asr_hi_v3.pt", "--prefix", "data/hindi_mix5/train",
+    run("5_asr_hi", ['-m', 'anulm.multimodal.speech_encoder', "train", "--ckpt", "ckpt_asr_hi_v3.pt", "--prefix", "data/hindi_mix5/train",
                      "--out", "ckpt_asr_hi_v5.pt", "--epochs", "1", "--batch-size", "4",
                      "--eval-every", "10000", "--log-every", "2000"], 5.0)
 
@@ -312,10 +314,10 @@ def main():
     for tag, ck in (("v3", "ckpt_asr_hi_v3.pt"), ("v5", "ckpt_asr_hi_v5.pt")):
         for name, prefix, limit in evals:
             if (ROOT / ck).exists() and (ROOT / f"{prefix}.jsonl").exists():
-                run(f"6_wer_{name}_{tag}", ["speech_encoder.py", "eval", "--ckpt", ck, "--prefix", prefix,
+                run(f"6_wer_{name}_{tag}", ['-m', 'anulm.multimodal.speech_encoder', "eval", "--ckpt", ck, "--prefix", prefix,
                                             "--limit", limit], 1.0)
     if (ROOT / "data" / "monsoon_en_in" / "test.jsonl").exists():
-        run("6_wer_monsoon_en_v3", ["speech_encoder.py", "eval", "--ckpt", "ckpt_asr_en_v3.pt",
+        run("6_wer_monsoon_en_v3", ['-m', 'anulm.multimodal.speech_encoder', "eval", "--ckpt", "ckpt_asr_en_v3.pt",
                                     "--prefix", "data/monsoon_en_in/test", "--limit", "3000"], 1.5)
     (LOGS / "done.marker").write_text(time.strftime("%Y-%m-%d %H:%M:%S"))
     log("=== SPEECH V5 DONE ===")

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 360" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 39.1 · From a training checkpoint to two loaders</title>
+<desc id="d">A pickled fp32 checkpoint goes through export_hf.main into a folder of seven kinds of file: model.safetensors (796.5 MB, bf16 and fp32), config.json, the tokenizer, a README, and three code files. load_checkpoint reads the folder into the native model; AutoModelForCausalLM reads it through the copied wrapper with trust_remote_code.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">From a training checkpoint to two loaders</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">export_hf.py at @773b6a8 · sizes from the released folder</text>
+<rect x="20.0" y="120.0" width="140.0" height="70.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="90.0" y="152.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">ckpt_base_v2.pt</text>
+<text x="90.0" y="169.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">pickle · fp32</text>
+<line x1="162.0" y1="155.0" x2="206.0" y2="155.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="208.0" y="128.0" width="100.0" height="54.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#0E9488" stroke-width="2.5"></rect>
+<text x="258.0" y="152.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">export_hf</text>
+<text x="258.0" y="169.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">main()</text>
+<line x1="310.0" y1="155.0" x2="350.0" y2="155.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="352.0" y="62.0" width="200.0" height="262.0" rx="10" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="452.0" y="84.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">release folder</text>
+<text x="366.0" y="108.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">model.safetensors</text>
+<text x="366.0" y="121.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">796.5 MB · bf16 + fp32</text>
+<text x="366.0" y="140.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">config.json</text>
+<text x="366.0" y="153.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">the dataclass, nested</text>
+<text x="366.0" y="172.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">tokenizer.json</text>
+<text x="366.0" y="185.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">+ the project&#x27;s own</text>
+<text x="366.0" y="204.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">README.md</text>
+<text x="366.0" y="217.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">model card</text>
+<text x="366.0" y="236.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">modeling_anulm.py</text>
+<text x="366.0" y="249.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">the wrapper</text>
+<text x="366.0" y="268.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">configuration_anulm.py</text>
+<text x="366.0" y="281.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">config adapter</text>
+<text x="366.0" y="300.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">model.py</text>
+<text x="366.0" y="313.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">snapshot at export</text>
+<line x1="554.0" y1="120.0" x2="594.0" y2="104.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="596.0" y="74.0" width="144.0" height="60.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="668.0" y="101.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">load_checkpoint</text>
+<text x="668.0" y="118.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">native AnuLM</text>
+<line x1="554.0" y1="250.0" x2="594.0" y2="236.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="596.0" y="206.0" width="144.0" height="70.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#0E9488" stroke-width="2.5"></rect>
+<text x="668.0" y="238.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">AutoModel…</text>
+<text x="668.0" y="255.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">trust_remote_code</text>
+<text x="668.0" y="292.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">no beams, no padding,</text>
+<text x="668.0" y="306.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">no inputs_embeds</text>
+<text x="20.0" y="346.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">Speech, image and adapter checkpoints get extras.safetensors and no auto_map.</text>
+</svg>

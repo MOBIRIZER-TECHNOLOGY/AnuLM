@@ -1,0 +1,355 @@
+{
+ "source": "logs/omni_one/6_train.log (numbers only)",
+ "first": {
+  "chat": 3.2651,
+  "read": 3.6555,
+  "intent": 7.7785,
+  "asr_en": 6.6235,
+  "asr_hi": 7.6787,
+  "caption": 5.5334,
+  "vqa": 7.2069
+ },
+ "evals": [
+  {
+   "step": 10000,
+   "score": 0.669,
+   "losses": {
+    "chat": 5.5464,
+    "read": 3.759,
+    "intent": 0.582,
+    "asr_en": 1.5845,
+    "asr_hi": 3.2487,
+    "caption": 2.8973,
+    "vqa": 5.0125
+   },
+   "ratios": {
+    "chat": 1.6987,
+    "read": 1.0283,
+    "intent": 0.0748,
+    "asr_en": 0.2392,
+    "asr_hi": 0.4231,
+    "caption": 0.5236,
+    "vqa": 0.6955
+   }
+  },
+  {
+   "step": 20000,
+   "score": 0.6532,
+   "losses": {
+    "chat": 5.5906,
+    "read": 3.599,
+    "intent": 0.5302,
+    "asr_en": 1.4053,
+    "asr_hi": 3.1509,
+    "caption": 2.768,
+    "vqa": 4.934
+   },
+   "ratios": {
+    "chat": 1.7122,
+    "read": 0.9845,
+    "intent": 0.0682,
+    "asr_en": 0.2122,
+    "asr_hi": 0.4103,
+    "caption": 0.5002,
+    "vqa": 0.6846
+   }
+  },
+  {
+   "step": 30000,
+   "score": 0.651,
+   "losses": {
+    "chat": 5.6509,
+    "read": 3.6202,
+    "intent": 0.4607,
+    "asr_en": 1.3781,
+    "asr_hi": 3.0456,
+    "caption": 2.7245,
+    "vqa": 4.8966
+   },
+   "ratios": {
+    "chat": 1.7307,
+    "read": 0.9903,
+    "intent": 0.0592,
+    "asr_en": 0.2081,
+    "asr_hi": 0.3966,
+    "caption": 0.4924,
+    "vqa": 0.6794
+   }
+  },
+  {
+   "step": 40000,
+   "score": 0.6373,
+   "losses": {
+    "chat": 5.6453,
+    "read": 3.5509,
+    "intent": 0.3127,
+    "asr_en": 1.2529,
+    "asr_hi": 2.9639,
+    "caption": 2.697,
+    "vqa": 4.7423
+   },
+   "ratios": {
+    "chat": 1.729,
+    "read": 0.9714,
+    "intent": 0.0402,
+    "asr_en": 0.1892,
+    "asr_hi": 0.386,
+    "caption": 0.4874,
+    "vqa": 0.658
+   }
+  },
+  {
+   "step": 50000,
+   "score": 0.6259,
+   "losses": {
+    "chat": 5.5936,
+    "read": 3.4906,
+    "intent": 0.2672,
+    "asr_en": 1.2867,
+    "asr_hi": 2.7775,
+    "caption": 2.6635,
+    "vqa": 4.6222
+   },
+   "ratios": {
+    "chat": 1.7131,
+    "read": 0.9549,
+    "intent": 0.0344,
+    "asr_en": 0.1943,
+    "asr_hi": 0.3617,
+    "caption": 0.4813,
+    "vqa": 0.6414
+   }
+  },
+  {
+   "step": 60000,
+   "score": 0.6067,
+   "losses": {
+    "chat": 5.472,
+    "read": 3.3586,
+    "intent": 0.281,
+    "asr_en": 1.206,
+    "asr_hi": 2.7179,
+    "caption": 2.5726,
+    "vqa": 4.4318
+   },
+   "ratios": {
+    "chat": 1.6759,
+    "read": 0.9188,
+    "intent": 0.0361,
+    "asr_en": 0.1821,
+    "asr_hi": 0.354,
+    "caption": 0.4649,
+    "vqa": 0.6149
+   }
+  },
+  {
+   "step": 70000,
+   "score": 0.6038,
+   "losses": {
+    "chat": 5.4958,
+    "read": 3.36,
+    "intent": 0.2476,
+    "asr_en": 1.1417,
+    "asr_hi": 2.7119,
+    "caption": 2.5051,
+    "vqa": 4.4279
+   },
+   "ratios": {
+    "chat": 1.6832,
+    "read": 0.9192,
+    "intent": 0.0318,
+    "asr_en": 0.1724,
+    "asr_hi": 0.3532,
+    "caption": 0.4527,
+    "vqa": 0.6144
+   }
+  },
+  {
+   "step": 80000,
+   "score": 0.5998,
+   "losses": {
+    "chat": 5.4632,
+    "read": 3.3336,
+    "intent": 0.2374,
+    "asr_en": 1.1138,
+    "asr_hi": 2.6756,
+    "caption": 2.4899,
+    "vqa": 4.4422
+   },
+   "ratios": {
+    "chat": 1.6732,
+    "read": 0.9119,
+    "intent": 0.0305,
+    "asr_en": 0.1682,
+    "asr_hi": 0.3484,
+    "caption": 0.45,
+    "vqa": 0.6164
+   }
+  },
+  {
+   "step": 90000,
+   "score": 0.5902,
+   "losses": {
+    "chat": 5.3911,
+    "read": 3.2814,
+    "intent": 0.2132,
+    "asr_en": 1.0764,
+    "asr_hi": 2.5803,
+    "caption": 2.4458,
+    "vqa": 4.4293
+   },
+   "ratios": {
+    "chat": 1.6511,
+    "read": 0.8977,
+    "intent": 0.0274,
+    "asr_en": 0.1625,
+    "asr_hi": 0.336,
+    "caption": 0.442,
+    "vqa": 0.6146
+   }
+  },
+  {
+   "step": 100000,
+   "score": 0.5873,
+   "losses": {
+    "chat": 5.391,
+    "read": 3.2093,
+    "intent": 0.2531,
+    "asr_en": 1.0554,
+    "asr_hi": 2.5436,
+    "caption": 2.455,
+    "vqa": 4.432
+   },
+   "ratios": {
+    "chat": 1.6511,
+    "read": 0.8779,
+    "intent": 0.0325,
+    "asr_en": 0.1593,
+    "asr_hi": 0.3313,
+    "caption": 0.4437,
+    "vqa": 0.615
+   }
+  }
+ ],
+ "resumed_at": [
+  90000
+ ],
+ "tasks": [
+  [
+   "chat",
+   "text",
+   "data/chat_train.jsonl",
+   0.07,
+   8
+  ],
+  [
+   "read",
+   "text",
+   "data/rc_train.jsonl",
+   0.14,
+   4
+  ],
+  [
+   "intent",
+   "text",
+   "data/omni/intent_train.jsonl",
+   0.06,
+   8
+  ],
+  [
+   "asr_en",
+   "asr",
+   "data/speech_ls100",
+   0.12,
+   4
+  ],
+  [
+   "asr_hi",
+   "asr",
+   "data/omni/hindi_train",
+   0.32,
+   4
+  ],
+  [
+   "caption",
+   "image",
+   "data/omni/caption_train.jsonl",
+   0.17,
+   8
+  ],
+  [
+   "vqa",
+   "image",
+   "data/omni/vqa_train.jsonl",
+   0.12,
+   8
+  ]
+ ],
+ "batches_seen_replayed": {
+  "chat": 7017,
+  "read": 13921,
+  "intent": 6013,
+  "asr_en": 12131,
+  "asr_hi": 31708,
+  "caption": 17046,
+  "vqa": 12164
+ },
+ "release_gates": {
+  "wer_en": {
+   "value": 12.2,
+   "gate": [
+    "<=",
+    9.0
+   ],
+   "pass": false
+  },
+  "wer_hi_mean": {
+   "value": 46.2,
+   "gate": [
+    "<=",
+    50.9
+   ],
+   "pass": true
+  },
+  "wer_hi_fleurs": {
+   "value": 48.8,
+   "gate": [
+    "<=",
+    43.0
+   ],
+   "pass": false
+  },
+  "chat_heldout_loss": {
+   "value": 5.3181,
+   "gate": [
+    "<=",
+    3.3
+   ],
+   "pass": false
+  },
+  "read_squad_en": {
+   "value": 24.6,
+   "gate": [
+    ">=",
+    30.0
+   ],
+   "pass": false
+  },
+  "intent_banking77": {
+   "value": 90.0,
+   "gate": [
+    ">=",
+    80.0
+   ],
+   "pass": true
+  },
+  "vqa_acc": {
+   "value": 17.6,
+   "gate": [
+    ">=",
+    10.0
+   ],
+   "pass": true
+  }
+ }
+}

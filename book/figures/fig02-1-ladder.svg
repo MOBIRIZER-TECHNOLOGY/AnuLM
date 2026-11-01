@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 2.1 · The ladder</title>
+<desc id="d">Held-out loss: uniform over 256 bytes 5.5452, unigram counts 3.3475, bigram counts 2.4931, bigram_teacher.py table 2.6264, AnuLM, zero blocks 2.4871, lab book&#x27;s tiny transformer 1.7505.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Held-out loss on Shakespeare, nats per byte (lower is better)</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">data/input.txt, last 10% held out · ch02_counts_to_attention.py, seed 0 · the last bar: the lab book&#x27;s run, measured differently</text>
+<line x1="230.0" y1="64.0" x2="230.0" y2="262.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="230.0" y="277.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<line x1="300.0" y1="64.0" x2="300.0" y2="262.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="300.0" y="277.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1</text>
+<line x1="370.0" y1="64.0" x2="370.0" y2="262.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="370.0" y="277.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">2</text>
+<line x1="440.0" y1="64.0" x2="440.0" y2="262.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="440.0" y="277.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3</text>
+<line x1="510.0" y1="64.0" x2="510.0" y2="262.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="510.0" y="277.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">4</text>
+<line x1="580.0" y1="64.0" x2="580.0" y2="262.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="580.0" y="277.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">5</text>
+<line x1="650.0" y1="64.0" x2="650.0" y2="262.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="650.0" y="277.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">6</text>
+<text x="220.0" y="90.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">uniform over 256 bytes</text>
+<rect x="230.0" y="74.0" width="388.2" height="24.0" rx="3" fill="#D9A13B" class="f-gold"><title>uniform over 256 bytes: 5.545</title></rect>
+<text x="624.2" y="90.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">5.545</text>
+<text x="220.0" y="122.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">unigram counts</text>
+<rect x="230.0" y="106.0" width="234.3" height="24.0" rx="3" fill="#D9A13B" class="f-gold"><title>unigram counts: 3.347</title></rect>
+<text x="470.3" y="122.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">3.347</text>
+<text x="220.0" y="154.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">bigram counts</text>
+<rect x="230.0" y="138.0" width="174.5" height="24.0" rx="3" fill="#D9A13B" class="f-gold"><title>bigram counts: 2.493</title></rect>
+<text x="410.5" y="154.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">2.493</text>
+<text x="220.0" y="186.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">bigram_teacher.py table</text>
+<rect x="230.0" y="170.0" width="183.8" height="24.0" rx="3" fill="#D9A13B" class="f-gold"><title>bigram_teacher.py table: 2.626</title></rect>
+<text x="419.8" y="186.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">2.626</text>
+<text x="220.0" y="218.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">AnuLM, zero blocks</text>
+<rect x="230.0" y="202.0" width="174.1" height="24.0" rx="3" fill="#D9A13B" class="f-gold"><title>AnuLM, zero blocks: 2.487</title></rect>
+<text x="410.1" y="218.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">2.487</text>
+<text x="220.0" y="250.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">lab book&#x27;s tiny transformer</text>
+<rect x="230.0" y="234.0" width="122.5" height="24.0" rx="3" fill="#A8701A" class="f-gold"><title>lab book&#x27;s tiny transformer: 1.750</title></rect>
+<text x="358.5" y="250.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">1.750</text>
+</svg>

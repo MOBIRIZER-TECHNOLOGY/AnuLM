@@ -1,5 +1,7 @@
 # Tutorial: from a fresh machine to your own AnuLM
 
+> Source layout: implementation files now live under `anulm/`. See [the folder guide](STRUCTURE.md) and [filename migration map](source-paths.json). Historical filenames in measurements describe the original layout.
+
 This walks through the whole pipeline on a computer that has nothing
 installed: set up, a first model in twenty minutes on a CPU, then each of
 the real runs in the order they were done here, with the time, disk and
@@ -53,9 +55,9 @@ experiments/<script>.sh`) or from a Git Bash terminal.
 ## 2. Verify the code (2 minutes, CPU)
 
 ```bash
-python quickstart.py        # checks Python, torch, CUDA, the optional packages and the tokenizers
-python test_model.py        # 55 tests: routing math, attention, tokenizer, data loaders, loss masks
-python model.py             # builds both reference presets, forward + backward, prints parameter tables
+python -m anulm.tools.quickstart        # checks Python, torch, CUDA, the optional packages and the tokenizers
+python -m tests.test_model        # 55 tests: routing math, attention, tokenizer, data loaders, loss masks
+python -m anulm.model             # builds both reference presets, forward + backward, prints parameter tables
 ```
 
 `quickstart.py` is the one to run if anything below misbehaves: it prints a
@@ -70,8 +72,8 @@ path CI walks.
 ## 3. Your first model (20 minutes, CPU)
 
 ```bash
-python train.py --preset 30b            # downloads tinyshakespeare (1 MB), trains 1,000 steps
-python sample.py --ckpt ckpt.pt --prompt "KING RICHARD II:"
+python -m anulm.training.train --preset 30b            # downloads tinyshakespeare (1 MB), trains 1,000 steps
+python -m anulm.inference.sample --ckpt ckpt.pt --prompt "KING RICHARD II:"
 ```
 
 Expected: val loss around **1.52**, and Shakespeare-shaped text. This is
@@ -82,18 +84,18 @@ the 17M-parameter preset in the shape of Sarvam 30B (GQA, 8 layers, MoE).
 ## 4. A Hindi model from scratch (30 minutes, CPU or GPU)
 
 ```bash
-python fetch_hindi.py --mb 8 --out data/hindi.txt          # streams the Hindi Wikipedia dump, keeps 8 MB of clean prose
-python train.py --preset 30b --data data/hindi.txt --steps 1000
-python sample.py --ckpt ckpt.pt --prompt "भारत"
+python -m anulm.data.fetch_hindi --mb 8 --out data/hindi.txt          # streams the Hindi Wikipedia dump, keeps 8 MB of clean prose
+python -m anulm.training.train --preset 30b --data data/hindi.txt --steps 1000
+python -m anulm.inference.sample --ckpt ckpt.pt --prompt "भारत"
 ```
 
 This is the byte-level path (no tokenizer to train) that `docs/RESULTS.md`
 §1–5 used. To add a BPE tokenizer, as §6 onward does:
 
 ```bash
-python bpe.py train  --data data/hindi.txt --vocab 16384 --out data/hi16k.json
-python bpe.py encode --tokenizer data/hi16k.json --data data/hindi.txt --out data/hindi.hi16k.bin
-python train.py --preset 30b --data data/hindi.hi16k.bin --steps 1000
+python -m anulm.tokenization.bpe train  --data data/hindi.txt --vocab 16384 --out data/hi16k.json
+python -m anulm.tokenization.bpe encode --tokenizer data/hi16k.json --data data/hindi.txt --out data/hindi.hi16k.bin
+python -m anulm.training.train --preset 30b --data data/hindi.hi16k.bin --steps 1000
 ```
 
 ## 5. The recipe the released models use (GPU, hours)
@@ -106,7 +108,7 @@ steps, about 3 h on an 8 GB card:
 ```bash
 bash experiments/build_mixed.sh      # Hindi Wikipedia + Wikisource corpus, hi16k tokenizer, .bin  (§17)
 bash experiments/run_long.sh         # ckpt_hindi_mixed18k                                          (§18)
-python eval_golden.py ckpt_hindi_mixed18k.pt --device cuda     # expected: ~11% exact / ~86% multiple choice
+python -m anulm.evaluation.eval_golden ckpt_hindi_mixed18k.pt --device cuda     # expected: ~11% exact / ~86% multiple choice
 ```
 
 ## 6. The three-language base: Hindi + English + Python (GPU, ~5 h)
@@ -124,7 +126,7 @@ continuations in all three languages. This checkpoint is released as
 
 ```bash
 bash experiments/run_qa_multi.sh     # builds question pairs from the corpora, tunes, scores per language  (§23)
-python ask.py --ckpt ckpt_multi_qa.pt
+python -m anulm.inference.ask --ckpt ckpt_multi_qa.pt
 ```
 
 Released as `AnuLM-Hindi-QA-400M`. It answers "X क्या है?" in the
@@ -157,7 +159,7 @@ question; **HumanEval 4.9%** for the base in continue mode. Intermediate
 checkpoints are usable and scorable at any phase boundary:
 
 ```bash
-python eval_code.py ckpt_coder.pt --bench humaneval --device cuda
+python -m anulm.evaluation.eval_code ckpt_coder.pt --bench humaneval --device cuda
 ```
 
 `docs/MODEL_CARD.md` describes the finished checkpoint; `docs/CODER_PLAN.md`
@@ -177,7 +179,7 @@ at most one save interval.
 ## 10. Run the demo
 
 ```bash
-python serve.py --ckpt ckpt_coder_sft.pt         # or ckpt_translate.pt, ckpt_multi_qa.pt, or an exported folder
+python -m anulm.inference.serve --ckpt ckpt_coder_sft.pt         # or ckpt_translate.pt, ckpt_multi_qa.pt, or an exported folder
 # open http://127.0.0.1:8000
 ```
 
@@ -193,10 +195,10 @@ For a Gradio interface:
 
 ```bash
 pip install gradio huggingface_hub
-python app.py                                              # the picker: all five, loaded on demand
-python app.py --host 0.0.0.0                               # ... and reachable from another device on the same network
-python app.py --ckpt ckpt_coder_sft.pt                     # or preselect your own checkpoint
-ANULM_REPO=toonist/AnuLM-Coder-400M python app.py       # or preselect one from the Hub
+python -m anulm.apps.demo                                              # the picker: all five, loaded on demand
+python -m anulm.apps.demo --host 0.0.0.0                               # ... and reachable from another device on the same network
+python -m anulm.apps.demo --ckpt ckpt_coder_sft.pt                     # or preselect your own checkpoint
+ANULM_REPO=toonist/AnuLM-Coder-400M python -m anulm.apps.demo       # or preselect one from the Hub
 ```
 
 The page holds the four released checkpoints in a dropdown and loads one at
@@ -225,9 +227,9 @@ route. `docs/PUBLISHING.md` §6 has the detail.
 ```bash
 pip install huggingface_hub
 hf download toonist/AnuLM-Coder-400M --local-dir AnuLM-Coder-400M   # `hf` is installed by huggingface_hub
-python serve.py  --ckpt AnuLM-Coder-400M
-python sample.py --ckpt AnuLM-Coder-400M --prompt "def is_prime(n):"
-python eval_code.py AnuLM-Coder-400M --bench mbpp --device cuda      # reproduces 12.5%
+python -m anulm.inference.serve  --ckpt AnuLM-Coder-400M
+python -m anulm.inference.sample --ckpt AnuLM-Coder-400M --prompt "def is_prime(n):"
+python -m anulm.evaluation.eval_code AnuLM-Coder-400M --bench mbpp --device cuda      # reproduces 12.5%
 ```
 
 Every script accepts an exported folder (safetensors + config) wherever
@@ -247,9 +249,9 @@ prompt template (Hindi is the default):
 ```
 
 ```bash
-python finetune.py --ckpt AnuLM-Base-400M --qa my_pairs.jsonl --heldout my_heldout.jsonl \
+python -m anulm.training.finetune --ckpt AnuLM-Base-400M --qa my_pairs.jsonl --heldout my_heldout.jsonl \
     --out ckpt_mine.pt --epochs 1 --lr 5e-5 --grad-ckpt
-python serve.py --ckpt ckpt_mine.pt
+python -m anulm.inference.serve --ckpt ckpt_mine.pt
 ```
 
 ### LoRA, if the card is small or you want many fine-tunes
@@ -257,10 +259,10 @@ python serve.py --ckpt ckpt_mine.pt
 `--lora` trains low-rank adapters and freezes everything else:
 
 ```bash
-python finetune.py --ckpt AnuLM-Base-400M --qa my_pairs.jsonl --heldout my_heldout.jsonl \
+python -m anulm.training.finetune --ckpt AnuLM-Base-400M --qa my_pairs.jsonl --heldout my_heldout.jsonl \
     --out ckpt_mine.pt --lora --epochs 1 --lr 2e-4
-python lora.py merge ckpt_mine.pt ckpt_mine.full.pt   # -> an ordinary checkpoint
-python serve.py --ckpt ckpt_mine.full.pt
+python -m anulm.training.lora merge ckpt_mine.pt ckpt_mine.full.pt   # -> an ordinary checkpoint
+python -m anulm.inference.serve --ckpt ckpt_mine.full.pt
 ```
 
 Measured on 17,143 Hindi pairs from the same base (`docs/RESULTS.md` §29):
@@ -337,5 +339,5 @@ not the hardware.
 - **Fetch stops early**: the fetchers cut at a byte budget by design; pass
   a larger `--mb`, or more `--shards` to `fetch_code.py`.
 - **Resuming after a crash**: run the same script again; it finds
-  `<ckpt>.last` and continues. `python update_tasks.py` prints the step
+  `<ckpt>.last` and continues. `python -m anulm.tools.update_tasks` prints the step
   of the latest save.

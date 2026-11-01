@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 520" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 19.1 · Latent attention, one layer</title>
+<desc id="d">x is projected to queries, split into a non-rotary and a rotary part. A second projection makes a 48-wide latent and a 24-wide rotary key; these two are cached. kv_b_proj expands the latent into every head&#x27;s key part and value; the rotary key is shared across heads; attention and o_proj follow.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Latent attention, one layer: cache a latent and one rotary key</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">model.py lines 472–543 · shapes for nano_105b: D = 384, H = 6, Dc = 48, Dr = 24, Dn = 48, Dv = 48</text>
+<rect x="20.0" y="230.0" width="100.0" height="54.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="70.0" y="254.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">x</text>
+<text x="70.0" y="271.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">(B, S, D)</text>
+<rect x="170.0" y="76.0" width="150.0" height="54.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="245.0" y="100.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">q_proj</text>
+<text x="245.0" y="117.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">D → H·(Dn+Dr)</text>
+<rect x="370.0" y="66.0" width="160.0" height="40.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="450.0" y="83.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">q_nope</text>
+<text x="450.0" y="100.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">(B,H,S,48)</text>
+<rect x="370.0" y="116.0" width="160.0" height="40.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="450.0" y="133.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">q_pe → RoPE</text>
+<text x="450.0" y="150.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">(B,H,S,24)</text>
+<line x1="120.0" y1="245.0" x2="168.0" y2="108.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="320.0" y1="96.0" x2="368.0" y2="86.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="320.0" y1="110.0" x2="368.0" y2="134.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="170.0" y="300.0" width="150.0" height="54.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="245.0" y="324.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">kv_a_proj_with_mqa</text>
+<text x="245.0" y="341.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">D → Dc+Dr = 72</text>
+<line x1="120.0" y1="268.0" x2="168.0" y2="322.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="356.0" y="270.0" width="188.0" height="138.0" rx="10" fill="#FFFFFF" class="f-paper" stroke="#D9A13B" stroke-width="2.5"></rect>
+<text x="450.0" y="290.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">the KV cache</text>
+<rect x="370.0" y="300.0" width="160.0" height="40.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="450.0" y="317.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">c → RMSNorm</text>
+<text x="450.0" y="334.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">(B, T, 48)</text>
+<rect x="370.0" y="352.0" width="160.0" height="40.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="450.0" y="369.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">k_pe → RoPE</text>
+<text x="450.0" y="386.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">(B, 1, T, 24)</text>
+<line x1="320.0" y1="320.0" x2="368.0" y2="320.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="320.0" y1="334.0" x2="368.0" y2="370.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="580.0" y="300.0" width="160.0" height="54.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="660.0" y="324.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">kv_b_proj</text>
+<text x="660.0" y="341.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">Dc → H·(Dn+Dv)</text>
+<line x1="530.0" y1="320.0" x2="578.0" y2="324.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="580.0" y="378.0" width="160.0" height="40.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="660.0" y="395.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">k_pe expanded</text>
+<text x="660.0" y="412.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">(B, H, T, 24)</text>
+<line x1="530.0" y1="372.0" x2="578.0" y2="396.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="580.0" y="200.0" width="160.0" height="54.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="660.0" y="224.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">k_nope, v</text>
+<text x="660.0" y="241.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">(B,H,T,48), (48)</text>
+<line x1="660.0" y1="300.0" x2="660.0" y2="256.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="580.0" y="76.0" width="160.0" height="64.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="660.0" y="105.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">attention</text>
+<text x="660.0" y="122.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">q, k: 72 wide · v: 48</text>
+<line x1="530.0" y1="100.0" x2="578.0" y2="104.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="660.0" y1="200.0" x2="660.0" y2="142.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="740.0" y1="398.0" x2="752.0" y2="398.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<line x1="752.0" y1="398.0" x2="752.0" y2="120.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<line x1="752.0" y1="120.0" x2="742.0" y2="120.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="580.0" y="446.0" width="160.0" height="50.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="660.0" y="468.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">o_proj</text>
+<text x="660.0" y="485.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">H·Dv → D</text>
+<text x="560.0" y="470.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">attention output, (B, S, H·Dv) →</text>
+<text x="20.0" y="440.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">Cached per token and layer: Dc + Dr = 72 numbers.</text>
+<text x="20.0" y="460.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">Full per-head keys and values would be H·(Dn+Dr) + H·Dv = 720.</text>
+<text x="20.0" y="480.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">kv_b_proj re-expands every cached latent at every step.</text>
+</svg>

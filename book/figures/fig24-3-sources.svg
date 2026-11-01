@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 24.3 · Loss per token and per byte, by source</title>
+<desc id="d">Per token, Hindi web (3.231) scores better than English (3.605) and Python is lowest (2.173). Per byte the order changes: Hindi web 0.497, Python 0.776, Hindi Wikipedia 0.619, English 1.175, because a Hindi token covers about twice the bytes of an English one. The whole split reads 3.352 nats per token, 0.756 bits per byte.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Per token or per byte: the same model, four sources</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">ckpt_base_v2.pt · strided windows inside each source · bytes per token from data/v2/meta.json</text>
+<text x="20.0" y="78.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">nats per token</text>
+<line x1="140.0" y1="90.0" x2="140.0" y2="226.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="140.0" y="240.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<line x1="186.7" y1="90.0" x2="186.7" y2="226.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="186.7" y="240.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1</text>
+<line x1="233.3" y1="90.0" x2="233.3" y2="226.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="233.3" y="240.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">2</text>
+<line x1="280.0" y1="90.0" x2="280.0" y2="226.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="280.0" y="240.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3</text>
+<line x1="326.7" y1="90.0" x2="326.7" y2="226.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="326.7" y="240.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">4</text>
+<line x1="296.4" y1="86.0" x2="296.4" y2="226.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5" stroke-dasharray="3 3"/>
+<text x="130.0" y="110.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">English</text>
+<rect x="140.0" y="96.0" width="168.2" height="20.0" rx="3" fill="#D9A13B" class="f-gold"><title>English: 3.605</title></rect>
+<rect x="311.2" y="98.0" width="40.0" height="16.0" rx="0" fill="#FFFFFF" class="f-paper"></rect>
+<text x="314.2" y="110.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">3.605</text>
+<text x="130.0" y="144.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">Hindi web</text>
+<rect x="140.0" y="130.0" width="150.8" height="20.0" rx="3" fill="#D9A13B" class="f-gold"><title>Hindi web: 3.231</title></rect>
+<rect x="293.8" y="132.0" width="40.0" height="16.0" rx="0" fill="#FFFFFF" class="f-paper"></rect>
+<text x="296.8" y="144.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">3.231</text>
+<text x="130.0" y="178.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">Hindi Wikipedia</text>
+<rect x="140.0" y="164.0" width="187.2" height="20.0" rx="3" fill="#D9A13B" class="f-gold"><title>Hindi Wikipedia: 4.010</title></rect>
+<rect x="330.2" y="166.0" width="40.0" height="16.0" rx="0" fill="#FFFFFF" class="f-paper"></rect>
+<text x="333.2" y="178.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">4.010</text>
+<text x="130.0" y="212.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">Python</text>
+<rect x="140.0" y="198.0" width="101.4" height="20.0" rx="3" fill="#D9A13B" class="f-gold"><title>Python: 2.173</title></rect>
+<rect x="244.4" y="200.0" width="40.0" height="16.0" rx="0" fill="#FFFFFF" class="f-paper"></rect>
+<text x="247.4" y="212.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">2.173</text>
+<text x="296.4" y="256.0" class="f-ink" fill="#17262E" font-size="10.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">whole split 3.352</text>
+<text x="390.0" y="78.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">bits per byte</text>
+<line x1="510.0" y1="90.0" x2="510.0" y2="226.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="510.0" y="240.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.0</text>
+<line x1="570.0" y1="90.0" x2="570.0" y2="226.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="570.0" y="240.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.4</text>
+<line x1="630.0" y1="90.0" x2="630.0" y2="226.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="630.0" y="240.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.8</text>
+<line x1="690.0" y1="90.0" x2="690.0" y2="226.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="690.0" y="240.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1.2</text>
+<line x1="623.4" y1="86.0" x2="623.4" y2="226.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5" stroke-dasharray="3 3"/>
+<text x="500.0" y="110.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">English</text>
+<rect x="510.0" y="96.0" width="176.2" height="20.0" rx="3" fill="#D9A13B" class="f-gold"><title>English: 1.175</title></rect>
+<rect x="689.2" y="98.0" width="40.0" height="16.0" rx="0" fill="#FFFFFF" class="f-paper"></rect>
+<text x="692.2" y="110.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">1.175</text>
+<text x="500.0" y="144.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">Hindi web</text>
+<rect x="510.0" y="130.0" width="74.6" height="20.0" rx="3" fill="#D9A13B" class="f-gold"><title>Hindi web: 0.497</title></rect>
+<rect x="587.6" y="132.0" width="40.0" height="16.0" rx="0" fill="#FFFFFF" class="f-paper"></rect>
+<text x="590.6" y="144.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">0.497</text>
+<text x="500.0" y="178.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">Hindi Wikipedia</text>
+<rect x="510.0" y="164.0" width="92.9" height="20.0" rx="3" fill="#D9A13B" class="f-gold"><title>Hindi Wikipedia: 0.619</title></rect>
+<rect x="605.9" y="166.0" width="40.0" height="16.0" rx="0" fill="#FFFFFF" class="f-paper"></rect>
+<text x="608.9" y="178.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">0.619</text>
+<text x="500.0" y="212.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">Python</text>
+<rect x="510.0" y="198.0" width="116.4" height="20.0" rx="3" fill="#D9A13B" class="f-gold"><title>Python: 0.776</title></rect>
+<rect x="629.4" y="200.0" width="40.0" height="16.0" rx="0" fill="#FFFFFF" class="f-paper"></rect>
+<text x="632.4" y="212.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">0.776</text>
+<text x="623.4" y="256.0" class="f-ink" fill="#17262E" font-size="10.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">whole split 0.756</text>
+<text x="20.0" y="282.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">bytes per token: English 4.43, Hindi web 9.37, Hindi Wikipedia 9.34, Python 4.04; whole split 6.40</text>
+</svg>

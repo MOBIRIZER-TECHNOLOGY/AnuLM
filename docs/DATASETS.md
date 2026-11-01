@@ -16,7 +16,7 @@ AnuLM-Omni-400M, the one jointly trained model of the second release, is
 meant for commercial use, so it learns only from the sources below whose
 terms allow that. `omni_data.py` (text and speech) and `omni_images.py`
 (photos, captions, image questions) fetch every one of them from its
-primary source; `python omni_data.py list` prints each with its licence.
+primary source; `python -m anulm.multimodal.omni_data list` prints each with its licence.
 The rows below say, for every source, whether that model uses it.
 
 ## Pretraining corpora

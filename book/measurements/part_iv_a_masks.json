@@ -1,0 +1,27 @@
+{
+ "checkpoint": "ckpt_base_v2.pt",
+ "data": "data/v2/val.u16",
+ "windows": 32,
+ "seq": 1024,
+ "seed": 0,
+ "precision": "fp32, no autocast, except the experts: bf16 on the released grouped path (model.py 716, 743)",
+ "device": "cuda",
+ "as_trained": {
+  "all": 3.350813241629297,
+  "pos_0_255": 3.5065020096187682,
+  "pos_256_1023": 3.2988873910265353,
+  "graded": 32738
+ },
+ "no_window": {
+  "all": 4.161628194387496,
+  "pos_0_255": 3.5062466291388144,
+  "pos_256_1023": 4.3802132964753255,
+  "graded": 32738
+ },
+ "no_mask": {
+  "all": 7.978783211244839,
+  "pos_0_255": 8.242838881651425,
+  "pos_256_1023": 7.8907144605609645,
+  "graded": 32738
+ }
+}

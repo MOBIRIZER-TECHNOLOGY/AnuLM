@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 512" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 22.1 · The training loop</title>
+<desc id="d">Setup runs once: arguments, precision, data and sampler, model, compile probe, optimizer and resume. Each step sets the learning rate, zeroes the gradients, accumulates M micro-batches, clips, steps the optimizer, updates the expert biases, logs, and every --eval-every steps evaluates and saves.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">train.py main(), from arguments to checkpoints</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">line numbers at @773b6a8 · the teal box runs M times per step</text>
+<rect x="20.0" y="70.0" width="220.0" height="40.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="34.0" y="95.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">parse arguments</text>
+<text x="228.0" y="95.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">400–496</text>
+<rect x="20.0" y="128.0" width="220.0" height="40.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="34.0" y="153.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">seed, autocast</text>
+<text x="228.0" y="153.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">498–503</text>
+<line x1="130.0" y1="116.0" x2="130.0" y2="127.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="20.0" y="186.0" width="220.0" height="40.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="34.0" y="211.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">data, split, sampler</text>
+<text x="228.0" y="211.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">509–550</text>
+<line x1="130.0" y1="174.0" x2="130.0" y2="185.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="20.0" y="244.0" width="220.0" height="40.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="34.0" y="269.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">preset + --cfg → AnuLM</text>
+<text x="228.0" y="269.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">553–587</text>
+<line x1="130.0" y1="232.0" x2="130.0" y2="243.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="20.0" y="302.0" width="220.0" height="40.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="34.0" y="327.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">compile probe</text>
+<text x="228.0" y="327.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">589–610</text>
+<line x1="130.0" y1="290.0" x2="130.0" y2="301.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="20.0" y="360.0" width="220.0" height="40.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="34.0" y="385.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">optimizer</text>
+<text x="228.0" y="385.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">612</text>
+<line x1="130.0" y1="348.0" x2="130.0" y2="359.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="20.0" y="418.0" width="220.0" height="40.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="34.0" y="443.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">resume from .last</text>
+<text x="228.0" y="443.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">614–675</text>
+<line x1="130.0" y1="406.0" x2="130.0" y2="417.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="240.0" y1="438.0" x2="290.0" y2="438.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="130.0" y="490.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">once per invocation</text>
+<rect x="290.0" y="64.0" width="450.0" height="432.0" rx="12" fill="#F0F2F1" class="f-card" fill-opacity="0.45" stroke="#DCE1DF"></rect>
+<text x="306.0" y="86.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">for step in range(start_step, end)   684</text>
+<rect x="310.0" y="100.0" width="410.0" height="32.0" rx="6" fill="#FFFFFF" class="f-paper" stroke="#DCE1DF"></rect>
+<text x="324.0" y="121.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">lr_at → set_lr_scale</text>
+<text x="710.0" y="121.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">686–687</text>
+<rect x="310.0" y="140.0" width="410.0" height="32.0" rx="6" fill="#FFFFFF" class="f-paper" stroke="#DCE1DF"></rect>
+<text x="324.0" y="161.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">zero_grad(set_to_none=True)</text>
+<text x="710.0" y="161.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">689</text>
+<rect x="310.0" y="180.0" width="410.0" height="112.0" rx="8" fill="#FFFFFF" class="f-paper" stroke="#0E9488" stroke-width="2.5"></rect>
+<text x="324.0" y="200.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">× M micro-batches   691–706</text>
+<text x="338.0" y="222.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">sampler.next() → make_batch → (B, S) ×2</text>
+<text x="338.0" y="241.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">forward under autocast → loss</text>
+<text x="338.0" y="260.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">(loss / M).backward()   grads add up</text>
+<text x="338.0" y="279.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">loss_acc, aux_acc, tokens_seen</text>
+<rect x="310.0" y="300.0" width="410.0" height="32.0" rx="6" fill="#FFFFFF" class="f-paper" stroke="#DCE1DF"></rect>
+<text x="324.0" y="321.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">clip_grad_norm_(…, 1.0)</text>
+<text x="710.0" y="321.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">708–709</text>
+<rect x="310.0" y="336.0" width="410.0" height="32.0" rx="6" fill="#FFFFFF" class="f-paper" stroke="#DCE1DF"></rect>
+<text x="324.0" y="357.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">opt.step()</text>
+<text x="710.0" y="357.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">710</text>
+<rect x="310.0" y="372.0" width="410.0" height="32.0" rx="6" fill="#FFFFFF" class="f-paper" stroke="#DCE1DF"></rect>
+<text x="324.0" y="393.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">update_expert_biases()  out of band</text>
+<text x="710.0" y="393.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">712</text>
+<rect x="310.0" y="408.0" width="410.0" height="32.0" rx="6" fill="#FFFFFF" class="f-paper" stroke="#DCE1DF"></rect>
+<text x="324.0" y="429.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">log every --log-every</text>
+<text x="710.0" y="429.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">716–723</text>
+<rect x="310.0" y="444.0" width="410.0" height="32.0" rx="6" fill="#FFFFFF" class="f-paper" stroke="#DCE1DF"></rect>
+<text x="324.0" y="465.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">eval → best to --out, always .last</text>
+<text x="710.0" y="465.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">725–742</text>
+</svg>

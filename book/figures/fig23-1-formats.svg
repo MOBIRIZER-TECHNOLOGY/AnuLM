@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 290" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 23.1 · fp32, bf16 and fp16</title>
+<desc id="d">float32 has 1 sign, 8 exponent and 23 mantissa bits. bfloat16 keeps the 8 exponent bits and 7 mantissa bits, so the same range with eps 0.0078. float16 has 5 exponent and 10 mantissa bits: finer steps but a maximum of 65,504 and a smallest normal number of 6.1e-05.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Three ways to store a number</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">sign · exponent (range) · mantissa (precision) · values from torch.finfo · verified</text>
+<text x="108.0" y="93.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="end">float32</text>
+<rect x="120.0" y="74.0" width="15.0" height="28.0" rx="3" fill="#56676C" class="f-muted-fill"><title>float32: 1 s bit</title></rect>
+<rect x="120.5" y="80.0" width="14.0" height="16.0" rx="3" fill="#FFFFFF" class="f-paper" fill-opacity="0.9"></rect>
+<text x="127.5" y="92.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">1</text>
+<rect x="137.0" y="74.0" width="134.0" height="28.0" rx="3" fill="#0E9488" class="f-teal"><title>float32: 8 exponent bits</title></rect>
+<rect x="180.0" y="80.0" width="48.0" height="16.0" rx="3" fill="#FFFFFF" class="f-paper" fill-opacity="0.9"></rect>
+<text x="204.0" y="92.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">8</text>
+<rect x="273.0" y="74.0" width="389.0" height="28.0" rx="3" fill="#C4532F" class="f-coral"><title>float32: 23 mantissa bits</title></rect>
+<rect x="443.5" y="80.0" width="48.0" height="16.0" rx="3" fill="#FFFFFF" class="f-paper" fill-opacity="0.9"></rect>
+<text x="467.5" y="92.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">23</text>
+<text x="120.0" y="120.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">eps 1.19e-07   max 3.4e+38   smallest normal 1.18e-38</text>
+<text x="108.0" y="157.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="end">bfloat16</text>
+<rect x="120.0" y="138.0" width="15.0" height="28.0" rx="3" fill="#56676C" class="f-muted-fill"><title>bfloat16: 1 s bit</title></rect>
+<rect x="120.5" y="144.0" width="14.0" height="16.0" rx="3" fill="#FFFFFF" class="f-paper" fill-opacity="0.9"></rect>
+<text x="127.5" y="156.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">1</text>
+<rect x="137.0" y="138.0" width="134.0" height="28.0" rx="3" fill="#0E9488" class="f-teal"><title>bfloat16: 8 exponent bits</title></rect>
+<rect x="180.0" y="144.0" width="48.0" height="16.0" rx="3" fill="#FFFFFF" class="f-paper" fill-opacity="0.9"></rect>
+<text x="204.0" y="156.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">8</text>
+<rect x="273.0" y="138.0" width="117.0" height="28.0" rx="3" fill="#C4532F" class="f-coral"><title>bfloat16: 7 mantissa bits</title></rect>
+<rect x="307.5" y="144.0" width="48.0" height="16.0" rx="3" fill="#FFFFFF" class="f-paper" fill-opacity="0.9"></rect>
+<text x="331.5" y="156.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">7</text>
+<text x="120.0" y="184.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">eps 0.00781   max 3.39e+38   smallest normal 1.18e-38</text>
+<text x="108.0" y="221.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="end">float16</text>
+<rect x="120.0" y="202.0" width="15.0" height="28.0" rx="3" fill="#56676C" class="f-muted-fill"><title>float16: 1 s bit</title></rect>
+<rect x="120.5" y="208.0" width="14.0" height="16.0" rx="3" fill="#FFFFFF" class="f-paper" fill-opacity="0.9"></rect>
+<text x="127.5" y="220.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">1</text>
+<rect x="137.0" y="202.0" width="83.0" height="28.0" rx="3" fill="#0E9488" class="f-teal"><title>float16: 5 exponent bits</title></rect>
+<rect x="154.5" y="208.0" width="48.0" height="16.0" rx="3" fill="#FFFFFF" class="f-paper" fill-opacity="0.9"></rect>
+<text x="178.5" y="220.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">5</text>
+<rect x="222.0" y="202.0" width="168.0" height="28.0" rx="3" fill="#C4532F" class="f-coral"><title>float16: 10 mantissa bits</title></rect>
+<rect x="282.0" y="208.0" width="48.0" height="16.0" rx="3" fill="#FFFFFF" class="f-paper" fill-opacity="0.9"></rect>
+<text x="306.0" y="220.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">10</text>
+<text x="120.0" y="248.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">eps 0.000977   max 6.55e+04   smallest normal 6.1e-05</text>
+<rect x="120.0" y="261.0" width="14.0" height="14.0" rx="3" fill="#0E9488" class="f-teal"></rect>
+<text x="140.0" y="272.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">exponent bits: range</text>
+<rect x="350.0" y="261.0" width="14.0" height="14.0" rx="3" fill="#C4532F" class="f-coral"></rect>
+<text x="370.0" y="272.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">mantissa bits: precision</text>
+</svg>

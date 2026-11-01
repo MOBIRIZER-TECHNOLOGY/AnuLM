@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 290" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 11.4 · Why divide by √d</title>
+<desc id="d">Unscaled, the keys in play fall from 131.7 at d = 2 to 27.8 at d = 8 and 2.5 at d = 64. Divided by √d they stay near 160 at every width: 172.2, 161.8, 157.0.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Keys in play, out of 256, with and without ÷√d</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">random unit-variance queries and keys · mean over 2,000 rows · illustrative</text>
+<circle cx="124" cy="70" r="5" fill="#C4532F" class="f-coral"/>
+<text x="134.0" y="74.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">unscaled</text>
+<circle cx="224" cy="70" r="5" fill="#0E9488" class="f-teal"/>
+<text x="234.0" y="74.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">divided by √d</text>
+<line x1="120.0" y1="90.0" x2="120.0" y2="256.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="120.0" y="274.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1</text>
+<line x1="185.0" y1="90.0" x2="185.0" y2="256.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="185.0" y="274.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">2</text>
+<line x1="250.0" y1="90.0" x2="250.0" y2="256.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="250.0" y="274.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">4</text>
+<line x1="315.0" y1="90.0" x2="315.0" y2="256.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="315.0" y="274.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">8</text>
+<line x1="380.0" y1="90.0" x2="380.0" y2="256.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="380.0" y="274.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">16</text>
+<line x1="445.0" y1="90.0" x2="445.0" y2="256.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="445.0" y="274.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">32</text>
+<line x1="510.0" y1="90.0" x2="510.0" y2="256.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="510.0" y="274.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">64</text>
+<line x1="575.0" y1="90.0" x2="575.0" y2="256.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="575.0" y="274.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">128</text>
+<line x1="640.0" y1="90.0" x2="640.0" y2="256.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="640.0" y="274.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">256</text>
+<text x="380.0" y="292.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">keys in play (e to the entropy of a row; log scale)</text>
+<text x="104.0" y="122.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="end">d = 2</text>
+<line x1="577.6" y1="118.0" x2="602.8" y2="118.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="2"/>
+<circle cx="577.6" cy="118" r="6" fill="#C4532F" stroke="#FFFFFF" stroke-width="2" class="f-coral f-ring"><title>d = 2, unscaled: 131.7 keys in play</title></circle>
+<circle cx="602.8" cy="118" r="6" fill="#0E9488" stroke="#FFFFFF" stroke-width="2" class="f-teal f-ring"><title>d = 2, divided by √d: 172.2 keys in play</title></circle>
+<text x="567.6" y="122.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="end">131.7</text>
+<text x="612.8" y="122.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">172.2</text>
+<text x="104.0" y="174.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="end">d = 8</text>
+<line x1="432.0" y1="170.0" x2="597.0" y2="170.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="2"/>
+<circle cx="432.0" cy="170" r="6" fill="#C4532F" stroke="#FFFFFF" stroke-width="2" class="f-coral f-ring"><title>d = 8, unscaled: 27.8 keys in play</title></circle>
+<circle cx="597.0" cy="170" r="6" fill="#0E9488" stroke="#FFFFFF" stroke-width="2" class="f-teal f-ring"><title>d = 8, divided by √d: 161.8 keys in play</title></circle>
+<text x="422.0" y="174.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="end">27.8</text>
+<text x="607.0" y="174.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">161.8</text>
+<text x="104.0" y="226.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="end">d = 64</text>
+<line x1="206.9" y1="222.0" x2="594.1" y2="222.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="2"/>
+<circle cx="206.9" cy="222" r="6" fill="#C4532F" stroke="#FFFFFF" stroke-width="2" class="f-coral f-ring"><title>d = 64, unscaled: 2.5 keys in play</title></circle>
+<circle cx="594.1" cy="222" r="6" fill="#0E9488" stroke="#FFFFFF" stroke-width="2" class="f-teal f-ring"><title>d = 64, divided by √d: 157.0 keys in play</title></circle>
+<text x="196.9" y="226.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="end">2.5</text>
+<text x="604.1" y="226.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">157.0</text>
+<text x="646.0" y="100.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">uniform</text>
+</svg>

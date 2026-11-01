@@ -40,3 +40,15 @@ release/
 data/*
 !data/*.json
 sweep/
+
+# Package/build outputs and local experiments
+*.egg-info/
+build/
+dist/
+runs/
+book/preview/
+book/.venv/
+book/.work/
+book/.local/
+book/tmp/
+book/validation/

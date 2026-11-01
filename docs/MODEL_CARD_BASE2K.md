@@ -152,8 +152,8 @@ the output collapses into repeated tokens rather than degrading. Use
 
 ```bash
 hf download toonist/AnuLM-Base-2K-400M --local-dir AnuLM-Base-2K-400M
-python serve.py  --ckpt AnuLM-Base-2K-400M
-python sample.py --ckpt AnuLM-Base-2K-400M --prompt "हिन्दी साहित्य
+python -m anulm.inference.serve  --ckpt AnuLM-Base-2K-400M
+python -m anulm.inference.sample --ckpt AnuLM-Base-2K-400M --prompt "हिन्दी साहित्य
 
 "
 ```

@@ -44,7 +44,7 @@ first.
 
 ## Measured
 
-A 3.87 s Hindi clip through both input paths (`python audio_codec.py --probe`):
+A 3.87 s Hindi clip through both input paths (`python -m anulm.multimodal.audio_codec --probe`):
 
 | | rate | shape | notes |
 | --- | --- | --- | --- |

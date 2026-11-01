@@ -1,0 +1,108 @@
+{
+ "checkpoint": "ckpt_base_v2.pt",
+ "windows": 32,
+ "block": 1024,
+ "routers": 19,
+ "per_layer": {
+  "1": {
+   "tokens": 32768,
+   "set_differs": 0.1094970703125,
+   "first_choice_differs": 0.01068115234375
+  },
+  "2": {
+   "tokens": 32768,
+   "set_differs": 0.039459228515625,
+   "first_choice_differs": 0.005218505859375
+  },
+  "3": {
+   "tokens": 32768,
+   "set_differs": 0.035736083984375,
+   "first_choice_differs": 0.00323486328125
+  },
+  "4": {
+   "tokens": 32768,
+   "set_differs": 0.030517578125,
+   "first_choice_differs": 0.002532958984375
+  },
+  "5": {
+   "tokens": 32768,
+   "set_differs": 0.033538818359375,
+   "first_choice_differs": 0.004150390625
+  },
+  "6": {
+   "tokens": 32768,
+   "set_differs": 0.034515380859375,
+   "first_choice_differs": 0.00567626953125
+  },
+  "7": {
+   "tokens": 32768,
+   "set_differs": 0.032257080078125,
+   "first_choice_differs": 0.00628662109375
+  },
+  "8": {
+   "tokens": 32768,
+   "set_differs": 0.028564453125,
+   "first_choice_differs": 0.003875732421875
+  },
+  "9": {
+   "tokens": 32768,
+   "set_differs": 0.027984619140625,
+   "first_choice_differs": 0.005157470703125
+  },
+  "10": {
+   "tokens": 32768,
+   "set_differs": 0.0255126953125,
+   "first_choice_differs": 0.004241943359375
+  },
+  "11": {
+   "tokens": 32768,
+   "set_differs": 0.025909423828125,
+   "first_choice_differs": 0.005523681640625
+  },
+  "12": {
+   "tokens": 32768,
+   "set_differs": 0.025665283203125,
+   "first_choice_differs": 0.00396728515625
+  },
+  "13": {
+   "tokens": 32768,
+   "set_differs": 0.026947021484375,
+   "first_choice_differs": 0.004669189453125
+  },
+  "14": {
+   "tokens": 32768,
+   "set_differs": 0.020599365234375,
+   "first_choice_differs": 0.003265380859375
+  },
+  "15": {
+   "tokens": 32768,
+   "set_differs": 0.0230712890625,
+   "first_choice_differs": 0.0048828125
+  },
+  "16": {
+   "tokens": 32768,
+   "set_differs": 0.024383544921875,
+   "first_choice_differs": 0.003173828125
+  },
+  "17": {
+   "tokens": 32768,
+   "set_differs": 0.021453857421875,
+   "first_choice_differs": 0.004058837890625
+  },
+  "18": {
+   "tokens": 32768,
+   "set_differs": 0.019195556640625,
+   "first_choice_differs": 0.003082275390625
+  },
+  "19": {
+   "tokens": 32768,
+   "set_differs": 0.01690673828125,
+   "first_choice_differs": 0.004364013671875
+  }
+ },
+ "all_layers_set_differs": 0.03166921515213816,
+ "token_layer_pairs": 622592,
+ "min_layer": 0.01690673828125,
+ "max_layer": 0.1094970703125,
+ "seconds": 4.750901937484741
+}

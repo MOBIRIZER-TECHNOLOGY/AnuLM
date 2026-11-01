@@ -207,7 +207,7 @@ was answered at 353M instead (§6, §7, §11).
 Both Shakespeare checkpoints were trained at `block_size=256` with plain RoPE.
 Evaluated at 2× and 4× that, either naively or with the rotary rebuilt for YaRN
 (`factor = length/256`). Same weights, **zero fine-tuning**.
-Reproduce with `python eval_context.py --ckpt ckpt_105b.pt`.
+Reproduce with `python -m anulm.evaluation.eval_context --ckpt ckpt_105b.pt`.
 
 Loss by position inside a 1024-byte window:
 
@@ -480,11 +480,11 @@ behaviours are why the two-file checkpoint scheme exists.
 
 ```bash
 # from the repository root
-python train.py --preset 30b --steps 1000 --batch-size 16 --block-size 256
-python train.py --preset 105b --data data/hindi.txt --block-size 512 \
+python -m anulm.training.train --preset 30b --steps 1000 --batch-size 16 --block-size 256
+python -m anulm.training.train --preset 105b --data data/hindi.txt --block-size 512 \
                 --batch-size 8 --steps 1000
-python eval_context.py --ckpt ckpt_105b.pt
-python test_model.py
+python -m anulm.evaluation.eval_context --ckpt ckpt_105b.pt
+python -m tests.test_model
 ```
 
 Seed is 1337 everywhere and runs are deterministic on identical hardware and
@@ -1960,8 +1960,8 @@ change the question. This is the same experiment on `AnuLM-Base-400M`, with
 no retraining of any kind.
 
 ```bash
-python fetch_hindi.py --mb 300 --keep-prob 0.3 --out data/hindi_ctx.txt
-python eval_context.py --ckpt release/AnuLM-Base-400M --data data/hindi_ctx.txt \
+python -m anulm.data.fetch_hindi --mb 300 --keep-prob 0.3 --out data/hindi_ctx.txt
+python -m anulm.evaluation.eval_context --ckpt release/AnuLM-Base-400M --data data/hindi_ctx.txt \
                        --device cuda --batches 24 --multipliers 1 2 4
 ```
 
@@ -2104,16 +2104,16 @@ continuation somewhat. The position-slope comparison does not depend on it.
 ### Reproducing
 
 ```bash
-python fetch_hindi.py --mb 300 --keep-prob 0.3 --out data/hindi_ctx.txt
-python fetch_web.py  --mb 200 --out data/en_ctx.txt
-python fetch_code.py --mb 120 --out data/py_ctx.txt
-python mix_corpus.py --source hindi data/hindi_ctx.txt 190 \
+python -m anulm.data.fetch_hindi --mb 300 --keep-prob 0.3 --out data/hindi_ctx.txt
+python -m anulm.data.fetch_web  --mb 200 --out data/en_ctx.txt
+python -m anulm.data.fetch_code --mb 120 --out data/py_ctx.txt
+python -m anulm.data.mix_corpus --source hindi data/hindi_ctx.txt 190 \
                      --source english data/en_ctx.txt 75 \
                      --source python data/py_ctx.txt 36 --out data/ctx_mix.txt
-python bpe.py encode --tokenizer data/multi32k.json --data data/ctx_mix.txt \
+python -m anulm.tokenization.bpe encode --tokenizer data/multi32k.json --data data/ctx_mix.txt \
                      --out data/ctx_mix.multi32k.bin
 # then run_ctx_phase.cmd 10000, or the train.py line inside _ctx_run.cmd
-python eval_bench.py release/AnuLM-Base-400M ckpt_ctx2k.pt \
+python -m anulm.evaluation.eval_bench release/AnuLM-Base-400M ckpt_ctx2k.pt \
                      --bench data/bench_hindi.txt --device cuda
 ```
 
@@ -2172,11 +2172,11 @@ from 3.9028. And LoRA wants a higher learning rate: 2e-4 to 3e-4 against the
 5e-5 that suits a full fine-tune, because far fewer parameters have to move.
 
 ```bash
-python make_qa.py --data data/hindi_ctx.txt --out data/qa_lora.jsonl \
+python -m anulm.data.make_qa --data data/hindi_ctx.txt --out data/qa_lora.jsonl \
                   --heldout data/qa_lora_heldout.jsonl
-python finetune.py --ckpt release/AnuLM-Base-400M --qa data/qa_lora.jsonl \
+python -m anulm.training.finetune --ckpt release/AnuLM-Base-400M --qa data/qa_lora.jsonl \
     --heldout data/qa_lora_heldout.jsonl --out ckpt_lora.pt --lora --lr 2e-4
-python lora.py merge ckpt_lora.pt ckpt_lora.full.pt
+python -m anulm.training.lora merge ckpt_lora.pt ckpt_lora.full.pt
 ```
 
 One caveat on reading these numbers: a single epoch on 17k pairs is a small
@@ -2270,8 +2270,8 @@ that does not sort the matrix it claims to sort, which is a fair portrait of
 a 398M model and would never have survived hand-picking.
 
 ```bash
-python tools_sweep.py --device cuda            # resumable; run_sweep.cmd for a long one
-python tools_samples.py                        # -> docs/samples.json, docs/SAMPLES.md
+python -m anulm.tools.sweep --device cuda            # resumable; run_sweep.cmd for a long one
+python -m anulm.tools.samples                        # -> docs/samples.json, docs/SAMPLES.md
 ```
 
 ## 32. The lab: what learns faster on one consumer GPU

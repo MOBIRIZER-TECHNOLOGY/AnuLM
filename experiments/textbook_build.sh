@@ -42,7 +42,7 @@ RAW=data/raw
 echo "=== TEXTBOOK SOURCES ($(date +%H:%M)) ==="
 
 # phi-1's open analogue: problem statement plus complete solution.
-[ -s data/tb_exercises.txt ] || python -u convert_parquet.py textbook \
+[ -s data/tb_exercises.txt ] || python -u -m anulm.data.convert_parquet textbook \
     --in "$RAW/jinaai__code_exercises/data/*.parquet" \
     --q-col problem --a-col solution --decontaminate \
     --out data/tb_exercises.txt
@@ -52,19 +52,19 @@ echo "=== TEXTBOOK SOURCES ($(date +%H:%M)) ==="
 # 13% fail all ten. Keeping only the verified ones halves the yield and is the
 # closest thing in an open dataset to what "textbook quality" is supposed to
 # mean, so it is worth the shards.
-[ -s data/tb_opencode.txt ] || python -u convert_parquet.py textbook \
+[ -s data/tb_opencode.txt ] || python -u -m anulm.data.convert_parquet textbook \
     --in "$RAW/nvidia__OpenCodeInstruct/data/*.parquet" \
     --q-col input --a-col output --python-only --decontaminate \
     --score-col average_test_score --min-pair-score 1.0 \
     --out data/tb_opencode.txt
 
-[ -s data/tb_opc.txt ] || python -u convert_parquet.py textbook \
+[ -s data/tb_opc.txt ] || python -u -m anulm.data.convert_parquet textbook \
     --in "$RAW/OpenCoder-LLM__opc-sft-stage1/data/*.parquet" \
     --q-col instruction --a-col output --python-only --decontaminate \
     --out data/tb_opc.txt
 
 echo "=== ENGLISH ($(date +%H:%M)) ==="
-[ -s data/english_edu2.txt ] || python -u convert_parquet.py fineweb \
+[ -s data/english_edu2.txt ] || python -u -m anulm.data.convert_parquet fineweb \
     --in "$RAW/HuggingFaceFW__fineweb-edu/sample/10BT/*.parquet" \
     --out data/english_edu2.txt --mb 1700
 
@@ -77,7 +77,7 @@ echo "=== DECONTAMINATE THE TEXT SOURCES ($(date +%H:%M)) ==="
 # Measured before filtering: gh_python.txt alone carried the reference
 # answer to 4 of MBPP's 257 problems and 5 of HumanEval's 164.
 for f in gh_python english_edu2 hindi_tb; do
-  [ -s "data/$f.clean.txt" ] || python -u convert_parquet.py clean \
+  [ -s "data/$f.clean.txt" ] || python -u -m anulm.data.convert_parquet clean \
       --in "data/$f.txt" --out "data/$f.clean.txt"
 done
 
@@ -120,7 +120,7 @@ echo "=== MIX ($(date +%H:%M)) ==="
 # leave the previous held-out sets in place while their documents went into
 # this training file. That is the contamination that invalidated the first
 # long-context measurement (section 27). New names, new held-out sets.
-python -u mix_corpus.py \
+python -u -m anulm.data.mix_corpus \
     --source tb_exercises data/tb_exercises.txt  950 \
     --source tb_opencode  data/tb_opencode.txt  1000 \
     --source tb_opc       data/tb_opc.txt       1000 \
@@ -132,7 +132,7 @@ python -u mix_corpus.py \
 echo "=== ENCODE ($(date +%H:%M)) ==="
 # The coder's own tokenizer, unchanged, so bits/byte and pass@1 stay
 # comparable with section 25.
-[ -s data/textbook_mix.code32k.bin ] || python -u bpe.py encode \
+[ -s data/textbook_mix.code32k.bin ] || python -u -m anulm.tokenization.bpe encode \
     --tokenizer data/code32k.json --data data/textbook_mix.txt \
     --out data/textbook_mix.code32k.bin --workers 20 2>&1 | tr '\r' '\n' | tail -1
 

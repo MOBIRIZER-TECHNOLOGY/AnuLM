@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 35.1 · The grown vocabulary</title>
+<desc id="d">A bar from 0 to 61,445. Text ids fill 0 to 32,767. Seven audio blocks of 4,096 ids each, one per SNAC slot, fill 32,768 to 61,439. Five control tokens follow: &lt;|speech|&gt; 61,440, &lt;|/speech|&gt; 61,441, &lt;|text|&gt; 61,442, &lt;|image|&gt; 61,443, &lt;|/image|&gt; 61,444.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">The grown vocabulary, to scale</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">released-model sizes · ids keep their numbers; new ids are appended</text>
+<rect x="30.0" y="88.0" width="372.3" height="54.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#56676C" stroke-width="1"><title>text: ids 0 to 32,767</title></rect>
+<text x="216.7" y="112.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">text (BPE)</text>
+<text x="216.7" y="130.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">[0, 32,768)</text>
+<rect x="403.3" y="88.0" width="45.7" height="54.0" rx="3" fill="#7B5E8E" class="f-plum" fill-opacity="0.45"><title>audio slot 0: ids 32,768 to 36,863</title></rect>
+<text x="426.6" y="120.0" class="f-onfill" fill="#FFFFFF" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">0</text>
+<rect x="450.0" y="88.0" width="45.7" height="54.0" rx="3" fill="#7B5E8E" class="f-plum" fill-opacity="0.52"><title>audio slot 1: ids 36,864 to 40,959</title></rect>
+<text x="473.3" y="120.0" class="f-onfill" fill="#FFFFFF" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">1</text>
+<rect x="496.6" y="88.0" width="45.7" height="54.0" rx="3" fill="#7B5E8E" class="f-plum" fill-opacity="0.59"><title>audio slot 2: ids 40,960 to 45,055</title></rect>
+<text x="520.0" y="120.0" class="f-onfill" fill="#FFFFFF" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">2</text>
+<rect x="543.3" y="88.0" width="45.7" height="54.0" rx="3" fill="#7B5E8E" class="f-plum" fill-opacity="0.66"><title>audio slot 3: ids 45,056 to 49,151</title></rect>
+<text x="566.6" y="120.0" class="f-onfill" fill="#FFFFFF" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">3</text>
+<rect x="590.0" y="88.0" width="45.7" height="54.0" rx="3" fill="#7B5E8E" class="f-plum" fill-opacity="0.73"><title>audio slot 4: ids 49,152 to 53,247</title></rect>
+<text x="613.3" y="120.0" class="f-onfill" fill="#FFFFFF" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">4</text>
+<rect x="636.6" y="88.0" width="45.7" height="54.0" rx="3" fill="#7B5E8E" class="f-plum" fill-opacity="0.80"><title>audio slot 5: ids 53,248 to 57,343</title></rect>
+<text x="659.9" y="120.0" class="f-onfill" fill="#FFFFFF" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">5</text>
+<rect x="683.3" y="88.0" width="45.7" height="54.0" rx="3" fill="#7B5E8E" class="f-plum" fill-opacity="0.87"><title>audio slot 6: ids 57,344 to 61,439</title></rect>
+<text x="706.6" y="120.0" class="f-onfill" fill="#FFFFFF" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">6</text>
+<text x="566.6" y="78.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">audio: 7 slots × 4,096 = 28,672</text>
+<text x="403.3" y="162.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">32,768</text>
+<text x="723.9" y="162.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">61,440</text>
+<line x1="730.0" y1="84.0" x2="730.0" y2="146.0" stroke="#17262E" class="f-ink-stroke" stroke-width="3"/>
+<text x="20.0" y="184.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">the last five ids, magnified: control tokens</text>
+<rect x="20.0" y="196.0" width="136.0" height="46.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#7B5E8E" stroke-width="1.5"><title>&lt;|speech|&gt;: id 61,440</title></rect>
+<text x="88.0" y="216.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">&lt;|speech|&gt;</text>
+<text x="88.0" y="233.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">61,440</text>
+<rect x="166.0" y="196.0" width="136.0" height="46.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#7B5E8E" stroke-width="1.5"><title>&lt;|/speech|&gt;: id 61,441</title></rect>
+<text x="234.0" y="216.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">&lt;|/speech|&gt;</text>
+<text x="234.0" y="233.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">61,441</text>
+<rect x="312.0" y="196.0" width="136.0" height="46.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#7B5E8E" stroke-width="1.5"><title>&lt;|text|&gt;: id 61,442</title></rect>
+<text x="380.0" y="216.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">&lt;|text|&gt;</text>
+<text x="380.0" y="233.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">61,442</text>
+<rect x="458.0" y="196.0" width="136.0" height="46.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#7B5E8E" stroke-width="1.5"><title>&lt;|image|&gt;: id 61,443</title></rect>
+<text x="526.0" y="216.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">&lt;|image|&gt;</text>
+<text x="526.0" y="233.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">61,443</text>
+<rect x="604.0" y="196.0" width="136.0" height="46.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#7B5E8E" stroke-width="1.5"><title>&lt;|/image|&gt;: id 61,444</title></rect>
+<text x="672.0" y="216.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">&lt;|/image|&gt;</text>
+<text x="672.0" y="233.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">61,444</text>
+<line x1="744.0" y1="148.0" x2="714.0" y2="192.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="20.0" y="272.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">total V = 61,445; generate masks every id from 32,768 up when text_vocab is set</text>
+</svg>

@@ -18,7 +18,7 @@ RESUME=""; [ -s $OUT.last ] && RESUME="--resume"
 STOPARG=""; [ -n "$STOP" ] && STOPARG="--stop-at $STOP"
 
 echo "=== TRANSLATE PHASE: ${RESUME:-fresh start} ${STOPARG:-to the end} ($(date +%H:%M)) ==="
-python -u finetune.py --ckpt $BASE --qa data/tr_pairs.jsonl --heldout data/tr_heldout.jsonl --out $OUT \
+python -u -m anulm.training.finetune --ckpt $BASE --qa data/tr_pairs.jsonl --heldout data/tr_heldout.jsonl --out $OUT \
     --epochs 1 --lr 1e-4 --min-lr 1e-5 --warmup 500 --eval-every 2000 --log-every 100 \
     --grad-ckpt --workers 16 $RESUME $STOPARG 2>&1 | grep -v -i "warning\|triton"
 echo "=== PHASE DONE ($(date +%H:%M)) ==="

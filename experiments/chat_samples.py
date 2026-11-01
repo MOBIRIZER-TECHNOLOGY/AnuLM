@@ -8,7 +8,7 @@ sys.path.insert(0, str(ROOT))
 import os  # noqa: E402
 
 os.chdir(ROOT)
-from serve import Engine  # noqa: E402
+from anulm.inference.serve import Engine  # noqa: E402
 
 QUESTIONS = [
     "Who are you?",

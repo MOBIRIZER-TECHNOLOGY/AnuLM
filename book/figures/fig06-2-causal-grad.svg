@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 6.2 · Gradients respect causality</title>
+<desc id="d">Largest gradient of position 5&#x27;s logits per input position: 0: 3.3, 1: 2.1, 2: 3.1, 3: 1.3, 4: 1.8, 5: 16, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">How much each input position moves position 5&#x27;s logits</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">tiny(), untrained · largest |∂ logits[5] / ∂ embedding[j]| · log scale · verified</text>
+<line x1="74.0" y1="240.0" x2="720.0" y2="240.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="70.0" y="244.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">1e-1</text>
+<line x1="74.0" y1="186.7" x2="720.0" y2="186.7" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="70.0" y="190.7" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">1e0</text>
+<line x1="74.0" y1="133.3" x2="720.0" y2="133.3" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="70.0" y="137.3" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">1e1</text>
+<line x1="74.0" y1="80.0" x2="720.0" y2="80.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="70.0" y="84.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">1e2</text>
+<rect x="90.0" y="159.0" width="38.0" height="81.0" rx="2" fill="#D9A13B" class="f-gold"><title>position 0: 3.31e+00</title></rect>
+<text x="109.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<rect x="142.0" y="169.7" width="38.0" height="70.3" rx="2" fill="#D9A13B" class="f-gold"><title>position 1: 2.08e+00</title></rect>
+<text x="161.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1</text>
+<rect x="194.0" y="160.5" width="38.0" height="79.5" rx="2" fill="#D9A13B" class="f-gold"><title>position 2: 3.10e+00</title></rect>
+<text x="213.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">2</text>
+<rect x="246.0" y="180.2" width="38.0" height="59.8" rx="2" fill="#D9A13B" class="f-gold"><title>position 3: 1.32e+00</title></rect>
+<text x="265.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3</text>
+<rect x="298.0" y="173.1" width="38.0" height="66.9" rx="2" fill="#D9A13B" class="f-gold"><title>position 4: 1.80e+00</title></rect>
+<text x="317.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">4</text>
+<rect x="350.0" y="123.1" width="38.0" height="116.9" rx="2" fill="#A8701A" class="f-gold"><title>position 5: 1.56e+01</title></rect>
+<text x="369.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">5</text>
+<text x="421.0" y="234.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">0</text>
+<text x="421.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">6</text>
+<text x="473.0" y="234.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">0</text>
+<text x="473.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">7</text>
+<text x="525.0" y="234.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">0</text>
+<text x="525.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">8</text>
+<text x="577.0" y="234.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">0</text>
+<text x="577.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">9</text>
+<text x="629.0" y="234.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">0</text>
+<text x="629.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">10</text>
+<text x="681.0" y="234.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">0</text>
+<text x="681.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">11</text>
+<text x="402.0" y="90.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">positions 6–11: exactly zero (the future)</text>
+<text x="400.0" y="276.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">input position j</text>
+</svg>

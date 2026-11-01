@@ -108,8 +108,8 @@ def prep_tts():
     import pyarrow.parquet as pq
     import soundfile as sf
     sys.path.insert(0, str(ROOT))
-    from audio_codec import resample
-    from speech_data import MAX_SECONDS, MIN_SECONDS
+    from anulm.multimodal.audio_codec import resample
+    from anulm.multimodal.speech_data import MAX_SECONDS, MIN_SECONDS
 
     clips = ROOT / "data" / "speech_hi_tts_m_clips"
     clips.mkdir(parents=True, exist_ok=True)
@@ -239,14 +239,14 @@ def main():
     prep_tts()
     prep_fleurs()
     if (ROOT / "data" / "hindi_mix2" / "train.jsonl").exists():
-        run("3_asr_hi", ["speech_encoder.py", "train", "--ckpt", "ckpt_asr_en_v3.pt",
+        run("3_asr_hi", ['-m', 'anulm.multimodal.speech_encoder', "train", "--ckpt", "ckpt_asr_en_v3.pt",
                          "--prefix", "data/hindi_mix2/train", "--out", "ckpt_asr_hi_v4.pt", "--epochs", "6",
                          "--batch-size", "4", "--eval-every", "2000", "--log-every", "1000"], 3.5)
 
     # Hindi chat
     prep_chat()
     if (ROOT / "data" / "chat_train_v4.jsonl").exists():
-        run("5_chat_sft", ["finetune.py", "--ckpt", "ckpt_base_v2.pt", "--qa", "data/chat_train_v4.jsonl",
+        run("5_chat_sft", ['-m', 'anulm.training.finetune', "--ckpt", "ckpt_base_v2.pt", "--qa", "data/chat_train_v4.jsonl",
                            "--heldout", "data/chat_heldout.jsonl", "--out", "ckpt_chat_v4.pt", "--epochs", "2",
                            "--batch-size", "4", "--lr", "5e-5", "--grad-ckpt", "--eval-every", "1000",
                            "--log-every", "200"], 2.5)
@@ -262,17 +262,17 @@ def main():
         if not (ROOT / chat).exists():
             log(f"--- {name}: {chat} missing, skipping")
             continue
-        run(f"{name}_train", ["decide.py", "train", "--ckpt", chat, "--out", out, "--mode", "lora",
+        run(f"{name}_train", ['-m', 'anulm.tasks.decide', "train", "--ckpt", chat, "--out", out, "--mode", "lora",
                               *F_ARGS, *extra], 1.5)
         if (ROOT / out).exists():
-            run(f"{name}_eval", ["decide.py", "eval", "--ckpt", out], 0.5)
+            run(f"{name}_eval", ['-m', 'anulm.tasks.decide', "eval", "--ckpt", out], 0.5)
     if (ROOT / "ckpt_decide_lora_F.pt").exists():
-        run("6_F_bank_v3_eval", ["decide.py", "eval", "--ckpt", "ckpt_decide_lora_F.pt"], 0.5)
+        run("6_F_bank_v3_eval", ['-m', 'anulm.tasks.decide', "eval", "--ckpt", "ckpt_decide_lora_F.pt"], 0.5)
 
     # Hindi WER on ~650 clips
     for tag, ck in (("v3", "ckpt_asr_hi_v3.pt"), ("v4", "ckpt_asr_hi_v4.pt")):
         if (ROOT / ck).exists() and (ROOT / "data" / "fleurs_hi" / "devtest.jsonl").exists():
-            run(f"7_wer_hi_{tag}", ["speech_encoder.py", "eval", "--ckpt", ck, "--prefix", "data/fleurs_hi/devtest",
+            run(f"7_wer_hi_{tag}", ['-m', 'anulm.multimodal.speech_encoder', "eval", "--ckpt", ck, "--prefix", "data/fleurs_hi/devtest",
                                     "--limit", "1000"], 1.0)
 
     (LOGS / "done.marker").write_text(time.strftime("%Y-%m-%d %H:%M:%S"))

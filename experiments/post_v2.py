@@ -84,11 +84,11 @@ def lora(run_id: str, extra: list[str], lr: str = LORA_LR, task: str | None = No
     out = f"ckpt_decide_lora_{run_id}.pt"
     t = ["--task", task] if task else []
     cap = 2.5 if "all" in extra else 1.0
-    run(f"4_lora_{run_id}_train", ["decide.py", "train", "--ckpt", CHAT, "--out", out, "--mode", "lora",
+    run(f"4_lora_{run_id}_train", ['-m', 'anulm.tasks.decide', "train", "--ckpt", CHAT, "--out", out, "--mode", "lora",
                                    "--lr", lr, *extra, *t], cap)
     if not (ROOT / out).exists():
         return None
-    run(f"4_lora_{run_id}_eval", ["decide.py", "eval", "--ckpt", out], 0.5)
+    run(f"4_lora_{run_id}_eval", ['-m', 'anulm.tasks.decide', "eval", "--ckpt", out], 0.5)
     return accuracy(f"4_lora_{run_id}_eval")
 
 
@@ -97,16 +97,16 @@ def main():
     log(f"=== POST V2 start; base {BASE} ===")
 
     # 2. chat
-    run("2_chat_sft", ["finetune.py", "--ckpt", BASE, "--qa", "data/chat_train.jsonl",
+    run("2_chat_sft", ['-m', 'anulm.training.finetune', "--ckpt", BASE, "--qa", "data/chat_train.jsonl",
                        "--heldout", "data/chat_heldout.jsonl", "--out", CHAT, "--epochs", "2",
                        "--batch-size", "4", "--lr", "5e-5", "--grad-ckpt", "--eval-every", "500",
                        "--log-every", "100"], 3.0)
     run("2_chat_samples", [str(ROOT / "experiments" / "chat_samples.py"), "ckpt_chat_v2.pt", CHAT], 0.5)
 
     # 3. reader
-    run("3_reader", ["rc_pointer.py", "train", "--ckpt", BASE, "--out", "ckpt_rc_pointer_v3.pt",
+    run("3_reader", ['-m', 'anulm.tasks.rc_pointer', "train", "--ckpt", BASE, "--out", "ckpt_rc_pointer_v3.pt",
                      "--epochs", "1", "--batch-size", "8", "--lr", "5e-5", "--eval-every", "1000"], 3.0)
-    run("3_reader_eval", ["rc_pointer.py", "eval", "--ckpt", "ckpt_rc_pointer_v3.pt", "--n", "300"], 1.0)
+    run("3_reader_eval", ['-m', 'anulm.tasks.rc_pointer', "eval", "--ckpt", "ckpt_rc_pointer_v3.pt", "--n", "300"], 1.0)
 
     if not (ROOT / CHAT).exists():
         log(f"{CHAT} missing; skipping steps 4-5")
@@ -126,9 +126,9 @@ def main():
                 extra = res[best]["args"]
                 res[rid] = {"args": extra, "lr": lr, "params_M": res[best]["params_M"], "acc": lora(rid, extra, lr)}
                 log(f"    run {rid} ({best} at lr {lr}): {res[rid]['acc']}%")
-            run("4_ref_full_train", ["decide.py", "train", "--ckpt", CHAT, "--out", "ckpt_decide_lora_ref.pt",
+            run("4_ref_full_train", ['-m', 'anulm.tasks.decide', "train", "--ckpt", CHAT, "--out", "ckpt_decide_lora_ref.pt",
                                      "--mode", "full"], 1.5)
-            run("4_ref_full_eval", ["decide.py", "eval", "--ckpt", "ckpt_decide_lora_ref.pt"], 0.5)
+            run("4_ref_full_eval", ['-m', 'anulm.tasks.decide', "eval", "--ckpt", "ckpt_decide_lora_ref.pt"], 0.5)
             res["ref"] = {"args": ["--mode", "full"], "lr": "3e-5", "params_M": 398, "acc": accuracy("4_ref_full_eval")}
 
             scored = [(r, v) for r, v in res.items() if r != "ref" and v["acc"] is not None]
@@ -141,13 +141,13 @@ def main():
             shutil.copy2(ROOT / f"ckpt_decide_lora_{win}.pt", ROOT / "ckpt_decide_chat_lora_v3.pt")
             log("    banking adapter: ckpt_decide_chat_lora_v3.pt (copy of the winner)")
             out = "ckpt_decide_lora_hi_v3.pt"
-            run("5_hi_train", ["decide.py", "train", "--ckpt", CHAT, "--out", out, "--mode", "lora",
+            run("5_hi_train", ['-m', 'anulm.tasks.decide', "train", "--ckpt", CHAT, "--out", out, "--mode", "lora",
                                "--lr", res[win]["lr"], *res[win]["args"], "--task", "massive-hi"], 1.5)
-            run("5_hi_eval", ["decide.py", "eval", "--ckpt", out], 0.5)
+            run("5_hi_eval", ['-m', 'anulm.tasks.decide', "eval", "--ckpt", out], 0.5)
 
     # 6. Decide general, zero-shot on BANKING77
-    run("6_general_train", ["decide.py", "train-general", "--ckpt", BASE, "--out", "ckpt_decide_general_v3.pt"], 1.5)
-    run("6_general_zero_shot", ["decide.py", "eval", "--ckpt", "ckpt_decide_general_v3.pt"], 0.5)
+    run("6_general_train", ['-m', 'anulm.tasks.decide', "train-general", "--ckpt", BASE, "--out", "ckpt_decide_general_v3.pt"], 1.5)
+    run("6_general_zero_shot", ['-m', 'anulm.tasks.decide', "eval", "--ckpt", "ckpt_decide_general_v3.pt"], 0.5)
 
     log("=== POST V2 DONE ===")
 

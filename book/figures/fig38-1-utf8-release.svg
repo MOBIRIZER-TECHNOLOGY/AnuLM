@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 250" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 38.1 · Releasing text safely</title>
+<desc id="d">Eighteen byte tokens, three per Devanagari character. After the first and second byte of each character nothing is released; after the third the whole character is released. Six releases in all.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">One byte per token, one character out when it is complete</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">api.Generation._release on serve.Engine&#x27;s byte decoder · the word नमस्ते, 18 bytes</text>
+<text x="20.0" y="80.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">token (byte)</text>
+<text x="20.0" y="168.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">released</text>
+<rect x="20.0" y="88.0" width="36.0" height="34.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token 0: byte 0xe0</title></rect>
+<text x="38.0" y="109.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">e0</text>
+<text x="38.0" y="200.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">–</text>
+<rect x="60.0" y="88.0" width="36.0" height="34.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token 1: byte 0xa4</title></rect>
+<text x="78.0" y="109.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">a4</text>
+<text x="78.0" y="200.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">–</text>
+<rect x="100.0" y="88.0" width="36.0" height="34.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token 2: byte 0xa8</title></rect>
+<text x="118.0" y="109.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">a8</text>
+<rect x="100.0" y="176.0" width="36.0" height="40.0" rx="4" fill="#0E9488" class="f-teal"><title>after token 2: न</title></rect>
+<text x="118.0" y="202.0" class="f-onfill" fill="#FFFFFF" font-size="17" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">न</text>
+<line x1="118.0" y1="124.0" x2="118.0" y2="172.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="140.0" y="88.0" width="36.0" height="34.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token 3: byte 0xe0</title></rect>
+<text x="158.0" y="109.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">e0</text>
+<text x="158.0" y="200.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">–</text>
+<rect x="180.0" y="88.0" width="36.0" height="34.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token 4: byte 0xa4</title></rect>
+<text x="198.0" y="109.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">a4</text>
+<text x="198.0" y="200.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">–</text>
+<rect x="220.0" y="88.0" width="36.0" height="34.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token 5: byte 0xae</title></rect>
+<text x="238.0" y="109.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">ae</text>
+<rect x="220.0" y="176.0" width="36.0" height="40.0" rx="4" fill="#0E9488" class="f-teal"><title>after token 5: म</title></rect>
+<text x="238.0" y="202.0" class="f-onfill" fill="#FFFFFF" font-size="17" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">म</text>
+<line x1="238.0" y1="124.0" x2="238.0" y2="172.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="260.0" y="88.0" width="36.0" height="34.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token 6: byte 0xe0</title></rect>
+<text x="278.0" y="109.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">e0</text>
+<text x="278.0" y="200.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">–</text>
+<rect x="300.0" y="88.0" width="36.0" height="34.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token 7: byte 0xa4</title></rect>
+<text x="318.0" y="109.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">a4</text>
+<text x="318.0" y="200.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">–</text>
+<rect x="340.0" y="88.0" width="36.0" height="34.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token 8: byte 0xb8</title></rect>
+<text x="358.0" y="109.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">b8</text>
+<rect x="340.0" y="176.0" width="36.0" height="40.0" rx="4" fill="#0E9488" class="f-teal"><title>after token 8: स</title></rect>
+<text x="358.0" y="202.0" class="f-onfill" fill="#FFFFFF" font-size="17" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">स</text>
+<line x1="358.0" y1="124.0" x2="358.0" y2="172.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="380.0" y="88.0" width="36.0" height="34.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token 9: byte 0xe0</title></rect>
+<text x="398.0" y="109.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">e0</text>
+<text x="398.0" y="200.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">–</text>
+<rect x="420.0" y="88.0" width="36.0" height="34.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token 10: byte 0xa5</title></rect>
+<text x="438.0" y="109.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">a5</text>
+<text x="438.0" y="200.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">–</text>
+<rect x="460.0" y="88.0" width="36.0" height="34.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token 11: byte 0x8d</title></rect>
+<text x="478.0" y="109.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">8d</text>
+<rect x="460.0" y="176.0" width="36.0" height="40.0" rx="4" fill="#0E9488" class="f-teal"><title>after token 11: ्</title></rect>
+<text x="478.0" y="202.0" class="f-onfill" fill="#FFFFFF" font-size="17" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">्</text>
+<line x1="478.0" y1="124.0" x2="478.0" y2="172.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="500.0" y="88.0" width="36.0" height="34.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token 12: byte 0xe0</title></rect>
+<text x="518.0" y="109.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">e0</text>
+<text x="518.0" y="200.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">–</text>
+<rect x="540.0" y="88.0" width="36.0" height="34.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token 13: byte 0xa4</title></rect>
+<text x="558.0" y="109.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">a4</text>
+<text x="558.0" y="200.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">–</text>
+<rect x="580.0" y="88.0" width="36.0" height="34.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token 14: byte 0xa4</title></rect>
+<text x="598.0" y="109.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">a4</text>
+<rect x="580.0" y="176.0" width="36.0" height="40.0" rx="4" fill="#0E9488" class="f-teal"><title>after token 14: त</title></rect>
+<text x="598.0" y="202.0" class="f-onfill" fill="#FFFFFF" font-size="17" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">त</text>
+<line x1="598.0" y1="124.0" x2="598.0" y2="172.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="620.0" y="88.0" width="36.0" height="34.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token 15: byte 0xe0</title></rect>
+<text x="638.0" y="109.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">e0</text>
+<text x="638.0" y="200.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">–</text>
+<rect x="660.0" y="88.0" width="36.0" height="34.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token 16: byte 0xa5</title></rect>
+<text x="678.0" y="109.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">a5</text>
+<text x="678.0" y="200.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">–</text>
+<rect x="700.0" y="88.0" width="36.0" height="34.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token 17: byte 0x87</title></rect>
+<text x="718.0" y="109.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">87</text>
+<rect x="700.0" y="176.0" width="36.0" height="40.0" rx="4" fill="#0E9488" class="f-teal"><title>after token 17: े</title></rect>
+<text x="718.0" y="202.0" class="f-onfill" fill="#FFFFFF" font-size="17" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">े</text>
+<line x1="718.0" y1="124.0" x2="718.0" y2="172.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="20.0" y="238.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">Before a character is complete, decode ends in &#x27;�&#x27;, which rstrip(&#x27;�&#x27;) removes; the delta is empty and nothing is sent.</text>
+</svg>

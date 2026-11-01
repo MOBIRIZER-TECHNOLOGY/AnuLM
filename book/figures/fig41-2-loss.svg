@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 380" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 41.2 · The run you are reproducing</title>
+<desc id="d">Training loss of the recorded nano_30b run falls from 5.5869 at step 0, close to ln 259 = 5.557, to 2.7887 at step 50, 1.6047 at 250, 1.3917 at 500 and 1.2182 at 999. With today&#x27;s train.py the first batch scores 5.6203; validation loss is 5.6090 before any step, 2.7868 after the 50-step CI run and 1.5190 after 1,000 steps.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">nano_30b on tinyshakespeare: the recorded run</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">README.md&#x27;s log at @773b6a8 · batch 16 × 256 bytes · CPU · 1,000 steps</text>
+<line x1="80.0" y1="320.0" x2="700.0" y2="320.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="70.0" y="324.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">1</text>
+<line x1="80.0" y1="270.0" x2="700.0" y2="270.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="70.0" y="274.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">2</text>
+<line x1="80.0" y1="220.0" x2="700.0" y2="220.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="70.0" y="224.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">3</text>
+<line x1="80.0" y1="170.0" x2="700.0" y2="170.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="70.0" y="174.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">4</text>
+<line x1="80.0" y1="120.0" x2="700.0" y2="120.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="70.0" y="124.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">5</text>
+<line x1="80.0" y1="70.0" x2="700.0" y2="70.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="70.0" y="74.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">6</text>
+<text x="80.0" y="338.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<text x="235.0" y="338.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">250</text>
+<text x="390.0" y="338.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">500</text>
+<text x="545.0" y="338.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">750</text>
+<text x="700.0" y="338.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1000</text>
+<text x="390.0" y="356.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">step</text>
+<text x="24.0" y="195.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle" transform="rotate(-90 24 195.0)">loss, nats per byte</text>
+<line x1="80.0" y1="92.2" x2="700.0" y2="92.2" stroke="#17262E" class="f-ink-stroke" stroke-width="1.2" stroke-dasharray="4 3"/>
+<text x="696.0" y="84.2" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">ln 259 = 5.557: a uniform guess</text>
+<polyline points="80.0,90.7 111.0,230.6 235.0,289.8 390.0,300.4 699.4,309.1" fill="none" stroke="#C4532F" stroke-width="2" class="f-coral-stroke"/>
+<circle cx="80.0" cy="90.7" r="4.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>training loss at step 0: 5.5869</title></circle>
+<text x="90.0" y="112.7" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">5.5869</text>
+<circle cx="111.0" cy="230.6" r="4.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>training loss at step 50: 2.7887</title></circle>
+<text x="119.0" y="222.6" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">2.7887 train · 2.7868 val, the 50-step CI run</text>
+<circle cx="235.0" cy="289.8" r="4.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>training loss at step 250: 1.6047</title></circle>
+<text x="243.0" y="281.8" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">1.6047</text>
+<circle cx="390.0" cy="300.4" r="4.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>training loss at step 500: 1.3917</title></circle>
+<text x="398.0" y="292.4" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">1.3917</text>
+<circle cx="699.4" cy="309.1" r="4.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-coral f-ring"><title>training loss at step 999: 1.2182</title></circle>
+<text x="687.4" y="327.1" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">1.2182</text>
+<rect x="694.4" y="289.1" width="10.0" height="10.0" rx="1" fill="#0E9488" class="f-teal"><title>val loss after 1,000 steps (README.md): 1.519</title></rect>
+<rect x="105.4" y="225.7" width="10.0" height="10.0" rx="1" fill="#0E9488" class="f-teal"><title>val loss of the 50-step CI run (docs/TUTORIAL.md): 2.7868</title></rect>
+<rect x="75.0" y="84.6" width="10.0" height="10.0" rx="1" fill="#0E9488" class="f-teal"><title>val loss before any step (ch41_checkpoints.py): 5.609</title></rect>
+<text x="689.4" y="286.1" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">val 1.5190</text>
+<text x="90.0" y="81.6" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">val 5.6090, and 5.6203 on the first batch, with today&#x27;s train.py</text>
+<circle cx="80.0" cy="89.0" r="4.5" fill="#FFFFFF" stroke="#C4532F" stroke-width="2" class="f-paper f-coral-stroke"><title>first-batch loss with today's train.py: 5.6203</title></circle>
+<circle cx="460" cy="190.0" r="4.5" fill="#C4532F" class="f-coral"/>
+<text x="472.0" y="194.0" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">training loss, one batch (README.md)</text>
+<rect x="455.0" y="205.0" width="10.0" height="10.0" rx="1" fill="#0E9488" class="f-teal"></rect>
+<text x="472.0" y="214.0" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">validation loss</text>
+</svg>

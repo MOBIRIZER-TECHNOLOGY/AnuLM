@@ -1,0 +1,114 @@
+{
+ "checkpoint": "ckpt_base_v2.pt",
+ "data": "data/v2/val.u16",
+ "windows": 16,
+ "seq": 512,
+ "seed": 0,
+ "device": "cuda",
+ "precision": "no autocast; sparse run: fp32 throughout; grouped run: fp32 except the experts, bf16 (model.py 716, 743); the router is fp32 on both",
+ "sparse": {
+  "0": {
+   "loss": 3.1759662773906454,
+   "layer0_attn_max_change": 0.0,
+   "layer0_attn_rel_change": 0.0,
+   "logit_max_change": 0.0,
+   "logit_median_position_change": 0.0,
+   "top1_changed_share": 0.0,
+   "routes_changed": 0,
+   "routes_total": 155648
+  },
+  "0, again": {
+   "loss": 3.1759662773906454,
+   "layer0_attn_max_change": 0.0,
+   "layer0_attn_rel_change": 0.0,
+   "logit_max_change": 0.0,
+   "logit_median_position_change": 0.0,
+   "top1_changed_share": 0.0,
+   "routes_changed": 0,
+   "routes_total": 155648
+  },
+  "1024": {
+   "loss": 3.17596669511865,
+   "layer0_attn_max_change": 2.2351741790771484e-08,
+   "layer0_attn_rel_change": 3.7896975868534355e-07,
+   "logit_max_change": 0.9191614985466003,
+   "logit_median_position_change": 2.193450927734375e-05,
+   "top1_changed_share": 0.0,
+   "routes_changed": 1,
+   "routes_total": 155648
+  },
+  "65536": {
+   "loss": 3.1758042636302397,
+   "layer0_attn_max_change": 8.903443813323975e-07,
+   "layer0_attn_rel_change": 1.5095628441486042e-05,
+   "logit_max_change": 1.413387417793274,
+   "logit_median_position_change": 0.0023059844970703125,
+   "top1_changed_share": 0.000732421875,
+   "routes_changed": 303,
+   "routes_total": 155648
+  },
+  "1048576": {
+   "loss": 3.175566160882889,
+   "layer0_attn_max_change": 2.456456422805786e-05,
+   "layer0_attn_rel_change": 0.000416487775510177,
+   "logit_max_change": 2.2375521659851074,
+   "logit_median_position_change": 0.02781200408935547,
+   "top1_changed_share": 0.005859375,
+   "routes_changed": 1659,
+   "routes_total": 155648
+  }
+ },
+ "grouped": {
+  "0": {
+   "loss": 3.1757976853760064,
+   "layer0_attn_max_change": 0.0,
+   "layer0_attn_rel_change": 0.0,
+   "logit_max_change": 0.0,
+   "logit_median_position_change": 0.0,
+   "top1_changed_share": 0.0,
+   "routes_changed": 0,
+   "routes_total": 155648
+  },
+  "0, again": {
+   "loss": 3.1757976853760064,
+   "layer0_attn_max_change": 0.0,
+   "layer0_attn_rel_change": 0.0,
+   "logit_max_change": 0.0,
+   "logit_median_position_change": 0.0,
+   "top1_changed_share": 0.0,
+   "routes_changed": 0,
+   "routes_total": 155648
+  },
+  "1024": {
+   "loss": 3.1754927546587433,
+   "layer0_attn_max_change": 2.2351741790771484e-08,
+   "layer0_attn_rel_change": 3.7896975868534355e-07,
+   "logit_max_change": 1.916199803352356,
+   "logit_median_position_change": 0.023025035858154297,
+   "top1_changed_share": 0.0040283203125,
+   "routes_changed": 623,
+   "routes_total": 155648
+  },
+  "65536": {
+   "loss": 3.175332656174825,
+   "layer0_attn_max_change": 8.903443813323975e-07,
+   "layer0_attn_rel_change": 1.5095628441486042e-05,
+   "logit_max_change": 1.8966513872146606,
+   "logit_median_position_change": 0.024759292602539062,
+   "top1_changed_share": 0.00390625,
+   "routes_changed": 807,
+   "routes_total": 155648
+  },
+  "1048576": {
+   "loss": 3.174900646256351,
+   "layer0_attn_max_change": 2.456456422805786e-05,
+   "layer0_attn_rel_change": 0.000416487775510177,
+   "logit_max_change": 1.9042302370071411,
+   "logit_median_position_change": 0.04001760482788086,
+   "top1_changed_share": 0.00732421875,
+   "routes_changed": 1868,
+   "routes_total": 155648
+  }
+ },
+ "graded": 8180
+}

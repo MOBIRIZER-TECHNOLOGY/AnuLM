@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 12.1 · Causal, offset and windowed masks</title>
+<desc id="d">Four 0/1 grids. Causal: lower triangle of a 6 by 6 grid. Offset: three new queries at positions 3 to 5 against six keys see keys up to their own position. The same call with is_causal sees a top-left triangle instead, nine cells wrong. Window of 3: a band of width three along the diagonal.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Which keys each query may see</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">rows: queries · columns: keys, positions 0–5 · gold = may attend · hatched = masked</text>
+<text x="24.0" y="84.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">Causal</text>
+<text x="24.0" y="100.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">S=T=6, start=0 → None</text>
+<rect x="25.0" y="119.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 0, key 0: may attend</title></rect>
+<rect x="49.0" y="119.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 0, key 1: masked</title></rect>
+<rect x="73.0" y="119.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 0, key 2: masked</title></rect>
+<rect x="97.0" y="119.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 0, key 3: masked</title></rect>
+<rect x="121.0" y="119.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 0, key 4: masked</title></rect>
+<rect x="145.0" y="119.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 0, key 5: masked</title></rect>
+<rect x="25.0" y="143.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 1, key 0: may attend</title></rect>
+<rect x="49.0" y="143.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 1, key 1: may attend</title></rect>
+<rect x="73.0" y="143.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 1, key 2: masked</title></rect>
+<rect x="97.0" y="143.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 1, key 3: masked</title></rect>
+<rect x="121.0" y="143.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 1, key 4: masked</title></rect>
+<rect x="145.0" y="143.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 1, key 5: masked</title></rect>
+<rect x="25.0" y="167.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 2, key 0: may attend</title></rect>
+<rect x="49.0" y="167.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 2, key 1: may attend</title></rect>
+<rect x="73.0" y="167.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 2, key 2: may attend</title></rect>
+<rect x="97.0" y="167.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 2, key 3: masked</title></rect>
+<rect x="121.0" y="167.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 2, key 4: masked</title></rect>
+<rect x="145.0" y="167.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 2, key 5: masked</title></rect>
+<rect x="25.0" y="191.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 3, key 0: may attend</title></rect>
+<rect x="49.0" y="191.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 3, key 1: may attend</title></rect>
+<rect x="73.0" y="191.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 3, key 2: may attend</title></rect>
+<rect x="97.0" y="191.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 3, key 3: may attend</title></rect>
+<rect x="121.0" y="191.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 3, key 4: masked</title></rect>
+<rect x="145.0" y="191.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 3, key 5: masked</title></rect>
+<rect x="25.0" y="215.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 4, key 0: may attend</title></rect>
+<rect x="49.0" y="215.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 4, key 1: may attend</title></rect>
+<rect x="73.0" y="215.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 4, key 2: may attend</title></rect>
+<rect x="97.0" y="215.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 4, key 3: may attend</title></rect>
+<rect x="121.0" y="215.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 4, key 4: may attend</title></rect>
+<rect x="145.0" y="215.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 4, key 5: masked</title></rect>
+<rect x="25.0" y="239.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 5, key 0: may attend</title></rect>
+<rect x="49.0" y="239.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 5, key 1: may attend</title></rect>
+<rect x="73.0" y="239.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 5, key 2: may attend</title></rect>
+<rect x="97.0" y="239.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 5, key 3: may attend</title></rect>
+<rect x="121.0" y="239.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 5, key 4: may attend</title></rect>
+<rect x="145.0" y="239.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 5, key 5: may attend</title></rect>
+<text x="214.0" y="84.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">Offset (explicit)</text>
+<text x="214.0" y="100.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">S=3, T=6, start=3</text>
+<rect x="215.0" y="119.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 0, key 0: may attend</title></rect>
+<rect x="239.0" y="119.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 0, key 1: may attend</title></rect>
+<rect x="263.0" y="119.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 0, key 2: may attend</title></rect>
+<rect x="287.0" y="119.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 0, key 3: may attend</title></rect>
+<rect x="311.0" y="119.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 0, key 4: masked</title></rect>
+<rect x="335.0" y="119.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 0, key 5: masked</title></rect>
+<rect x="215.0" y="143.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 1, key 0: may attend</title></rect>
+<rect x="239.0" y="143.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 1, key 1: may attend</title></rect>
+<rect x="263.0" y="143.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 1, key 2: may attend</title></rect>
+<rect x="287.0" y="143.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 1, key 3: may attend</title></rect>
+<rect x="311.0" y="143.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 1, key 4: may attend</title></rect>
+<rect x="335.0" y="143.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 1, key 5: masked</title></rect>
+<rect x="215.0" y="167.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 2, key 0: may attend</title></rect>
+<rect x="239.0" y="167.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 2, key 1: may attend</title></rect>
+<rect x="263.0" y="167.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 2, key 2: may attend</title></rect>
+<rect x="287.0" y="167.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 2, key 3: may attend</title></rect>
+<rect x="311.0" y="167.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 2, key 4: may attend</title></rect>
+<rect x="335.0" y="167.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 2, key 5: may attend</title></rect>
+<text x="404.0" y="84.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">Offset with is_causal</text>
+<text x="404.0" y="100.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">top-left: wrong</text>
+<rect x="405.0" y="119.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 0, key 0: may attend</title></rect>
+<rect x="429.0" y="119.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 0, key 1: masked</title></rect>
+<rect x="427" y="117" width="26" height="26" rx="4" fill="none" stroke="#17262E" class="f-ink-stroke" stroke-width="2.2"/>
+<rect x="453.0" y="119.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 0, key 2: masked</title></rect>
+<rect x="451" y="117" width="26" height="26" rx="4" fill="none" stroke="#17262E" class="f-ink-stroke" stroke-width="2.2"/>
+<rect x="477.0" y="119.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 0, key 3: masked</title></rect>
+<rect x="475" y="117" width="26" height="26" rx="4" fill="none" stroke="#17262E" class="f-ink-stroke" stroke-width="2.2"/>
+<rect x="501.0" y="119.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 0, key 4: masked</title></rect>
+<rect x="525.0" y="119.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 0, key 5: masked</title></rect>
+<rect x="405.0" y="143.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 1, key 0: may attend</title></rect>
+<rect x="429.0" y="143.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 1, key 1: may attend</title></rect>
+<rect x="453.0" y="143.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 1, key 2: masked</title></rect>
+<rect x="451" y="141" width="26" height="26" rx="4" fill="none" stroke="#17262E" class="f-ink-stroke" stroke-width="2.2"/>
+<rect x="477.0" y="143.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 1, key 3: masked</title></rect>
+<rect x="475" y="141" width="26" height="26" rx="4" fill="none" stroke="#17262E" class="f-ink-stroke" stroke-width="2.2"/>
+<rect x="501.0" y="143.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 1, key 4: masked</title></rect>
+<rect x="499" y="141" width="26" height="26" rx="4" fill="none" stroke="#17262E" class="f-ink-stroke" stroke-width="2.2"/>
+<rect x="525.0" y="143.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 1, key 5: masked</title></rect>
+<rect x="405.0" y="167.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 2, key 0: may attend</title></rect>
+<rect x="429.0" y="167.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 2, key 1: may attend</title></rect>
+<rect x="453.0" y="167.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 2, key 2: may attend</title></rect>
+<rect x="477.0" y="167.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 2, key 3: masked</title></rect>
+<rect x="475" y="165" width="26" height="26" rx="4" fill="none" stroke="#17262E" class="f-ink-stroke" stroke-width="2.2"/>
+<rect x="501.0" y="167.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 2, key 4: masked</title></rect>
+<rect x="499" y="165" width="26" height="26" rx="4" fill="none" stroke="#17262E" class="f-ink-stroke" stroke-width="2.2"/>
+<rect x="525.0" y="167.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 2, key 5: masked</title></rect>
+<rect x="523" y="165" width="26" height="26" rx="4" fill="none" stroke="#17262E" class="f-ink-stroke" stroke-width="2.2"/>
+<text x="594.0" y="84.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">Window of 3</text>
+<text x="594.0" y="100.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">S=T=6, window=3</text>
+<rect x="595.0" y="119.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 0, key 0: may attend</title></rect>
+<rect x="619.0" y="119.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 0, key 1: masked</title></rect>
+<rect x="643.0" y="119.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 0, key 2: masked</title></rect>
+<rect x="667.0" y="119.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 0, key 3: masked</title></rect>
+<rect x="691.0" y="119.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 0, key 4: masked</title></rect>
+<rect x="715.0" y="119.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 0, key 5: masked</title></rect>
+<rect x="595.0" y="143.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 1, key 0: may attend</title></rect>
+<rect x="619.0" y="143.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 1, key 1: may attend</title></rect>
+<rect x="643.0" y="143.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 1, key 2: masked</title></rect>
+<rect x="667.0" y="143.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 1, key 3: masked</title></rect>
+<rect x="691.0" y="143.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 1, key 4: masked</title></rect>
+<rect x="715.0" y="143.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 1, key 5: masked</title></rect>
+<rect x="595.0" y="167.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 2, key 0: may attend</title></rect>
+<rect x="619.0" y="167.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 2, key 1: may attend</title></rect>
+<rect x="643.0" y="167.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 2, key 2: may attend</title></rect>
+<rect x="667.0" y="167.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 2, key 3: masked</title></rect>
+<rect x="691.0" y="167.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 2, key 4: masked</title></rect>
+<rect x="715.0" y="167.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 2, key 5: masked</title></rect>
+<rect x="595.0" y="191.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 3, key 0: masked</title></rect>
+<rect x="619.0" y="191.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 3, key 1: may attend</title></rect>
+<rect x="643.0" y="191.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 3, key 2: may attend</title></rect>
+<rect x="667.0" y="191.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 3, key 3: may attend</title></rect>
+<rect x="691.0" y="191.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 3, key 4: masked</title></rect>
+<rect x="715.0" y="191.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 3, key 5: masked</title></rect>
+<rect x="595.0" y="215.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 4, key 0: masked</title></rect>
+<rect x="619.0" y="215.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 4, key 1: masked</title></rect>
+<rect x="643.0" y="215.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 4, key 2: may attend</title></rect>
+<rect x="667.0" y="215.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 4, key 3: may attend</title></rect>
+<rect x="691.0" y="215.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 4, key 4: may attend</title></rect>
+<rect x="715.0" y="215.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 4, key 5: masked</title></rect>
+<rect x="595.0" y="239.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 5, key 0: masked</title></rect>
+<rect x="619.0" y="239.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 5, key 1: masked</title></rect>
+<rect x="643.0" y="239.0" width="22.0" height="22.0" rx="3" fill="url(#hatch)" stroke="#DCE1DF"><title>query 5, key 2: masked</title></rect>
+<rect x="667.0" y="239.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 5, key 3: may attend</title></rect>
+<rect x="691.0" y="239.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 5, key 4: may attend</title></rect>
+<rect x="715.0" y="239.0" width="22.0" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>query 5, key 5: may attend</title></rect>
+<text x="214.0" y="210.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">queries at positions 3, 4, 5</text>
+<text x="404.0" y="210.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">ringed: 9 cells that differ</text>
+<text x="404.0" y="226.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">each query loses its own key</text>
+<text x="404.0" y="242.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">and the two before it</text>
+<text x="24.0" y="300.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">_attn_mask returns None for the causal case, so SDPA builds that mask itself; the other three are built explicitly.</text>
+</svg>
