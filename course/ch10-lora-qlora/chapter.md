@@ -256,7 +256,7 @@ It is a tendency, not a law. Measure it on your own data.
 - **`lora_state_dict`** and **`router_state_dict`** (lines 116 and 121) are
   your `adapter_state`, split in two. `finetune.py --lora` (line 213) trains
   with them and saves both (line 340).
-- **`merge_lora`** (line 143) is yours. `python lora.py merge` (line 171)
+- **`merge_lora`** (line 143) is yours. `python -m anulm lora merge` (line 171)
   rebuilds the base, loads the adapters, restores the expert biases, merges,
   and writes an ordinary checkpoint that every script in the repository can
   load.

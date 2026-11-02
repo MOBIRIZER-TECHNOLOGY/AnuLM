@@ -3,7 +3,7 @@
 Thank you for looking. This is a one-GPU academic project, and the most
 useful contributions are the ones that let more people reproduce it, run
 it on more machines, or extend it in a measured way. Open items are in
-[TODO.md](TODO.md) and as GitHub issues; the ones labelled
+[TODO.md](docs/TODO.md) and as GitHub issues; the ones labelled
 `good first issue` need no GPU.
 
 ## Set up
@@ -12,8 +12,8 @@ it on more machines, or extend it in a measured way. Open items are in
 git clone https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM.git && cd AnuLM
 pip install --index-url https://download.pytorch.org/whl/cpu torch   # or the CUDA wheel for your driver
 pip install -r requirements.txt
-python quickstart.py          # confirms the install; prints the fix for anything missing
-python test_model.py          # 55 tests, ~2 min, must pass before and after your change
+python -m anulm quickstart          # confirms the install; prints the fix for anything missing
+python -m tests.test_model          # 66 tests, ~2 min, must pass before and after your change
 ```
 
 CI runs the tests plus a 50-step training run on Ubuntu and Windows for
@@ -58,8 +58,7 @@ in any model card of a checkpoint trained on it.
 
 ## Reporting problems
 
-Open an issue — the form asks for exactly what is needed, and `python
-quickstart.py` prints the environment block it wants in one go. For a reproduction that lands
+Open an issue — the form asks for exactly what is needed, and `python -m anulm quickstart` prints the environment block it wants in one go. For a reproduction that lands
 outside the expected numbers in `docs/TUTORIAL.md` §13, include the
 `.last` checkpoint's step and the val-loss curve.
 

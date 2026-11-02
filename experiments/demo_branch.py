@@ -97,18 +97,18 @@ def main():
         shutil.copy2(ROOT / "ckpt_base_v2.pt.last", ROOT / "ckpt_demo_v2.pt.last")
         shutil.copy2(ROOT / "ckpt_base_v2.pt", ROOT / "ckpt_demo_v2.pt")
         log("copied the 700k resume point to ckpt_demo_v2.pt.last")
-        run("1_decay", ["train.py", *TRAIN_ARGS, "--out", "ckpt_demo_v2.pt", "--steps", "800000",
+        run("1_decay", ["-m", "anulm.training.train", *TRAIN_ARGS, "--out", "ckpt_demo_v2.pt", "--steps", "800000",
                         "--decay-frac", "0.125", "--resume"], 11.0)
         # 4. chat
-        run("2_chat_sft", ["finetune.py", "--ckpt", "ckpt_demo_v2.pt", "--qa", "data/chat_train.jsonl",
+        run("2_chat_sft", ["-m", "anulm.training.finetune", "--ckpt", "ckpt_demo_v2.pt", "--qa", "data/chat_train.jsonl",
                            "--heldout", "data/chat_heldout.jsonl", "--out", "ckpt_chat_v2.pt", "--epochs", "2",
                            "--batch-size", "4", "--lr", "5e-5", "--grad-ckpt", "--eval-every", "500",
                            "--log-every", "100"], 3.0)
         run("3_chat_samples", [str(ROOT / "experiments" / "chat_samples.py")], 0.5)
         # 5. retrieval reader
-        run("4_reader", ["rc_pointer.py", "train", "--ckpt", "ckpt_demo_v2.pt", "--out", "ckpt_rc_pointer_v2.pt",
+        run("4_reader", ["-m", "anulm.tasks.rc_pointer", "train", "--ckpt", "ckpt_demo_v2.pt", "--out", "ckpt_rc_pointer_v2.pt",
                          "--epochs", "1", "--batch-size", "8", "--lr", "5e-5", "--eval-every", "1000"], 2.0)
-        run("5_reader_eval", ["rc_pointer.py", "eval", "--ckpt", "ckpt_rc_pointer_v2.pt", "--n", "300"], 1.0)
+        run("5_reader_eval", ["-m", "anulm.tasks.rc_pointer", "eval", "--ckpt", "ckpt_rc_pointer_v2.pt", "--n", "300"], 1.0)
     finally:
         # 6. always hand the GPU back to the main run
         subprocess.run(["schtasks", "/change", "/tn", "anulm_v2", "/enable"], capture_output=True)

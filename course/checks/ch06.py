@@ -22,7 +22,7 @@ import torch.nn.functional as F
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _common import main, with_replaced  # noqa: E402
-import model as ref  # noqa: E402  the repository's model.py
+from anulm import model as ref  # noqa: E402  the repository's model.py
 
 CHECKS = []
 CPU = torch.device("cpu")

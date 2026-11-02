@@ -23,7 +23,7 @@ import torch.nn.functional as F
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
-from model import AnuLM, AnuLMConfig  # noqa: E402
+from anulm.model import AnuLM, AnuLMConfig  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(ROOT, "data", "ctx_mix.multi32k.bin")
@@ -306,12 +306,12 @@ def main():
         m.prior = build_ngram_prior(train, a.prior_k or 32)
     params = [q for q in m.parameters() if q.requires_grad]
     if a.muon:
-        from muon import build_optimizers
-        from train import OptimizerSet
+        from anulm.muon import build_optimizers
+        from anulm.training.train import OptimizerSet
         opts, _ = build_optimizers(m, muon_lr=0.02, adamw_lr=a.lr, weight_decay=0.1, fused=True)
         opt = OptimizerSet(opts)
     else:
-        from train import OptimizerSet
+        from anulm.training.train import OptimizerSet
         emb_ids = {id(m.base.embed_tokens.weight)} if a.emb_nodecay else set()
         if a.emb_nodecay and a.hash_rows:
             emb_ids |= {id(m.h2.weight), id(m.h3.weight)}
@@ -326,7 +326,7 @@ def main():
     val_idx = torch.linspace(0, len(val) - T - 2, 384).long()
     # Label each held-out window hindi / english / code once, so the loss can be
     # reported per language and as their macro mean (the headline number).
-    from bpe import BPE
+    from anulm.bpe import BPE
     tok = BPE.load(TOK)
     lang = []
     for j in val_idx.tolist():

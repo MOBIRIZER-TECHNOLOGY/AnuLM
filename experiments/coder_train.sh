@@ -20,5 +20,5 @@ RESUME=""; [ -s ckpt_coder.pt.last ] && RESUME="--resume"
 STOPARG=""; [ -n "$STOP" ] && STOPARG="--stop-at $STOP"
 
 echo "=== CODER PHASE: ${RESUME:-fresh start} ${STOPARG:-to the end} ($(date +%H:%M)) ==="
-python -u train.py $COMMON $RESUME $STOPARG --cfg $PRESET 2>&1 | grep -v -i "warning\|triton"
+python -u -m anulm train $COMMON $RESUME $STOPARG --cfg $PRESET 2>&1 | grep -v -i "warning\|triton"
 echo "=== PHASE DONE ($(date +%H:%M)) ==="

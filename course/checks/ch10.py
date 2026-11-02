@@ -20,7 +20,7 @@ import torch.nn as nn
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _common import main, solution, with_replaced  # noqa: E402
-import lora as ref_lora  # noqa: E402  the repository's lora.py
+from anulm import lora as ref_lora  # noqa: E402  the repository's lora.py
 
 CHECKS = []
 KW = dict(vocab_size=64, block_size=32, n_layer=3, hidden_size=32, n_head=4, head_dim=8, n_kv_head=2,

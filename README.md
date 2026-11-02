@@ -71,16 +71,16 @@ speech → AnuLM speech recognition → an answer → a Piper voice), *Look*
 (a caption, or an answer about the image), *Chat* (looked up in Wikipedia by
 the reader, or in the chat model's own words) and *Decide* (a message routed
 to an intent, AnuLM's adapters beside the ModernBERT baseline). `pip install
-gradio faster-whisper piper-tts timm pillow`, then `python app_omni.py`; every
+gradio faster-whisper piper-tts timm pillow`, then `python -m anulm app_omni`; every
 model together fits a 16 GB card, and `--device cpu` runs without one. A
 fresh clone runs every tab on the one model, AnuLM-Omni-400M, downloaded from
 the Hub on first use (`omni.py` keeps a single copy of its decoder behind all
 of them); a checkout with `ckpt_omni.pt` uses that, and one with only the
 earlier per-task checkpoints (`ckpt_*.pt`) uses those. The Wikipedia lookup
-also needs the retrieval index, which `python rag.py build` makes and which is
+also needs the retrieval index, which `python -m anulm rag build` makes and which is
 not uploaded; without it *Chat* answers in the model's own words only.
 
-Want to help? [TODO.md](TODO.md)
+Want to help? [TODO.md](docs/TODO.md)
 lists the open work, several items need no GPU, and [CONTRIBUTING.md](CONTRIBUTING.md)
 says how; each item is also a GitHub issue.
 
@@ -107,26 +107,31 @@ Two things live in this repository:
    to translate. The verification that the reading was understood.
 
 ```bash
-python quickstart.py                 # checks this machine and says what to run next
-python quickstart.py --train         # ... or just trains a 17M model now (~30 s GPU, 3-6 min CPU)
-python quickstart.py --demo          # ... or downloads a released 400M model and serves it
+python -m anulm quickstart                 # checks this machine and says what to run next
+python -m anulm quickstart --train         # ... or just trains a 17M model now (~30 s GPU, 3-6 min CPU)
+python -m anulm quickstart --demo          # ... or downloads a released 400M model and serves it
 
 pip install -r requirements.txt      # torch, safetensors; pyarrow only for the parquet converters
-python test_model.py                 # 55 tests, ~2 min, no pytest needed
-python model.py                      # shape + param sanity check, no data needed
-python train.py --preset 30b         # GQA, high rope_theta  (Sarvam 30B's shape); downloads tinyshakespeare
-python train.py --preset 105b        # MLA, YaRN-ready       (Sarvam 105B's shape)
-python train.py --preset 350m --grad-ckpt   # 353M; needs a GPU
-python sample.py --ckpt ckpt.pt --prompt "भारत"
-python serve.py --ckpt ckpt_translate.pt    # a web page: continue text, answer a question, translate
-python serve.py --ckpt ckpt_coder_sft.pt    # the Python coder: describe a function, or start one
-python app.py   --ckpt ckpt_coder_sft.pt    # the same demo as a Gradio app (pip install gradio); what demo_colab.ipynb launches
-python app_vision.py                        # show it a photograph and read the caption (pip install timm pillow)
-python app_voice.py                         # talk to it: Whisper hears, Piper speaks (pip install faster-whisper piper-tts)
-python app_omni.py                          # listen, look, chat and decide on one page, all with AnuLM's own models
+python -m tests.test_model                 # 66 tests, ~2 min, no pytest needed
+python -m anulm model                      # shape + param sanity check, no data needed
+python -m anulm train --preset 30b         # GQA, high rope_theta  (Sarvam 30B's shape); downloads tinyshakespeare
+python -m anulm train --preset 105b        # MLA, YaRN-ready       (Sarvam 105B's shape)
+python -m anulm train --preset 350m --grad-ckpt   # 353M; needs a GPU
+python -m anulm sample --ckpt ckpt.pt --prompt "भारत"
+python -m anulm serve --ckpt ckpt_translate.pt    # a web page: continue text, answer a question, translate
+python -m anulm serve --ckpt ckpt_coder_sft.pt    # the Python coder: describe a function, or start one
+python -m anulm app   --ckpt ckpt_coder_sft.pt    # the same demo as a Gradio app (pip install gradio); what demo_colab.ipynb launches
+python -m anulm app_vision                        # show it a photograph and read the caption (pip install timm pillow)
+python -m anulm app_voice                         # talk to it: Whisper hears, Piper speaks (pip install faster-whisper piper-tts)
+python -m anulm app_omni                          # listen, look, chat and decide on one page, all with AnuLM's own models
 ```
 
-New here? Run `python quickstart.py`: it reports what your install can and
+Every program is a module of the `anulm/` package and runs from the repository
+root as `python -m anulm NAME`; `python -m anulm` lists them, and
+`docs/DEVELOPING.md` "Layout" maps the folders. `pip install -e .` adds an
+`anulm` command that does the same from anywhere.
+
+New here? Run `python -m anulm quickstart`: it reports what your install can and
 cannot do, prints the exact command to fix anything missing, and offers to
 train a model or download one. Then `docs/TUTORIAL.md` goes from an empty
 machine to every checkpoint in this repository, with the time, disk and
@@ -148,14 +153,14 @@ CPU wheel silently reports cuda unavailable.
 | [docs/PROJECT_MAP.md](docs/PROJECT_MAP.md) | The project as a system: the 353M/151M-active preset, every pipeline stage and the file that owns it, the three ways a non-text modality reaches the backbone, where each corpus comes from and what is actually measured. Read it after ARCHITECTURE.md. |
 | [docs/DATASETS.md](docs/DATASETS.md) | Every data source with its link, licence, size, the script that fetches it and the checkpoint that used it; which licence each released checkpoint inherits. |
 | [docs/DEVELOPING.md](docs/DEVELOPING.md) | Setup, layout, testing, how to extend, known gaps and gotchas. |
-| [TODO.md](TODO.md), [CONTRIBUTING.md](CONTRIBUTING.md) | Open work, ordered by usefulness and labelled by whether it needs a GPU, and how to contribute a measured change. |
+| [TODO.md](docs/TODO.md), [CONTRIBUTING.md](CONTRIBUTING.md) | Open work, ordered by usefulness and labelled by whether it needs a GPU, and how to contribute a measured change. |
 | [docs/PUBLISHING.md](docs/PUBLISHING.md) | How this is released: licences per artefact, weight export to safetensors, Hugging Face upload, Zenodo DOI, the Space. |
 | [docs/SAMPLES.md](docs/SAMPLES.md) | What the released models actually produced on 4,131 held-out prompts, selected by rule rather than by eye, with the aggregate numbers beside them (§30). |
 | [docs/ANNOUNCEMENT.md](docs/ANNOUNCEMENT.md) | Post drafts for LinkedIn and X, with a table giving the source of every number in them and honest answers to the questions a reader will ask. |
 | [docs/TRANSLATE_PLAN.md](docs/TRANSLATE_PLAN.md), [docs/CODER_PLAN.md](docs/CODER_PLAN.md) | The two demo plans, with status: both finished. Translation is scored on FLORES-200; the coder ran its 700k steps, was instruction-tuned, and is served by `serve.py`. |
 | [experiments/README.md](experiments/README.md) | One script per results section from §9 on, and how to resume the long ones. |
-| [demo_colab.ipynb](demo_colab.ipynb), [app.py](app.py), [space/](space/) | The hosted demo: three cells in Colab that download a checkpoint and launch `app.py` with a public link, and the Space files for the day Gradio Spaces are free to host again. |
-| [TASKS.md](TASKS.md) | The running to-do list for the two demos, the resume command for each step, and a live-status block that `update_tasks.py --loop 3600` rewrites hourly from the checkpoint on disk, so a power cut loses nothing but the last interval. |
+| [demo_colab.ipynb](examples/demo_colab.ipynb), [app.py](anulm/apps/app.py), [space/](space/) | The hosted demo: three cells in Colab that download a checkpoint and launch `app.py` with a public link, and the Space files for the day Gradio Spaces are free to host again. |
+| [TASKS.md](docs/TASKS.md) | The running to-do list for the two demos, the resume command for each step, and a live-status block that `update_tasks.py --loop 3600` rewrites hourly from the checkpoint on disk, so a power cut loses nothing but the last interval. |
 | `sarvam/*_annotated.py` | The annotated Sarvam code, read beside `sarvam/sarvam-30b/` and `sarvam/sarvam-105b/`. |
 
 |                     | total   | active/token | experts hold | layers | attention |
@@ -180,7 +185,7 @@ three-quarters of the active compute and is what the best checkpoints
 command is `experiments/run_long.sh`:
 
 ```bash
-python train.py --preset 350m --grad-ckpt --moe-impl grouped \
+python -m anulm train --preset 350m --grad-ckpt --moe-impl grouped \
     --data data/mixed.hi16k.bin --steps 18000 --batch-size 8 --block-size 512 \
     --lr 6e-4 --seq-balance-alpha 1e-4 --router-z-alpha 1e-3 \
     --cfg num_experts=24 moe_intermediate_size=192 num_experts_per_tok=4 \
@@ -265,8 +270,8 @@ The annotated files live in `sarvam/`; the line numbers are into
 ## Long-context extension: does YaRN earn its place?
 
 ```bash
-python eval_context.py --ckpt ckpt_105b.pt     # rope_theta 1e4, YaRN's home turf
-python eval_context.py --ckpt ckpt_30b.pt      # rope_theta 1e6, extrapolation instead
+python -m anulm eval_context --ckpt ckpt_105b.pt     # rope_theta 1e4, YaRN's home turf
+python -m anulm eval_context --ckpt ckpt_30b.pt      # rope_theta 1e6, extrapolation instead
 ```
 
 Both checkpoints were trained at `block_size=256` with plain RoPE. Evaluate them
@@ -383,9 +388,9 @@ checkpoints are fine-tuned from.
 ## Talking to it: `serve.py`
 
 ```bash
-python serve.py --ckpt ckpt_hindi_mixed36k.pt        # continue text; then open http://localhost:8000
-python serve.py --ckpt ckpt_multi_qa.pt              # + answer a question, in Hindi, English or about Python
-python serve.py --ckpt ckpt_translate.pt             # + translate English ↔ Hindi
+python -m anulm serve --ckpt ckpt_hindi_mixed36k.pt        # continue text; then open http://localhost:8000
+python -m anulm serve --ckpt ckpt_multi_qa.pt              # + answer a question, in Hindi, English or about Python
+python -m anulm serve --ckpt ckpt_translate.pt             # + translate English ↔ Hindi
 ```
 
 A stdlib HTTP server (no Flask) that loads one checkpoint and serves
@@ -412,10 +417,10 @@ that would follow those words, fluent and fictional.
 ## Answering questions: `finetune.py`
 
 ```bash
-python make_qa.py                                        # 56k pairs from the corpus's lead sentences
-python finetune.py --ckpt ckpt_hindi_mixed18k.pt --out ckpt_hindi_qa.pt --epochs 2 --grad-ckpt
-python eval_qa.py ckpt_hindi_mixed18k.pt ckpt_hindi_qa.pt --device cuda
-python serve.py --ckpt ckpt_hindi_qa36k.pt               # the page gains an "answer a question" mode
+python -m anulm make_qa                                        # 56k pairs from the corpus's lead sentences
+python -m anulm finetune --ckpt ckpt_hindi_mixed18k.pt --out ckpt_hindi_qa.pt --epochs 2 --grad-ckpt
+python -m anulm eval_qa ckpt_hindi_mixed18k.pt ckpt_hindi_qa.pt --device cuda
+python -m anulm serve --ckpt ckpt_hindi_qa36k.pt               # the page gains an "answer a question" mode
 ```
 
 Supervised fine-tuning with the only instruction data the project can make
@@ -439,9 +444,9 @@ longer than a sitting.
 ## Fine-tuning one of these instead of training your own
 
 ```bash
-python finetune.py --ckpt AnuLM-Base-400M --qa my_pairs.jsonl --heldout my_heldout.jsonl \
+python -m anulm finetune --ckpt AnuLM-Base-400M --qa my_pairs.jsonl --heldout my_heldout.jsonl \
                    --out ckpt_mine.pt --lora --epochs 1 --lr 2e-4
-python lora.py merge ckpt_mine.pt ckpt_mine.full.pt      # an ordinary checkpoint again
+python -m anulm lora merge ckpt_mine.pt ckpt_mine.full.pt      # an ordinary checkpoint again
 ```
 
 `finetune.py` takes any JSONL of `{question, answer, lang}` and trains with
@@ -490,7 +495,7 @@ bash experiments/translate_build.sh          # 2M sentence pairs, both direction
 bash experiments/translate_train.sh 25000    # fine-tune ckpt_multi36k to step 25k and exit
 bash experiments/translate_train.sh          # resume from ckpt_translate.pt.last to the end (61,672 steps)
 bash experiments/translate_eval.sh           # chrF on FLORES, 300 sentences per direction
-python serve.py --ckpt ckpt_translate.pt     # the page gains a "translate" mode
+python -m anulm serve --ckpt ckpt_translate.pt     # the page gains a "translate" mode
 ```
 
 Two million sentence pairs from Samanantar and the IIT Bombay corpus,
@@ -511,8 +516,8 @@ bash experiments/coder_fetch.sh          # ~15 GB of Python, English, exercises,
 bash experiments/coder_build.sh          # convert, mix 65/30/5, code32k tokenizer, encode
 bash experiments/coder_train.sh 700000   # pretrain to step N and exit; rerun to continue (48 h)
 EX_CAP=0 bash experiments/coder_sft.sh    # instruction-tune on all 1.38M pairs, then pass@1 (7.7 h)
-python eval_code.py ckpt_coder_sft.pt --bench mbpp --device cuda
-python serve.py --ckpt ckpt_coder_sft.pt  # the demo, at http://127.0.0.1:8000
+python -m anulm eval_code ckpt_coder_sft.pt --bench mbpp --device cuda
+python -m anulm serve --ckpt ckpt_coder_sft.pt  # the demo, at http://127.0.0.1:8000
 ```
 
 `docs/MODEL_CARD.md` is the one-page summary of the finished checkpoint.
@@ -538,8 +543,8 @@ through crashes and power cuts; `TASKS.md` is the recovery procedure.
 ## Accuracy: the golden set
 
 ```bash
-python make_golden.py                                   # 600 cloze items from the benchmark files
-python eval_golden.py ckpt_hindi_mixed18k.pt ckpt_hindi_full.pt --device cuda
+python -m anulm make_golden                                   # 600 cloze items from the benchmark files
+python -m anulm eval_golden ckpt_hindi_mixed18k.pt ckpt_hindi_full.pt --device cuda
 ```
 
 bits/byte measures compression, not correctness. `golden/golden_hindi.jsonl`
@@ -557,7 +562,7 @@ set is a builder away.
 ## Tests
 
 ```bash
-python test_model.py        # 55 tests, ~2 min, no pytest needed
+python -m tests.test_model        # 66 tests, ~2 min, no pytest needed
 ```
 
 They target what training would not catch. A leaky causal mask still converges,
@@ -619,14 +624,14 @@ RTX 5050 and then an RTX 5070 Ti. Inductor is still the one untested path.)
 ## Knobs worth turning
 
 ```bash
-python train.py --preset 105b --yarn        # band-blended RoPE for extension runs
-python train.py --preset 30b  --grad-accum 4 --batch-size 8
-python train.py --preset 350m --grad-ckpt --moe-impl grouped \
+python -m anulm train --preset 105b --yarn        # band-blended RoPE for extension runs
+python -m anulm train --preset 30b  --grad-accum 4 --batch-size 8
+python -m anulm train --preset 350m --grad-ckpt --moe-impl grouped \
                 --data data/hindi_v4.hi16k.bin \
                 --seq-balance-alpha 1e-4 --router-z-alpha 1e-3     # the v4 recipe
-python eval_bench.py ckpt_hindi_v3.pt ckpt_hindi_v4.pt            # shared benchmark
-python train.py --preset 350m --grad-ckpt --optimizer muon         # 12 vs 16 bytes/param, 2.6x slower here
-python train.py --preset 350m --cfg num_shared_experts=0 num_experts=24 moe_intermediate_size=192
+python -m anulm eval_bench ckpt_hindi_v3.pt ckpt_hindi_v4.pt            # shared benchmark
+python -m anulm train --preset 350m --grad-ckpt --optimizer muon         # 12 vs 16 bytes/param, 2.6x slower here
+python -m anulm train --preset 350m --cfg num_shared_experts=0 num_experts=24 moe_intermediate_size=192
 ```
 
 In `AnuLMConfig`, reachable from the command line as `--cfg key=value`:
@@ -692,13 +697,13 @@ Sample at val 1.519 (`--temperature 0.8`):
 > KING RICHARD II: / You speak the country of your blood / As oath the children
 > courted with thee. / Come, whence thou consents of your perpares, ...
 
-Also verified: both presets forward *and* backward (`python model.py`);
+Also verified: both presets forward *and* backward (`python -m anulm model`);
 parameter counts match the analytical table exactly; group-limited top-k and the
 MoE dispatch/combine index math checked against naive reference implementations
 (exact match, every slot written once, weights summing to
 `routed_scaling_factor`).
 
-One expected quirk in `python model.py` (which seeds per preset, so these
+One expected quirk in `python -m anulm model` (which seeds per preset, so these
 numbers reproduce): `nano_30b` reports 45 parameters without gradients. That is
 not a bug — with only 2×64 tokens, 15 of the 112 experts across its 7 MoE layers
 receive no tokens at all in that batch and correctly get no gradient, 3 weights

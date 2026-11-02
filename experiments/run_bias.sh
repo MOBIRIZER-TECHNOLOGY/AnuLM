@@ -10,9 +10,9 @@ PRESET="num_experts=24 moe_intermediate_size=192 num_experts_per_tok=4 num_share
 
 for rate in 1e-3 3e-3 1e-2; do
   echo "=== BIAS RATE $rate ==="
-  python -u train.py $COMMON --out ckpt_bias_$rate.pt --cfg $PRESET bias_update_rate=$rate 2>&1 | grep -v -i "warning\|triton" | grep -E "eval @|imbalance|done in"
+  python -u -m anulm train $COMMON --out ckpt_bias_$rate.pt --cfg $PRESET bias_update_rate=$rate 2>&1 | grep -v -i "warning\|triton" | grep -E "eval @|imbalance|done in"
 done
 
 echo "=== BENCH: bias rates ==="
-python -u eval_bench.py ckpt_bias_1e-3.pt ckpt_bias_3e-3.pt ckpt_bias_1e-2.pt --device cuda 2>&1 | grep -v -i "warning\|triton"
+python -u -m anulm eval_bench ckpt_bias_1e-3.pt ckpt_bias_3e-3.pt ckpt_bias_1e-2.pt --device cuda 2>&1 | grep -v -i "warning\|triton"
 echo "=== DONE ==="

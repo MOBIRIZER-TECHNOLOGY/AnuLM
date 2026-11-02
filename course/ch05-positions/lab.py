@@ -29,7 +29,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "course" / "checks"))
-import model as ref  # noqa: E402
+from anulm import model as ref  # noqa: E402
 from _common import load, BUILD  # noqa: E402
 
 CPU = torch.device("cpu")

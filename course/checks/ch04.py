@@ -27,7 +27,7 @@ import torch.nn.functional as F
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-import model as ref  # noqa: E402  the repository's model.py, the reference
+from anulm import model as ref  # noqa: E402  the repository's model.py, the reference
 
 for _s in (sys.stdout, sys.stderr):
     try:

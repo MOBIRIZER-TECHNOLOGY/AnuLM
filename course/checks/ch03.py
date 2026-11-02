@@ -16,7 +16,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _common import ROOT, main, with_replaced  # noqa: E402
-import bpe  # noqa: E402
+from anulm import bpe  # noqa: E402
 
 CHECKS = []
 TEXT = ((ROOT / "data" / "input.txt").read_text(encoding="utf-8")[:30000]

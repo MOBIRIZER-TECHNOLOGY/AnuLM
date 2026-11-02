@@ -70,10 +70,10 @@ def main():
            "ForEach-Object { Stop-Process -Id $_.ProcessId -Force }")
         time.sleep(30)
         log("main run paused right after its save")
-        run("1_train_general", ["decide.py", "train-general", "--ckpt", "ckpt_demo_v2.pt",
+        run("1_train_general", ["-m", "anulm.tasks.decide", "train-general", "--ckpt", "ckpt_demo_v2.pt",
                                 "--out", "ckpt_decide_general.pt", "--epochs", "1", "--batch-size", "8",
                                 "--lr", "3e-5", "--eval-every", "1000"], 1.5)
-        run("2_zero_shot_banking77", ["decide.py", "eval", "--ckpt", "ckpt_decide_general.pt"], 0.5)
+        run("2_zero_shot_banking77", ["-m", "anulm.tasks.decide", "eval", "--ckpt", "ckpt_decide_general.pt"], 0.5)
         run("3_samples", [str(ROOT / "experiments" / "decide_samples.py"), "ckpt_decide_general.pt"], 0.3)
     finally:
         subprocess.run(["schtasks", "/change", "/tn", "anulm_v2", "/enable"], capture_output=True)

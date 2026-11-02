@@ -1,6 +1,6 @@
 """
 The same AnuLM API through the official OpenAI SDK and LangChain, unchanged
-except for base_url. Start the server first (python api.py), then:
+except for base_url. Start the server first (python -m anulm api), then:
 
     python examples/api_demo/openai_client.py
     python examples/api_demo/openai_client.py --base-url http://10.0.0.5:8000/v1

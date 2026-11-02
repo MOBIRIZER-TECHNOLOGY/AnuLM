@@ -8,10 +8,10 @@ export PYTHONIOENCODING=utf-8
 PAIRS=${PAIRS:-2000000}
 
 echo "=== PAIRS ($(date +%H:%M)) ==="
-[ -s data/tr_pairs.jsonl ] || python -u convert_translate.py \
+[ -s data/tr_pairs.jsonl ] || python -u -m anulm convert_translate \
     --samanantar "data/raw/ai4bharat__samanantar/hi/*.parquet" \
     --iitb "data/raw/cfilt__iitb-english-hindi/data/train-*.parquet" \
     --max-pairs $PAIRS --out data/tr_pairs.jsonl --heldout data/tr_heldout.jsonl 2>&1 | tr '\r' '\n' | tail -8
 echo "=== FLORES ($(date +%H:%M)) ==="
-[ -s data/flores_devtest.jsonl ] || python -u convert_translate.py --flores data/raw/flores200 --out data/flores_devtest.jsonl
+[ -s data/flores_devtest.jsonl ] || python -u -m anulm convert_translate --flores data/raw/flores200 --out data/flores_devtest.jsonl
 echo "=== BUILD DONE ($(date +%H:%M)) ==="

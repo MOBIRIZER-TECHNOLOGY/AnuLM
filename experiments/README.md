@@ -20,13 +20,13 @@ bash experiments/run_long.sh      # §18  the mixed run, 18k steps
 a few commands, run from the repository root:
 
 ```bash
-python make_golden.py                                   # deterministic, --seed 7
-python eval_golden.py ckpt_hindi_mixed18k.pt ckpt_hindi_full.pt \
+python -m anulm make_golden                                   # deterministic, --seed 7
+python -m anulm eval_golden ckpt_hindi_mixed18k.pt ckpt_hindi_full.pt \
                       ckpt_hindi_v4.pt ckpt_hindi_350m.pt --device cuda
 
-python make_qa.py                                       # 56k pairs + 1,129 held out
-python finetune.py --ckpt ckpt_hindi_mixed18k.pt --out ckpt_hindi_qa.pt --epochs 2 --grad-ckpt
-python eval_qa.py ckpt_hindi_mixed18k.pt ckpt_hindi_qa.pt --device cuda
+python -m anulm make_qa                                       # 56k pairs + 1,129 held out
+python -m anulm finetune --ckpt ckpt_hindi_mixed18k.pt --out ckpt_hindi_qa.pt --epochs 2 --grad-ckpt
+python -m anulm eval_qa ckpt_hindi_mixed18k.pt ckpt_hindi_qa.pt --device cuda
 ```
 
 §21 continues the §18 run to 36k steps: copy `ckpt_hindi_mixed18k.pt` and

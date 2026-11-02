@@ -25,8 +25,8 @@ import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _common import main, with_replaced  # noqa: E402
-import model as ref  # noqa: E402
-import train as ref_train  # noqa: E402  the repository's train.py
+from anulm import model as ref  # noqa: E402
+from anulm.training import train as ref_train  # noqa: E402  the repository's train.py
 
 CHECKS = []
 KW = dict(vocab_size=64, block_size=24, n_layer=3, hidden_size=32, n_head=4, head_dim=8, n_kv_head=2,

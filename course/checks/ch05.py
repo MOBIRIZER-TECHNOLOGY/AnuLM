@@ -20,7 +20,7 @@ import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))      # however this file is launched
 from _common import main, with_replaced  # noqa: E402
-import model as ref  # the repository's model.py
+from anulm import model as ref  # the repository's model.py
 
 CHECKS = []
 CPU = torch.device("cpu")

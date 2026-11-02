@@ -45,7 +45,7 @@ def main() -> None:
     p.add_argument("--vocab", type=int, default=1024)
     a = p.parse_args()
     D = load(COURSE / "build" / ("solutions/ch03.py" if a.impl == "solution" else "data.py"))
-    import bpe
+    from anulm import bpe
     en = (ROOT / "data" / "input.txt").read_text(encoding="utf-8")
     hi = (ROOT / "data" / "bench_hindi.txt").read_text(encoding="utf-8")
     train_text = en[:120_000] + hi[:120_000]

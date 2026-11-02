@@ -20,7 +20,7 @@ import torch.nn.functional as F
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _common import main, with_replaced  # noqa: E402
-import bigram_teacher as ref  # noqa: E402
+from anulm import bigram_teacher as ref  # noqa: E402
 
 CHECKS = []
 

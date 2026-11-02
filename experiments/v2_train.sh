@@ -29,4 +29,4 @@ PRESET="num_experts=24 moe_intermediate_size=192 num_experts_per_tok=4 num_share
 RESUME=""; [ -s ckpt_base_v2.pt.last ] && RESUME="--resume"
 STOPARG=""; [ -n "$STOP" ] && STOPARG="--stop-at $STOP"
 echo "=== BASE V2: ${RESUME:-fresh start} ${STOPARG:-to the end} ($(date '+%Y-%m-%d %H:%M')) ==="
-python -u train.py $COMMON $RESUME $STOPARG --cfg $PRESET
+python -u -m anulm train $COMMON $RESUME $STOPARG --cfg $PRESET

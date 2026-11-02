@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "anulm"
+version = "0.1.0"
+description = "A small, trainable mixture-of-experts language model"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+dependencies = ["torch>=2.1", "numpy"]
+
+[project.optional-dependencies]
+export = ["safetensors>=0.4"]
+data = ["pyarrow>=15"]
+demo = ["gradio>=5"]
+
+[project.scripts]
+anulm = "anulm.__main__:main"
+
+[tool.setuptools]
+# model.py at the root is the alias that old checkpoints need (see its docstring).
+py-modules = ["model"]
+
+[tool.setuptools.packages.find]
+include = ["anulm*"]

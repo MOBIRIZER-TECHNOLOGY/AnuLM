@@ -22,7 +22,7 @@ import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _common import ROOT, main, solution, with_replaced  # noqa: E402
-import export_hf  # noqa: E402
+from anulm.hf import export_hf  # noqa: E402
 
 spec = importlib.util.spec_from_file_location("omni_one", ROOT / "experiments" / "omni_one.py")
 omni_one = importlib.util.module_from_spec(spec)

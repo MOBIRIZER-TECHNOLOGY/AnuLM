@@ -185,7 +185,7 @@ def wer(name, ckpt, prefix, limit):
     lf = LOGS / f"7_{name}.log"
     if not (ROOT / f"{prefix}.jsonl").exists():
         return None
-    r = subprocess.run([PY, "-u", "speech_encoder.py", "eval", "--ckpt", ckpt, "--prefix", prefix,
+    r = subprocess.run([PY, "-u", "-m", "anulm.multimodal.speech_encoder", "eval", "--ckpt", ckpt, "--prefix", prefix,
                         "--limit", str(limit)], cwd=str(ROOT), capture_output=True, text=True,
                        env={**os.environ, "PYTHONIOENCODING": "utf-8"})
     lf.write_text(r.stdout + r.stderr, encoding="utf-8")
@@ -215,7 +215,7 @@ def evaluate():
             log(f"    {name}: {res[name]}%")
             save_results(res)
     if "chat_heldout_loss" not in res:
-        r = subprocess.run([PY, "-u", "omni_eval.py", "--ckpt", OUT, "--vision", "--out",
+        r = subprocess.run([PY, "-u", "-m", "anulm.multimodal.omni_eval", "--ckpt", OUT, "--vision", "--out",
                             str(LOGS / "eval_text_vision.json")], cwd=str(ROOT), capture_output=True,
                            text=True, env={**os.environ, "PYTHONIOENCODING": "utf-8"})
         (LOGS / "7_eval_text_vision.log").write_text(r.stdout + r.stderr, encoding="utf-8")
@@ -301,21 +301,21 @@ def main() -> None:
     os.chdir(ROOT)
     log(f"=== OMNI ONE (pid {os.getpid()}) ===")
     try:
-        run("1_data_text", ["omni_data.py", "fetch", "all"], 12.0)
-        wait_for("omni_images.py")
-        run("1_data_images", ["omni_images.py", "fetch"], 12.0)
+        run("1_data_text", ["-m", "anulm.multimodal.omni_data", "fetch", "all"], 12.0)
+        wait_for("omni_images")
+        run("1_data_images", ["-m", "anulm.multimodal.omni_images", "fetch"], 12.0)
         if not (ROOT / "ckpt_chat_v3.pt").exists():
             run("2_base", ["-c", "from huggingface_hub import snapshot_download as s; "
                                  "s('toonist/AnuLM-Base-v2-400M', local_dir='release/AnuLM-Base-v2-400M')"], 2.0)
-            run("2_chat", ["finetune.py", "--ckpt", "release/AnuLM-Base-v2-400M", "--qa", "data/chat_train.jsonl",
+            run("2_chat", ["-m", "anulm.training.finetune", "--ckpt", "release/AnuLM-Base-v2-400M", "--qa", "data/chat_train.jsonl",
                            "--heldout", "data/chat_heldout.jsonl", "--out", "ckpt_chat_v3.pt", "--epochs", "2",
                            "--batch-size", "4", "--lr", "5e-5", "--grad-ckpt", "--eval-every", "500",
                            "--log-every", "100"], 3.0)
-        run("3_grow", ["speech_vocab.py", "--ckpt", "ckpt_chat_v3.pt", "--out", "ckpt_chat_mm.pt"], 0.5,
+        run("3_grow", ["-m", "anulm.multimodal.speech_vocab", "--ckpt", "ckpt_chat_v3.pt", "--out", "ckpt_chat_mm.pt"], 0.5,
             done=lambda: (ROOT / "ckpt_chat_mm.pt").exists())
         once("4_wait_gpu", wait_gpu)
-        run("5_base_eval", ["omni_eval.py", "--ckpt", "ckpt_chat_v3.pt", "--out", str(LOGS / "eval_base_chat.json")], 2.0)
-        args = ["omni_train.py", "--ckpt", "ckpt_chat_mm.pt", "--out", OUT, "--steps", str(a.steps),
+        run("5_base_eval", ["-m", "anulm.multimodal.omni_eval", "--ckpt", "ckpt_chat_v3.pt", "--out", str(LOGS / "eval_base_chat.json")], 2.0)
+        args = ["-m", "anulm.multimodal.omni_train", "--ckpt", "ckpt_chat_mm.pt", "--out", OUT, "--steps", str(a.steps),
                 "--eval-every", "10000", "--eval-n", "200", "--log-every", "1000", "--resume",
                 "--grad-ckpt"]     # unattended: an out-of-memory at 3 a.m. would stop the night
         if (ROOT / "ckpt_asr_en_v3.pt").exists():      # LibriSpeech-only projector; a clone starts fresh
@@ -336,7 +336,7 @@ def main() -> None:
                 log("    resuming training from its last save")
         once("7_eval", evaluate)
         once("8_report", report)
-        run("9_export", ["export_hf.py", OUT, "release/AnuLM-Omni-400M", "--kind", "omni", "--license", "cc-by-sa-4.0",
+        run("9_export", ["-m", "anulm.hf.export_hf", OUT, "release/AnuLM-Omni-400M", "--kind", "omni", "--license", "cc-by-sa-4.0",
                          "--card", card(), "--base-model", "toonist/AnuLM-Base-v2-400M", "--repo", REPO], 0.5)
         if a.publish:
             once("10_publish", publish)

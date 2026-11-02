@@ -5,6 +5,9 @@ those choices survived at nano scale. This file is the layer above: the whole
 project as a system — every stage from a public dataset to a served model, which
 file owns each stage, and what has actually been measured.
 
+File names below are modules of the `anulm/` package (`docs/DEVELOPING.md`
+"Layout" says which subpackage holds each); each runs as `python -m anulm NAME`.
+
 For the corpora themselves — links, licences, fetch commands, disk sizes — see
 `docs/DATASETS.md`. For the experiment log with numbers, `docs/RESULTS.md`.
 

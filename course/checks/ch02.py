@@ -21,11 +21,11 @@ import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _common import main, with_replaced  # noqa: E402
-import bpe  # noqa: E402
-import convert_parquet  # noqa: E402
-import fetch_hindi  # noqa: E402
-import filter_prose  # noqa: E402
-import train as ref_train  # noqa: E402
+from anulm import bpe  # noqa: E402
+from anulm.data import convert_parquet  # noqa: E402
+from anulm.data import fetch_hindi  # noqa: E402
+from anulm.data import filter_prose  # noqa: E402
+from anulm.training import train as ref_train  # noqa: E402
 
 CHECKS = []
 HINDI = ("भारत दक्षिण एशिया में स्थित एक विशाल देश है जिसकी राजधानी नई दिल्ली है और जहाँ अनेक "

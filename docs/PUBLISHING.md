@@ -71,7 +71,7 @@ full provenance table; keep it in sync with this one.
   are the one thing kept from `data/`.
 - `CITATION.cff` added. `README.md` opens with what the project is and the
   affiliation disclaimer.
-- `python test_model.py`: 46 tests passed after the rename; 55 now, after
+- `python -m tests.test_model`: 46 tests passed after the rename; 55 now, after
   one for the tokenizer format id below and two for the `transformers`
   export.
 
@@ -97,22 +97,22 @@ folder with this repository's `model.py`, and `serve.py` / `sample.py`
 accept a folder in place of a `.pt`.
 
 ```bash
-python export_hf.py ckpt_coder_sft.pt release/AnuLM-Coder-400M \
+python -m anulm export_hf ckpt_coder_sft.pt release/AnuLM-Coder-400M \
     --license cc-by-nc-sa-4.0 --card docs/MODEL_CARD.md \
     --datasets codeparrot/codeparrot-clean jinaai/code_exercises HuggingFaceFW/fineweb-edu \
                nvidia/OpenCodeInstruct glaiveai/glaive-code-assistant \
     --repo toonist/AnuLM-Coder-400M
-python export_hf.py ckpt_translate.pt release/AnuLM-Translate-400M \
+python -m anulm export_hf ckpt_translate.pt release/AnuLM-Translate-400M \
     --license cc-by-nc-4.0 --card docs/MODEL_CARD_TRANSLATE.md --datasets ai4bharat/samanantar cfilt/iitb-english-hindi \
     --base-model toonist/AnuLM-Base-400M --repo toonist/AnuLM-Translate-400M
-python export_hf.py ckpt_multi_qa.pt release/AnuLM-Hindi-QA-400M \
+python -m anulm export_hf ckpt_multi_qa.pt release/AnuLM-Hindi-QA-400M \
     --license cc-by-sa-4.0 --card docs/MODEL_CARD_HINDI_QA.md --base-model toonist/AnuLM-Base-400M --repo toonist/AnuLM-Hindi-QA-400M
-python export_hf.py ckpt_multi36k.pt release/AnuLM-Base-400M \
+python -m anulm export_hf ckpt_multi36k.pt release/AnuLM-Base-400M \
     --license cc-by-sa-4.0 --card docs/MODEL_CARD_BASE.md --repo toonist/AnuLM-Base-400M
-python export_hf.py ckpt_ctx2k.pt release/AnuLM-Base-2K-400M \
+python -m anulm export_hf ckpt_ctx2k.pt release/AnuLM-Base-2K-400M \
     --license cc-by-sa-4.0 --card docs/MODEL_CARD_BASE2K.md \
     --base-model toonist/AnuLM-Base-400M --repo toonist/AnuLM-Base-2K-400M
-python serve.py --ckpt release/AnuLM-Coder-400M      # check an export loads and answers before uploading
+python -m anulm serve --ckpt release/AnuLM-Coder-400M      # check an export loads and answers before uploading
 ```
 
 To rehearse all of it without risking a released repo, train a throwaway
@@ -120,10 +120,10 @@ and push it to a separate model id — 29 seconds on a GPU, five minutes on
 a CPU, and it exercises every step above plus the download:
 
 ```bash
-python train.py --preset 30b --steps 200 --eval-every 50 --out ckpt_smoke.pt
-python export_hf.py ckpt_smoke.pt release/AnuLM-Smoke-30B \
+python -m anulm train --preset 30b --steps 200 --eval-every 50 --out ckpt_smoke.pt
+python -m anulm export_hf ckpt_smoke.pt release/AnuLM-Smoke-30B \
     --license mit --card docs/MODEL_CARD_SMOKE.md --repo toonist/AnuLM-Smoke-30B
-python sample.py --ckpt release/AnuLM-Smoke-30B --prompt "KING RICHARD II:" --tokens 100
+python -m anulm sample --ckpt release/AnuLM-Smoke-30B --prompt "KING RICHARD II:" --tokens 100
 # then create_repo + upload_folder, and load it back from the Hub copy
 ```
 
@@ -143,7 +143,7 @@ it did -- which is all four on the Hub -- add it in place, without touching
 `model.safetensors`:
 
 ```bash
-python tools_hf_upgrade.py release/AnuLM-Coder-400M release/AnuLM-Translate-400M \
+python -m anulm hf_upgrade release/AnuLM-Coder-400M release/AnuLM-Translate-400M \
                            release/AnuLM-Hindi-QA-400M release/AnuLM-Base-400M
 ```
 
@@ -194,7 +194,7 @@ by `experiments/omni_one.py` (step 9), with the card it writes from
 `docs/MODEL_CARD_OMNI.md` plus the run's measured table:
 
 ```bash
-python export_hf.py ckpt_omni.pt release/AnuLM-Omni-400M --kind omni --license cc-by-sa-4.0 --card logs/omni_one/card.md --base-model toonist/AnuLM-Base-v2-400M --repo toonist/AnuLM-Omni-400M
+python -m anulm export_hf ckpt_omni.pt release/AnuLM-Omni-400M --kind omni --license cc-by-sa-4.0 --card logs/omni_one/card.md --base-model toonist/AnuLM-Base-v2-400M --repo toonist/AnuLM-Omni-400M
 ```
 
 The 11 per-task folders that came before it (chat, three Decide adapters,
@@ -249,7 +249,8 @@ checkpoint and launches `app.py` with a public link. If a PRO or ZeroGPU
 account becomes available, `app.py` is the Space: it imports `Engine` from `serve.py`, shows the modes the
 loaded checkpoint supports, and downloads the weights from the Hub when
 the Space variable `ANULM_REPO` is set. Create a Gradio Space, add
-`app.py`, `serve.py`, `model.py`, `bpe.py`, `make_qa.py` and a
+the `anulm/` folder, an `app.py` of one line,
+`import runpy; runpy.run_module("anulm.apps.app", run_name="__main__")`, and a
 `requirements.txt` with a CPU torch wheel, `safetensors`, `gradio` and
 `huggingface_hub`, set `ANULM_REPO=toonist/AnuLM-Coder-400M`, done.
 One Space per checkpoint, or one Space with a dropdown that reloads.

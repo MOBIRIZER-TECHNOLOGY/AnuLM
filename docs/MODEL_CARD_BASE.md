@@ -47,10 +47,10 @@ says which of Sarvam's choices held up at this scale.
 ## Use
 
 ```bash
-python sample.py --ckpt <this folder> --prompt "हिन्दी साहित्य
+python -m anulm sample --ckpt <this folder> --prompt "हिन्दी साहित्य
 
 "
-python serve.py  --ckpt <this folder>        # continue-the-text page
+python -m anulm serve  --ckpt <this folder>        # continue-the-text page
 ```
 
 To fine-tune it, `finetune.py --ckpt <this folder> --qa pairs.jsonl` takes

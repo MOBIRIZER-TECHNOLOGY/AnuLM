@@ -25,9 +25,9 @@ import torch.nn.functional as F
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _common import main, solution, with_replaced  # noqa: E402
-import omni_train  # noqa: E402
-import speech_vocab  # noqa: E402
-import vision_encoder  # noqa: E402
+from anulm.multimodal import omni_train  # noqa: E402
+from anulm.multimodal import speech_vocab  # noqa: E402
+from anulm.multimodal import vision_encoder  # noqa: E402
 
 CHECKS = []
 B = solution(8)

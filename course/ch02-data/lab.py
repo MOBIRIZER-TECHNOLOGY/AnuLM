@@ -51,7 +51,7 @@ def main() -> None:
     p.add_argument("--seed", type=int, default=7)
     a = p.parse_args()
     D = load(COURSE / "build" / ("solutions/ch02.py" if a.impl == "solution" else "data.py"))
-    import convert_parquet
+    from anulm.data import convert_parquet
     rnd = random.Random(a.seed)
     try:
         hindi = D.split_documents((ROOT / "data" / "bench_hindi.txt").read_text(encoding="utf-8"))

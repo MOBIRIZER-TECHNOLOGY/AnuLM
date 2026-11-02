@@ -181,7 +181,7 @@ test it. It has had no alignment or refusal training of any kind.
 ## Try it
 
 ```bash
-python serve.py --ckpt ckpt_coder_sft.pt        # then open http://127.0.0.1:8000
+python -m anulm serve --ckpt ckpt_coder_sft.pt        # then open http://127.0.0.1:8000
 ```
 
 The page offers *write a function* (the MBPP setting: describe a function
@@ -189,15 +189,15 @@ in a sentence) and *continue the code* (the HumanEval setting: paste a
 signature and docstring). *Greedy (as evaluated)* reproduces the benchmark
 decoding; untick it to sample at the temperature shown. `serve.py` takes an
 exported folder wherever it takes a `.pt`, so
-`python serve.py --ckpt AnuLM-Coder-400M` after an `hf download` is the
+`python -m anulm serve --ckpt AnuLM-Coder-400M` after an `hf download` is the
 shortest path from the Hub to the page. On the machine the run was done on,
 a 30-minute scheduled task (`run_serve.cmd`) kept the server up; `TASKS.md`
 has that pattern and what became of it.
 
 ```bash
-python eval_code.py ckpt_coder_sft.pt --bench mbpp --device cuda            # ~10 min
-python eval_code.py ckpt_coder.pt ckpt_coder_sft.pt --bench humaneval --mode continue --device cuda
-python sample.py --ckpt ckpt_coder.pt --prompt "def is_prime(n):"          # the base model, raw
+python -m anulm eval_code ckpt_coder_sft.pt --bench mbpp --device cuda            # ~10 min
+python -m anulm eval_code ckpt_coder.pt ckpt_coder_sft.pt --bench humaneval --mode continue --device cuda
+python -m anulm sample --ckpt ckpt_coder.pt --prompt "def is_prime(n):"          # the base model, raw
 ```
 
 ## Files

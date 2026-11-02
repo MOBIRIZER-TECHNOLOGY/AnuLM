@@ -36,19 +36,19 @@ LOGS = ROOT / "logs" / "omni_v3"
 
 # name -> (args, cap in hours, the file it must produce)
 STEPS = [
-    ("0_grow", ["speech_vocab.py", "--ckpt", "ckpt_base_v2.pt", "--out", "ckpt_mm_init_v2.pt"], 0.3,
+    ("0_grow", ["-m", "anulm.multimodal.speech_vocab", "--ckpt", "ckpt_base_v2.pt", "--out", "ckpt_mm_init_v2.pt"], 0.3,
      "ckpt_mm_init_v2.pt"),
-    ("1_asr_en", ["speech_encoder.py", "train", "--ckpt", "ckpt_mm_init_v2.pt", "--prefix", "data/speech_ls100",
+    ("1_asr_en", ["-m", "anulm.multimodal.speech_encoder", "train", "--ckpt", "ckpt_mm_init_v2.pt", "--prefix", "data/speech_ls100",
                   "--out", "ckpt_asr_en_v3.pt", "--epochs", "3", "--batch-size", "4",
                   "--eval-every", "1000", "--log-every", "500"], 3.0, "ckpt_asr_en_v3.pt"),
-    ("2_asr_hi", ["speech_encoder.py", "train", "--ckpt", "ckpt_asr_en_v3.pt", "--prefix", "data/hindi_mix/train",
+    ("2_asr_hi", ["-m", "anulm.multimodal.speech_encoder", "train", "--ckpt", "ckpt_asr_en_v3.pt", "--prefix", "data/hindi_mix/train",
                   "--out", "ckpt_asr_hi_v3.pt", "--epochs", "6", "--batch-size", "4",
                   "--eval-every", "1000", "--log-every", "500"], 2.0, "ckpt_asr_hi_v3.pt"),
-    ("3_caption", ["vision_encoder.py", "train", "--ckpt", "ckpt_mm_init_v2.pt",
+    ("3_caption", ["-m", "anulm.multimodal.vision_encoder", "train", "--ckpt", "ckpt_mm_init_v2.pt",
                    "--manifest", "data/flickr30k_train.jsonl", "--cache", "data/flickr30k_feats.f16",
                    "--out", "ckpt_caption_v3.pt", "--epochs", "2", "--batch-size", "8",
                    "--eval-every", "2000", "--log-every", "1000"], 4.0, "ckpt_caption_v3.pt"),
-    ("4_vqa", ["vision_encoder.py", "train", "--ckpt", "ckpt_caption_v3.pt",
+    ("4_vqa", ["-m", "anulm.multimodal.vision_encoder", "train", "--ckpt", "ckpt_caption_v3.pt",
                "--manifest", "data/aokvqa_train.jsonl", "--cache", "data/aokvqa_feats.f16",
                "--out", "ckpt_vqa_v3.pt", "--epochs", "3", "--batch-size", "8",
                "--eval-every", "1000", "--log-every", "500"], 1.0, "ckpt_vqa_v3.pt"),
@@ -57,13 +57,13 @@ STEPS = [
 # served (app_omni.py CKPTS) vs new, each pair on the same eval
 EVALS = [
     ("asr_en", "ckpt_asr_ls100_e3.pt", "ckpt_asr_en_v3.pt",
-     ["speech_encoder.py", "eval", "--prefix", "data/speech_ls100", "--limit", "100"]),
+     ["-m", "anulm.multimodal.speech_encoder", "eval", "--prefix", "data/speech_ls100", "--limit", "100"]),
     ("asr_hi", "ckpt_asr_hi_mix2.pt", "ckpt_asr_hi_v3.pt",
-     ["speech_encoder.py", "eval", "--prefix", "data/fleurs_hi/dev", "--limit", "50"]),
+     ["-m", "anulm.multimodal.speech_encoder", "eval", "--prefix", "data/fleurs_hi/dev", "--limit", "50"]),
     ("caption", "ckpt_caption_f30k_e2.pt", "ckpt_caption_v3.pt",
-     ["vision_encoder.py", "eval", "--manifest", "data/flickr30k_val.jsonl", "--limit", "20"]),
+     ["-m", "anulm.multimodal.vision_encoder", "eval", "--manifest", "data/flickr30k_val.jsonl", "--limit", "20"]),
     ("vqa", "ckpt_vqa_f30k.pt", "ckpt_vqa_v3.pt",
-     ["vision_encoder.py", "vqa-eval", "--manifest", "data/aokvqa_val.jsonl"]),
+     ["-m", "anulm.multimodal.vision_encoder", "vqa-eval", "--manifest", "data/aokvqa_val.jsonl"]),
 ]
 KEYS = ("eval @", "done in", "held-out", "WER", "wer", "accuracy", "Traceback", "Error")
 

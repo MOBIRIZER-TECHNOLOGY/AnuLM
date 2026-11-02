@@ -2,7 +2,7 @@
 End-to-end check of api.py, through the official OpenAI client, LangChain and
 raw HTTP, against a running server:
 
-    python api.py --device cuda            # in another shell
+    python -m anulm api --device cuda            # in another shell
     python experiments/api_check.py [--base http://127.0.0.1:8000] [--key K]
 
 Every endpoint, streaming and not, the error contract, a LangChain chain and a

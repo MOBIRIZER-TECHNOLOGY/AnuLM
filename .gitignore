@@ -40,3 +40,9 @@ release/
 data/*
 !data/*.json
 sweep/
+
+# Run outputs belong in runs/ or checkpoints/, never at the repository root.
+runs/
+checkpoints/
+/*_curve.csv
+/*.jsonl

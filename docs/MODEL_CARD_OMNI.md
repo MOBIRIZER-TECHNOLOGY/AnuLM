@@ -91,8 +91,8 @@ on, for Hindi and English. It runs on one consumer GPU, and on a CPU.
 
 ```bash
 git clone https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM && cd AnuLM
-python omni_data.py fetch all        # text and speech, from each primary source
-python omni_images.py fetch          # photos, captions, VQA (~26 GB)
+python -m anulm omni_data fetch all        # text and speech, from each primary source
+python -m anulm omni_images fetch          # photos, captions, VQA (~26 GB)
 python experiments/omni_one.py       # chat model, joint training, evaluation, export
 ```
 

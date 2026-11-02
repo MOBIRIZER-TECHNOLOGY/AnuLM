@@ -3,9 +3,9 @@
 ## Setup
 
 ```bash
-python quickstart.py                   # what this machine can run, and how to fix what it cannot
+python -m anulm quickstart                   # what this machine can run, and how to fix what it cannot
 pip install -r requirements.txt        # torch, safetensors; pyarrow for the parquet converters
-python test_model.py                   # 55 tests, ~2 min — run this first
+python -m tests.test_model                   # 66 tests, ~2 min — run this first
 ```
 
 Everything runs from the repository root (this file lives in `docs/`, the
@@ -34,82 +34,78 @@ pip install --index-url https://download.pytorch.org/whl/cpu torch
 
 ## Layout
 
+The code is one package, `anulm/`. Every program in it runs from the
+repository root as `python -m anulm COMMAND`; `python -m anulm` lists the
+commands, and `python -m anulm.training.train` is the same program as
+`python -m anulm train`. `pip install -e .` adds an `anulm` command that
+does the same from anywhere.
+
 ```
 .
-├── model.py          architecture. Config, RMSNorm, SwiGLU, Rotary(+YaRN),
-│                     GQAttention, MLAttention, Router, MoE, Block, AnuLM
-├── train.py          training loop, WindowSampler, LR schedule, checkpointing, --resume / --stop-at
-├── sample.py         generation from a checkpoint (KV cache, EOS, grouped dispatch)
-├── sample_many.py    many prompts, one model load; --rep / --temp / --only for probing a base model
-├── ask.py            put questions to a checkpoint the way serve.py does (templates + repetition penalty)
-├── serve.py          the same, behind a stdlib HTTP server + web/index.html
-│                     (continue / answer a question / translate, by what the checkpoint carries)
-├── app.py            the same Engine behind a Gradio UI: a laptop demo, a Colab cell or a Space
-├── quickstart.py     environment check, then --train a small model or --demo a released one
-├── bpe.py            byte-level BPE, DOC_SEP / EOS, the .bin encoder (train / encode / stats)
-├── muon.py           Muon optimizer (+ AdamW companion)
-├── test_model.py     55 tests, plain asserts, no pytest
-│
-│   corpora
-├── fetch_hindi.py    streams a Wikimedia dump into data/, one document per article (any language)
-├── fetch_web.py      English web prose from C4;  fetch_code.py: Python from codeparrot-clean
-├── fetch_hf.py       any public Hugging Face dataset repo into data/raw/, resumable
-├── convert_parquet.py  fineweb-edu / code_exercises / instruction pairs -> corpus text or SFT jsonl
-├── convert_translate.py  Samanantar + IIT Bombay -> en-hi pairs both ways; FLORES-200 -> devtest
-├── mix_corpus.py     interleaves DOC_SEP corpora by MB budget, streaming; holds out a bench slice
-├── filter_prose.py   drops list/heading lines and list-shaped articles from a corpus
-│
-│   supervised data
-├── make_qa.py        Hindi question-answer pairs from titles and lead sentences (+ the templates)
-├── make_qa_en.py     the same for English Wikipedia;  make_qa_py.py: write/explain pairs from Python functions
-├── finetune.py       SFT on any of those jsonl sets, loss on answer tokens only; resumable; writes qa_templates
-├── lora.py           low-rank adapters: apply/merge/save, and a merge CLI
-│
-│   evaluation
-├── eval_bench.py     bits/byte for any checkpoints on one shared held-out file
-├── make_bench.py     builds that file, de-duplicated against every training corpus
-├── eval_context.py   long-context / YaRN study (byte and BPE checkpoints, --device)
-├── make_golden.py    builds golden/golden_hindi.jsonl: 600 cloze items with known answers
-├── eval_golden.py    accuracy on it -- exact match and 4-way multiple choice
-├── eval_qa.py        held-out QA: answer recognition (MC), token F1, subject mention
-├── eval_translate.py chrF on FLORES-200 devtest, both directions
-├── eval_code.py      pass@1 on HumanEval / MBPP (executes generated code in a subprocess)
-│
-│   release
-├── export_hf.py      a .pt -> a Hub-ready folder: safetensors, config.json, tokenizers, code, card
-├── configuration_anulm.py  transformers config wrapping AnuLMConfig
-├── modeling_anulm.py       transformers model wrapping AnuLM: from_pretrained, generate
-├── tools_hf_tokenizer.py   bpe.py's JSON -> a tokenizers tokenizer.json, verified exact
-├── tools_hf_upgrade.py     adds all of the above to an export made before they existed
-├── demo_colab.ipynb  three cells: clone, download a checkpoint, launch app.py with a public link
-├── space/            README front matter + requirements for a Gradio Space running app.py
-│
-│   operations and the record
-├── update_tasks.py   rewrites TASKS.md's live-status block from the newest .last checkpoint; --loop 3600 while a run is in flight
-├── tools_eval_noise.py     the noise floor of the val-loss estimate (RESULTS.md §25)
-├── tools_backfill_curve.py recovers curve points whose log lines were lost
-├── coder_curve.csv   all 138 val-loss points of the 700k-step coder run
-├── *.cmd             Windows scheduled-task wrappers for the long runs (TASKS.md)
-├── TASKS.md          the operations log of the machine the runs were done on, with that live block
-├── TODO.md, CONTRIBUTING.md, CITATION.cff, NOTICE
-├── golden/           the golden set itself; committed, unlike data/
-├── experiments/      one script per RESULTS.md section from §9 on; see its README
-├── docs/             this file, ARCHITECTURE.md, RESULTS.md, five model cards, the two plans,
-│                     TUTORIAL.md, DATASETS.md, PUBLISHING.md, the PDF study
-├── .github/          CI (tests on Ubuntu and Windows, CPU wheel) and the issue forms
-├── sarvam/           Sarvam's released modelling code + the five annotated walkthroughs
-├── web/index.html    the page serve.py serves
-├── release/          gitignored staging for the exported folders (0.8 GB each)
-└── data/             gitignored; regenerate, never commit (data/raw/ holds the HF downloads)
+├── anulm/
+│   ├── model.py          architecture. Config, RMSNorm, SwiGLU, Rotary(+YaRN),
+│   │                     GQAttention, MLAttention, Router, MoE, Block, AnuLM
+│   ├── bpe.py            byte-level BPE, DOC_SEP / EOS, the .bin encoder (train / encode / stats)
+│   ├── hf_tok.py         a Hugging Face tokenizer.json behind the same members as bpe.BPE
+│   ├── muon.py           Muon optimizer (+ AdamW companion)
+│   ├── lora.py           low-rank adapters: apply/merge/save, and a merge CLI
+│   ├── bigram_teacher.py the corpus's own bigram statistics as soft targets, faded out
+│   ├── bidirectional.py  the decoder as a bidirectional encoder (the LLM2Vec recipe)
+│   ├── quickstart.py     environment check, then --train a small model or --demo a released one
+│   ├── __main__.py       python -m anulm COMMAND
+│   │
+│   ├── training/         train.py: the training loop, WindowSampler, LR schedule, checkpointing,
+│   │                     --resume / --stop-at;  finetune.py: SFT on any jsonl set, loss on answer
+│   │                     tokens only; resumable; writes qa_templates
+│   ├── inference/        sample.py, sample_many.py: generation (KV cache, EOS, grouped dispatch);
+│   │                     ask.py: questions the way serve.py asks them;  serve.py: a stdlib HTTP
+│   │                     server + web/index.html;  api.py: OpenAI-compatible endpoints;
+│   │                     rag.py: retrieval;  voice.py: speech in and out;  langchain_anulm.py
+│   ├── tasks/            decide.py: typed, calibrated decisions (intents);  rc_pointer.py: the
+│   │                     extractive reader rag.py points with
+│   ├── data/             fetch_*.py: Wikimedia, C4, codeparrot, any HF dataset, speech;
+│   │                     convert_parquet.py, convert_translate.py, mix_corpus.py, filter_prose.py;
+│   │                     make_qa*.py, make_chat.py, make_rc.py: supervised sets;
+│   │                     make_bench.py, make_golden.py: the shared held-out file and the golden set
+│   ├── eval/             eval_bench.py (bits/byte), eval_context.py (long context / YaRN),
+│   │                     eval_golden.py, eval_qa.py, eval_translate.py (chrF), eval_code.py
+│   │                     (pass@1, in a subprocess), eval_speech.py
+│   ├── hf/               export_hf.py: a .pt -> a Hub-ready folder;  configuration_anulm.py and
+│   │                     modeling_anulm.py: the trust_remote_code pair;  hf_tokenizer.py: bpe.py's
+│   │                     JSON -> tokenizer.json, verified exact;  hf_upgrade.py: adds all of it
+│   │                     to an export made before it existed
+│   ├── multimodal/       audio_codec.py, speech_vocab.py, speech_data.py, speech_encoder.py,
+│   │                     vision_encoder.py; omni_train.py: one decoder for every task;
+│   │                     omni.py: loading it; omni_data.py, omni_images.py, omni_eval.py
+│   └── apps/             Gradio demos: app.py, app_omni.py, app_voice.py, app_vision.py,
+│                         app_benchmark.py
+├── tests/test_model.py   the test suite, plain asserts, no pytest: python -m tests.test_model
+├── tools/                maintenance for the machine the runs were made on: update_tasks.py,
+│                         eval_noise.py (RESULTS.md §25), backfill_curve.py, sweep.py, samples.py,
+│                         screenshot.py, qwen.py; windows/: the scheduled-task launchers
+├── model.py              the one alias at the root: old checkpoints pickle model.AnuLMConfig
+├── experiments/          one script per RESULTS.md section from §9 on; see its README
+├── examples/             the API demo and demo_colab.ipynb
+├── course/               the lab book that builds the model from stubs
+├── docs/                 this file, ARCHITECTURE.md, RESULTS.md, the model cards, TUTORIAL.md,
+│                         DATASETS.md, PUBLISHING.md, TASKS.md (the operations log), TODO.md,
+│                         curves/ (val-loss curves of the recorded runs)
+├── golden/               the golden set itself; committed, unlike data/
+├── sarvam/               Sarvam's released modelling code + the five annotated walkthroughs
+├── space/                README front matter + requirements for a Gradio Space running app.py
+├── web/index.html        the page serve.py serves
+├── .github/              CI (tests on Ubuntu and Windows, CPU wheel) and the issue forms
+├── data/                 gitignored except the tokenizers; regenerate, never commit
+└── runs/, checkpoints/, release/   gitignored outputs; nothing is written to the root
 ```
 
-`python model.py` is a standalone smoke test: builds both presets, runs forward
+`python -m anulm model` is a standalone smoke test: builds both presets, runs forward
 and backward, prints parameter counts and loss against `ln(V)`.
 
 ## Testing
 
 ```bash
-python test_model.py
+python -m tests.test_model
 ```
 
 The tests target **what training would not catch**. A leaky causal mask still
@@ -156,8 +152,8 @@ silently rotting.
 ## Training
 
 ```bash
-python train.py --preset 30b --steps 2000
-python train.py --preset 105b --data data/hindi.txt --block-size 512 \
+python -m anulm train --preset 30b --steps 2000
+python -m anulm train --preset 105b --data data/hindi.txt --block-size 512 \
                 --batch-size 8 --steps 2000
 ```
 
@@ -198,7 +194,7 @@ Both are written at every eval, so `--eval-every` sets your worst-case loss on
 an interruption. A long run that gets killed:
 
 ```bash
-python train.py ... --steps 6000 --out ckpt.pt --resume
+python -m anulm train ... --steps 6000 --out ckpt.pt --resume
 ```
 
 **Extending a finished run** is the same flag with a larger `--steps`, plus
@@ -219,7 +215,7 @@ long runs with `--resume` in mind. On the RTX 5070 Ti the combo preset runs
 a rank-r correction on the attention projections: `W + (alpha/r)·B·A`, B
 initialised to zero so step 0 is the base model to float noise. 1.5M
 trainable of 397.7M at r=16, a 6 MB adapter instead of a 1.6 GB checkpoint,
-and no `--grad-ckpt` needed on 8 GB. `python lora.py merge <adapter> <out>`
+and no `--grad-ckpt` needed on 8 GB. `python -m anulm lora merge <adapter> <out>`
 folds it back into an ordinary checkpoint.
 
 Two things worth knowing before trusting an adapter. The experts are **not**

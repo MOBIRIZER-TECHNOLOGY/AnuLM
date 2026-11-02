@@ -10,9 +10,9 @@ BASE=${BASE:-ckpt_multi36k.pt}
 OUT=${OUT:-ckpt_multi_qa.pt}
 
 echo "=== 1. PAIRS ($(date +%H:%M)) ==="
-[ -s data/qa_hindi.jsonl ] || python -u make_qa.py --data data/hindi_full.txt --out data/qa_hindi.jsonl --heldout data/qa_hindi_heldout.jsonl 2>&1 | head -3
-python -u make_qa_en.py --data data/english.txt --out data/qa_english.jsonl --heldout data/qa_english_heldout.jsonl 2>&1 | head -2
-python -u make_qa_py.py --data data/python.txt --out data/qa_python.jsonl --heldout data/qa_python_heldout.jsonl --max 20000 2>&1 | head -1
+[ -s data/qa_hindi.jsonl ] || python -u -m anulm make_qa --data data/hindi_full.txt --out data/qa_hindi.jsonl --heldout data/qa_hindi_heldout.jsonl 2>&1 | head -3
+python -u -m anulm make_qa_en --data data/english.txt --out data/qa_english.jsonl --heldout data/qa_english_heldout.jsonl 2>&1 | head -2
+python -u -m anulm make_qa_py --data data/python.txt --out data/qa_python.jsonl --heldout data/qa_python_heldout.jsonl --max 20000 2>&1 | head -1
 python - <<'PY'
 import json, random
 from pathlib import Path
@@ -32,12 +32,12 @@ print(f"merged: train {len(train)} = hindi {len(hi)} + english {len(en)} + pytho
 PY
 
 echo "=== 2. FINE-TUNE ($(date +%H:%M)) ==="
-python -u finetune.py --ckpt $BASE --qa data/qa_multi.jsonl --heldout data/qa_multi_heldout.jsonl \
+python -u -m anulm finetune --ckpt $BASE --qa data/qa_multi.jsonl --heldout data/qa_multi_heldout.jsonl \
     --out $OUT --epochs 2 --grad-ckpt 2>&1 | grep -v -i "warning\|triton"
 
 echo "=== 3. EVAL PER LANGUAGE ($(date +%H:%M)) ==="
 for lang in hindi english python; do
   echo "--- $lang"
-  python -u eval_qa.py $BASE $OUT --heldout data/qa_${lang}_heldout.jsonl --device cuda --limit 300 --gen 60 2>&1 | grep -v -i "warning\|triton"
+  python -u -m anulm eval_qa $BASE $OUT --heldout data/qa_${lang}_heldout.jsonl --device cuda --limit 300 --gen 60 2>&1 | grep -v -i "warning\|triton"
 done
 echo "=== DONE ($(date +%H:%M)) ==="

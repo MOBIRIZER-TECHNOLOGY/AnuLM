@@ -22,8 +22,8 @@ import torch.nn.functional as F
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _common import main, solution, with_replaced  # noqa: E402
-import model as ref  # noqa: E402
-import train  # noqa: E402
+from anulm import model as ref  # noqa: E402
+from anulm.training import train  # noqa: E402
 
 CHECKS = []
 B = solution(8)

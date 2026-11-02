@@ -95,7 +95,7 @@ def prep():
 def samples():
     sys.path.insert(0, str(ROOT))
     os.chdir(ROOT)
-    from serve import Engine
+    from anulm.inference.serve import Engine
     with open(LOGS / "samples.log", "w", encoding="utf-8") as f:
         for name in ("ckpt_chat_v3.pt", "ckpt_chat_v5.pt"):
             e = Engine(str(ROOT / name), "cuda")
@@ -121,7 +121,7 @@ def main():
         return
     log("=== CHAT V5 start ===")
     prep()
-    run("2_chat_sft", ["finetune.py", "--ckpt", "ckpt_base_v2.pt", "--qa", "data/chat_train_v5.jsonl",
+    run("2_chat_sft", ["-m", "anulm.training.finetune", "--ckpt", "ckpt_base_v2.pt", "--qa", "data/chat_train_v5.jsonl",
                        "--heldout", "data/chat_heldout.jsonl", "--out", "ckpt_chat_v5.pt", "--epochs", "2",
                        "--batch-size", "4", "--lr", "5e-5", "--grad-ckpt", "--eval-every", "500",
                        "--log-every", "200"], 2.0)
@@ -131,10 +131,10 @@ def main():
     run("3_samples", [str(Path(__file__).resolve()), "--root", str(ROOT), "--samples-only"], 0.5)
     for name, out, extra in (("4_F_bank_v5", "ckpt_decide_lora_F_v5.pt", []),
                              ("4_F_hi_v5", "ckpt_decide_lora_hi_F_v5.pt", ["--task", "massive-hi"])):
-        run(f"{name}_train", ["decide.py", "train", "--ckpt", "ckpt_chat_v5.pt", "--out", out, "--mode", "lora",
+        run(f"{name}_train", ["-m", "anulm.tasks.decide", "train", "--ckpt", "ckpt_chat_v5.pt", "--out", out, "--mode", "lora",
                               *F_ARGS, *extra], 1.5)
         if (ROOT / out).exists():
-            run(f"{name}_eval", ["decide.py", "eval", "--ckpt", out], 0.5)
+            run(f"{name}_eval", ["-m", "anulm.tasks.decide", "eval", "--ckpt", out], 0.5)
     log("=== CHAT V5 DONE ===")
 
 

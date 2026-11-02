@@ -9,17 +9,17 @@ COMMON="--preset 350m --device cuda --grad-ckpt --steps 6000 --batch-size 8 --bl
 echo "=== PATH check: $(which grep)"
 
 echo "=== A: old recipe (no EOS, with replacement, no regularisers) ==="
-python -u train.py $COMMON --data data/hindi_v4_noeos.hi16k.bin --sample-with-replacement --out ckpt_hindi_v4_base.pt 2>&1 | grep -v -i "warning\|triton"
+python -u -m anulm train $COMMON --data data/hindi_v4_noeos.hi16k.bin --sample-with-replacement --out ckpt_hindi_v4_base.pt 2>&1 | grep -v -i "warning\|triton"
 
 echo "=== B: new recipe (EOS docs, no-replacement sampler, seq-balance 1e-4, z 1e-3) ==="
-python -u train.py $COMMON --data data/hindi_v4.hi16k.bin --seq-balance-alpha 1e-4 --router-z-alpha 1e-3 --out ckpt_hindi_v4.pt 2>&1 | grep -v -i "warning\|triton"
+python -u -m anulm train $COMMON --data data/hindi_v4.hi16k.bin --seq-balance-alpha 1e-4 --router-z-alpha 1e-3 --out ckpt_hindi_v4.pt 2>&1 | grep -v -i "warning\|triton"
 
 echo "=== BENCH: all ==="
-python -u eval_bench.py ckpt_hindi_2k.pt ckpt_hindi_350m.pt ckpt_hindi_bpe.pt ckpt_hindi_v2.pt ckpt_hindi_v3.pt ckpt_hindi_v4_base.pt ckpt_hindi_v4.pt --device cuda 2>&1 | grep -v -i "warning\|triton"
+python -u -m anulm eval_bench ckpt_hindi_2k.pt ckpt_hindi_350m.pt ckpt_hindi_bpe.pt ckpt_hindi_v2.pt ckpt_hindi_v3.pt ckpt_hindi_v4_base.pt ckpt_hindi_v4.pt --device cuda 2>&1 | grep -v -i "warning\|triton"
 
 echo "=== SAMPLES ==="
 for ck in ckpt_hindi_v4_base.pt ckpt_hindi_v4.pt; do
   echo "--- $ck  prompt: 'मुंबई\\n\\n'"
-  python sample.py --ckpt $ck --prompt "$(printf 'मुंबई\n\n')" --tokens 250 --device cuda 2>&1 | grep -v -i "warning\|triton"
+  python -m anulm sample --ckpt $ck --prompt "$(printf 'मुंबई\n\n')" --tokens 250 --device cuda 2>&1 | grep -v -i "warning\|triton"
 done
 echo "=== DONE ==="

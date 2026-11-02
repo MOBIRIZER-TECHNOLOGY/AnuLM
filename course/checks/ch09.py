@@ -19,9 +19,9 @@ import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _common import main, with_replaced  # noqa: E402
-import finetune  # noqa: E402
-from bpe import BPE  # noqa: E402
-from make_qa import PROMPT_EN  # noqa: E402
+from anulm.training import finetune  # noqa: E402
+from anulm.bpe import BPE  # noqa: E402
+from anulm.data.make_qa import PROMPT_EN  # noqa: E402
 
 CHECKS = []
 TOK = BPE.train(("Question: what is the capital of India?\nAnswer: New Delhi is the capital. "

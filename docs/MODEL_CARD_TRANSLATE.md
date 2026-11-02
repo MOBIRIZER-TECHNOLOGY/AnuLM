@@ -49,7 +49,7 @@ Python mix (`docs/RESULTS.md` §22).
 
 The page picks the direction from the script you type; the API takes
 `mode: "translate"`. One sentence at a time; temperature 0.3 or lower.
-`python serve.py --ckpt <this folder>` then open http://127.0.0.1:8000.
+`python -m anulm serve --ckpt <this folder>` then open http://127.0.0.1:8000.
 "Continue the text" and "answer a question" on this checkpoint are not
 useful: fine-tuning on translation pairs eroded the base model's free-text
 ability. Use `AnuLM-Base-400M` or `AnuLM-Hindi-QA-400M` for those.

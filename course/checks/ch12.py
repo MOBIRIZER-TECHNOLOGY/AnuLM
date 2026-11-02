@@ -24,9 +24,9 @@ import torch.nn.functional as F
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _common import main, solution, with_replaced  # noqa: E402
-import decide  # noqa: E402
-import rag  # noqa: E402
-from bpe import BPE  # noqa: E402
+from anulm.tasks import decide  # noqa: E402
+from anulm.inference import rag  # noqa: E402
+from anulm.bpe import BPE  # noqa: E402
 
 CHECKS = []
 B = solution(8)
