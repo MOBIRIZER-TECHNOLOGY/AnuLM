@@ -7,6 +7,8 @@ pinned: "@773b6a8"
 
 # 25  Checkpoints, resuming and failure
 
+> **Current companion update, 2 November 2026:** See the [current workflow](../docs/reader/current-workflow.md) and [language coverage](../docs/reader/language-coverage.md) for revised setup, training, evaluation and limitations. This chapter's cited implementation and numerical results remain historical; new workflow checks do not clear its open release gates.
+
 The released model trained for 1.9 million steps on one GPU, in phases, with
 restarts. This chapter reads how `train.py` saves, resumes, and survives a
 broken resume point; each mechanism came from a failure, told with it.

@@ -1,5 +1,7 @@
 # Tutorial: from a fresh machine to your own AnuLM
 
+Current companion update (2 November 2026): see [current status](CURRENT_STATUS.md) and [language coverage](LANGUAGE_SUPPORT.md). Historical model cards, experiment numbers and commands below must not be presented as measurements of the active India run.
+
 > Source layout: implementation files now live under `anulm/`. See [the folder guide](STRUCTURE.md) and [filename migration map](source-paths.json). Historical filenames in measurements describe the original layout.
 
 This walks through the whole pipeline on a computer that has nothing

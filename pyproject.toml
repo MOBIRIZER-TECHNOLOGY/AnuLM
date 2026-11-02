@@ -11,7 +11,9 @@ license = {file = "LICENSE"}
 dependencies = ["torch>=2.1", "numpy>=1.24"]
 
 [project.optional-dependencies]
+data = ["pillow>=10", "soundfile>=0.12"]
 demo = ["gradio>=5", "huggingface_hub>=0.30"]
+evaluation = ["gradio>=5", "huggingface_hub>=0.30", "tokenizers>=0.20", "pillow>=10", "soundfile>=0.12", "safetensors>=0.4"]
 api = ["gradio>=5", "huggingface_hub>=0.30", "fastapi>=0.110", "uvicorn>=0.29", "python-multipart>=0.0.9"]
 export = ["safetensors>=0.4", "transformers>=4.46", "tokenizers>=0.20"]
 [project.scripts]

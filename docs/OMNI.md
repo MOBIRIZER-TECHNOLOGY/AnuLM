@@ -1,5 +1,10 @@
 # AnuLM-Omni: train the one model yourself
 
+The demo defaults to [approved recorded examples](DEMO_VALIDATION.md). Live
+research controls require `--experimental`; passing synthetic checks alone
+does not approve a real image/audio case. The initial validation catalogue is
+empty until trained artifacts and reviewed held-out results are available.
+
 AnuLM-Omni is one 456M decoder that chats, answers from passages, routes a
 message to an intent, transcribes English and Hindi speech, describes a photo
 and answers questions about it. This page takes you from a fresh clone to
@@ -36,6 +41,9 @@ first and check it does not touch torch), and `huggingface_hub` 2.x breaks
 `transformers` 5.x (keep it below 2).
 
 ## 2. Data
+
+Start with the [small pinned data pack](DATA_SETUP.md) for setup and media checks.
+The following older commands fetch full corpora and are not required for that pack.
 
 ```bash
 python -m anulm.multimodal.omni_data list            # every source, its licence, size and status

@@ -7,6 +7,8 @@ Python programmers who want to understand and change a language model.
 
 ## Read
 
+Current package: [workflow](docs/reader/current-workflow.md), [language coverage](docs/reader/language-coverage.md), and [course route](docs/reader/course-route.md), updated 2 November 2026. These guides distinguish the current local run from historical chapter results.
+
 1. [Start here](docs/reader/start-here.md): install the project and train your first small CPU model.
 2. [Choose a learning path](docs/reader/learning-paths.md): dense model first, advanced architecture, or deployment evaluation.
 3. [Browse the chapters](chapters/README.md): the complete table of contents.
@@ -65,6 +67,11 @@ The reorganized project's [structure guide](../docs/STRUCTURE.md) and
 historical pin and optional course labs remain unavailable; read the front matter
 before attempting the historical audits.
 
-The book is still a technical preview. Outstanding expert/reader reviews, live
-API fixes, corrected chat evaluation and publication details are listed in the
+The book is still a technical preview. Outstanding expert/reader reviews, operational service checks, corrected chat
+evaluation and publication details are listed in the
 [launch checklist](docs/reader/launch-checklist.md).
+
+
+## Text license
+
+Original book prose and reader/course guides: [CC BY 4.0](LICENSE-TEXT.md). Companion code retains MIT; separately identified third-party material retains its own terms.

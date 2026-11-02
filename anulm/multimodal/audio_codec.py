@@ -219,14 +219,33 @@ class WhisperEncoder:
         self.dim = WHISPER_DIM.get(size, 768)
 
     def encode(self, audio) -> np.ndarray:
-        """wav path or 16 kHz samples -> (frames, dim) float32, ~50 Hz."""
+        """Up to 30 seconds of 16 kHz audio -> encoder states.
+
+        Longer audio must be segmented with aligned transcripts by the caller.
+        Reject it explicitly rather than silently training against a cropped clip.
+        """
         if isinstance(audio, (str, Path)):
             audio = read_wav(audio, ASR_RATE)
+        audio = np.asarray(audio, dtype=np.float32)
+        if audio.ndim != 1 or audio.size == 0 or not np.isfinite(audio).all():
+            raise ValueError("Expected a nonempty mono audio clip at 16 kHz.")
+        if audio.size > 30 * ASR_RATE:
+            raise ValueError("Audio duration exceeds 30 seconds; chunk the audio and align its transcript first.")
         feats = self.whisper.feature_extractor(np.ascontiguousarray(audio, dtype=np.float32))
-        # Whisper's own 30 s window; longer clips are chunked by the caller.
+        # Whisper's fixed maximum feature window, after the explicit duration check.
         sv = self.ct2.StorageView.from_array(np.ascontiguousarray(feats[np.newaxis, :, :3000]))
         out = self.whisper.model.encode(sv).to_device(self.ct2.Device.cpu)
         return np.asarray(out)[0].astype(np.float32)
+
+
+def audio_chunks(audio, chunk_samples: int = 30 * ASR_RATE):
+    """Validated non-overlapping inference windows; training needs aligned labels."""
+    audio = np.asarray(audio, dtype=np.float32)
+    if audio.ndim != 1 or not audio.size or not np.isfinite(audio).all():
+        raise ValueError("Expected nonempty finite mono audio at 16 kHz.")
+    if not isinstance(chunk_samples, int) or not 1 <= chunk_samples <= 30 * ASR_RATE:
+        raise ValueError("chunk_samples must be between one sample and 30 seconds.")
+    return [audio[i:i + chunk_samples] for i in range(0, audio.size, chunk_samples)]
 
 
 def probe(path: str) -> None:

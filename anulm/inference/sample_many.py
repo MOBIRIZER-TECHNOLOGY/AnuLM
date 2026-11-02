@@ -63,8 +63,8 @@ def main() -> None:
 
     tok, eos_id = None, 257
     if getattr(cfg, "tokenizer_path", None):
-        from anulm.tokenization.bpe import BPE
-        tok = BPE.load(cfg.tokenizer_path)
+        from anulm.tokenization.hf import load_tokenizer
+        tok = load_tokenizer(cfg.tokenizer_path)
         eos_id = tok.eos_id if cfg.vocab_size > tok.eos_id else None
 
     for group, temp, prompt in PROMPTS:

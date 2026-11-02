@@ -1,5 +1,10 @@
 # Datasets: every source, where to get it, what it is licensed for
 
+For a bounded developer setup, use the new [small multimodal data pack](DATA_SETUP.md):
+pinned DOCCI, English/Hindi FLEURS and BANKING77 subsets, with attribution and
+file checksums. This selects CC BY 4.0 sources without declaring older model
+lineages cleared for commercial use. Full-corpus commands below are separate.
+
 No training data is redistributed in this repository. Every corpus is
 rebuilt from a public source by the scripts named below, so anyone can
 reproduce each checkpoint from scratch. `data/` is gitignored except for

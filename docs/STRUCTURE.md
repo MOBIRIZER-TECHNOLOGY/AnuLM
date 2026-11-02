@@ -24,7 +24,8 @@ AnuLM/
     integrations/           optional external-framework adapters
     tools/                  environment checks and maintenance helpers
   book/                     reader guides, chapters, examples and book tools
-  tests/                    model and layout regression checks
+  tests/                    model, layout, multimodal and demo checks
+  config/                   approved demo-evidence catalogue
   docs/                     usage guides, model cards, reference and roadmap
   scripts/windows/          optional Windows launch/maintenance helpers
   measurements/training/    committed historical loss curves
@@ -37,6 +38,9 @@ AnuLM/
 ```
 
 ## Commands and imports
+
+The [demo evidence guide](DEMO_VALIDATION.md) documents approved cases and the
+explicit opt-in for live research controls. Decide serving uses AnuLM only.
 
 Install from this checkout with `python -m pip install -e .`. Then use:
 

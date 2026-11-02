@@ -18,13 +18,13 @@ import gradio as gr
 
 BENCH = PROJECT_ROOT / "examples" / "api_demo" / "benchmark"
 
-ORDER = ["decide_banking", "decide_banking_modernbert", "decide_hindi", "decide_india", "decide_general", "answer",
+ORDER = ["decide_banking", "decide_hindi", "decide_india", "decide_general", "answer",
          "asr_en", "asr_hi", "caption", "vqa", "chat", "tts"]
-NAME = {"decide_banking": "Banking intents", "decide_banking_modernbert": "Banking intents (ModernBERT)",
+NAME = {"decide_banking": "Banking intents",
         "decide_hindi": "Hindi intents", "decide_india": "Indian banking intents (en/hi/Hinglish)", "decide_general": "Zero-shot intents (77 options)",
         "answer": "Wikipedia lookup", "asr_en": "Speech to text, English", "asr_hi": "Speech to text, Hindi",
         "caption": "Image captions", "vqa": "Image questions (free-form)", "chat": "Chat", "tts": "Text to speech"}
-DATA = {"decide_banking": "BANKING77 test", "decide_banking_modernbert": "BANKING77 test (same 300)",
+DATA = {"decide_banking": "BANKING77 test",
         "decide_hindi": "MASSIVE hi-IN", "decide_india": "214 synthetic test messages", "decide_general": "BANKING77 test", "answer": "20 curated questions",
         "asr_en": "LibriSpeech held-out", "asr_hi": "FLEURS Hindi dev", "caption": "Flickr30k val",
         "vqa": "A-OKVQA val", "chat": "held-out prompts, en + hi", "tts": "20 sentences"}

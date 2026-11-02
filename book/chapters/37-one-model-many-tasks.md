@@ -7,6 +7,8 @@ pinned: "@773b6a8"
 
 # 37  One model, many tasks
 
+> **Current companion update, 2 November 2026:** See the [current workflow](../docs/reader/current-workflow.md) and [language coverage](../docs/reader/language-coverage.md) for revised setup, training, evaluation and limitations. This chapter's cited implementation and numerical results remain historical; new workflow checks do not clear its open release gates.
+
 Before `omni_train.py`, every skill was its own copy of the backbone.
 `omni_train.py` trains one decoder on chat, reading, intents, two speech tasks,
 captions and image questions at once. It can, because Chapters 35 and 36

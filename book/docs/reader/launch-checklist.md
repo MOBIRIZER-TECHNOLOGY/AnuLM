@@ -1,5 +1,7 @@
 # Launch checklist
 
+For the revised multilingual/multimodal package, read [Current companion workflow](current-workflow.md), [Language coverage](language-coverage.md) and [Course route](course-route.md). This 2 November 2026 update does not replace historical measurements or certify a production release.
+
 This is an acceptance worksheet, not a claim that the current server passes. Choose one concrete use case and record evidence for each applicable item. A local demo and an operational service have different finish lines.
 
 ## Define the service before measuring it
@@ -14,24 +16,24 @@ Write down the intended users and task, languages, maximum prompt and answer len
 | Public reproducibility | An immutable public revision containing every required file; tested fresh-clone commands | Historical pin and optional course labs remain unpublished. |
 | Technical review | Reviewed records for every chapter, plus resolved findings | Nine chapters remain drafted in the supplied review records. |
 | Reader usability | New readers complete setup, one example, and one exercise using only the instructions | Needs a human reader trial. |
-| Publication details | Author, edition, text permissions, artifact version and known limitations | Text licence remains undecided. |
+| Publication details | Author, edition, text permissions, artifact version and known limitations | Original book prose: CC BY 4.0, selected by the author on 2 November 2026. Preserve third-party notices; other publication gates remain open. |
 
 ## Model and data
 
 - Keep a versioned record of data sources, cleaning, tokenizer, split rules, exclusions, and artifact checksums.
 - Deduplicate or group equivalent examples before splitting. Rebuild the contaminated chat split and rerun affected evaluations; do not silently reuse the old scores.
-- Fix a task evaluation set and success threshold. Report baseline comparison, failure cases, sample sizes, and uncertainty where appropriate.
+- Fix a task evaluation set and success threshold. Report the chosen checkpoint's starting-task measurements, failure cases, sample sizes, and uncertainty where appropriate.
 - Test the chosen precision and exported artifact against the native model on relevant tasks. Record observed differences, rather than assuming matching configuration means matching output.
 - Document supported languages, context length, intended use, and observed limitations.
 
 ## Request correctness
 
 - Demonstrate that each accepted generation option changes or controls the intended behaviour. Reject unsupported options explicitly.
-- Test the supported conversation format. The historical API uses the last user message and ignores earlier turns.
+- Test the supported conversation format. The historical API ignored earlier turns; current source rejects multi-message/history requests explicitly.
 - Require both streamed and returned output to agree for EOS, token limits, UTF-8 boundaries, and stop strings split across tokens. Include cancellation and client disconnects.
 - Verify prompt truncation, maximum output length, malformed input, and error messages.
 
-Chapter 38 discloses streaming faults and accepted-but-ignored options in the historical server. A teaching repair is not a deployed server fix. Keep this gate open until the implementation used for launch is corrected and tested.
+Chapter 38 retains its historical streaming findings. The current companion fixes EOS/UTF-8/stop handling, deterministic greedy decoding and option validation, with unit and real-checkpoint API smoke checks. This closes those specific code findings only. Concurrent load, cancellation/disconnect behavior and recovery still require deployment tests.
 
 ## Operations
 

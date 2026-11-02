@@ -21,6 +21,23 @@ Models load on first use and stay loaded. Requests are served one at a time:
 the models share one GPU, and the chat model's weights are shared with the
 Decide adapters.
 
+## Current request contract (2 November 2026)
+
+Text chat accepts exactly one user message. History/system messages are rejected
+with HTTP 400; unknown fields are rejected with 422. This is a deliberately
+limited compatible interface, not full OpenAI API compatibility. Sampling supports
+temperature (zero is exact greedy), top_k and repetition_penalty. top_p must be
+absent or 1. Positive output limits are bounded at 4096; conflicting limit fields
+are rejected. Unsupported modality-specific controls are rejected rather than
+ignored. Image requests accept one image, at most 64 generated tokens. Inspect
+`/openapi.json` for the current schema.
+
+Current source fixes EOS/stop-buffer handling, incomplete UTF-8 boundaries and
+stream/returned parity. Unit tests and a real-checkpoint CPU API smoke check
+passed; this is not a concurrent load, disconnect or recovery certification.
+Historical counts below retain their original dates. The trained India research
+model remains poor; see [current status](CURRENT_STATUS.md).
+
 ## Authentication
 
 Unset by default (any key is accepted, so OpenAI clients that insist on a key
@@ -49,17 +66,14 @@ Bind to `0.0.0.0` only with a key set.
 | `anulm-decide-banking` | `/v1/decide` | 77 BANKING77 intents: the chat model + a rank-64 LoRA adapter | yes |
 | `anulm-decide-hindi` | `/v1/decide` | 60 MASSIVE intents in Hindi: the chat model + a rank-64 adapter | yes |
 | `anulm-decide-general` | `/v1/decide` | any option list, zero-shot (a separate 398M model) | yes |
-| `modernbert-decide-banking` | `/v1/decide` | reference: ModernBERT-base fine-tuned on BANKING77 | no |
-| `modernbert-decide-hindi` | `/v1/decide` | reference: ModernBERT-base fine-tuned on MASSIVE Hindi | no |
 
 Measured quality (docs/RESULTS.md sections 33-38):
 
 | model | result |
 | --- | --- |
 | `anulm-decide-banking` | 89.0% on 3,080 test queries; at confidence >= 0.7 it answers 83.5% at 96.2% |
-| `anulm-decide-hindi` | 84.5% on 2,033 Hindi test messages (ModernBERT: 67.5%) |
+| `anulm-decide-hindi` | 84.5% on 2,033 Hindi test messages |
 | `anulm-decide-general` | 43.2% on BANKING77 never seen in training; calibrated (ECE 3.7%) |
-| `modernbert-decide-banking` | 90.8%, about 4x faster than AnuLM |
 | `anulm-answer` | SQuAD F1 57.2 |
 | `anulm-asr` | WER 8.2% English (LibriSpeech), 48.4% Hindi (FLEURS) |
 
@@ -103,15 +117,16 @@ for chunk in client.chat.completions.create(model="anulm-chat", stream=True,
 | parameter | default | notes |
 | --- | --- | --- |
 | `model` | `anulm-chat` | or `anulm-answer`, `anulm-vision` |
-| `messages` | required | the **last user message** is answered (see Limits) |
-| `max_tokens` / `max_completion_tokens` | 200 | capped by the 1,024-token context |
+| `messages` | required | exactly one user message; other roles/history are rejected |
+| `max_tokens` / `max_completion_tokens` | 200 | capped by the loaded model context; positive values only |
 | `temperature` | 0.3 | 0 is greedy |
 | `top_k` | 40 | AnuLM extension (OpenAI has no top_k) |
 | `repetition_penalty` | 1.15 | AnuLM extension |
 | `stop` | none | string or list; `finish_reason` is then `stop` |
 | `seed` | none | same seed and inputs give the same text |
 | `stream`, `stream_options` | false | as OpenAI |
-| `top_p`, `frequency_penalty`, `presence_penalty`, `user` | | accepted and ignored |
+| `top_p` | | omission or 1 only; other values return 400 |
+| Undeclared request fields, including `frequency_penalty`, `presence_penalty`, `user` | | rejected with 422; not silently ignored |
 | `n` | 1 | only 1 |
 | `tools`, `response_format` other than text | | rejected with 400 |
 
@@ -211,7 +226,7 @@ curl http://127.0.0.1:8000/v1/decide -H "Content-Type: application/json" \
 
 | field | default | notes |
 | --- | --- | --- |
-| `model` | `anulm-decide-banking` | any `anulm-decide-*` or `modernbert-decide-*` |
+| `model` | `anulm-decide-banking` | any `anulm-decide-*` |
 | `input` | required | a message, or a list (one result each, in order) |
 | `options` | the model's labels | a subset or another list; **required** for `anulm-decide-general`. Options outside a model's trained labels are zero-shot and much weaker |
 | `threshold` | 0.7 | below it, `action` is `send to human` |
@@ -220,7 +235,7 @@ curl http://127.0.0.1:8000/v1/decide -H "Content-Type: application/json" \
 `GET /v1/models/anulm-decide-banking` describes each model; the labels are
 the BANKING77 categories and MASSIVE intents (`alarm_set`, `weather_query`,
 ...). Each decision is one forward pass: about 60 ms on the RTX 5070 Ti for
-AnuLM, 15 ms for ModernBERT.
+AnuLM.
 
 ## Lookup: `POST /v1/answer`
 
@@ -304,8 +319,8 @@ OpenAI's shape, so OpenAI clients raise their usual exceptions
 ## Limits
 
 * **Single-turn chat.** The model was tuned on one question and one answer.
-  System messages and earlier turns are accepted, so OpenAI and LangChain
-  conversations work, but only the last user message is answered.
+  Exactly one user message is supported. System/assistant roles and multi-turn
+  history return 400 instead of silently discarding context.
 * **Facts from memory are unreliable** ("The capital of India is Kolkata").
   Use `anulm-answer` or `/v1/answer` for facts. The reader nearly always
   finds some span, so a question Wikipedia cannot answer ("What did I eat for
@@ -315,4 +330,18 @@ OpenAI's shape, so OpenAI clients raise their usual exceptions
 * **One request at a time.** Concurrent requests queue. On the RTX 5070 Ti
   the chat model wrote 27 tokens in 0.85 s (about 30 tokens/s) and a decision
   takes ~60 ms; on CPU, expect several times slower.
-* `top_p` and the penalties other than `repetition_penalty` are ignored.
+* Nucleus sampling is unsupported; non-default `top_p` returns 400. Only
+  `repetition_penalty` controls repetition in this implementation.
+
+
+## Local correctness fixes, 2 November 2026
+
+The revised API flushes text buffered before EOS, omits incomplete trailing UTF-8
+bytes while retaining a valid U+FFFD character, and keeps streamed/returned text
+consistent. Temperature zero uses exact argmax decoding outside the unchanged
+native model. Unsupported conversation history and non-default nucleus sampling
+are rejected. Positive token limits and valid top-k/repetition settings are checked.
+`tests/test_release_fixes.py` covers these regressions offline, including auth.
+This is not a production load or security certification.
+
+Vision responses accept a token limit up to 64; text sampling controls are rejected for vision/retrieval modes. EOS contributes to generated-token usage even though it is not displayed. Empty stop strings mean no stop.

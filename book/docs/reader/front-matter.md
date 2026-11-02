@@ -2,7 +2,7 @@
 title: "Inside AnuLM"
 subtitle: "A language model you can read, line by line"
 author: "The AnuLM authors"
-edition: "Complete technical preview, 2026-11-01"
+edition: "Complete technical preview, 2026-11-02"
 ---
 
 # Inside AnuLM
@@ -24,6 +24,13 @@ then [Learning paths](learning-paths.md). This is a technical preview with
 server; it does not certify a production service. The
 [Launch checklist](launch-checklist.md) states the remaining acceptance gates.
 
+## Current companion update
+
+The [current workflow](current-workflow.md), [language coverage](language-coverage.md)
+and [course route](course-route.md) document the revised package. Historical
+chapter citations and measurements retain their recorded revision. The new run
+is ongoing; its quality is not approved. Revised changes are still local.
+
 ## Where everything is
 
 | What | Where |
@@ -31,7 +38,7 @@ server; it does not certify a production service. The
 | Source code, MIT licence | [github.com/MOBIRIZER-TECHNOLOGY/AnuLM](https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM) |
 | The model this book traces, AnuLM-Base-v2-400M | [huggingface.co/toonist/AnuLM-Base-v2-400M](https://huggingface.co/toonist/AnuLM-Base-v2-400M) |
 | Every released AnuLM checkpoint | [huggingface.co/toonist](https://huggingface.co/toonist) |
-| The lab book that builds the model from stubs | `course/` in the same repository |
+| Current practical study route | [Course route](course-route.md); historical `course/` stub labs remain unavailable |
 | This book's source, scripts and review records | `book/` in the same repository |
 
 ## The code this book cites
@@ -78,3 +85,8 @@ The repository's `CITATION.cff` gives the citation for AnuLM itself:
 > language model in the shape of Sarvam 30B, trained from scratch on one GPU
 > for Hindi, English and Python.* Version 0.1.0.
 > https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM
+
+
+## Text license
+
+The author selected CC BY 4.0 for original book prose and reader/course guides on 2 November 2026. Companion code remains MIT. Separately identified third-party materials retain their own terms. See the book root LICENSE-TEXT.md and LICENSE-CC-BY-4.0.txt.

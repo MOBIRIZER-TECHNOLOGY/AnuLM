@@ -1,5 +1,11 @@
 # To do
 
+This is a historical roadmap, not a claim that every experiment is required for
+the current research package. The current measured blockers are in
+[the India assessment](../reviews/INDIA_MODEL_ASSESSMENT.md). Public model release,
+DOI registration and hosting are maintainer decisions, not automatic outcomes
+of local training or this draft contribution.
+
 Open work, ordered by how much it would help other people. Each item is
 also a GitHub issue; discuss there, and open a PR against `main`. Items
 marked **(no GPU)** can be done on a laptop.
@@ -11,11 +17,11 @@ marked **(no GPU)** can be done on a laptop.
    under GitHub settings, and publishes a `v0.1.1` release; Zenodo mints
    the DOI. Then add the DOI badge to `README.md` and the `doi:` field to
    `CITATION.cff`. Only the account owner can do the first step.
-2. **Hosted demo (no GPU).** Hugging Face requires a PRO subscription
-   to host Gradio Spaces even on the free CPU tier (the API returns 402),
-   so no Space is up; `app.py` and `space/` are ready for anyone with
-   PRO or ZeroGPU access, and `demo_colab.ipynb` is the free way to try
-   the models today. The checkpoint dropdown is done.
+2. **Hosted demo (maintainer decision).** Check the hosting provider's current
+   options and terms directly before choosing a service. This local package
+   requires no paid hosting. Publish only approved recorded cases, and do not
+   present the current model as production-ready. This contribution does not
+   purchase a subscription or configure an external hosting account.
 3. **Linux reproduction report (no GPU for the small parts).** CI now
    runs the tests and a 50-step training run on Ubuntu for every push, so
    the small path is covered; nobody has yet run the *tutorial* end to end

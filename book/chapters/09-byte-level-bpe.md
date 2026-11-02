@@ -7,6 +7,8 @@ pinned: "@773b6a8"
 
 # 9  Byte-level BPE from scratch
 
+> **Current companion update, 2 November 2026:** See the [current workflow](../docs/reader/current-workflow.md) and [language coverage](../docs/reader/language-coverage.md) for revised setup, training, evaluation and limitations. This chapter's cited implementation and numerical results remain historical; new workflow checks do not clear its open release gates.
+
 Chapter 8's byte model spends about 2.5 positions per character of Hindi text. A
 tokenizer spends fewer by giving frequent byte sequences ids of their own. The
 released model's tokenizer, `multi32k`, was trained by `bpe.py`, whose

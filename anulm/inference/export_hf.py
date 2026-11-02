@@ -80,6 +80,7 @@ def front_matter(args, cfg, ck) -> str:
         tags = ["modernbert", "hindi", "indic", "pytorch"]
     fm = {
         "license": args.license,
+        "export_precision": args.weights_dtype,
         "language": langs,
         "pipeline_tag": PIPELINE[args.kind],
         "tags": tags,
@@ -172,6 +173,9 @@ def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("ckpt")
     p.add_argument("out")
+    p.add_argument("--weights-dtype", choices=["mixed", "float32"], default="mixed",
+                   help="float32 preserves native weights for exact export validation")
+    p.add_argument('--bundle-encoders', action='store_true', help='copy pinned local Whisper/vision snapshots into an omni export')
     p.add_argument("--name", help="display name for the card; default: the output folder name")
     p.add_argument("--license", default="cc-by-nc-sa-4.0",
                    help="SPDX-style id the Hub understands (mit, apache-2.0, cc-by-sa-4.0, cc-by-nc-4.0, ...)")
@@ -203,6 +207,18 @@ def main() -> None:
 
     groups = tensor_groups(ck)
     extras = {k: v for k, v in ck.items() if k not in CORE_KEYS and k not in groups}
+    if args.bundle_encoders:
+        if args.kind != 'omni':
+            raise ValueError('--bundle-encoders requires --kind omni')
+        for key, name in [('whisper', 'whisper'), ('tower', 'vision')]:
+            if key not in ck:
+                continue
+            source = Path(ck[key])
+            if not source.is_dir():
+                raise ValueError('Encoder bundling requires a pinned local directory.')
+            target = out / 'encoders' / name
+            shutil.copytree(source, target, dirs_exist_ok=False)
+            extras[key] = f'encoders/{name}'
     if args.adapter_of:
         assert args.base_model, "--adapter-of needs --base-model (the Hub id the backbone is fetched from)"
         live = load_checkpoint(args.adapter_of, "cpu")["model"]
@@ -217,7 +233,8 @@ def main() -> None:
     # format, beside its config and tokenizer, so transformers loads it as-is.
     n_params = 0
     if "model" in ck:
-        sd = to_bf16(ck["model"])
+        sd = ({k: v.detach().cpu().contiguous() for k, v in ck["model"].items()}
+              if args.weights_dtype == "float32" else to_bf16(ck["model"]))
         save_file(sd, str(out / "model.safetensors"), metadata={"format": "pt", "exported_from": Path(args.ckpt).name})
         n_params = sum(v.numel() for v in sd.values())
     if hf_state is not None:
@@ -247,8 +264,19 @@ def main() -> None:
         shutil.copyfile(src, out / tok_file)
         try:
             from anulm.hf import tokenizer as hf_tok
-            hf_tok.main_for(src, out)
-            print("  tokenizer.json verified against bpe.py and written")
+            token_data = json.loads(src.read_text(encoding="utf-8"))
+            if "model" in token_data and "added_tokens" in token_data:
+                shutil.copyfile(src, out / "tokenizer.json")
+                tokens = {item["content"] for item in token_data["added_tokens"]}
+                tok_meta = {"tokenizer_class": "PreTrainedTokenizerFast", "model_max_length": cfg.block_size}
+                for key, value in [("eos_token", "<|endoftext|>"), ("pad_token", "[PAD]"), ("unk_token", "[UNK]")]:
+                    if value in tokens:
+                        tok_meta[key] = value
+                (out / "tokenizer_config.json").write_text(json.dumps(tok_meta, indent=2), encoding="utf-8")
+                print("  native HF ByteLevel tokenizer copied without conversion")
+            else:
+                hf_tok.main_for(src, out)
+                print("  tokenizer.json verified against bpe.py and written")
         except Exception as e:                       # never block a weight export
             print(f"  WARNING: tokenizer.json not written ({type(e).__name__}: {e});"
                   f" AutoTokenizer will not work for this folder")
@@ -294,7 +322,10 @@ def main() -> None:
         "base_ckpt": ck.get("base_ckpt"),
         "exported_from": Path(args.ckpt).name,
         "license": args.license,
+        "export_precision": args.weights_dtype,
     })
+    if args.weights_dtype == "float32":
+        meta["weights_dtype"] = "float32; native parameters preserved without rounding"
     if extras:
         meta["extras"] = extras
     (out / "config.json").write_text(json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8", newline="\n")
@@ -307,7 +338,9 @@ def main() -> None:
     # 5. card
     body = Path(args.card).read_text(encoding="utf-8") if args.card else f"# {args.name or out.name}\n\nSee the AnuLM repository for details.\n"
     repo = args.repo or f"toonist/{out.name}"
-    usage = usage_text(args.kind, repo, out.name)
+    usage = (usage_text(args.kind, repo, out.name) if args.repo else
+             '\n\n## Local research export\n\nNot published to a model Hub. Load the local directory with the AnuLM package.\n'
+             f'\n```bash\npython -m anulm.apps.evaluate --ckpt "{out.resolve()}"\n```\n')
     if "model" in ck:
         usage += (f"\nWeights: `model.safetensors`, bfloat16, {sum(v.numel() for v in ck['model'].values())/1e6:.1f}M "
                   f"parameters. Tokenizer: `{tok_file}`. {TOKENIZER_NOTE if tok_file else ''}\n")

@@ -46,9 +46,17 @@ sweep/
 build/
 dist/
 runs/
+logs/india-v1/
+.cache/
+.demo_auth
+.demo_auth.*
+logs/local-apps/
 book/preview/
 book/.venv/
 book/.work/
 book/.local/
 book/tmp/
 book/validation/
+
+# Generated run logs and process records
+logs/

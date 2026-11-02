@@ -7,6 +7,8 @@ pinned: "@773b6a8"
 
 # 36  Seeing and hearing: frozen encoders and projectors
 
+> **Current companion update, 2 November 2026:** See the [current workflow](../docs/reader/current-workflow.md) and [language coverage](../docs/reader/language-coverage.md) for revised setup, training, evaluation and limitations. This chapter's cited implementation and numerical results remain historical; new workflow checks do not clear its open release gates.
+
 Chapter 35's `embeds=` lets vectors with no id into the model. This chapter
 is where they come from: two pretrained encoders, Whisper-small for audio and
 SigLIP for images, that are never trained here, and a small trained projector

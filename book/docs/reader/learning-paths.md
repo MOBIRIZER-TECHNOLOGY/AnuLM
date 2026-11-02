@@ -1,5 +1,7 @@
 # Learning paths
 
+For the revised multilingual/multimodal package, read [Current companion workflow](current-workflow.md), [Language coverage](language-coverage.md) and [Course route](course-route.md). This 2 November 2026 update does not replace historical measurements or certify a production release.
+
 Keep the chapter numbers as reference points. You do not have to read all 41 chapters in sequence before running a model. Start with [Start here](start-here.md), then choose a path.
 
 ## Path 1: understand and train your first model

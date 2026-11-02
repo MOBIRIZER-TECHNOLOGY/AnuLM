@@ -1,5 +1,13 @@
 # Contributing to AnuLM
 
+For a fresh GPU computer or the portable ZIP, start with
+[START_TRAINING.md](START_TRAINING.md). It includes the pinned training setup,
+machine checks and launch/recovery instructions without GitHub credentials.
+
+Follow [AGENTS.md](AGENTS.md) for the repository's development/training rules.
+The [India training guide](docs/INDIA_TRAINING.md) records the initial multilingual
+run, data provenance, resource limits and recovery procedure.
+
 Thank you for looking. This is a one-GPU academic project, and the most
 useful contributions are the ones that let more people reproduce it, run
 it on more machines, or extend it in a measured way. Open items are in
@@ -16,6 +24,7 @@ python -m pip install --no-deps -e .
 python -m anulm.tools.quickstart          # confirms the install; prints the fix for anything missing
 python -m tests.test_model          # model checks; inspect any optional skips
 python -m unittest tests.test_layout # package/legacy-checkpoint checks
+python -m unittest tests.test_multimodal_contracts tests.test_validated_demo # synthetic multimodal contracts and demo evidence checks
 ```
 
 CI runs the tests plus a 50-step training run on Ubuntu and Windows for

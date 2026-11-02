@@ -39,6 +39,15 @@ class Omni:
         self.model, self.tok = self.engine.model, self.engine.tok
         ck = load_checkpoint(src, "cpu")
         self.meta = {k: ck[k] for k in ("speech_text_vocab", "whisper", "stack", "tower", "pool") if k in ck}
+        from pathlib import Path
+        root = Path(src).expanduser()
+        if root.is_dir():
+            for key in ('whisper', 'tower'):
+                if key in self.meta and not Path(self.meta[key]).is_absolute():
+                    candidate = (root / self.meta[key]).resolve()
+                    if not candidate.is_relative_to(root.resolve()):
+                        raise ValueError('Encoder reference escapes exported artifact directory.')
+                    self.meta[key] = str(candidate)
         self.proj, self.vision_proj = ck.get("proj"), ck.get("vision_proj")
         del ck
         self._ear = self._eye = self._reader = None
@@ -52,7 +61,7 @@ class Omni:
             from anulm.multimodal.speech_encoder import ContinuousSpeech
             from anulm.multimodal.speech_vocab import vocab_of
             from anulm.multimodal.voice import OwnASR
-            enc = WhisperEncoder(self.meta.get("whisper", "small"), self.device)
+            enc = WhisperEncoder(self.meta.get("whisper", "small"), self.meta.get("encoder_device", "cpu"))
             sm = ContinuousSpeech(self.model, vocab_of(self.meta), enc.dim, self.meta.get("stack", 4)).to(self.device)
             sm.proj.load_state_dict(self.proj)
             sm.eval()

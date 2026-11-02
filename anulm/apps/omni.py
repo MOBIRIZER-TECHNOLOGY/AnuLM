@@ -62,8 +62,6 @@ else:
     DECIDE_ADAPTER, DECIDE_ADAPTER_HI = "ckpt_decide_chat_lora.pt", "ckpt_decide_lora_hi.pt"
     DECIDE_ADAPTER_IN = "ckpt_decide_lora_india_F.pt"     # trained on v3 only: absent here, the task hides
 READER = "ckpt_rc_pointer_v2.pt" if (_HERE / "ckpt_rc_pointer_v2.pt").exists() else "ckpt_rc_pointer.pt"
-# Decide backbones (docs/RESULTS.md section 36). ModernBERT is an open
-# pretrained encoder, not this project's model, and is labelled so in the UI.
 # AnuLM decides with the chat model itself plus a LoRA adapter (section 37):
 # one copy of the weights for both tabs.
 DECIDE_OWN = "AnuLM (our own, from scratch; the chat model + adapter)"
@@ -74,10 +72,9 @@ TASK_HI = "Hindi assistant commands (MASSIVE, 60 intents)"
 # SYNTHETIC: experiments/make_india_banking.py, written for the demo (UPI, IFSC, KYC, ...).
 TASK_IN = "Indian banking: UPI, KYC, Aadhaar, EMI (English, Hindi, Hinglish; 20 intents, synthetic data)"
 DECIDE_TASKS = {
-    TASK_BANK: {DECIDE_OWN: DECIDE_ADAPTER if (_HERE / DECIDE_ADAPTER).exists() else "ckpt_decide.pt",
-                DECIDE_MB: "ckpt_decide_modernbert.pt"},
-    TASK_HI: {DECIDE_OWN: DECIDE_ADAPTER_HI, DECIDE_MB: "ckpt_decide_mb_hi.pt"},
-    TASK_IN: {DECIDE_OWN: DECIDE_ADAPTER_IN, DECIDE_MB: "ckpt_decide_mb_india.pt"},
+    TASK_BANK: {DECIDE_OWN: DECIDE_ADAPTER if (_HERE / DECIDE_ADAPTER).exists() else "ckpt_decide.pt"},
+    TASK_HI: {DECIDE_OWN: DECIDE_ADAPTER_HI},
+    TASK_IN: {DECIDE_OWN: DECIDE_ADAPTER_IN},
 }
 DECIDE_ADAPTERS = {DECIDE_ADAPTER, DECIDE_ADAPTER_HI, DECIDE_ADAPTER_IN}     # --mode lora on BRAIN
 BRAIN_HUB = "toonist/AnuLM-Hindi-QA-400M"
@@ -117,12 +114,16 @@ class Models:
             print(f"loaded {key} in {time.time() - t0:.1f}s", flush=True)
         return self._m[key]
 
-    def _half(self, module):
+    def _half(self, module, preserve_small_fp32=False):
         """bf16 weights on the GPU: five resident backbones in fp32 filled the
         16 GB card to 15,986 MiB, the edge of the silent spill to system RAM."""
         if self.device.startswith("cuda"):
             from anulm.model import Rotary
             module.to(torch.bfloat16)
+            if preserve_small_fp32:
+                for tensor in [*module.parameters(), *module.buffers()]:
+                    if tensor.is_floating_point() and tensor.numel() < 100_000:
+                        tensor.data = tensor.data.float()
             # .to(dtype) also casts RoPE's inv_freq buffer; in bf16 the angles
             # drift ~0.8 rad by position 200. Rebuild it in fp32.
             for m in module.modules():
@@ -184,6 +185,8 @@ class Models:
     def decider(self, which: str = DECIDE_OWN, task: str = TASK_BANK):
         """Our model's adapters attach to the loaded chat model; each has its
         own hooks, switched on only for its own forward pass."""
+        if which != DECIDE_OWN:
+            raise ValueError("Only AnuLM decision backbones are enabled.")
         from anulm.tasks.decide import Decide
         if USE_OMNI:
             return self.omni().decider(OMNI_TASKS[task])
@@ -244,8 +247,10 @@ def answer_text(models: Models, text: str, max_tokens: int = 120) -> tuple[str, 
     return "(not found in Wikipedia; from memory) " + speakable(out["completion"]), time.time() - t0
 
 
-def build(models: Models) -> gr.Blocks:
+def build_experimental(models: Models) -> gr.Blocks:
     with gr.Blocks(title="AnuLM Omni") as demo:
+        gr.Markdown("**Experimental live demo.** New inputs and model downloads are enabled. "
+                    "This interface is separate from the approved recorded examples.")
         gr.Markdown(
             "# AnuLM Omni\n"
             "A 400M sparse mixture-of-experts model, trained from scratch on one consumer "
@@ -366,20 +371,14 @@ def build(models: Models) -> gr.Blocks:
                         "message and every option go through the model **once**; it returns a "
                         "calibrated probability for each, and hands the case to a person when it "
                         "is not confident enough. **AnuLM** is the same model as the Chat tab, "
-                        "with a small LoRA adapter per task. **ModernBERT-base** is an open English "
-                        "model used as a reference.\n\n"
-                        "| unseen test messages | AnuLM | ModernBERT |\n|---|---|---|\n"
-                        "| Banking, English (3,080) | 89.0% | **90.8%** |\n"
-                        "| Assistant commands, **Hindi** (2,033) | **84.5%** | 67.5% |\n\n"
-                        "AnuLM answers in about 55 ms, ModernBERT in about 20; in Hindi ModernBERT "
-                        "reads byte fragments, 3.3x the tokens.")
+                        "with a small LoRA adapter per task.")
             with gr.Row():
                 with gr.Column():
                     task = gr.Radio([k for k, v in DECIDE_TASKS.items() if have(v[DECIDE_OWN])],
                                     value=TASK_BANK, label="task")
                     msg = gr.Textbox(label="message", lines=3,
                                      placeholder="I still haven't received my new card")
-                    backbone = gr.Radio([DECIDE_OWN, DECIDE_MB], value=DECIDE_OWN, label="model")
+                    backbone = gr.State(DECIDE_OWN)
                     thr = gr.Slider(0.3, 0.99, value=0.7, step=0.01, label="hand to a human below this confidence")
                     go_dec = gr.Button("Decide", variant="primary")
                     gr.Examples([["I still haven't received my new card", TASK_BANK],
@@ -436,6 +435,14 @@ def build(models: Models) -> gr.Blocks:
     return demo
 
 
+def build(models: Models, manifest=None, *, experimental=False) -> gr.Blocks:
+    """Default to approved recorded examples; live research UI needs opt-in."""
+    if experimental:
+        return build_experimental(models)
+    from anulm.apps.validated_demo import build as build_validated
+    return build_validated(manifest or HERE / "config" / "demo-validation.json", HERE)
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description="AnuLM Omni: listen, look and talk.")
     p.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
@@ -443,16 +450,28 @@ def main() -> None:
     p.add_argument("--host", default="127.0.0.1")
     p.add_argument("--port", type=int, default=7863)
     p.add_argument("--share", action="store_true", help="public gradio link")
+    p.add_argument("--experimental", action="store_true",
+                   help="opt into the live research UI, including unvalidated inputs and modes")
+    p.add_argument("--validation-manifest", type=Path,
+                   help="catalogue of approved recorded test cases (default demo)")
+    p.add_argument("--auth-file", help="optional local user:password file for deliberately shared research UI")
     args = p.parse_args()
+    auth = None
+    if args.auth_file:
+        user, separator, password = Path(args.auth_file).read_text(encoding="utf-8").strip().partition(":")
+        if not user or not separator or not password or "\n" in password:
+            raise SystemExit("Auth file must contain one user:password line.")
+        auth = (user, password)
     # Checkpoints and their tokenizers are saved with repo-relative paths;
     # launched from elsewhere, the chat model silently fell back to the Hub one.
     os.chdir(HERE)
     missing = [c for c in CKPTS.values() if not have(c)]
-    if missing:
+    if missing and args.experimental:
         print(f"note: {', '.join(missing)} not found; those tabs will fail until trained "
               f"(docs/SPEECH.md has the commands)")
-    build(Models(args.device, args.brain)).launch(server_name=args.host, server_port=args.port,
-                                                  share=args.share)
+    build(Models(args.device, args.brain), args.validation_manifest,
+          experimental=args.experimental).launch(server_name=args.host, server_port=args.port,
+                                                  share=args.share, auth=auth)
 
 
 if __name__ == "__main__":

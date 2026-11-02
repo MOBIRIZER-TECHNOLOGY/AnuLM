@@ -7,6 +7,8 @@ pinned: "@773b6a8"
 
 # 22  The training loop, line by line
 
+> **Current companion update, 2 November 2026:** See the [current workflow](../docs/reader/current-workflow.md) and [language coverage](../docs/reader/language-coverage.md) for revised setup, training, evaluation and limitations. This chapter's cited implementation and numerical results remain historical; new workflow checks do not clear its open release gates.
+
 `train.py`'s `main()` (lines 399–750) produced the released model. This chapter
 reads it in order: how a command line becomes a model, how one optimiser step
 is built from M micro-batches, and what is logged, evaluated and saved.

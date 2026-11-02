@@ -1,5 +1,7 @@
 # Start here
 
+For the revised multilingual/multimodal package, read [Current companion workflow](current-workflow.md), [Language coverage](language-coverage.md) and [Course route](course-route.md). This 2 November 2026 update does not replace historical measurements or certify a production release.
+
 This book is for Python programmers who have used arrays and want to understand a language model well enough to change it. You do not need a GPU to begin. Chapters 4–7 rebuild the mathematics used later.
 
 **Your first result:** train a very small dense language model on a few repeated sentences, watch its loss fall, and generate a short continuation. This is a learning exercise, not a useful general-purpose model.

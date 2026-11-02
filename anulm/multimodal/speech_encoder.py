@@ -127,9 +127,18 @@ class ContinuousSpeech(nn.Module):
 
 
 def load_manifest(prefix: str) -> list[dict]:
+    manifest = Path(prefix).with_suffix(".jsonl")
     rows = [json.loads(l) for l in
-            Path(prefix).with_suffix(".jsonl").read_text(encoding="utf-8").splitlines()
+            manifest.read_text(encoding="utf-8").splitlines()
             if l.strip()]
+    for row in rows:
+        audio = Path(row["audio"]) if row.get("audio") else None
+        if audio is not None and not audio.is_absolute():
+            # New portable manifests resolve beside the manifest. Preserve
+            # older repo-relative paths when no manifest-relative file exists.
+            beside = manifest.parent / audio
+            if beside.is_file():
+                row["audio"] = str(beside.resolve())
     missing = [r for r in rows if not r.get("audio") or not Path(r["audio"]).exists()]
     if missing:
         raise SystemExit(
@@ -330,20 +339,33 @@ def transcribe(sm, enc, tok, wav_path: str, max_tokens: int = 64, device: str = 
     """
     # A path from a file, or 16 kHz samples straight from a microphone.
     audio = read_wav(wav_path, ASR_RATE) if isinstance(wav_path, (str, Path)) else wav_path
-    # In the projector's dtype, so a model cast to bf16 for serving works too.
-    states = torch.from_numpy(enc.encode(audio)).to(device, next(sm.proj.parameters()).dtype)
+    from anulm.multimodal.audio_codec import audio_chunks
+    if not isinstance(max_tokens, int) or max_tokens < 1:
+        raise ValueError("max_tokens must be positive.")
+    chunks = audio_chunks(audio)
     emb = sm.model.embed_tokens
-    audio = sm.proj(states[None])[0]
-    prefix = torch.cat([
-        emb(torch.tensor([sm.vocab.speech_bos], device=device)), audio,
-        emb(torch.tensor([sm.vocab.text_bos], device=device))], dim=0)
     autocast = (torch.autocast("cuda", dtype=torch.bfloat16)
                 if device.startswith("cuda") else torch.autocast("cpu", enabled=False))
-    with autocast:
-        out = sm.model.decode_from_embeds(
-            prefix, max_tokens, stop=lambda t: t == tok.eos_id or t >= sm.vocab.text,
-            no_repeat_ngram=no_repeat_ngram, use_cache=use_cache)
-    return tok.decode(out).strip().split("\n")[0]
+    texts = []
+    for chunk in chunks:
+        states = torch.from_numpy(enc.encode(chunk)).to(device, next(sm.proj.parameters()).dtype)
+        projected = sm.proj(states[None])[0]
+        prefix = torch.cat([
+            emb(torch.tensor([sm.vocab.speech_bos], device=device)), projected,
+            emb(torch.tensor([sm.vocab.text_bos], device=device))], dim=0)
+        context = getattr(getattr(sm.model, "cfg", None), "block_size", None)
+        budget = max_tokens if context is None else min(max_tokens, context - prefix.shape[0])
+        if budget < 1:
+            raise ValueError("Audio prefix fills the decoder context; use a larger context or pooling stack.")
+        with autocast:
+            out = sm.model.decode_from_embeds(
+                prefix, budget, stop=lambda t: t == tok.eos_id or t >= sm.vocab.text,
+                no_repeat_ngram=no_repeat_ngram, use_cache=use_cache)
+        text = tok.decode(out).strip().split("\n")[0]
+        if text:
+            texts.append(text)
+    return " ".join(texts)
+
 
 
 def main() -> None:

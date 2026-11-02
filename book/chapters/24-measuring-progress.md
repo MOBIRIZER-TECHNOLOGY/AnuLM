@@ -7,6 +7,8 @@ pinned: "@773b6a8"
 
 # 24  Measuring progress honestly
 
+> **Current companion update, 2 November 2026:** See the [current workflow](../docs/reader/current-workflow.md) and [language coverage](../docs/reader/language-coverage.md) for revised setup, training, evaluation and limitations. This chapter's cited implementation and numerical results remain historical; new workflow checks do not clear its open release gates.
+
 A training log prints a val loss to four decimals. This chapter reads the code
 behind it, measures what the decimals are worth on the released model, and
 ends with what a loss cannot say. Prerequisites: Chapters 3, 21 and 22. A

@@ -1,5 +1,7 @@
 # AnuLM
 
+Current companion update (2 November 2026): see [current status](docs/CURRENT_STATUS.md) and [language coverage](docs/LANGUAGE_SUPPORT.md). Historical model cards, experiment numbers and commands below must not be presented as measurements of the completed India research run.
+
 A small, trainable language model for learning, experimentation, and measured
 Hindi/English/Python work. Start with the book to understand the implementation,
 or use the command line to train and run a model. The demonstration applications
@@ -7,9 +9,14 @@ and multimodal extensions are separate from the core text model.
 
 ## Start here
 
+- **New training and evaluation workflows:** [selective V2 improvements](docs/V2_IMPROVEMENTS.md), including custom-corpus training, accumulation and a research evaluation app.
+- **Set up on another GPU computer:** [portable training setup](START_TRAINING.md), including Windows/Linux instructions and the pinned environment.
 - **Learn from the book:** [Inside AnuLM](book/README.md), with 41 chapters and six appendices.
 - **Run your first example:** [installation and first CPU model](book/docs/reader/start-here.md).
 - **Find a component:** [repository structure and migration guide](docs/STRUCTURE.md).
+- **Multimodal demo and evidence:** [validated examples and remaining checks](docs/DEMO_VALIDATION.md).
+- **Download a small real dataset pack:** [pinned sources, setup and commercial-use terms](docs/DATA_SETUP.md).
+- **India-focused training:** [languages, overnight stages, recovery and limits](docs/INDIA_TRAINING.md).
 - **Contribute:** [CONTRIBUTING.md](CONTRIBUTING.md) and the [book contribution guide](book/CONTRIBUTING.md).
 - **Model releases, measurements and detailed usage:** [project reference](docs/project-reference.md).
 
@@ -45,6 +52,7 @@ Optional applications and export support:
 python -m pip install -e ".[demo]"
 python -m pip install -e ".[api]"
 python -m pip install -e ".[export]"
+python -m pip install -e ".[data]"
 ```
 
 Install only the extras you need. `python -m anulm --help` lists the main commands;
@@ -60,7 +68,8 @@ modules can be run with `python -m anulm.data.fetch_hindi --help`, for example.
 | `anulm/data/`, `evaluation/`, `tasks/` | Dataset preparation, evaluation and task-specific components |
 | `anulm/apps/`, `multimodal/`, `hf/`, `integrations/` | Optional applications, audio/vision and interoperability |
 | `book/` | Manuscript, reader guides, examples, figures and book tools |
-| `tests/` | Model and package-layout checks |
+| `tests/` | Model, package-layout, multimodal and demo-evidence checks |
+| `config/` | Approved demo catalogue; empty until real results are reviewed |
 | `docs/` | Project reference, usage guides and roadmap |
 | `scripts/windows/` | Optional Windows launch and maintenance helpers |
 | `measurements/training/` | Recorded training curves |
@@ -77,6 +86,7 @@ see the [path map](docs/source-paths.json) for historical filenames.
 ```bash
 python -m tests.test_model
 python -m unittest tests.test_layout
+python -m unittest tests.test_multimodal_contracts tests.test_validated_demo
 ```
 
 The original model suite reports its optional dependency skips in the output.

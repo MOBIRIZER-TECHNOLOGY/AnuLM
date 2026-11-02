@@ -7,6 +7,8 @@ pinned: "@773b6a8"
 
 # 30  Instruction tuning
 
+> **Current companion update, 2 November 2026:** See the [current workflow](../docs/reader/current-workflow.md) and [language coverage](../docs/reader/language-coverage.md) for revised setup, training, evaluation and limitations. This chapter's cited implementation and numerical results remain historical; new workflow checks do not clear its open release gates.
+
 A pre-trained model continues text; asked a question, it writes whatever
 most often follows such words. Supervised fine-tuning (SFT) turns it into a
 model that answers: the same loss, on question–answer pairs, grading only the

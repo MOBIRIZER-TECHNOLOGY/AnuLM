@@ -7,6 +7,8 @@ pinned: "@773b6a8"
 
 # 40  The production gap
 
+> **Current companion update, 2 November 2026:** See the [current workflow](../docs/reader/current-workflow.md) and [language coverage](../docs/reader/language-coverage.md) for revised setup, training, evaluation and limitations. This chapter's cited implementation and numerical results remain historical; new workflow checks do not clear its open release gates.
+
 Chapter 38's server runs one sequence at a time behind one lock. A large
 serving stack shares the device between many requests, stores weights in
 fewer bits, guesses several tokens per step and trains on many GPUs. **None of

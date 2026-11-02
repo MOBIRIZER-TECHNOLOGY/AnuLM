@@ -259,8 +259,6 @@ SUITES = {
     # name: (default n, title, runner)
     "decide_banking": (300, "Decide: BANKING77 intents (AnuLM + LoRA)",
                        lambda c, d, n: suite_decide(c, d, n, "anulm-decide-banking", banking_rows(d))),
-    "decide_banking_modernbert": (300, "Decide: BANKING77 intents (ModernBERT reference)",
-                                  lambda c, d, n: suite_decide(c, d, n, "modernbert-decide-banking", banking_rows(d))),
     "decide_hindi": (300, "Decide: MASSIVE Hindi intents (AnuLM + LoRA)",
                      lambda c, d, n: suite_decide(c, d, n, "anulm-decide-hindi", massive_hi_rows(d))),
     "decide_india": (214, "Decide: Indian banking, English/Hindi/Hinglish (synthetic test set)",

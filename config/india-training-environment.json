@@ -1,0 +1,18 @@
+{
+  "python": "3.14.5",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "packages": {
+    "torch": "2.14.0+cu130",
+    "torchvision": "0.29.0",
+    "timm": "1.0.30",
+    "faster-whisper": "1.2.1",
+    "ctranslate2": "4.8.4",
+    "pyarrow": "26.0.0",
+    "soundfile": "0.14.0",
+    "Pillow": "12.2.0",
+    "tokenizers": "0.23.2",
+    "numpy": "2.5.2",
+    "playwright": "1.64.1"
+  },
+  "note": "Recorded installed environment; choose the proper CUDA PyTorch wheel before installing dependent packages."
+}

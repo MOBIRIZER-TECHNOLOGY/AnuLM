@@ -7,6 +7,8 @@ pinned: "@773b6a8"
 
 # 35  A wider vocabulary and inputs that are not tokens
 
+> **Current companion update, 2 November 2026:** See the [current workflow](../docs/reader/current-workflow.md) and [language coverage](../docs/reader/language-coverage.md) for revised setup, training, evaluation and limitations. This chapter's cited implementation and numerical results remain historical; new workflow checks do not clear its open release gates.
+
 Part VIII lets a text model hear and see. This chapter opens two ways in:
 growing the vocabulary, so audio codes become ids the model can read and
 write, and skipping it, so vectors with no id go straight in. It ends with the

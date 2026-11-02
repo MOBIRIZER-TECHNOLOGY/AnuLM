@@ -307,3 +307,8 @@ where the parameters are; 20.3, the expert loads.
   `CITATION.cff`; no personal name is given anywhere in the repository.
 
 **Open:** the book's own text licence is not chosen.
+
+
+## Dated resolution: 2 November 2026
+
+The author selected CC BY 4.0 for original book text and current reader guides. See LICENSE-TEXT.md at the book root. Code remains MIT and third-party notices remain applicable. This closes the original-text license decision; other historical findings require their own evidence.

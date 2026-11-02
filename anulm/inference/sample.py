@@ -59,8 +59,8 @@ def main():
 
     tok = None
     if getattr(ck["cfg"], "tokenizer_path", None):
-        from anulm.tokenization.bpe import BPE
-        tok = BPE.load(ck["cfg"].tokenizer_path)
+        from anulm.tokenization.hf import load_tokenizer
+        tok = load_tokenizer(ck["cfg"].tokenizer_path)
         prompt_ids = tok.encode(args.prompt) or tok.encode(" ")
         # Only a model whose vocab includes the EOS slot was trained to emit it;
         # older checkpoints (vocab == merges + 256) simply never stop early.

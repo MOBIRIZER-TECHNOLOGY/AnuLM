@@ -7,6 +7,8 @@ pinned: "@773b6a8"
 
 # 21  Data: corpora, documents, windows and splits
 
+> **Current companion update, 2 November 2026:** See the [current workflow](../docs/reader/current-workflow.md) and [language coverage](../docs/reader/language-coverage.md) for revised setup, training, evaluation and limitations. This chapter's cited implementation and numerical results remain historical; new workflow checks do not clear its open release gates.
+
 Part IV took a batch of token ids as given. This chapter follows the data that
 fills it: documents become one long file of ids, the file is opened without
 being read, and each step cuts windows from it. It ends on the question every

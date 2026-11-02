@@ -43,13 +43,13 @@ jobs:
       - name: Install (CPU wheel, as the tutorial tells people to)
         run: |
           python -m pip install --upgrade pip
-          pip install --index-url https://download.pytorch.org/whl/cpu torch
+          pip install --index-url https://download.pytorch.org/whl/cpu torch==2.14.0
           pip install -r requirements.txt
           python -m pip install --no-deps -e .
           # Not a dependency of the model, training or serving -- only of the
           # transformers export, whose two tests skip themselves without it.
           # A skip that reports PASS is how an untested path looks tested.
-          pip install transformers gradio
+          pip install transformers==5.18.0 gradio==6.31.0 soundfile==0.14.0 tokenizers==0.23.2
 
       # Left on each runner's default shell (PowerShell on Windows, bash on
       # Linux) on purpose: these are the commands a newcomer types, and they
@@ -71,6 +71,13 @@ jobs:
 
       - name: Package and checkpoint compatibility
         run: python -u -m unittest tests.test_layout
+
+      - name: Multimodal contracts and validated demo
+        env:
+          HF_HUB_OFFLINE: '1'
+          TRANSFORMERS_OFFLINE: '1'
+          GRADIO_ANALYTICS_ENABLED: 'False'
+        run: python -u -m unittest tests.test_multimodal_contracts tests.test_validated_demo tests.test_dataset_setup tests.test_india_run tests.test_workflow_improvements tests.test_evaluation_app tests.test_from_scratch_pipeline tests.test_release_fixes
 
       - name: Train 50 steps end to end
         # Downloads tinyshakespeare, trains, evaluates, saves, and samples from

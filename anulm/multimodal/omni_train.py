@@ -30,8 +30,11 @@ projector (`vision_proj`). The encoders themselves stay frozen and outside.
   image  an image manifest (captions; VQA rows add `question`), SigLIP patches,
          cached once per image in `<manifest>.feats.f16`
 
-**Held out.** The first 2% of each task, as the single-task trainers do, so
-the numbers line up with theirs; at most `--eval-n` of them are scored. The
+**Held out.** The first 2% of distinct input groups (normalized media paths
+or text prompts); repeated captions/recordings stay in one partition. Explicit
+partitions must be nonempty and disjoint. Copied media under different paths
+still requires corpus deduplication. These splits differ from older row-based
+results, which must be rebaselined; at most `--eval-n` examples are scored. The
 best checkpoint is the one with the lowest mean of each task's held-out loss
 divided by its value at step 0, so a task with a large loss (captions) cannot
 drown out one with a small one (speech).
@@ -108,6 +111,39 @@ def pad(built, device):
     return eb, tb
 
 
+def _row_group(row, kind):
+    """Keep all captions of one image, recordings, or identical prompts together."""
+    if kind == "image":
+        return str(Path(row["image"]).resolve())
+    if kind == "asr":
+        return str(Path(row["audio"]).resolve())
+    return tuple(row["p"])
+
+
+def split_rows(rows, kind, held_fraction=0.02):
+    """Deterministic group split; repeated views of an input cannot cross it.
+
+    This groups by normalized media path or tokenized prompt. Corpus-level
+    deduplication is still needed to detect copied media at different paths.
+    """
+    groups = list(dict.fromkeys(_row_group(row, kind) for row in rows))
+    if len(groups) < 2:
+        raise ValueError(f"{kind}: need at least two independent input groups for train/held-out splits.")
+    cut = min(len(groups) - 1, max(1, int(len(groups) * held_fraction)))
+    selected = set(groups[:cut])
+    training = [row for row in rows if _row_group(row, kind) not in selected]
+    held = [row for row in rows if _row_group(row, kind) in selected]
+    return training, held
+
+
+def check_split(training, held, kind, name):
+    if not training or not held:
+        raise ValueError(f"{name}: training and held-out partitions must both be nonempty.")
+    overlap = {_row_group(row, kind) for row in training} & {_row_group(row, kind) for row in held}
+    if overlap:
+        raise ValueError(f"{name}: {len(overlap)} input groups overlap between training and held-out data.")
+
+
 def text_batches(rows, model, device, batch_size, shuffle=True, seed=0):
     order = np.arange(len(rows))
     if shuffle:
@@ -134,7 +170,7 @@ class Omni:
         from anulm.multimodal.speech_vocab import vocab_of
 
         self.dev = dev = args.device
-        ck = load_checkpoint(args.ckpt, dev)
+        ck = load_checkpoint(args.ckpt, "cpu")
         self.ck = ck
         self.cfg = replace(ck["cfg"], moe_impl="grouped" if dev.startswith("cuda") else "sparse")
         self.vocab = vocab_of(ck)
@@ -151,7 +187,7 @@ class Omni:
         if "asr" in kinds:
             from anulm.multimodal.audio_codec import WhisperEncoder
             from anulm.multimodal.speech_encoder import ContinuousSpeech
-            self.enc = WhisperEncoder(args.whisper, dev)
+            self.enc = WhisperEncoder(args.whisper, getattr(args, "encoder_device", None) or dev)
             self.sm = ContinuousSpeech(self.model, self.vocab, self.enc.dim, args.stack).to(dev)
             self._warm(self.sm.proj, args.audio_proj_from, "proj", "audio")
         if "image" in kinds:
@@ -159,6 +195,12 @@ class Omni:
             self.tower = VisionTower(args.tower, dev)
             self.vl = VisionLanguage(self.model, self.vocab, self.tower.dim, args.pool).to(dev)
             self._warm(self.vl.proj, args.vision_proj_from, "proj", "vision")
+        if getattr(args, "proj_scale", "ln") == "embed":
+            for module, source in [(self.sm, args.audio_proj_from), (self.vl, args.vision_proj_from)]:
+                if module is not None:
+                    if source:
+                        raise ValueError("Embedding-scale initialization requires a fresh projector.")
+                    self._match_scale(module.proj)
         self.caches = {}
         held = dict(h.split("=", 1) for h in (args.held or []))
         for t in self.tasks:
@@ -167,11 +209,11 @@ class Omni:
                 t.rows, t.held = rows, load_rows(Task(f"{t.name}={t.kind}:{held[t.name]}"), self.tok,
                                                   self.cfg.block_size)
             else:
-                cut = max(1, int(len(rows) * 0.02))
-                t.held, t.rows = rows[:cut], rows[cut:]
+                t.rows, t.held = split_rows(rows, t.kind)
+            check_split(t.rows, t.held, t.kind, t.name)
             if t.kind == "image":
                 from anulm.multimodal.vision_encoder import build_cache
-                self.caches[t.name] = build_cache(rows, self.tower, Path(t.path).with_suffix(".feats.f16"))
+                self.caches[t.name] = build_cache(t.rows + t.held, self.tower, Path(t.path).with_suffix(".feats.f16"))
             if t.weight is None:
                 t.weight = float(len(t.rows))
             print(f"task {t.name:8s} {t.kind:5s} {len(t.rows):7d} train {len(t.held):5d} held  "
@@ -189,6 +231,16 @@ class Omni:
         proj.load_state_dict(src[key])
         print(f"{what} projector warm-started from {path}")
 
+    @torch.no_grad()
+    def _match_scale(self, projector):
+        target = self.model.embed_tokens.weight[:self.vocab.text].float().norm(dim=-1).mean()
+        norm = projector.net[-1]
+        current = (norm.weight.float().square().sum() + norm.bias.float().square().sum()).sqrt()
+        if not torch.isfinite(target) or not torch.isfinite(current) or min(target, current) <= 0:
+            raise ValueError("Projector/embedding norms must be finite and positive.")
+        norm.weight.mul_(target / current)
+        norm.bias.mul_(target / current)
+
     def batches(self, t: Task, rows, batch_size, shuffle=True, seed=0):
         if t.kind == "text":
             return text_batches(rows, self.model, self.dev, batch_size, shuffle, seed)
@@ -200,6 +252,7 @@ class Omni:
                        cache=self.caches[t.name])
 
     def next_batch(self, t: Task):
+        exhausted = 0
         while True:
             if t._it is None:
                 t._it = self.batches(t, t.rows, t.batch, seed=self.args.seed + 1000 * t.epoch)
@@ -207,6 +260,9 @@ class Omni:
                 return next(t._it)
             except StopIteration:
                 t._it, t.epoch = None, t.epoch + 1
+                exhausted += 1
+                if exhausted >= 2:
+                    raise ValueError(f"{t.name}: no usable training batches; check lengths and media.")
 
     @torch.no_grad()
     def held_loss(self, t: Task, autocast) -> float:
@@ -218,14 +274,17 @@ class Omni:
             k = int((tb != -1).sum())
             tot, n = tot + loss.item() * k, n + k
         self.model.train()
-        return tot / max(n, 1)
+        if n <= 0 or not math.isfinite(tot):
+            raise ValueError(f"{t.name}: held-out set has no finite graded tokens.")
+        return tot / n
 
     def state(self, step, score, losses) -> dict:
         a = self.args
+        from anulm.data.make_qa import PROMPTS
         st = {"model": self.model.state_dict(), "cfg": replace(self.cfg, moe_impl=self.ck["cfg"].moe_impl),
               "speech_text_vocab": self.ck["speech_text_vocab"], "step": step, "val_loss": score,
               "task_losses": losses, "tasks": [t.name for t in self.tasks], "base_ckpt": a.ckpt,
-              "qa_templates": self.ck.get("qa_templates")}
+              "qa_templates": dict(PROMPTS) if any(t.kind == "text" for t in self.tasks) else self.ck.get("qa_templates")}
         if self.sm is not None:
             st.update(proj=self.sm.proj.state_dict(), whisper=a.whisper, stack=a.stack)
         if self.vl is not None:
@@ -236,6 +295,14 @@ class Omni:
 def train(args) -> None:
     from anulm.training.train import atomic_save
 
+    accum = getattr(args, "accum", 1)
+    if not isinstance(accum, int) or accum < 1:
+        raise ValueError("accum must be a positive integer.")
+    max_ratio = getattr(args, "max_task_loss_ratio", None)
+    if max_ratio is not None and (not math.isfinite(max_ratio) or max_ratio <= 0):
+        raise ValueError("max_task_loss_ratio must be finite and positive.")
+    Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+    torch.manual_seed(args.seed)
     om = Omni(args)
     model, dev = om.model, om.dev
     groups = [{"params": model.parameters(), "lr": args.lr}]
@@ -261,8 +328,11 @@ def train(args) -> None:
     last = Path(str(args.out) + ".last")
     t0 = time.time()
     start, best, seen = 1, float("inf"), {t.name: 0 for t in om.tasks}
+    answer_tokens = {t.name: 0 for t in om.tasks}
     if args.resume and last.exists():
-        st = torch.load(last, map_location=dev, weights_only=False)
+        st = torch.load(last, map_location="cpu", weights_only=False)
+        if st.get("accum", 1) != accum or st.get("max_task_loss_ratio") != max_ratio or st.get("proj_scale", "ln") != getattr(args, "proj_scale", "ln"):
+            raise ValueError("Resume accumulation/quality gate differs; use the original recipe or a new output.")
         model.load_state_dict(st["model"])
         if om.sm is not None:
             om.sm.proj.load_state_dict(st["proj"])
@@ -270,15 +340,22 @@ def train(args) -> None:
             om.vl.proj.load_state_dict(st["vision_proj"])
         opt.load_state_dict(st["opt"])
         first, best, seen = st["first"], st["best"], st["seen"]
+        answer_tokens = st.get("answer_tokens", answer_tokens)
         start = st["step"] + 1
         for t in om.tasks:      # a fresh shuffle per task: the exact batch order is not worth saving
             t.epoch = 100 + st["step"]
         print(f"resumed from {last} at step {st['step']} (best score {best:.4f})", flush=True)
+        del st
+        if dev.startswith("cuda"):
+            torch.cuda.empty_cache()
     else:
         first = evaluate()
+        if any(not math.isfinite(value) or value <= 0 for value in first.values()):
+            raise ValueError("Baseline task losses must be finite and positive.")
         with open(curve, "a", encoding="utf-8") as f:
             f.write("0,1.0," + ",".join(str(first[n]) for n in names) + "\n")
     print("step  start | held-out at step 0: " + "  ".join(f"{k} {v:.4f}" for k, v in first.items()), flush=True)
+    print(f"each optimizer step averages {accum} microbatch(es); task batches are sampled independently", flush=True)
     w = np.array([t.weight for t in om.tasks], dtype=float)
     w /= w.sum()
     rng = np.random.default_rng(args.seed + start)
@@ -292,17 +369,21 @@ def train(args) -> None:
             frac = 0.1 + 0.9 * 0.5 * (1 + math.cos(math.pi * prog))
         for g, lr in zip(opt.param_groups, base_lrs):
             g["lr"] = lr * frac
-        t = om.tasks[rng.choice(len(om.tasks), p=w)]
-        eb, tb = om.next_batch(t)
-        with autocast:
-            _, loss = model(None, tb, embeds=eb)
-        loss.backward()
-        torch.nn.utils.clip_grad_norm_(params, 1.0)
+        for _ in range(accum):
+            t = om.tasks[rng.choice(len(om.tasks), p=w)]
+            eb, tb = om.next_batch(t)
+            with autocast:
+                _, loss = model(None, tb, embeds=eb)
+            if not torch.isfinite(loss):
+                raise ValueError(f"{t.name}: non-finite training loss at step {step}.")
+            (loss / accum).backward()
+            seen[t.name] += 1
+            answer_tokens[t.name] += int((tb != -1).sum())
+            run_loss[t.name].append(loss.item())
+        torch.nn.utils.clip_grad_norm_(params, 1.0, error_if_nonfinite=True)
         opt.step()
         opt.zero_grad(set_to_none=True)
         imbalance = model.update_expert_biases()
-        seen[t.name] += 1
-        run_loss[t.name].append(loss.item())
         if step % args.log_every == 0:
             msg = "  ".join(f"{k} {np.mean(v):.3f}" for k, v in run_loss.items() if v)
             print(f"step {step:6d} | {msg} | imbalance {imbalance:4.2f}x | "
@@ -312,21 +393,26 @@ def train(args) -> None:
             losses = evaluate()
             score = float(np.mean([losses[k] / first[k] for k in losses]))
             flag = ""
-            if score < best:
+            gate_ok = max_ratio is None or all(losses[k] / first[k] <= max_ratio for k in names)
+            if score < best and gate_ok:
                 best = score
-                atomic_save(om.state(step, score, losses), args.out)
+                best_state = om.state(step, score, losses)
+                best_state.update(accum=accum, max_task_loss_ratio=max_ratio, proj_scale=getattr(args, "proj_scale", "ln"))
+                atomic_save(best_state, args.out)
                 flag = "  <- saved"
+            if not gate_ok:
+                flag = "  <- task regression gate failed; recovery checkpoint only"
             with open(curve, "a", encoding="utf-8") as f:
                 f.write(f"{step},{score:.4f}," + ",".join(str(losses[n]) for n in names) + "\n")
             print(f"  eval @ {step:6d} | score {score:.4f}{flag} | "
                   + "  ".join(f"{k} {v:.4f}" for k, v in losses.items())
                   + f" | batches seen {seen}", flush=True)
-            if step < args.steps:
-                st = om.state(step, score, losses)
-                st.update(opt=opt.state_dict(), first=first, best=best, seen=seen)
-                atomic_save(st, last)
-    if last.exists():
-        last.unlink()            # finished: the optimizer state is 3.7 GB nobody needs
+            st = om.state(step, score, losses)
+            st.update(opt=opt.state_dict(), first=first, best=best, seen=seen,
+                      accum=accum, max_task_loss_ratio=max_ratio, proj_scale=getattr(args, "proj_scale", "ln"),
+                      answer_tokens=answer_tokens)
+            atomic_save(st, last)
+            del st
     print(f"\ndone in {time.time()-t0:.0f}s | best score {best:.4f} | {args.out}")
 
 
@@ -344,6 +430,10 @@ def main() -> None:
     p.add_argument("--steps", type=int, required=True)
     p.add_argument("--lr", type=float, default=5e-5)
     p.add_argument("--proj-lr", type=float, default=1e-3)
+    p.add_argument("--proj-scale", choices=["ln", "embed"], default="ln", help="optional fresh-projector norm experiment")
+    p.add_argument("--accum", type=int, default=1, help="microbatches averaged per optimizer step")
+    p.add_argument("--max-task-loss-ratio", type=float,
+                   help="optional per-task validation-loss ratio ceiling for best-checkpoint selection")
     p.add_argument("--warmup", type=int, default=500)
     p.add_argument("--eval-every", type=int, default=5000)
     p.add_argument("--eval-n", type=int, default=300, help="held-out examples scored per task")
@@ -351,6 +441,8 @@ def main() -> None:
     p.add_argument("--audio-proj-from", help="a speech_encoder.py checkpoint whose projector to start from")
     p.add_argument("--vision-proj-from", help="a vision_encoder.py checkpoint whose projector to start from")
     p.add_argument("--whisper", default="small")
+    p.add_argument("--encoder-device", choices=["cpu", "cuda"],
+                   help="optional Whisper device override; CPU avoids CUDA runtime/memory conflicts")
     p.add_argument("--stack", type=int, default=STACK)
     p.add_argument("--tower", default=DEFAULT_TOWER)
     p.add_argument("--pool", type=int, default=POOL)

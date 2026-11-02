@@ -7,6 +7,8 @@ pinned: "@773b6a8"
 
 # 41  Capstone: train it, open it, change it
 
+> **Current companion update, 2 November 2026:** See the [current workflow](../docs/reader/current-workflow.md) and [language coverage](../docs/reader/language-coverage.md) for revised setup, training, evaluation and limitations. This chapter's cited implementation and numerical results remain historical; new workflow checks do not clear its open release gates.
+
 This chapter is a lab in four checkpoints, each ending in a number to compare:
 
 1. **Train** the 17M preset `nano_30b` on text. Its loss starts near ln V and

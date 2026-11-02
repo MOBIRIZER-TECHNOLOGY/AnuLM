@@ -7,6 +7,8 @@ pinned: "@773b6a8"
 
 # 39  Exporting to the ecosystem
 
+> **Current companion update, 2 November 2026:** See the [current workflow](../docs/reader/current-workflow.md) and [language coverage](../docs/reader/language-coverage.md) for revised setup, training, evaluation and limitations. This chapter's cited implementation and numerical results remain historical; new workflow checks do not clear its open release gates.
+
 A training checkpoint is a pickled Python dict: loading it runs code, it needs
 this repository's classes, and it holds the weights in 32-bit floats.
 `export_hf.py` turns it into a folder that anyone can download: weights in

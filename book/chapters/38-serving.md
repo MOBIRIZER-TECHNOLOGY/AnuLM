@@ -7,6 +7,8 @@ pinned: "@773b6a8"
 
 # 38  Serving: engine, API and streaming
 
+> **Current companion update, 2 November 2026:** See the [current workflow](../docs/reader/current-workflow.md) and [language coverage](../docs/reader/language-coverage.md) for revised setup, training, evaluation and limitations. This chapter's cited implementation and numerical results remain historical; new workflow checks do not clear its open release gates.
+
 A checkpoint becomes a service in two files. `serve.py` is a small web server
 built only on Python's standard library. `api.py` speaks OpenAI's HTTP
 protocol, so existing clients work unchanged, and it streams the chat model's

@@ -65,8 +65,8 @@ class Engine:
         self.model.text_vocab = ck.get("speech_text_vocab")      # set on the one joint model (omni_train.py)
         self.tok = None
         if getattr(cfg, "tokenizer_path", None):
-            from anulm.tokenization.bpe import BPE
-            self.tok = BPE.load(cfg.tokenizer_path)
+            from anulm.tokenization.hf import load_tokenizer
+            self.tok = load_tokenizer(cfg.tokenizer_path)
             self.eos_id = self.tok.eos_id if cfg.vocab_size > self.tok.eos_id else None
         else:
             self.eos_id = 257
@@ -120,6 +120,14 @@ class Engine:
             return self.tok.decode(ids)
         return bytes(i for i in ids if i < 256).decode("utf-8", errors="replace")
 
+    def decode_complete(self, ids):
+        from anulm.tokenization.utf8 import complete_utf8
+        if self.tok:
+            if hasattr(self.tok, "decode_complete"):
+                return self.tok.decode_complete(ids)
+            return complete_utf8(b"".join(self.tok.vocab.get(int(i), b"") for i in ids))
+        return complete_utf8(bytes(i for i in ids if i < 256))
+
     def generate(self, prompt: str, max_tokens: int, temperature: float, top_k: int, seed: int,
                  mode: str = "continue", repetition_penalty: float = 1.0):
         if mode == "translate" and self.qa_templates and "en-hi" in self.qa_templates and not self.coder:
@@ -134,13 +142,18 @@ class Engine:
             torch.manual_seed(seed)
             t0 = time.time()
             with torch.autocast("cuda", dtype=torch.bfloat16, enabled=self.device.startswith("cuda")):
-                out = self.model.generate(x, max_tokens, temperature=max(temperature, 1e-3),
-                                          top_k=top_k or None, eos_id=self.eos_id,
+                if temperature == 0:
+                    from anulm.inference.decoding import greedy_generate
+                    out = greedy_generate(self.model, x, max_tokens, eos_id=self.eos_id,
                                           repetition_penalty=repetition_penalty)
+                else:
+                    out = self.model.generate(x, max_tokens, temperature=temperature,
+                        top_k=top_k or None, eos_id=self.eos_id, repetition_penalty=repetition_penalty)
             dt = time.time() - t0
         new = out[0, len(ids):].tolist()
         stopped = self.eos_id is not None and self.eos_id in new
-        text = self.decode(new)
+        decoded = new[:new.index(self.eos_id)] if stopped else new
+        text = self.decode_complete(decoded)
         if mode == "translate":
             text = text.strip().split("\n")[0]      # one sentence out
         elif mode == "question" and not self.coder:

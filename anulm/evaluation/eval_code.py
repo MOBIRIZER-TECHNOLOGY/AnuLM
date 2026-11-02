@@ -68,6 +68,20 @@ MBPP = "data/raw/google-research-datasets__mbpp/sanitized/test-00000-of-00001.pa
 STOPS = ["\ndef ", "\nclass ", "\nif __name__", "\nprint(", "\n#", "\nassert "]
 
 
+def mbpp_entry(row):
+    import ast
+    definitions = {n.name for n in ast.walk(ast.parse(row.get("code") or ""))
+                   if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))}
+    calls = {n.func.id for test in row["test_list"] for n in ast.walk(ast.parse(test))
+             if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)}
+    matches = definitions & calls
+    if len(matches) == 1:
+        return next(iter(matches))
+    if not matches and len(definitions) == 1:
+        return next(iter(definitions))
+    raise ValueError("MBPP entry point is missing or ambiguous; inspect this reference problem.")
+
+
 def load_problems(bench: str) -> list[dict]:
     import pyarrow.parquet as pq
     if bench == "humaneval":
@@ -77,7 +91,7 @@ def load_problems(bench: str) -> list[dict]:
     rows = pq.read_table(MBPP).to_pylist()
     out = []
     for r in rows:
-        entry = r["test_list"][0].split("(")[0].replace("assert ", "").strip()
+        entry = mbpp_entry(r)
         out.append({"id": str(r["task_id"]), "desc": r["prompt"], "entry": entry,
                     "prompt": f'"""\n{r["prompt"]}\n{chr(10).join(r["test_list"])}\n"""\n',
                     "test": "\n".join(r.get("test_imports") or []) + "\n" + "\n".join(r["test_list"]) + "\n"})
@@ -130,6 +144,9 @@ def _kill_tree(proc: subprocess.Popen) -> None:
         pass
 
 
+TIMEOUTS = {"n": 0}
+
+
 def run_program(src: str, workdir: str, timeout: float = 10.0) -> bool:
     """Run `src` in a throwaway directory and say whether it exited 0.
 
@@ -167,6 +184,7 @@ def run_program(src: str, workdir: str, timeout: float = 10.0) -> bool:
             except subprocess.TimeoutExpired:
                 _kill_tree(proc)
                 proc.wait(timeout=5)
+                TIMEOUTS["n"] += 1
                 return False
     finally:
         shutil.rmtree(cell, ignore_errors=True)
@@ -203,7 +221,8 @@ def score(ckpt: str, problems: list[dict], device: str, max_new: int, workdir: s
     mode = mode_override or ("question" if templates else "continue")
     ac = torch.autocast("cuda", dtype=torch.bfloat16, enabled=device.startswith("cuda"))
     bs = cfg.block_size
-    passed, t0 = 0, time.time()
+    passed, t0, per_problem = 0, time.time(), []
+    TIMEOUTS["n"] = 0
     for i, pr in enumerate(problems):
         if mode == "question":
             q = ("Complete the following Python function.\n" + pr["prompt"] if "desc" not in pr
@@ -223,11 +242,12 @@ def score(ckpt: str, problems: list[dict], device: str, max_new: int, workdir: s
             program = pr["prompt"] + cut_at_stops(gen)
         ok = run_program(program + "\n\n" + pr["test"], workdir)
         passed += ok
+        per_problem.append({"id": pr["id"], "passed": bool(ok)})
         if verbose and (ok or verbose > 1):
             print(f"\n--- {pr['id']} {'PASS' if ok else 'FAIL'}\n{program[:800]}")
         print(f"\r  {ckpt}: {i + 1}/{len(problems)}  pass {passed}  ({time.time() - t0:.0f}s)", end="", flush=True)
     print()
-    return {"ckpt": ckpt, "mode": mode, "n": len(problems), "pass": passed, "pass_at_1": passed / len(problems)}
+    return {"ckpt": ckpt, "mode": mode, "n": len(problems), "pass": passed, "pass_at_1": passed / len(problems), "problems": per_problem, "timeouts": TIMEOUTS["n"]}
 
 
 def main():

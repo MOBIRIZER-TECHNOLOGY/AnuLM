@@ -40,10 +40,12 @@ synthetic image, and that is a different claim.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import sys
 import time
+import uuid
 from pathlib import Path
 
 import numpy as np
@@ -73,7 +75,14 @@ class VisionTower:
         import timm
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         # num_classes=0 drops the head; this returns patch tokens, not a logit.
-        self.model = timm.create_model(name, pretrained=True, num_classes=0).eval().to(self.device)
+        local = Path(name)
+        if local.is_dir():
+            metadata = json.loads((local / "config.json").read_text(encoding="utf-8"))
+            self.model = timm.create_model(metadata["architecture"], pretrained=True, num_classes=0,
+                pretrained_cfg_overlay={**metadata["pretrained_cfg"],
+                    "source": "", "file": str(local / "model.safetensors")}).eval().to(self.device)
+        else:
+            self.model = timm.create_model(name, pretrained=True, num_classes=0).eval().to(self.device)
         for p in self.model.parameters():
             p.requires_grad_(False)
         cfg = timm.data.resolve_model_data_config(self.model)
@@ -254,6 +263,29 @@ def prep_parquet(src: str, out_dir: str, manifest: str, limit: int | None = None
     return n_pair
 
 
+def _file_digest(path):
+    digest = hashlib.sha256()
+    with open(path, "rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _tower_digest(tower):
+    model = getattr(tower, "model", None)
+    if model is None:
+        return None
+    if any(p.requires_grad for p in model.parameters()) or model.training:
+        raise ValueError("Feature caching requires a frozen encoder in evaluation mode.")
+    digest = hashlib.sha256()
+    for name, tensor in sorted(model.state_dict().items()):
+        digest.update(f"{name}:{tensor.dtype}:{tuple(tensor.shape)}".encode())
+        raw = tensor.detach().cpu().contiguous().reshape(-1).view(torch.uint8).numpy()
+        for start in range(0, raw.size, 1024 * 1024):
+            digest.update(raw[start:start + 1024 * 1024].tobytes())
+    return digest.hexdigest()
+
+
 def build_cache(rows, tower, path: str | Path, dtype="float16"):
     """Encode every distinct image once into a memmap of (N, patches, dim).
 
@@ -266,23 +298,52 @@ def build_cache(rows, tower, path: str | Path, dtype="float16"):
     Returns (memmap, {path: row}). At 196 x 768 float16 an image costs 301 kB,
     so Flickr8k's 6,000 come to 1.8 GB on disk.
     """
+    # A cache has one writer. Metadata binds it to pixels, preprocessing,
+    # encoder weights, row order and dtype; legacy caches are rebuilt.
     path = Path(path)
+    metadata_path = path.with_name(path.name + ".meta.json")
+    dtype = np.dtype(dtype)
     uniq = sorted({r["image"] for r in rows})
+    if not uniq:
+        raise ValueError("Cannot build an image cache from an empty manifest.")
     index = {p_: i for i, p_ in enumerate(uniq)}
     probe = tower.encode(uniq[0])
     shape = (len(uniq), probe.shape[0], probe.shape[1])
-    if path.exists() and path.stat().st_size == int(np.prod(shape)) * 2:
+    metadata = {
+        "version": 1, "shape": list(shape), "dtype": dtype.str,
+        "images": [[str(Path(p).resolve()), _file_digest(p)] for p in uniq],
+        "encoder": getattr(tower, "name", type(tower).__qualname__),
+        "weights_sha256": _tower_digest(tower),
+        "transform": repr(getattr(tower, "transform", None)),
+    }
+    try:
+        previous = json.loads(metadata_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        previous = None
+    if (previous == metadata and path.exists()
+            and path.stat().st_size == int(np.prod(shape)) * dtype.itemsize):
         print(f"cache: reusing {path} {shape}")
         return np.memmap(path, dtype=dtype, mode="r", shape=shape), index
     print(f"cache: encoding {len(uniq)} images -> {path} {shape}")
-    mm = np.memmap(path, dtype=dtype, mode="w+", shape=shape)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(path.name + "." + uuid.uuid4().hex + ".tmp")
+    temporary_meta = temporary.with_name(temporary.name + ".json")
     t0 = time.time()
-    for i, img in enumerate(uniq):
-        mm[i] = tower.encode(img).cpu().numpy().astype(dtype)
-        if (i + 1) % 500 == 0:
-            rate = (i + 1) / max(time.time() - t0, 1e-6)
-            print(f"  {i + 1}/{len(uniq)}  {rate:.0f} img/s", flush=True)
-    mm.flush()
+    try:
+        mm = np.memmap(temporary, dtype=dtype, mode="w+", shape=shape)
+        try:
+            for i, img in enumerate(uniq):
+                mm[i] = tower.encode(img).detach().cpu().numpy().astype(dtype)
+            mm.flush()
+        finally:
+            mm._mmap.close()
+        temporary_meta.write_text(json.dumps(metadata, sort_keys=True), encoding="utf-8")
+        metadata_path.unlink(missing_ok=True)
+        temporary.replace(path)
+        temporary_meta.replace(metadata_path)
+    finally:
+        temporary.unlink(missing_ok=True)
+        temporary_meta.unlink(missing_ok=True)
     print(f"cache: built in {time.time() - t0:.0f}s")
     return np.memmap(path, dtype=dtype, mode="r", shape=shape), index
 
@@ -319,7 +380,7 @@ def batches(rows, tower: VisionTower, tok, vl: VisionLanguage, device: str,
         for j in order[i: i + batch_size]:
             r = rows[j]
             if mm is not None:
-                patches = torch.from_numpy(np.asarray(mm[index[r["image"]]])).float().to(device)
+                patches = torch.from_numpy(np.array(mm[index[r["image"]]], copy=True)).float().to(device)
             else:
                 patches = tower.encode(r["image"]).to(device)
             prompt, answer = qa_ids(tok, r)

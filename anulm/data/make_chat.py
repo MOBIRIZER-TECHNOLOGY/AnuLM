@@ -13,8 +13,8 @@ Sources, all Apache 2.0 or CC BY-SA, all human-written:
                                   question "who are you?" gets a true answer
 
 Replies longer than 1,500 characters are dropped (finetune.py packs pairs into
-the model's block and drops what does not fit anyway). 300 random pairs are
-held out.
+the model's block and drops what does not fit anyway). Up to 300 distinct question groups are held out; duplicate questions cannot cross splits.
+Historical row-based chat scores must be rerun before reuse.
 """
 
 from __future__ import annotations
@@ -25,6 +25,7 @@ import gzip
 import json
 import random
 import re
+import unicodedata
 from pathlib import Path
 
 HERE = PROJECT_ROOT
@@ -35,7 +36,7 @@ MAX_ANSWER = 1500
 IDENTITY_EN = [
     ("Who are you?", "I am AnuLM, a small language model trained from scratch on one consumer GPU. I read Hindi, English and Python."),
     ("What is your name?", "My name is AnuLM."),
-    ("Who made you?", "I was trained by the AnuLM project, from scratch, on a single RTX 5070 Ti graphics card."),
+    ("Who made you?", "I was created by the AnuLM project. Check the checkpoint provenance for the training hardware."),
     ("What languages do you speak?", "I understand and write Hindi and English, and I can write simple Python code."),
     ("Are you ChatGPT?", "No. I am AnuLM, a much smaller model trained from scratch. I can make mistakes, especially about facts."),
     ("Can I trust your answers?", "Not fully. I am a small model and I can be confidently wrong. For facts, check a reliable source; my Wikipedia mode looks answers up."),
@@ -43,7 +44,7 @@ IDENTITY_EN = [
 IDENTITY_HI = [
     ("आप कौन हैं?", "मैं AnuLM हूँ, एक छोटा भाषा मॉडल जिसे एक ही GPU पर शुरू से प्रशिक्षित किया गया है। मैं हिन्दी, अंग्रेज़ी और Python समझता हूँ।"),
     ("आपका नाम क्या है?", "मेरा नाम AnuLM है।"),
-    ("आपको किसने बनाया?", "मुझे AnuLM परियोजना ने एक RTX 5070 Ti ग्राफ़िक्स कार्ड पर शुरू से प्रशिक्षित किया है।"),
+    ("आपको किसने बनाया?", "मुझे AnuLM परियोजना ने बनाया है। प्रशिक्षण के हार्डवेयर का विवरण मॉडल के रिकॉर्ड में देखें।"),
     ("आप कौन सी भाषाएँ बोलते हैं?", "मैं हिन्दी और अंग्रेज़ी समझता और लिखता हूँ, और साधारण Python कोड लिख सकता हूँ।"),
     ("क्या मैं आपके उत्तरों पर भरोसा कर सकता हूँ?", "पूरी तरह नहीं। मैं एक छोटा मॉडल हूँ और गलत हो सकता हूँ। तथ्यों के लिए किसी विश्वसनीय स्रोत से जाँच करें।"),
 ]
@@ -96,6 +97,31 @@ def hindi_wiki_qa(n: int, rng) -> list[dict]:
             for r in rows[:n]]
 
 
+def question_group(row):
+    return ' '.join(unicodedata.normalize('NFKC', row['question']).casefold().split())
+
+
+def split_chat_rows(rows, held_groups=300, seed=0):
+    """Group equal questions across sources/languages; identities stay in training."""
+    reserved = {question_group(r) for r in rows if r.get('source') == 'identity'}
+    groups = sorted({question_group(r) for r in rows if question_group(r) not in reserved})
+    if len(groups) < 2:
+        raise ValueError('Chat splitting needs at least two independent non-identity questions.')
+    random.Random(seed).shuffle(groups)
+    held_keys = set(groups[:min(held_groups, len(groups) - 1)])
+    train, held, seen = [], [], set()
+    for row in rows:
+        key = question_group(row)
+        identity = (key, unicodedata.normalize('NFKC', row['answer']).strip(), row.get('lang'))
+        if row.get('source') != 'identity' and identity in seen:
+            continue
+        seen.add(identity)
+        (held if key in held_keys else train).append(row)
+    if not train or not held:
+        raise ValueError('Chat partitions must both be nonempty.')
+    return train, held
+
+
 def main():
     rng = random.Random(0)
     parts = {"dolly": [{**r, "source": "dolly"} for r in dolly()], "oasst2": oasst2(), "aya_hi": aya_hindi(),
@@ -109,9 +135,8 @@ def main():
         print(f"{name:9s} {len(items):6d} rows, {len(kept):6d} kept")
         rows += kept
     rng.shuffle(rows)
-    held = [r for r in rows if r["source"] != "identity"][:300]
-    held_ids = {id(r) for r in held}
-    train = [r for r in rows if id(r) not in held_ids]
+    train, held = split_chat_rows(rows)
+    DATA.mkdir(parents=True, exist_ok=True)
     for name, rs in (("chat_train", train), ("chat_heldout", held)):
         with open(DATA / f"{name}.jsonl", "w", encoding="utf-8") as f:
             for r in rs:

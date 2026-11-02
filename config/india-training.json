@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "seed": 20261101,
+  "start_not_before_ist": "2026-11-01T20:00:00+05:30",
+  "max_training_hours": 40,
+  "text_steps": 10000,
+  "joint_steps": 60000,
+  "text_vocab": 16384,
+  "context": 512,
+  "languages": {"hi_in": "hi", "en_us": "simple", "bn_in": "bn", "gu_in": "gu", "kn_in": "kn", "ml_in": "ml", "mr_in": "mr", "or_in": "or", "pa_in": "pa", "ta_in": "ta", "te_in": "te", "as_in": "as", "ur_pk": "ur"},
+  "wikipedia": {"repo": "wikimedia/wikipedia", "revision": "b04c8d1ceb2f5cd4588862100d08de323dccfbaa", "license": "CC-BY-SA-3.0; GFDL per source card", "page": "https://huggingface.co/datasets/wikimedia/wikipedia"},
+  "whisper": {"repo": "Systran/faster-whisper-small", "revision": "536b0662742c02347bc0e980a01041f333bce120", "license": "MIT"},
+  "vision": {"repo": "timm/vit_base_patch16_siglip_224.webli", "revision": "8db107e594ed7552e44e108f16650d81ac6de9a6", "license": "Apache-2.0"},
+  "minimum_free_gib": 40,
+  "notes": "Initial research run: random AnuLM decoder and projectors, frozen pretrained encoders; no comparison model. General DOCCI vision plus explicitly synthetic Indian-context examples; not a comprehensive India vision corpus. Wikipedia share-alike conditions require retention/review before commercial distribution."
+}

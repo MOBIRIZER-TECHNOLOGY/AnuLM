@@ -61,10 +61,9 @@ MODELS: dict[str, dict] = {
     "anulm-chat": {
         "endpoints": ["/v1/chat/completions", "/v1/completions"],
         "from_scratch": True,
-        "description": "The chat model: AnuLM (398M total / 174M active MoE) pretrained from scratch, "
-                       "instruction-tuned on 23k human-written pairs (22% Hindi). Fluent and on topic; "
-                       "facts from memory are unreliable -- use anulm-answer for facts. Single-turn: "
-                       "it answers the last user message. Context 1,024 tokens.",
+        "description": "The explicitly configured AnuLM decoder. One user message only; "
+                       "checkpoint size, language coverage and measured quality depend on the artifact. "
+                       "A loaded checkpoint is not a production or factual-reliability approval.",
     },
     "anulm-answer": {
         "endpoints": ["/v1/chat/completions", "/v1/answer"],
@@ -107,7 +106,7 @@ MODELS: dict[str, dict] = {
         "endpoints": ["/v1/decide"],
         "from_scratch": True, "task": A.TASK_HI, "backbone": A.DECIDE_OWN,
         "description": "MASSIVE assistant intents (60) in Hindi: the chat model plus a rank-64 LoRA "
-                       "adapter. 84.5% accurate (ModernBERT: 67.5%).",
+                       "adapter. 84.5% accurate.",
     },
     "anulm-decide-india-banking": {
         "endpoints": ["/v1/decide"],
@@ -124,18 +123,6 @@ MODELS: dict[str, dict] = {
                        "Weak: 43.2% on BANKING77 never seen in training, but calibrated (ECE 3.7%) -- "
                        "trust only high-confidence answers. A separate 398M model.",
     },
-    "modernbert-decide-banking": {
-        "endpoints": ["/v1/decide"],
-        "from_scratch": False, "task": A.TASK_BANK, "backbone": A.DECIDE_MB,
-        "description": "Reference: ModernBERT-base (Answer.AI, Apache 2.0, borrowed) fine-tuned on "
-                       "BANKING77. 90.8%, about 4x faster than AnuLM.",
-    },
-    "modernbert-decide-hindi": {
-        "endpoints": ["/v1/decide"],
-        "from_scratch": False, "task": A.TASK_HI, "backbone": A.DECIDE_MB,
-        "description": "Reference: ModernBERT-base (borrowed) fine-tuned on MASSIVE Hindi. 67.5%: its "
-                       "English tokenizer reads Hindi as byte fragments.",
-    },
 }
 CHAT_MODELS = ("anulm-chat", "anulm-answer", "anulm-vision")
 
@@ -147,7 +134,8 @@ def available(mid: str) -> bool:
     if "task" in m:
         return (HERE / A.DECIDE_TASKS[m["task"]][m["backbone"]]).exists()
     if mid == "anulm-chat":
-        return (HERE / A.BRAIN).exists()
+        source = Path(getattr(models, "brain_source", A.BRAIN))
+        return source.is_file() or source.is_dir() or (HERE / source).exists()
     if mid == "anulm-answer":
         return (HERE / A.READER).exists()
     if mid == "anulm-vision":
@@ -181,15 +169,15 @@ class ChatMessage(BaseModel):
 
 
 class ChatRequest(BaseModel):
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="forbid")
     model: str = Field("anulm-chat", description="anulm-chat, anulm-answer or anulm-vision.")
     messages: list[ChatMessage] = Field(..., examples=[[{"role": "user", "content": "भारत की राजधानी क्या है?"}]])
-    max_tokens: Optional[int] = Field(None, description="Default 200; capped by the 1,024-token context.")
-    max_completion_tokens: Optional[int] = Field(None, description="Same as max_tokens (newer OpenAI name).")
+    max_tokens: Optional[int] = Field(None, ge=1, le=4096, description="Default 200; capped by the 1,024-token context.")
+    max_completion_tokens: Optional[int] = Field(None, ge=1, le=4096, description="Same as max_tokens (newer OpenAI name).")
     temperature: Optional[float] = Field(None, ge=0, le=2, description="Default 0.3. 0 = greedy.")
-    top_p: Optional[float] = Field(None, description="Accepted for compatibility; AnuLM samples with top_k.")
-    top_k: Optional[int] = Field(None, description="AnuLM extension. Default 40.")
-    repetition_penalty: Optional[float] = Field(None, description="AnuLM extension. Default 1.15.")
+    top_p: Optional[float] = Field(None, ge=0, le=1, description="Only 1 or omission supported; other values are rejected.")
+    top_k: Optional[int] = Field(None, ge=0, description="AnuLM extension. Default 40.")
+    repetition_penalty: Optional[float] = Field(None, gt=0, description="AnuLM extension. Default 1.15.")
     stop: Union[str, list[str], None] = None
     seed: Optional[int] = None
     n: int = Field(1, description="Only 1 is supported.")
@@ -201,14 +189,14 @@ class ChatRequest(BaseModel):
 
 
 class CompletionRequest(BaseModel):
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="forbid")
     model: str = "anulm-chat"
     prompt: Union[str, list[str]] = Field(..., examples=["भारत एक"])
-    max_tokens: Optional[int] = Field(None, description="Default 64.")
+    max_tokens: Optional[int] = Field(None, ge=1, le=4096, description="Default 64.")
     temperature: Optional[float] = Field(None, ge=0, le=2)
-    top_p: Optional[float] = None
-    top_k: Optional[int] = None
-    repetition_penalty: Optional[float] = None
+    top_p: Optional[float] = Field(None, ge=0, le=1)
+    top_k: Optional[int] = Field(None, ge=0)
+    repetition_penalty: Optional[float] = Field(None, gt=0)
     stop: Union[str, list[str], None] = None
     seed: Optional[int] = None
     n: int = 1
@@ -218,7 +206,7 @@ class CompletionRequest(BaseModel):
 
 
 class DecideRequest(BaseModel):
-    model: str = Field("anulm-decide-banking", description="An anulm-decide-* or modernbert-decide-* model.")
+    model: str = Field("anulm-decide-banking", description="An anulm-decide-* model.")
     input: Union[str, list[str]] = Field(..., description="One message, or a list of messages.",
                                          examples=["I still haven't received my new card"])
     options: Optional[list[str]] = Field(
@@ -330,7 +318,7 @@ def images_of(content) -> list[str]:
 
 
 def stops_of(stop) -> list[str]:
-    return [stop] if isinstance(stop, str) else [s for s in (stop or []) if s]
+    return ([stop] if stop else []) if isinstance(stop, str) else [s for s in (stop or []) if s]
 
 
 class Generation:
@@ -346,21 +334,22 @@ class Generation:
         self.temperature, self.top_k, self.rep = temperature, top_k, repetition_penalty
         self.seed, self.stops = seed, stops
         self.new: list[int] = []
+        self.generated_tokens = 0
         self.sent, self.text, self.finish = "", "", "length"
         self.cancelled = False
+        self.matched_stop = False
 
     def _release(self, final: bool) -> str:
-        text = self.eng.decode(self.new)
+        text = self.eng.decode_complete(self.new)
         cut = len(text)
         for s in self.stops:
             i = text.find(s, max(0, len(self.sent) - len(s)))
             if i >= 0:
-                cut, self.finish = min(cut, i), "stop"
+                cut, self.finish, self.matched_stop = min(cut, i), "stop", True
         text = text[:cut]
-        if self.finish != "stop" and not final:
+        if not self.matched_stop and not final:
             hold = max((len(s) - 1 for s in self.stops), default=0)
             text = text[:len(text) - hold] if hold else text
-            text = text.rstrip("�")
         delta, self.sent = text[len(self.sent):], text if len(text) > len(self.sent) else self.sent
         self.text = self.sent
         return delta
@@ -371,6 +360,7 @@ class Generation:
         x = torch.tensor([self.ids], dtype=torch.long, device=self.eng.device)
 
         def on_token(nxt):
+            self.generated_tokens += 1
             t = int(nxt[0, 0])
             if eos is not None and t == eos:
                 self.finish = "stop"
@@ -386,10 +376,14 @@ class Generation:
                 torch.manual_seed(self.seed)
             with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16,
                                                  enabled=self.eng.device.startswith("cuda")):
-                self.eng.model.generate(x, self.max_tokens, temperature=max(self.temperature, 1e-3),
-                                        top_k=self.top_k or None, eos_id=eos,
-                                        repetition_penalty=self.rep, on_token=on_token)
-        if self.finish != "stop":
+                if self.temperature == 0:
+                    from anulm.inference.decoding import greedy_generate
+                    greedy_generate(self.eng.model, x, self.max_tokens, eos_id=eos,
+                                    repetition_penalty=self.rep, on_token=on_token)
+                else:
+                    self.eng.model.generate(x, self.max_tokens, temperature=self.temperature,
+                        top_k=self.top_k or None, eos_id=eos, repetition_penalty=self.rep, on_token=on_token)
+        if not self.matched_stop:
             delta = self._release(final=True)
             if delta and emit:
                 emit(delta)
@@ -496,12 +490,18 @@ def one_shot_reply(req: ChatRequest, content: str, extra: dict | None = None):
 def chat_completions(req: ChatRequest):
     """Chat with `anulm-chat`, look facts up with `anulm-answer`, or ask about an image
     with `anulm-vision` (an image part in the last user message also selects it)."""
+    if req.max_tokens is not None and req.max_completion_tokens is not None and req.max_tokens != req.max_completion_tokens:
+        raise APIError(400, "Use one consistent token limit.", param="max_completion_tokens")
     if req.n != 1:
         raise APIError(400, "Only n=1 is supported.", param="n")
     if req.tools:
         raise APIError(400, "Tool calling is not supported: the model was not trained for it.", param="tools")
     if req.response_format and req.response_format.get("type") not in (None, "text"):
         raise APIError(400, "Only response_format {type: text} is supported.", param="response_format")
+    if req.top_p not in (None, 1):
+        raise APIError(400, "Nucleus sampling is unsupported; omit top_p or use 1.", param="top_p")
+    if len(req.messages) != 1 or req.messages[0].role != "user":
+        raise APIError(400, "This model supports one user message only; conversation history/system roles are not supported.", param="messages")
     users = [m for m in req.messages if m.role == "user"]
     if not users:
         raise APIError(400, "messages must contain a user message.", param="messages")
@@ -510,7 +510,18 @@ def chat_completions(req: ChatRequest):
     mid = "anulm-vision" if images else req.model
     need(mid, CHAT_MODELS)
 
+    if len(images) > 1:
+        raise APIError(400, "Only one image is supported.", param="messages")
+    if mid in ("anulm-vision", "anulm-answer"):
+        unsupported = [key for key in ('temperature', 'top_k', 'repetition_penalty', 'stop', 'seed')
+                       if getattr(req, key) is not None]
+        if unsupported:
+            raise APIError(400, "These controls apply to anulm-chat only: " + ', '.join(unsupported), param=unsupported[0])
+    if mid == "anulm-answer" and (req.max_tokens is not None or req.max_completion_tokens is not None):
+        raise APIError(400, "Retrieval answers do not support generation token limits.", param="max_tokens")
     if mid == "anulm-vision":
+        if (req.max_completion_tokens or req.max_tokens or 64) > 64:
+            raise APIError(400, "Vision replies are limited to 64 tokens.", param="max_tokens")
         if not images:
             raise APIError(400, "anulm-vision needs an image_url part in the last user message.",
                            param="messages")
@@ -520,10 +531,10 @@ def chat_completions(req: ChatRequest):
             with GPU:
                 if question:
                     vl, tower, tok = models.eye("vqa")
-                    out = answer(vl, tower, tok, path, A.as_question(question), device=models.device)
+                    out = answer(vl, tower, tok, path, A.as_question(question), max_tokens=req.max_completion_tokens or req.max_tokens or 64, device=models.device)
                 else:
                     vl, tower, tok = models.eye("caption")
-                    out = caption(vl, tower, tok, path, device=models.device)
+                    out = caption(vl, tower, tok, path, max_tokens=req.max_completion_tokens or req.max_tokens or 64, device=models.device)
         finally:
             os.unlink(path)
         req.model = mid
@@ -544,7 +555,7 @@ def chat_completions(req: ChatRequest):
         prefix = ""
 
     gen = Generation(chat_prompt(question), req.max_completion_tokens or req.max_tokens or 200,
-                     0.3 if req.temperature is None else req.temperature, req.top_k or 40,
+                     0.3 if req.temperature is None else req.temperature, 40 if req.top_k is None else req.top_k,
                      1.15 if req.repetition_penalty is None else req.repetition_penalty,
                      req.seed, stops_of(req.stop))
     rid, now = f"chatcmpl-{uuid.uuid4().hex[:24]}", int(time.time())
@@ -563,26 +574,30 @@ def chat_completions(req: ChatRequest):
 
         def use():
             if (req.stream_options or {}).get("include_usage"):
-                yield sse({**base, "choices": [], "usage": usage(len(gen.ids), len(gen.new))})
+                yield sse({**base, "choices": [], "usage": usage(len(gen.ids), gen.generated_tokens)})
         return stream_generation(gen, chunk, final, use)
 
     text = gen.run()
     return {"id": rid, "object": "chat.completion", "created": now, "model": req.model,
-            "choices": [{"index": 0, "message": {"role": "assistant", "content": prefix + text.strip()},
+            "choices": [{"index": 0, "message": {"role": "assistant", "content": prefix + text},
                          "finish_reason": gen.finish}],
-            "usage": usage(len(gen.ids), len(gen.new))}
+            "usage": usage(len(gen.ids), gen.generated_tokens)}
 
 
 @app.post("/v1/completions", tags=["OpenAI-compatible"], dependencies=[Depends(check_key)])
 def completions(req: CompletionRequest):
     """Raw continuation of `prompt` with the chat model, no template (legacy OpenAI
     completions; LangChain's `OpenAI` LLM class)."""
+    if req.top_p not in (None, 1):
+        raise APIError(400, "Nucleus sampling is unsupported; omit top_p or use 1.", param="top_p")
     need(req.model, ("anulm-chat",))
     if req.n != 1 or (isinstance(req.prompt, list) and len(req.prompt) != 1):
         raise APIError(400, "Only one prompt and n=1 are supported.", param="prompt")
     prompt = req.prompt[0] if isinstance(req.prompt, list) else req.prompt
+    if not prompt:
+        raise APIError(400, "Prompt must not be empty.", param="prompt")
     gen = Generation(prompt, req.max_tokens or 64, 0.7 if req.temperature is None else req.temperature,
-                     req.top_k or 40, 1.0 if req.repetition_penalty is None else req.repetition_penalty,
+                     40 if req.top_k is None else req.top_k, 1.0 if req.repetition_penalty is None else req.repetition_penalty,
                      req.seed, stops_of(req.stop))
     rid, now = f"cmpl-{uuid.uuid4().hex[:24]}", int(time.time())
     base = {"id": rid, "object": "text_completion", "created": now, "model": req.model}
@@ -599,13 +614,13 @@ def completions(req: CompletionRequest):
 
         def use():
             if (req.stream_options or {}).get("include_usage"):
-                yield sse({**base, "choices": [], "usage": usage(len(gen.ids), len(gen.new))})
+                yield sse({**base, "choices": [], "usage": usage(len(gen.ids), gen.generated_tokens)})
         return stream_generation(gen, chunk, final, use)
     text = gen.run()
     return {"id": rid, "object": "text_completion", "created": now, "model": req.model,
             "choices": [{"index": 0, "text": (prompt if req.echo else "") + text, "logprobs": None,
                          "finish_reason": gen.finish}],
-            "usage": usage(len(gen.ids), len(gen.new))}
+            "usage": usage(len(gen.ids), gen.generated_tokens)}
 
 
 # ------------------------------------------------------------------ AnuLM-specific

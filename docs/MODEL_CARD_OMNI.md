@@ -1,5 +1,7 @@
 # Model card: AnuLM-Omni-400M
 
+Current companion update (2 November 2026): see [current status](CURRENT_STATUS.md) and [language coverage](LANGUAGE_SUPPORT.md). Historical model cards, experiment numbers and commands below must not be presented as measurements of the active India run.
+
 One model for everything the AnuLM demo does: chat, answering from passages,
 routing a message to an intent, English and Hindi speech recognition,
 describing a photo and answering a question about it. One 456M decoder

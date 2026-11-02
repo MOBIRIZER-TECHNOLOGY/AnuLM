@@ -1,5 +1,5 @@
 {
-  "edition": "Complete technical preview, 2026-11-01",
+  "edition": "Complete technical preview, 2026-11-02",
   "chapters": [
     "01-what-this-book-builds.md",
     "02-from-counts-to-transformers.md",
@@ -54,6 +54,9 @@
   "reader_guides": [
     "docs/reader/start-here.md",
     "docs/reader/learning-paths.md",
-    "docs/reader/launch-checklist.md"
+    "docs/reader/launch-checklist.md",
+    "docs/reader/current-workflow.md",
+    "docs/reader/language-coverage.md",
+    "docs/reader/course-route.md"
   ]
 }
