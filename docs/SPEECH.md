@@ -1,5 +1,7 @@
 # Speech
 
+Current companion update (2 November 2026): see [current status](CURRENT_STATUS.md) and [language coverage](LANGUAGE_SUPPORT.md). Historical model cards, experiment numbers and commands below must not be presented as measurements of the completed India research run.
+
 How AnuLM is being taught to listen and to talk, what is built, what is
 measured, and what is still only a plan. Numbers here were measured on the
 RTX 5070 Ti this project trains on; where a number is an estimate it says so.
@@ -44,7 +46,7 @@ first.
 
 ## Measured
 
-A 3.87 s Hindi clip through both input paths (`python audio_codec.py --probe`):
+A 3.87 s Hindi clip through both input paths (`python -m anulm.multimodal.audio_codec --probe`):
 
 | | rate | shape | notes |
 | --- | --- | --- | --- |

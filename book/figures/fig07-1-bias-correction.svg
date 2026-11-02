@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 320" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 7.1 · Bias correction</title>
+<desc id="d">Raw first moment after 1, 5 and 40 steps: 0.100, 0.410, 0.985; raw second moment 0.050, 0.226, 0.871. Both corrected estimates equal 1.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Adam&#x27;s moments with a constant gradient of 1</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">raw m (coral) and raw v (teal) start at 0; m / (1 − β₁ᵗ) and v / (1 − β₂ᵗ) are 1 at every step · β = (0.9, 0.95)</text>
+<line x1="70.0" y1="270.0" x2="700.0" y2="270.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="274.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0.00</text>
+<line x1="70.0" y1="224.8" x2="700.0" y2="224.8" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="228.8" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0.25</text>
+<line x1="70.0" y1="179.5" x2="700.0" y2="179.5" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="183.5" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0.50</text>
+<line x1="70.0" y1="134.3" x2="700.0" y2="134.3" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="138.3" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0.75</text>
+<line x1="70.0" y1="89.0" x2="700.0" y2="89.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="93.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">1.00</text>
+<text x="70.0" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1</text>
+<text x="215.4" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">10</text>
+<text x="376.9" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">20</text>
+<text x="538.5" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">30</text>
+<text x="700.0" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">40</text>
+<text x="385.0" y="304.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">step t</text>
+<line x1="70.0" y1="89.0" x2="700.0" y2="89.0" stroke="#17262E" class="f-ink-stroke" stroke-width="2" stroke-dasharray="5 3"/>
+<text x="700.0" y="81.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">both corrected estimates: 1.0</text>
+<polyline points="70.0,251.9 86.2,235.6 102.3,221.0 118.5,207.8 134.6,195.9 150.8,185.2 166.9,175.6 183.1,166.9 199.2,159.2 215.4,152.1 231.5,145.8 247.7,140.2 263.8,135.0 280.0,130.4 296.2,126.3 312.3,122.6 328.5,119.2 344.6,116.2 360.8,113.5 376.9,111.0 393.1,108.8 409.2,106.9 425.4,105.1 441.5,103.5 457.7,102.0 473.8,100.7 490.0,99.6 506.2,98.5 522.3,97.6 538.5,96.7 554.6,96.0 570.8,95.3 586.9,94.6 603.1,94.1 619.2,93.6 635.4,93.1 651.5,92.7 667.7,92.3 683.8,92.0 700.0,91.7" fill="none" stroke="#C4532F" class="f-coral-stroke" stroke-width="2.5"><title>raw m</title></polyline>
+<polyline points="70.0,261.0 86.2,252.4 102.3,244.2 118.5,236.4 134.6,229.1 150.8,222.1 166.9,215.4 183.1,209.1 199.2,203.1 215.4,197.4 231.5,192.0 247.7,186.8 263.8,181.9 280.0,177.3 296.2,172.9 312.3,168.7 328.5,164.7 344.6,160.9 360.8,157.3 376.9,153.9 393.1,150.7 409.2,147.6 425.4,144.7 441.5,141.9 457.7,139.2 473.8,136.7 490.0,134.3 506.2,132.1 522.3,129.9 538.5,127.9 554.6,125.9 570.8,124.1 586.9,122.3 603.1,120.7 619.2,119.1 635.4,117.6 651.5,116.2 667.7,114.8 683.8,113.5 700.0,112.3" fill="none" stroke="#0E9488" class="f-teal-stroke" stroke-width="2.5"><title>raw v</title></polyline>
+<text x="409.2" y="126.9" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">raw m = 1 − 0.9ᵗ</text>
+<text x="280.0" y="197.3" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">raw v = 1 − 0.95ᵗ</text>
+</svg>

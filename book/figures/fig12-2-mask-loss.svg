@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 12.2 · What the masks are worth to the trained model</title>
+<desc id="d">As trained: 3.507 on positions 0–255 and 3.299 on 256–1,023. Window removed: 3.506 and 4.380. No mask at all: 8.243 and 7.891.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Held-out loss of the released model with its masks changed</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">ckpt_base_v2.pt · 32 windows of 1,024 tokens, seed 0 · nats per token · measured</text>
+<circle cx="194" cy="70" r="5" fill="#0E9488" class="f-teal"/>
+<text x="204.0" y="74.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">positions 0–255</text>
+<circle cx="324" cy="70" r="5" fill="#C4532F" class="f-coral"/>
+<text x="334.0" y="74.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">positions 256–1,023</text>
+<line x1="190.0" y1="92.0" x2="190.0" y2="252.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="190.0" y="268.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<line x1="286.2" y1="92.0" x2="286.2" y2="252.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="286.2" y="268.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">2</text>
+<line x1="382.3" y1="92.0" x2="382.3" y2="252.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="382.3" y="268.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">4</text>
+<line x1="478.5" y1="92.0" x2="478.5" y2="252.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="478.5" y="268.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">6</text>
+<line x1="574.6" y1="92.0" x2="574.6" y2="252.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="574.6" y="268.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">8</text>
+<line x1="670.8" y1="92.0" x2="670.8" y2="252.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="670.8" y="268.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">10</text>
+<line x1="689.9" y1="92.0" x2="689.9" y2="252.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.2" stroke-dasharray="3 3"/>
+<text x="685.9" y="284.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">ln V = 10.397, a uniform guess</text>
+<text x="176.0" y="118.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">as trained</text>
+<rect x="190.0" y="108.0" width="168.6" height="13.0" rx="3" fill="#0E9488" class="f-teal"><title>as trained, positions 0–255: 3.507</title></rect>
+<text x="364.6" y="119.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">3.507</text>
+<rect x="190.0" y="124.0" width="158.6" height="13.0" rx="3" fill="#C4532F" class="f-coral"><title>as trained, positions 256–1023: 3.299</title></rect>
+<text x="354.6" y="135.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">3.299</text>
+<text x="176.0" y="170.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">window removed</text>
+<rect x="190.0" y="160.0" width="168.6" height="13.0" rx="3" fill="#0E9488" class="f-teal"><title>window removed, positions 0–255: 3.506</title></rect>
+<text x="364.6" y="171.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">3.506</text>
+<rect x="190.0" y="176.0" width="210.6" height="13.0" rx="3" fill="#C4532F" class="f-coral"><title>window removed, positions 256–1023: 4.380</title></rect>
+<text x="406.6" y="187.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">4.380</text>
+<text x="176.0" y="222.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">no mask at all</text>
+<rect x="190.0" y="212.0" width="396.3" height="13.0" rx="3" fill="#0E9488" class="f-teal"><title>no mask at all, positions 0–255: 8.243</title></rect>
+<text x="592.3" y="223.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">8.243</text>
+<rect x="190.0" y="228.0" width="379.4" height="13.0" rx="3" fill="#C4532F" class="f-coral"><title>no mask at all, positions 256–1023: 7.891</title></rect>
+<text x="575.4" y="239.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">7.891</text>
+</svg>

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 26.2 · bf16 routing, measured on the released model</title>
+<desc id="d">For each of the 19 MoE layers, the share of tokens whose four chosen experts change when the gate runs under bf16 autocast. Layer 1 changes 10.95%, the deepest layer 1.69%; over all layers 3.17% of expert sets change.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Expert choices that bf16 autocast would change, per layer</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">ckpt_base_v2.pt · 32 held-out windows of 1,024 tokens · share of tokens whose top-4 set differs from the fp32 gate</text>
+<line x1="70.0" y1="250.0" x2="730.0" y2="250.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="254.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0%</text>
+<line x1="70.0" y1="190.0" x2="730.0" y2="190.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="194.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">4%</text>
+<line x1="70.0" y1="130.0" x2="730.0" y2="130.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="134.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">8%</text>
+<line x1="70.0" y1="70.0" x2="730.0" y2="70.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="74.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">12%</text>
+<rect x="74.0" y="85.8" width="26.7" height="164.2" rx="2" fill="#D9A13B" class="f-gold"><title>layer 1: 10.95%</title></rect>
+<text x="87.4" y="264.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1</text>
+<rect x="108.7" y="190.8" width="26.7" height="59.2" rx="2" fill="#D9A13B" class="f-gold"><title>layer 2: 3.95%</title></rect>
+<text x="122.1" y="264.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">2</text>
+<rect x="143.5" y="196.4" width="26.7" height="53.6" rx="2" fill="#D9A13B" class="f-gold"><title>layer 3: 3.57%</title></rect>
+<text x="156.8" y="264.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3</text>
+<rect x="178.2" y="204.2" width="26.7" height="45.8" rx="2" fill="#D9A13B" class="f-gold"><title>layer 4: 3.05%</title></rect>
+<text x="191.6" y="264.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">4</text>
+<rect x="212.9" y="199.7" width="26.7" height="50.3" rx="2" fill="#D9A13B" class="f-gold"><title>layer 5: 3.35%</title></rect>
+<text x="226.3" y="264.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">5</text>
+<rect x="247.7" y="198.2" width="26.7" height="51.8" rx="2" fill="#D9A13B" class="f-gold"><title>layer 6: 3.45%</title></rect>
+<text x="261.1" y="264.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">6</text>
+<rect x="282.4" y="201.6" width="26.7" height="48.4" rx="2" fill="#D9A13B" class="f-gold"><title>layer 7: 3.23%</title></rect>
+<text x="295.8" y="264.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">7</text>
+<rect x="317.2" y="207.2" width="26.7" height="42.8" rx="2" fill="#D9A13B" class="f-gold"><title>layer 8: 2.86%</title></rect>
+<text x="330.5" y="264.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">8</text>
+<rect x="351.9" y="208.0" width="26.7" height="42.0" rx="2" fill="#D9A13B" class="f-gold"><title>layer 9: 2.80%</title></rect>
+<text x="365.3" y="264.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">9</text>
+<rect x="386.6" y="211.7" width="26.7" height="38.3" rx="2" fill="#D9A13B" class="f-gold"><title>layer 10: 2.55%</title></rect>
+<text x="400.0" y="264.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">10</text>
+<rect x="421.4" y="211.1" width="26.7" height="38.9" rx="2" fill="#D9A13B" class="f-gold"><title>layer 11: 2.59%</title></rect>
+<text x="434.7" y="264.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">11</text>
+<rect x="456.1" y="211.5" width="26.7" height="38.5" rx="2" fill="#D9A13B" class="f-gold"><title>layer 12: 2.57%</title></rect>
+<text x="469.5" y="264.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">12</text>
+<rect x="490.8" y="209.6" width="26.7" height="40.4" rx="2" fill="#D9A13B" class="f-gold"><title>layer 13: 2.69%</title></rect>
+<text x="504.2" y="264.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">13</text>
+<rect x="525.6" y="219.1" width="26.7" height="30.9" rx="2" fill="#D9A13B" class="f-gold"><title>layer 14: 2.06%</title></rect>
+<text x="538.9" y="264.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">14</text>
+<rect x="560.3" y="215.4" width="26.7" height="34.6" rx="2" fill="#D9A13B" class="f-gold"><title>layer 15: 2.31%</title></rect>
+<text x="573.7" y="264.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">15</text>
+<rect x="595.1" y="213.4" width="26.7" height="36.6" rx="2" fill="#D9A13B" class="f-gold"><title>layer 16: 2.44%</title></rect>
+<text x="608.4" y="264.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">16</text>
+<rect x="629.8" y="217.8" width="26.7" height="32.2" rx="2" fill="#D9A13B" class="f-gold"><title>layer 17: 2.15%</title></rect>
+<text x="643.2" y="264.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">17</text>
+<rect x="664.5" y="221.2" width="26.7" height="28.8" rx="2" fill="#D9A13B" class="f-gold"><title>layer 18: 1.92%</title></rect>
+<text x="677.9" y="264.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">18</text>
+<rect x="699.3" y="224.6" width="26.7" height="25.4" rx="2" fill="#D9A13B" class="f-gold"><title>layer 19: 1.69%</title></rect>
+<text x="712.6" y="264.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">19</text>
+<text x="400.0" y="282.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">layer</text>
+<line x1="70.0" y1="202.5" x2="730.0" y2="202.5" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5" stroke-dasharray="3 3"/>
+<text x="730.0" y="196.5" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">all layers 3.17%</text>
+<text x="108.7" y="89.8" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">  layer 1: 10.95%</text>
+</svg>

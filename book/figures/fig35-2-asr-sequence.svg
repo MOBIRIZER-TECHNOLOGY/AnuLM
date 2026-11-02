@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 35.2 · One speech example as the model sees it</title>
+<desc id="d">Eight positions: &lt;|speech|&gt;, two projected audio vectors, &lt;|text|&gt;, three text ids and EOS. Targets are -1 except at positions 3 to 6, which hold 5, 6, 7 and EOS: each the id of the next input.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">One speech example: vectors in, targets one position early</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">ContinuousSpeech.build · positions 0–7 of ch35_wider_vocab.py&#x27;s step 7</text>
+<text x="30.0" y="78.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">embeds (S, D)</text>
+<rect x="30.0" y="92.0" width="80.0" height="46.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>position 0: &lt;|speech|&gt;, from embed_tokens</title></rect>
+<text x="70.0" y="112.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">&lt;|speech|&gt;</text>
+<text x="70.0" y="128.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">embed_tokens</text>
+<text x="70.0" y="156.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<rect x="30.0" y="196.0" width="80.0" height="34.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>target at position 0: -1</title></rect>
+<text x="70.0" y="218.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">-1</text>
+<rect x="116.0" y="92.0" width="80.0" height="46.0" rx="6" fill="#7B5E8E" class="f-plum"><title>position 1: audio 1, from the projector</title></rect>
+<text x="156.0" y="112.0" class="f-onfill" fill="#FFFFFF" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">audio 1</text>
+<text x="156.0" y="128.0" class="f-onfill" fill="#FFFFFF" font-size="10" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">projector</text>
+<text x="156.0" y="156.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1</text>
+<rect x="116.0" y="196.0" width="80.0" height="34.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>target at position 1: -1</title></rect>
+<text x="156.0" y="218.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">-1</text>
+<rect x="202.0" y="92.0" width="80.0" height="46.0" rx="6" fill="#7B5E8E" class="f-plum"><title>position 2: audio 2, from the projector</title></rect>
+<text x="242.0" y="112.0" class="f-onfill" fill="#FFFFFF" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">audio 2</text>
+<text x="242.0" y="128.0" class="f-onfill" fill="#FFFFFF" font-size="10" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">projector</text>
+<text x="242.0" y="156.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">2</text>
+<rect x="202.0" y="196.0" width="80.0" height="34.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>target at position 2: -1</title></rect>
+<text x="242.0" y="218.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">-1</text>
+<rect x="288.0" y="92.0" width="80.0" height="46.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>position 3: &lt;|text|&gt;, from embed_tokens</title></rect>
+<text x="328.0" y="112.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">&lt;|text|&gt;</text>
+<text x="328.0" y="128.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">embed_tokens</text>
+<text x="328.0" y="156.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3</text>
+<rect x="288.0" y="196.0" width="80.0" height="34.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#7B5E8E" stroke-width="2"><title>target at position 3: 5</title></rect>
+<text x="328.0" y="218.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">5</text>
+<line x1="338.0" y1="194.0" x2="404.0" y2="142.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="374.0" y="92.0" width="80.0" height="46.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>position 4: id 5, from embed_tokens</title></rect>
+<text x="414.0" y="112.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">id 5</text>
+<text x="414.0" y="128.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">embed_tokens</text>
+<text x="414.0" y="156.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">4</text>
+<rect x="374.0" y="196.0" width="80.0" height="34.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#7B5E8E" stroke-width="2"><title>target at position 4: 6</title></rect>
+<text x="414.0" y="218.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">6</text>
+<line x1="424.0" y1="194.0" x2="490.0" y2="142.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="460.0" y="92.0" width="80.0" height="46.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>position 5: id 6, from embed_tokens</title></rect>
+<text x="500.0" y="112.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">id 6</text>
+<text x="500.0" y="128.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">embed_tokens</text>
+<text x="500.0" y="156.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">5</text>
+<rect x="460.0" y="196.0" width="80.0" height="34.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#7B5E8E" stroke-width="2"><title>target at position 5: 7</title></rect>
+<text x="500.0" y="218.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">7</text>
+<line x1="510.0" y1="194.0" x2="576.0" y2="142.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="546.0" y="92.0" width="80.0" height="46.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>position 6: id 7, from embed_tokens</title></rect>
+<text x="586.0" y="112.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">id 7</text>
+<text x="586.0" y="128.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">embed_tokens</text>
+<text x="586.0" y="156.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">6</text>
+<rect x="546.0" y="196.0" width="80.0" height="34.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#7B5E8E" stroke-width="2"><title>target at position 6: EOS</title></rect>
+<text x="586.0" y="218.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">EOS</text>
+<line x1="596.0" y1="194.0" x2="662.0" y2="142.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="632.0" y="92.0" width="80.0" height="46.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>position 7: EOS, from embed_tokens</title></rect>
+<text x="672.0" y="112.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">EOS</text>
+<text x="672.0" y="128.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">embed_tokens</text>
+<text x="672.0" y="156.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">7</text>
+<rect x="632.0" y="196.0" width="80.0" height="34.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>target at position 7: -1</title></rect>
+<text x="672.0" y="218.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">-1</text>
+<text x="30.0" y="188.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">targets (S,): −1 is ignored by the loss</text>
+<text x="30.0" y="270.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">Each graded position predicts the next input: &lt;|text|&gt; predicts the first word, the last word predicts EOS.</text>
+</svg>

@@ -1,0 +1,248 @@
+{
+  "1": {
+    "goal": "Explain the read, score, pick, repeat loop.",
+    "prerequisites": "None; begin with Start here.",
+    "path": "Core / consult your learning path",
+    "requirements": "CPU examples; repository inventory and historical citation checks also need Git/source files."
+  },
+  "2": {
+    "goal": "Compare counts, recurrence and attention without treating history as a required implementation.",
+    "prerequisites": "Chapter 1; revisit loss after Chapter 3.",
+    "path": "Core / consult your learning path",
+    "requirements": "The comparison script needs local training text and unpublished course artifacts; read the worked examples without them."
+  },
+  "3": {
+    "goal": "Explain next-token targets and interpret cross-entropy in the correct units.",
+    "prerequisites": "Chapter 1; use Chapter 5 for softmax details.",
+    "path": "Core / consult your learning path",
+    "requirements": "Small tensors run on CPU; the full example also reads data/v2/meta.json."
+  },
+  "4": {
+    "goal": "Trace tensor shapes through a projection and a matrix multiply.",
+    "prerequisites": "Python arrays; Chapter 1 notation.",
+    "path": "Core / consult your learning path",
+    "requirements": "Public companion source; small CPU example first. Trained-model measurements require their separately named artifacts."
+  },
+  "5": {
+    "goal": "Compute a small softmax and explain temperature and cross-entropy.",
+    "prerequisites": "Chapters 3–4.",
+    "path": "Core / consult your learning path",
+    "requirements": "Public companion source; small CPU example first. Trained-model measurements require their separately named artifacts."
+  },
+  "6": {
+    "goal": "Follow a gradient from the loss to a parameter update.",
+    "prerequisites": "Chapters 4–5.",
+    "path": "Core / consult your learning path",
+    "requirements": "Public companion source; small CPU example first. Trained-model measurements require their separately named artifacts."
+  },
+  "7": {
+    "goal": "Explain an optimizer step, a learning-rate schedule and clipping.",
+    "prerequisites": "Chapters 5–6.",
+    "path": "Core / consult your learning path",
+    "requirements": "CPU arithmetic; the complete example reads the supplied book measurement record."
+  },
+  "8": {
+    "goal": "Encode text as UTF-8 bytes and distinguish bytes from characters.",
+    "prerequisites": "Chapter 3.",
+    "path": "Core / consult your learning path",
+    "requirements": "Public companion source; small CPU example first. Trained-model measurements require their separately named artifacts."
+  },
+  "9": {
+    "goal": "Work through a BPE merge and reproduce encoding and decoding.",
+    "prerequisites": "Chapter 8.",
+    "path": "Core / consult your learning path",
+    "requirements": "Public companion source; small CPU example first. Trained-model measurements require their separately named artifacts."
+  },
+  "10": {
+    "goal": "Trace a token lookup and explain the output vocabulary table.",
+    "prerequisites": "Chapters 4 and 8–9.",
+    "path": "Core / consult your learning path",
+    "requirements": "Public companion source; small CPU example first. Trained-model measurements require their separately named artifacts."
+  },
+  "11": {
+    "goal": "Compute a causal attention result by hand and check it in code.",
+    "prerequisites": "Chapters 4–5 and 10.",
+    "path": "Core / consult your learning path",
+    "requirements": "The default attention_by_hand.py example needs no checkpoint; --released requires the native checkpoint."
+  },
+  "12": {
+    "goal": "Construct a causal mask and catch a future-token leak.",
+    "prerequisites": "Chapter 11.",
+    "path": "Core / consult your learning path",
+    "requirements": "Public companion source; small CPU example first. Trained-model measurements require their separately named artifacts."
+  },
+  "13": {
+    "goal": "Track query and key/value heads through grouped-query attention.",
+    "prerequisites": "Chapters 4 and 11–12.",
+    "path": "Core / consult your learning path",
+    "requirements": "Public companion source; small CPU example first. Trained-model measurements require their separately named artifacts."
+  },
+  "14": {
+    "goal": "Explain rotary positions and their effect on relative attention scores.",
+    "prerequisites": "Chapters 4 and 11–13.",
+    "path": "Core / consult your learning path",
+    "requirements": "Public companion source; small CPU example first. Trained-model measurements require their separately named artifacts."
+  },
+  "15": {
+    "goal": "Explain RMSNorm and the residual path through a block.",
+    "prerequisites": "Chapters 6 and 11–14.",
+    "path": "Core / consult your learning path",
+    "requirements": "Public companion source; small CPU example first. Trained-model measurements require their separately named artifacts."
+  },
+  "16": {
+    "goal": "Compute a small SwiGLU and follow a dense feed-forward layer.",
+    "prerequisites": "Chapters 4–6 and 15.",
+    "path": "Core / consult your learning path",
+    "requirements": "Public companion source; small CPU example first. Trained-model measurements require their separately named artifacts."
+  },
+  "17": {
+    "goal": "Explain expert scores, selection and routing precision.",
+    "prerequisites": "Chapters 5 and 16; optional on the first dense-model pass.",
+    "path": "Optional extension",
+    "requirements": "Public companion source; small CPU example first. Trained-model measurements require their separately named artifacts."
+  },
+  "18": {
+    "goal": "Follow expert dispatch and explain balancing behaviour.",
+    "prerequisites": "Chapters 16–17.",
+    "path": "Optional extension",
+    "requirements": "Public companion source; small CPU example first. Trained-model measurements require their separately named artifacts."
+  },
+  "19": {
+    "goal": "Compare a latent cache with a GQA cache.",
+    "prerequisites": "Chapters 13–14 and 27; optional architecture detour.",
+    "path": "Optional extension",
+    "requirements": "CPU architecture example; the released model uses GQA rather than MLA."
+  },
+  "20": {
+    "goal": "Trace ids through a complete model to the loss or next-token logits.",
+    "prerequisites": "Chapters 10–16; add 17–18 for the expert-specific sections.",
+    "path": "Core / consult your learning path",
+    "requirements": "Public companion source; small CPU example first. Trained-model measurements require their separately named artifacts."
+  },
+  "21": {
+    "goal": "Construct token windows and inspect train/validation split rules.",
+    "prerequisites": "Chapters 8–9 and 20.",
+    "path": "Core / consult your learning path",
+    "requirements": "Public companion source; small CPU example first. Trained-model measurements require their separately named artifacts."
+  },
+  "22": {
+    "goal": "Follow a training step, including accumulation and regularizers.",
+    "prerequisites": "Chapters 6–7 and 20–21.",
+    "path": "Core / consult your learning path",
+    "requirements": "The full dry run needs the v2 corpus; the small-step section demonstrates the mechanism separately."
+  },
+  "23": {
+    "goal": "Distinguish parameter, activation and cache precision and memory.",
+    "prerequisites": "Chapters 4, 7 and 20–22.",
+    "path": "Core / consult your learning path",
+    "requirements": "Public companion source; small CPU example first. Trained-model measurements require their separately named artifacts."
+  },
+  "24": {
+    "goal": "Compare checkpoints using matched data and appropriate uncertainty.",
+    "prerequisites": "Chapters 3, 21–22; tokenizer units from Chapters 8–9.",
+    "path": "Core / consult your learning path",
+    "requirements": "CPU toy training; recorded released-model measurements need the named artifacts."
+  },
+  "25": {
+    "goal": "Distinguish a weight checkpoint from a resumable training state.",
+    "prerequisites": "Chapters 7 and 21–24.",
+    "path": "Core / consult your learning path",
+    "requirements": "CPU toy training and temporary files; released-state inspection is separate."
+  },
+  "26": {
+    "goal": "Diagnose silent implementation failures with checks that can fail.",
+    "prerequisites": "Chapters 11–25; revisit advanced mechanisms as needed.",
+    "path": "Core / consult your learning path",
+    "requirements": "Public companion source; small CPU example first. Trained-model measurements require their separately named artifacts."
+  },
+  "27": {
+    "goal": "Trace prefill, cached decoding and context resets.",
+    "prerequisites": "Chapters 12–14 and 20.",
+    "path": "Core / consult your learning path",
+    "requirements": "Public companion source; small CPU example first. Trained-model measurements require their separately named artifacts."
+  },
+  "28": {
+    "goal": "Predict how sampling filters alter the next-token distribution.",
+    "prerequisites": "Chapters 5, 20 and 27.",
+    "path": "Core / consult your learning path",
+    "requirements": "Public companion source; small CPU example first. Trained-model measurements require their separately named artifacts."
+  },
+  "29": {
+    "goal": "Explain what a longer accepted context does and does not guarantee.",
+    "prerequisites": "Chapters 14 and 27.",
+    "path": "Optional extension",
+    "requirements": "Public companion source; small CPU example first. Trained-model measurements require their separately named artifacts."
+  },
+  "30": {
+    "goal": "Build masked SFT targets and detect an invalid validation split.",
+    "prerequisites": "Chapters 21–24; basic generation from Chapter 28.",
+    "path": "Core / consult your learning path",
+    "requirements": "CPU packing example; reproducing the recorded split counts needs the original chat data."
+  },
+  "31": {
+    "goal": "Explain and test a low-rank adaptation and merge.",
+    "prerequisites": "Chapters 4, 20 and 30.",
+    "path": "Core / consult your learning path",
+    "requirements": "Public companion source; small CPU example first. Trained-model measurements require their separately named artifacts."
+  },
+  "32": {
+    "goal": "Separate classification accuracy from confidence calibration.",
+    "prerequisites": "Chapters 5 and 24.",
+    "path": "Core / consult your learning path",
+    "requirements": "Additional companion modules; use the small calibration example before trained results."
+  },
+  "33": {
+    "goal": "Distinguish retrieval, reading and generation and inspect failure cases.",
+    "prerequisites": "Chapters 24 and 28.",
+    "path": "Core / consult your learning path",
+    "requirements": "Retrieval dependencies and companion modules; the original index is optional for the small example."
+  },
+  "34": {
+    "goal": "Explain preference losses and the reference model's role.",
+    "prerequisites": "Chapters 5–7 and 30; optional extension.",
+    "path": "Optional extension",
+    "requirements": "Optional CPU teaching script; quoted course solution files remain unpublished."
+  },
+  "35": {
+    "goal": "Trace added token ranges and non-token inputs.",
+    "prerequisites": "Chapters 8–10 and 20; optional multimodal extension.",
+    "path": "Optional extension",
+    "requirements": "Additional multimodal modules; --measure also needs the named checkpoint and corpus."
+  },
+  "36": {
+    "goal": "Trace a frozen encoder through a trainable projector.",
+    "prerequisites": "Chapters 6, 20 and 35; optional multimodal extension.",
+    "path": "Optional extension",
+    "requirements": "Optional encoder dependencies; trained measurements require the named assets."
+  },
+  "37": {
+    "goal": "Explain task mixing and what joint evaluation must check.",
+    "prerequisites": "Chapters 21–24 and 35–36; optional multimodal extension.",
+    "path": "Optional extension",
+    "requirements": "Pinned Git source and local run logs; not a first-run example."
+  },
+  "38": {
+    "goal": "Trace one API request and test the text released to its client.",
+    "prerequisites": "Chapters 20 and 27–28.",
+    "path": "Core / consult your learning path",
+    "requirements": "API dependencies and companion modules; the chapter documents historical server faults."
+  },
+  "39": {
+    "goal": "Inspect a release bundle and test export/load equivalence.",
+    "prerequisites": "Chapters 23, 25 and 38.",
+    "path": "Core / consult your learning path",
+    "requirements": "safetensors and export modules; the Transformers wrapper is optional; --measure needs released artifacts."
+  },
+  "40": {
+    "goal": "Separate calculated capacity from measured service readiness.",
+    "prerequisites": "Chapters 23, 27 and 38–39; use the Launch checklist.",
+    "path": "Core / consult your learning path",
+    "requirements": "CPU arithmetic is an upper-bound exercise, not a load test."
+  },
+  "41": {
+    "goal": "Train a small preset, trace it, and test a sampling extension.",
+    "prerequisites": "Follow a Learning path; public source required, released-model comparison optional.",
+    "path": "Core / consult your learning path",
+    "requirements": "Small CPU training uses local/downloadable text; the 400M comparison needs the native checkpoint/export and held-out corpus."
+  }
+}

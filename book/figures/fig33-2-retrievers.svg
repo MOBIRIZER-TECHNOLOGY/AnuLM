@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 250" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 33.2 · Retrievers on the demo questions</title>
+<desc id="d">Answer in the top passage: BM25 65%, dense 90%, hybrid 75%. Answered correctly end to end by AnuLM&#x27;s reader: 0, 5 and 2 of 20.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Retrievers on the 20 demo questions, RESULTS §33</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">left: answer in the top passage · right: RESULTS&#x27; AnuLM 400M reader, right end to end · measured</text>
+<text x="20.0" y="82.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">answer in the top 1 passage (%)</text>
+<text x="120.0" y="115.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">BM25</text>
+<rect x="130.0" y="100.0" width="136.5" height="20.0" rx="3" fill="#56676C"><title>BM25: 65%</title></rect>
+<text x="272.5" y="115.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">65%</text>
+<text x="120.0" y="155.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">dense (e5)</text>
+<rect x="130.0" y="140.0" width="189.0" height="20.0" rx="3" fill="#7B5E8E"><title>dense (e5): 90%</title></rect>
+<text x="325.0" y="155.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">90%</text>
+<text x="120.0" y="195.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">hybrid (RRF)</text>
+<rect x="130.0" y="180.0" width="157.5" height="20.0" rx="3" fill="#56676C"><title>hybrid (RRF): 75%</title></rect>
+<text x="293.5" y="195.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">75%</text>
+<text x="400.0" y="82.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">answered correctly, of 20</text>
+<text x="500.0" y="115.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">BM25</text>
+<rect x="510.0" y="100.0" width="2.0" height="20.0" rx="3" fill="#56676C"><title>BM25: 0/20</title></rect>
+<text x="518.0" y="115.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">0/20</text>
+<text x="500.0" y="155.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">dense (e5)</text>
+<rect x="510.0" y="140.0" width="52.5" height="20.0" rx="3" fill="#7B5E8E"><title>dense (e5): 5/20</title></rect>
+<text x="568.5" y="155.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">5/20</text>
+<text x="500.0" y="195.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">hybrid (RRF)</text>
+<rect x="510.0" y="180.0" width="21.0" height="20.0" rx="3" fill="#56676C"><title>hybrid (RRF): 2/20</title></rect>
+<text x="537.0" y="195.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">2/20</text>
+<text x="20.0" y="236.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">Hybrid recalls as well as dense at 10 passages (MLQA: better) yet answers worse: BM25&#x27;s near-misses confuse the reader.</text>
+</svg>

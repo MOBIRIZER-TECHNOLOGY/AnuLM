@@ -1,5 +1,9 @@
 # Project map: what this is, how it fits together, and where the data comes from
 
+Current companion update (2 November 2026): see [current status](CURRENT_STATUS.md) and [language coverage](LANGUAGE_SUPPORT.md). Historical model cards, experiment numbers and commands below must not be presented as measurements of the completed India research run.
+
+> Source layout: implementation files now live under `anulm/`. See [the folder guide](STRUCTURE.md) and [filename migration map](source-paths.json). Historical filenames in measurements describe the original layout.
+
 `docs/ARCHITECTURE.md` explains how Sarvam 30B/105B are built and which of
 those choices survived at nano scale. This file is the layer above: the whole
 project as a system — every stage from a public dataset to a served model, which

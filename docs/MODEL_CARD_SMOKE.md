@@ -32,7 +32,7 @@ Byte-level vocabulary (256 bytes + BOS/EOS/PAD = 259), context 256, so
 there is no BPE tokenizer file beside the weights.
 
 ```
-python train.py --preset 30b --steps 200 --eval-every 50 --out ckpt_smoke.pt
+python -m anulm.training.train --preset 30b --steps 200 --eval-every 50 --out ckpt_smoke.pt
 ```
 
 | | |
@@ -78,12 +78,12 @@ its scripts at this folder:
 
 ```bash
 hf download toonist/AnuLM-Smoke-30B --local-dir AnuLM-Smoke-30B
-python sample.py --ckpt AnuLM-Smoke-30B --prompt "KING RICHARD II:" --tokens 150
-python serve.py  --ckpt AnuLM-Smoke-30B        # the web page, continue-the-text only
+python -m anulm.inference.sample --ckpt AnuLM-Smoke-30B --prompt "KING RICHARD II:" --tokens 150
+python -m anulm.inference.serve  --ckpt AnuLM-Smoke-30B        # the web page, continue-the-text only
 ```
 
 ```python
-from model import load_checkpoint, AnuLM
+from anulm.model import load_checkpoint, AnuLM
 ck = load_checkpoint("AnuLM-Smoke-30B")
 m = AnuLM(ck["cfg"]).eval(); m.load_state_dict(ck["model"])
 ```

@@ -1,0 +1,98 @@
+{
+ "tiny()": {
+  "total": 47888,
+  "active": 29456,
+  "kv": {
+   "numbers_per_token": 96,
+   "bf16": 192,
+   "fp32_keys_bf16_values": 288,
+   "fp32": 384
+  },
+  "training_state": {
+   "weights": 191552,
+   "gradients": 191552,
+   "adam_moments": 383104,
+   "sum": 766208
+  },
+  "block_size": 32
+ },
+ "nano_30b": {
+  "total": 17440384,
+  "active": 6602368,
+  "kv": {
+   "numbers_per_token": 2048,
+   "bf16": 4096,
+   "fp32_keys_bf16_values": 6144,
+   "fp32": 8192
+  },
+  "training_state": {
+   "weights": 69761536,
+   "gradients": 69761536,
+   "adam_moments": 139523072,
+   "sum": 279046144
+  },
+  "block_size": 256
+ },
+ "nano_350m": {
+  "total": 353261056,
+  "active": 151541248,
+  "kv": {
+   "numbers_per_token": 10240,
+   "bf16": 20480,
+   "fp32_keys_bf16_values": 30720,
+   "fp32": 40960
+  },
+  "training_state": {
+   "weights": 1413044224,
+   "gradients": 1413044224,
+   "adam_moments": 2826088448,
+   "sum": 5652176896
+  },
+  "block_size": 512
+ },
+ "released": {
+  "total": 397659648,
+  "active": 173526528,
+  "kv": {
+   "numbers_per_token": 10240,
+   "bf16": 20480,
+   "fp32_keys_bf16_values": 30720,
+   "fp32": 40960
+  },
+  "training_state": {
+   "weights": 1590638592,
+   "gradients": 1590638592,
+   "adam_moments": 3181277184,
+   "sum": 6362554368
+  },
+  "block_size": 1024
+ },
+ "extensions": {
+  "paged_block_16_tokens_bytes": 327680,
+  "paged_block_16_tokens_fp32_keys_bytes": 491520,
+  "full_context_bytes": 20971520,
+  "int8_matrix_bytes": 397148160,
+  "int8_scale_bytes": 3061760,
+  "fp32_small_bytes": 2045952,
+  "fp32_router_bias_bytes": 1824,
+  "int8_total_bytes": 402257696,
+  "fp32_all_bytes": 1590638592,
+  "bf16_all_bytes": 795319296,
+  "dpo_reference_fp32_bytes": 1590638592,
+  "dpo_total_state_bytes": 7953192960
+ },
+ "released_files": {
+  "bytes_on_disk": {
+   "ckpt_base_v2.pt": 1591281456,
+   "ckpt_base_v2.pt.last": 4862324329
+  },
+  "last_parts": {
+   "model": 1590642240,
+   "opt": 3181283236,
+   "sampler": 88381176
+  },
+  "state_dict_numbers": 397660560,
+  "opt_tensors": 1513,
+  "sampler_windows": 11047015
+ }
+}

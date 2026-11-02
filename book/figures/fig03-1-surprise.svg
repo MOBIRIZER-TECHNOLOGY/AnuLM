@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 340" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 3.1 · How surprised the released model is</title>
+<desc id="d">Histogram of per-token surprise: 23.9% of tokens below 0.5 nats, median 2.54, mean 3.379, 3.3% above ln V.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Per-token surprise of the released model on held-out text</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">32,732 graded tokens · 64 windows of 512 · bins of 0.5 nat · measured</text>
+<line x1="70.0" y1="270.0" x2="720.0" y2="270.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="274.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0</text>
+<line x1="70.0" y1="220.0" x2="720.0" y2="220.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="224.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">2,000</text>
+<line x1="70.0" y1="170.0" x2="720.0" y2="170.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="174.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">4,000</text>
+<line x1="70.0" y1="120.0" x2="720.0" y2="120.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="124.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">6,000</text>
+<line x1="70.0" y1="70.0" x2="720.0" y2="70.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="74.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">8,000</text>
+<rect x="71.0" y="74.7" width="16.1" height="195.3" rx="1" fill="#D9A13B" class="f-gold"><title>0.0–0.5 nats: 7,814 tokens</title></rect>
+<rect x="89.1" y="205.2" width="16.1" height="64.8" rx="1" fill="#D9A13B" class="f-gold"><title>0.5–1.0 nats: 2,590 tokens</title></rect>
+<rect x="107.1" y="215.9" width="16.1" height="54.1" rx="1" fill="#D9A13B" class="f-gold"><title>1.0–1.5 nats: 2,163 tokens</title></rect>
+<rect x="125.2" y="220.9" width="16.1" height="49.1" rx="1" fill="#D9A13B" class="f-gold"><title>1.5–2.0 nats: 1,964 tokens</title></rect>
+<rect x="143.2" y="227.4" width="16.1" height="42.6" rx="1" fill="#D9A13B" class="f-gold"><title>2.0–2.5 nats: 1,703 tokens</title></rect>
+<rect x="161.3" y="229.9" width="16.1" height="40.1" rx="1" fill="#D9A13B" class="f-gold"><title>2.5–3.0 nats: 1,602 tokens</title></rect>
+<rect x="179.3" y="233.2" width="16.1" height="36.8" rx="1" fill="#D9A13B" class="f-gold"><title>3.0–3.5 nats: 1,470 tokens</title></rect>
+<rect x="197.4" y="233.2" width="16.1" height="36.8" rx="1" fill="#D9A13B" class="f-gold"><title>3.5–4.0 nats: 1,472 tokens</title></rect>
+<rect x="215.4" y="235.3" width="16.1" height="34.7" rx="1" fill="#D9A13B" class="f-gold"><title>4.0–4.5 nats: 1,388 tokens</title></rect>
+<rect x="233.5" y="238.0" width="16.1" height="32.0" rx="1" fill="#D9A13B" class="f-gold"><title>4.5–5.0 nats: 1,280 tokens</title></rect>
+<rect x="251.6" y="239.8" width="16.1" height="30.2" rx="1" fill="#D9A13B" class="f-gold"><title>5.0–5.5 nats: 1,210 tokens</title></rect>
+<rect x="269.6" y="242.2" width="16.1" height="27.8" rx="1" fill="#D9A13B" class="f-gold"><title>5.5–6.0 nats: 1,114 tokens</title></rect>
+<rect x="287.7" y="243.9" width="16.1" height="26.1" rx="1" fill="#D9A13B" class="f-gold"><title>6.0–6.5 nats: 1,042 tokens</title></rect>
+<rect x="305.7" y="246.8" width="16.1" height="23.2" rx="1" fill="#D9A13B" class="f-gold"><title>6.5–7.0 nats: 929 tokens</title></rect>
+<rect x="323.8" y="249.3" width="16.1" height="20.7" rx="1" fill="#D9A13B" class="f-gold"><title>7.0–7.5 nats: 826 tokens</title></rect>
+<rect x="341.8" y="252.2" width="16.1" height="17.8" rx="1" fill="#D9A13B" class="f-gold"><title>7.5–8.0 nats: 713 tokens</title></rect>
+<rect x="359.9" y="254.2" width="16.1" height="15.8" rx="1" fill="#D9A13B" class="f-gold"><title>8.0–8.5 nats: 630 tokens</title></rect>
+<rect x="377.9" y="254.8" width="16.1" height="15.2" rx="1" fill="#D9A13B" class="f-gold"><title>8.5–9.0 nats: 610 tokens</title></rect>
+<rect x="396.0" y="257.6" width="16.1" height="12.4" rx="1" fill="#D9A13B" class="f-gold"><title>9.0–9.5 nats: 494 tokens</title></rect>
+<rect x="414.1" y="260.4" width="16.1" height="9.6" rx="1" fill="#D9A13B" class="f-gold"><title>9.5–10.0 nats: 384 tokens</title></rect>
+<rect x="432.1" y="262.1" width="16.1" height="7.9" rx="1" fill="#D9A13B" class="f-gold"><title>10.0–10.5 nats: 317 tokens</title></rect>
+<rect x="450.2" y="262.5" width="16.1" height="7.5" rx="1" fill="#D9A13B" class="f-gold"><title>10.5–11.0 nats: 300 tokens</title></rect>
+<rect x="468.2" y="265.0" width="16.1" height="5.0" rx="1" fill="#D9A13B" class="f-gold"><title>11.0–11.5 nats: 199 tokens</title></rect>
+<rect x="486.3" y="265.5" width="16.1" height="4.5" rx="1" fill="#D9A13B" class="f-gold"><title>11.5–12.0 nats: 179 tokens</title></rect>
+<rect x="504.3" y="266.6" width="16.1" height="3.4" rx="1" fill="#D9A13B" class="f-gold"><title>12.0–12.5 nats: 138 tokens</title></rect>
+<rect x="522.4" y="267.9" width="16.1" height="2.1" rx="1" fill="#D9A13B" class="f-gold"><title>12.5–13.0 nats: 85 tokens</title></rect>
+<rect x="540.4" y="268.8" width="16.1" height="1.2" rx="1" fill="#D9A13B" class="f-gold"><title>13.0–13.5 nats: 48 tokens</title></rect>
+<rect x="558.5" y="269.3" width="16.1" height="0.7" rx="1" fill="#D9A13B" class="f-gold"><title>13.5–14.0 nats: 29 tokens</title></rect>
+<rect x="576.6" y="269.6" width="16.1" height="0.4" rx="1" fill="#D9A13B" class="f-gold"><title>14.0–14.5 nats: 16 tokens</title></rect>
+<rect x="594.6" y="269.7" width="16.1" height="0.3" rx="1" fill="#D9A13B" class="f-gold"><title>14.5–15.0 nats: 12 tokens</title></rect>
+<rect x="612.7" y="269.8" width="16.1" height="0.2" rx="1" fill="#D9A13B" class="f-gold"><title>15.0–15.5 nats: 7 tokens</title></rect>
+<rect x="648.8" y="270.0" width="16.1" height="0.0" rx="1" fill="#D9A13B" class="f-gold"><title>16.0–16.5 nats: 1 tokens</title></rect>
+<rect x="666.8" y="269.9" width="16.1" height="0.1" rx="1" fill="#D9A13B" class="f-gold"><title>16.5–17.0 nats: 2 tokens</title></rect>
+<rect x="684.9" y="270.0" width="16.1" height="0.0" rx="1" fill="#D9A13B" class="f-gold"><title>17.0–17.5 nats: 1 tokens</title></rect>
+<text x="70.0" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<text x="142.2" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">2</text>
+<text x="214.4" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">4</text>
+<text x="286.7" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">6</text>
+<text x="358.9" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">8</text>
+<text x="431.1" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">10</text>
+<text x="503.3" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">12</text>
+<text x="575.6" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">14</text>
+<text x="647.8" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">16</text>
+<text x="720.0" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">18</text>
+<text x="395.0" y="304.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">surprise, −log p(true next token), nats</text>
+<line x1="192.0" y1="64.0" x2="192.0" y2="270.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5" stroke-dasharray="4 3"/>
+<text x="197.0" y="74.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">mean 3.379</text>
+<line x1="445.5" y1="64.0" x2="445.5" y2="270.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5" stroke-dasharray="4 3"/>
+<text x="450.5" y="74.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">ln V = 10.397</text>
+<text x="450.5" y="90.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">3.3% of tokens beyond</text>
+</svg>

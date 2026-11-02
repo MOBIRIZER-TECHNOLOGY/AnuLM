@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 290" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 31.2 · LoRA against a full fine-tune</title>
+<desc id="d">Held-out loss falls by 0.260, 0.309 and 0.334 for the three LoRA runs and by 0.512 for the full fine-tune, which also took less time than two of them; LoRA&#x27;s files are far smaller.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">LoRA against a full fine-tune at 398M, RESULTS §29</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">fall in held-out answer loss from 3.9028 · same data, same base · measured</text>
+<text x="590.0" y="70.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">wall clock</text>
+<text x="680.0" y="70.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">kept on disk</text>
+<line x1="270.0" y1="78.0" x2="270.0" y2="250.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="270.0" y="266.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.0</text>
+<line x1="366.7" y1="78.0" x2="366.7" y2="250.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="366.7" y="266.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.2</text>
+<line x1="463.3" y1="78.0" x2="463.3" y2="250.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="463.3" y="266.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.4</text>
+<line x1="560.0" y1="78.0" x2="560.0" y2="250.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="560.0" y="266.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.6</text>
+<text x="258.0" y="103.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">LoRA r=16, attention, 1 epoch</text>
+<rect x="270.0" y="88.0" width="125.7" height="20.0" rx="3" fill="#56676C"><title>LoRA r=16, attention, 1 epoch: −0.260</title></rect>
+<text x="401.7" y="103.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">−0.260</text>
+<text x="590.0" y="103.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">67 s</text>
+<text x="680.0" y="103.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">5.7 MB</text>
+<text x="258.0" y="143.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">LoRA r=16, + all experts, 1 epoch</text>
+<rect x="270.0" y="128.0" width="149.3" height="20.0" rx="3" fill="#56676C"><title>LoRA r=16, + all experts, 1 epoch: −0.309</title></rect>
+<text x="425.4" y="143.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">−0.309</text>
+<text x="590.0" y="143.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">349 s</text>
+<text x="680.0" y="143.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">108.7 MB</text>
+<text x="258.0" y="183.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">LoRA r=64, attention, 3 epochs</text>
+<rect x="270.0" y="168.0" width="161.4" height="20.0" rx="3" fill="#56676C"><title>LoRA r=64, attention, 3 epochs: −0.334</title></rect>
+<text x="437.4" y="183.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">−0.334</text>
+<text x="590.0" y="183.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">189 s</text>
+<text x="680.0" y="183.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">22.5 MB</text>
+<text x="258.0" y="223.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">full fine-tune, 1 epoch</text>
+<rect x="270.0" y="208.0" width="247.5" height="20.0" rx="3" fill="#7B5E8E"><title>full fine-tune, 1 epoch: −0.512</title></rect>
+<text x="523.5" y="223.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">−0.512</text>
+<text x="590.0" y="223.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">131 s</text>
+<text x="680.0" y="223.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">1,517.6 MB</text>
+</svg>

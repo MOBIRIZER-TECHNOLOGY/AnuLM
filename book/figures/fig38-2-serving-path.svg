@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 360" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 38.2 · The serving path</title>
+<desc id="d">Three clients connect to FastAPI routes, which build a Generation and run it in a worker thread that reports deltas through a queue. Every generation passes one GPU lock to model.generate on a single sequence. A batch scheduler and a paged KV cache, drawn dashed, are not in the repository.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">The serving path in api.py</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">many connections, one lock, one sequence on the device · dashed: not in the repository</text>
+<rect x="20.0" y="74.0" width="110.0" height="44.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="75.0" y="93.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">client A</text>
+<text x="75.0" y="110.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">HTTP / SSE</text>
+<line x1="132.0" y1="96.0" x2="168.0" y2="96.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="20.0" y="136.0" width="110.0" height="44.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="75.0" y="155.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">client B</text>
+<text x="75.0" y="172.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">HTTP / SSE</text>
+<line x1="132.0" y1="158.0" x2="168.0" y2="158.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="20.0" y="198.0" width="110.0" height="44.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="75.0" y="217.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">client C</text>
+<text x="75.0" y="234.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">HTTP / SSE</text>
+<line x1="132.0" y1="220.0" x2="168.0" y2="220.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="170.0" y="74.0" width="150.0" height="168.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="245.0" y="162.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle"></text>
+<text x="245.0" y="100.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">FastAPI routes</text>
+<text x="245.0" y="120.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">chat_completions</text>
+<text x="245.0" y="138.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">→ Generation</text>
+<text x="245.0" y="166.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">one worker thread</text>
+<text x="245.0" y="182.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">per streamed request</text>
+<text x="245.0" y="210.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">queue → events()</text>
+<text x="245.0" y="228.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">polls every 5 ms</text>
+<line x1="322.0" y1="158.0" x2="368.0" y2="158.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="370.0" y="128.0" width="110.0" height="60.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#0E9488" stroke-width="2.5"></rect>
+<text x="425.0" y="155.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">GPU lock</text>
+<text x="425.0" y="172.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">threading.Lock</text>
+<line x1="482.0" y1="158.0" x2="528.0" y2="158.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="530.0" y="118.0" width="210.0" height="80.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="635.0" y="155.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">model.generate</text>
+<text x="635.0" y="172.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">(1, S) · bf16 autocast · KV cache</text>
+<text x="635.0" y="214.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">on_token → _release → emit</text>
+<line x1="635.0" y1="220.0" x2="635.0" y2="262.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.2" marker-end="url(#arrow)"/>
+<text x="635.0" y="280.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">deltas back through the queue</text>
+<rect x="370.0" y="286.0" width="160.0" height="50.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#5E6E72" stroke-width="1.2" stroke-dasharray="5 4"></rect>
+<text x="450.0" y="308.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">batch scheduler</text>
+<text x="450.0" y="325.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">EXTENSION</text>
+<rect x="548.0" y="296.0" width="192.0" height="50.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#5E6E72" stroke-width="1.2" stroke-dasharray="5 4"></rect>
+<text x="644.0" y="318.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">paged KV cache</text>
+<text x="644.0" y="335.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">EXTENSION</text>
+<text x="20.0" y="300.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">A disconnect cancels events();</text>
+<text x="20.0" y="316.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">finally sets gen.cancelled, and</text>
+<text x="20.0" y="332.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">on_token stops at the next token.</text>
+</svg>

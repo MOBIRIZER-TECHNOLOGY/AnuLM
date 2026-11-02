@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 290" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 27.1 · The offset mask</title>
+<desc id="d">Left: the mask _attn_mask builds for 3 queries at positions 2, 3, 4 against 5 keys; rows xxx.., xxxx., xxxxx. Right: is_causal&#x27;s top-left mask, x...., xx..., xxx.., which hides the two cached keys.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Three new queries against a cache of two</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">rows: queries at absolute positions 2–4 · columns: keys 0–4 · filled = may attend</text>
+<text x="110.0" y="78.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">_attn_mask(3, 5, start=2)</text>
+<text x="110.0" y="94.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">correct: the corner of the full triangle</text>
+<rect x="110.0" y="106.0" width="80.0" height="4.0" rx="2" fill="#56676C"></rect>
+<text x="150.0" y="103.0" class="f-ink" fill="#17262E" font-size="10" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start"></text>
+<text x="130.0" y="250.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">k0</text>
+<text x="170.0" y="250.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">k1</text>
+<text x="210.0" y="250.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">k2</text>
+<text x="250.0" y="250.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">k3</text>
+<text x="290.0" y="250.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">k4</text>
+<text x="150.0" y="266.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">cached</text>
+<text x="250.0" y="266.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">new</text>
+<text x="100.0" y="136.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">q2</text>
+<rect x="111.0" y="113.0" width="38.0" height="38.0" rx="4" fill="#0E9488" class="f-teal"><title>query at 2, key 0: attends</title></rect>
+<rect x="151.0" y="113.0" width="38.0" height="38.0" rx="4" fill="#0E9488" class="f-teal"><title>query at 2, key 1: attends</title></rect>
+<rect x="191.0" y="113.0" width="38.0" height="38.0" rx="4" fill="#0E9488" class="f-teal"><title>query at 2, key 2: attends</title></rect>
+<rect x="231.0" y="113.0" width="38.0" height="38.0" rx="4" fill="url(#hatch)" stroke="#DCE1DF" stroke-width="1"><title>query at 2, key 3: hidden</title></rect>
+<rect x="271.0" y="113.0" width="38.0" height="38.0" rx="4" fill="url(#hatch)" stroke="#DCE1DF" stroke-width="1"><title>query at 2, key 4: hidden</title></rect>
+<text x="100.0" y="176.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">q3</text>
+<rect x="111.0" y="153.0" width="38.0" height="38.0" rx="4" fill="#0E9488" class="f-teal"><title>query at 3, key 0: attends</title></rect>
+<rect x="151.0" y="153.0" width="38.0" height="38.0" rx="4" fill="#0E9488" class="f-teal"><title>query at 3, key 1: attends</title></rect>
+<rect x="191.0" y="153.0" width="38.0" height="38.0" rx="4" fill="#0E9488" class="f-teal"><title>query at 3, key 2: attends</title></rect>
+<rect x="231.0" y="153.0" width="38.0" height="38.0" rx="4" fill="#0E9488" class="f-teal"><title>query at 3, key 3: attends</title></rect>
+<rect x="271.0" y="153.0" width="38.0" height="38.0" rx="4" fill="url(#hatch)" stroke="#DCE1DF" stroke-width="1"><title>query at 3, key 4: hidden</title></rect>
+<text x="100.0" y="216.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">q4</text>
+<rect x="111.0" y="193.0" width="38.0" height="38.0" rx="4" fill="#0E9488" class="f-teal"><title>query at 4, key 0: attends</title></rect>
+<rect x="151.0" y="193.0" width="38.0" height="38.0" rx="4" fill="#0E9488" class="f-teal"><title>query at 4, key 1: attends</title></rect>
+<rect x="191.0" y="193.0" width="38.0" height="38.0" rx="4" fill="#0E9488" class="f-teal"><title>query at 4, key 2: attends</title></rect>
+<rect x="231.0" y="193.0" width="38.0" height="38.0" rx="4" fill="#0E9488" class="f-teal"><title>query at 4, key 3: attends</title></rect>
+<rect x="271.0" y="193.0" width="38.0" height="38.0" rx="4" fill="#0E9488" class="f-teal"><title>query at 4, key 4: attends</title></rect>
+<text x="450.0" y="78.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">is_causal=True</text>
+<text x="450.0" y="94.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">top-left: the cached keys are hidden</text>
+<rect x="450.0" y="106.0" width="80.0" height="4.0" rx="2" fill="#56676C"></rect>
+<text x="490.0" y="103.0" class="f-ink" fill="#17262E" font-size="10" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start"></text>
+<text x="470.0" y="250.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">k0</text>
+<text x="510.0" y="250.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">k1</text>
+<text x="550.0" y="250.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">k2</text>
+<text x="590.0" y="250.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">k3</text>
+<text x="630.0" y="250.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">k4</text>
+<text x="490.0" y="266.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">cached</text>
+<text x="590.0" y="266.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">new</text>
+<text x="440.0" y="136.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">q2</text>
+<rect x="451.0" y="113.0" width="38.0" height="38.0" rx="4" fill="#C4532F" class="f-teal"><title>query at 2, key 0: attends</title></rect>
+<rect x="491.0" y="113.0" width="38.0" height="38.0" rx="4" fill="url(#hatch)" stroke="#DCE1DF" stroke-width="1"><title>query at 2, key 1: hidden</title></rect>
+<rect x="531.0" y="113.0" width="38.0" height="38.0" rx="4" fill="url(#hatch)" stroke="#DCE1DF" stroke-width="1"><title>query at 2, key 2: hidden</title></rect>
+<rect x="571.0" y="113.0" width="38.0" height="38.0" rx="4" fill="url(#hatch)" stroke="#DCE1DF" stroke-width="1"><title>query at 2, key 3: hidden</title></rect>
+<rect x="611.0" y="113.0" width="38.0" height="38.0" rx="4" fill="url(#hatch)" stroke="#DCE1DF" stroke-width="1"><title>query at 2, key 4: hidden</title></rect>
+<text x="440.0" y="176.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">q3</text>
+<rect x="451.0" y="153.0" width="38.0" height="38.0" rx="4" fill="#C4532F" class="f-teal"><title>query at 3, key 0: attends</title></rect>
+<rect x="491.0" y="153.0" width="38.0" height="38.0" rx="4" fill="#C4532F" class="f-teal"><title>query at 3, key 1: attends</title></rect>
+<rect x="531.0" y="153.0" width="38.0" height="38.0" rx="4" fill="url(#hatch)" stroke="#DCE1DF" stroke-width="1"><title>query at 3, key 2: hidden</title></rect>
+<rect x="571.0" y="153.0" width="38.0" height="38.0" rx="4" fill="url(#hatch)" stroke="#DCE1DF" stroke-width="1"><title>query at 3, key 3: hidden</title></rect>
+<rect x="611.0" y="153.0" width="38.0" height="38.0" rx="4" fill="url(#hatch)" stroke="#DCE1DF" stroke-width="1"><title>query at 3, key 4: hidden</title></rect>
+<text x="440.0" y="216.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">q4</text>
+<rect x="451.0" y="193.0" width="38.0" height="38.0" rx="4" fill="#C4532F" class="f-teal"><title>query at 4, key 0: attends</title></rect>
+<rect x="491.0" y="193.0" width="38.0" height="38.0" rx="4" fill="#C4532F" class="f-teal"><title>query at 4, key 1: attends</title></rect>
+<rect x="531.0" y="193.0" width="38.0" height="38.0" rx="4" fill="#C4532F" class="f-teal"><title>query at 4, key 2: attends</title></rect>
+<rect x="571.0" y="193.0" width="38.0" height="38.0" rx="4" fill="url(#hatch)" stroke="#DCE1DF" stroke-width="1"><title>query at 4, key 3: hidden</title></rect>
+<rect x="611.0" y="193.0" width="38.0" height="38.0" rx="4" fill="url(#hatch)" stroke="#DCE1DF" stroke-width="1"><title>query at 4, key 4: hidden</title></rect>
+</svg>

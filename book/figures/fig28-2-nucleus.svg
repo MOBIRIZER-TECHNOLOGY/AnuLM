@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 28.2 · How many tokens a 0.9 nucleus holds</title>
+<desc id="d">Histogram over 8,192 positions: 1,436 positions need one token; the median nucleus is 341 tokens; the ninetieth percentile about 7,650. 39.4% of positions fit within top-k&#x27;s 40.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Tokens in the p = 0.9 nucleus, at 8,192 positions of the released model</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">temperature 1 · bf16 autocast · held-out windows · bins double in width · measured</text>
+<line x1="70.0" y1="250.0" x2="720.0" y2="250.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="254.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0</text>
+<line x1="70.0" y1="207.5" x2="720.0" y2="207.5" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="211.5" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">400</text>
+<line x1="70.0" y1="165.0" x2="720.0" y2="165.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="169.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">800</text>
+<line x1="70.0" y1="122.5" x2="720.0" y2="122.5" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="126.5" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">1200</text>
+<line x1="70.0" y1="80.0" x2="720.0" y2="80.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="84.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">1600</text>
+<rect x="73.0" y="97.4" width="37.3" height="152.6" rx="3" fill="#D9A13B" class="f-gold"><title>nucleus of 1–1 tokens: 1436 positions (17.5%)</title></rect>
+<text x="73.0" y="266.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">1</text>
+<rect x="116.3" y="177.0" width="37.3" height="73.0" rx="3" fill="#D9A13B" class="f-gold"><title>nucleus of 2–3 tokens: 687 positions (8.4%)</title></rect>
+<text x="116.3" y="266.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">2</text>
+<rect x="159.7" y="203.0" width="37.3" height="47.0" rx="3" fill="#D9A13B" class="f-gold"><title>nucleus of 4–7 tokens: 442 positions (5.4%)</title></rect>
+<text x="159.7" y="266.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">4</text>
+<rect x="203.0" y="217.6" width="37.3" height="32.4" rx="3" fill="#D9A13B" class="f-gold"><title>nucleus of 8–15 tokens: 305 positions (3.7%)</title></rect>
+<text x="203.0" y="266.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">8</text>
+<rect x="246.3" y="220.0" width="37.3" height="30.0" rx="3" fill="#D9A13B" class="f-gold"><title>nucleus of 16–31 tokens: 282 positions (3.4%)</title></rect>
+<text x="246.3" y="266.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">16</text>
+<rect x="289.7" y="225.0" width="37.3" height="25.0" rx="3" fill="#D9A13B" class="f-gold"><title>nucleus of 32–63 tokens: 235 positions (2.9%)</title></rect>
+<text x="289.7" y="266.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">32</text>
+<rect x="333.0" y="222.8" width="37.3" height="27.2" rx="3" fill="#D9A13B" class="f-gold"><title>nucleus of 64–127 tokens: 256 positions (3.1%)</title></rect>
+<text x="333.0" y="266.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">64</text>
+<rect x="376.3" y="217.0" width="37.3" height="33.0" rx="3" fill="#D9A13B" class="f-gold"><title>nucleus of 128–255 tokens: 311 positions (3.8%)</title></rect>
+<text x="376.3" y="266.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">128</text>
+<rect x="419.7" y="214.6" width="37.3" height="35.4" rx="3" fill="#D9A13B" class="f-gold"><title>nucleus of 256–511 tokens: 333 positions (4.1%)</title></rect>
+<text x="419.7" y="266.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">256</text>
+<rect x="463.0" y="202.9" width="37.3" height="47.1" rx="3" fill="#D9A13B" class="f-gold"><title>nucleus of 512–1023 tokens: 443 positions (5.4%)</title></rect>
+<text x="463.0" y="266.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">512</text>
+<rect x="506.3" y="178.3" width="37.3" height="71.7" rx="3" fill="#D9A13B" class="f-gold"><title>nucleus of 1024–2047 tokens: 675 positions (8.2%)</title></rect>
+<text x="506.3" y="266.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">1,024</text>
+<rect x="549.7" y="151.1" width="37.3" height="98.9" rx="3" fill="#D9A13B" class="f-gold"><title>nucleus of 2048–4095 tokens: 931 positions (11.4%)</title></rect>
+<text x="549.7" y="266.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">2,048</text>
+<rect x="593.0" y="127.3" width="37.3" height="122.7" rx="3" fill="#D9A13B" class="f-gold"><title>nucleus of 4096–8191 tokens: 1155 positions (14.1%)</title></rect>
+<text x="593.0" y="266.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">4,096</text>
+<rect x="636.3" y="181.4" width="37.3" height="68.6" rx="3" fill="#D9A13B" class="f-gold"><title>nucleus of 8192–16383 tokens: 646 positions (7.9%)</title></rect>
+<text x="636.3" y="266.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">8,192</text>
+<rect x="679.7" y="244.2" width="37.3" height="5.8" rx="3" fill="#D9A13B" class="f-gold"><title>nucleus of 16384–32767 tokens: 55 positions (0.7%)</title></rect>
+<text x="679.7" y="266.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">16,384</text>
+<line x1="300.6" y1="70.0" x2="300.6" y2="250.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5" stroke-dasharray="4 3"/>
+<text x="306.6" y="78.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">top-k = 40</text>
+<text x="294.6" y="94.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">39.4% of positions</text>
+<text x="306.6" y="94.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">60.6%</text>
+<text x="395.0" y="286.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">tokens in the nucleus (bin start; each bin twice as wide as the last)</text>
+<text x="24.0" y="66.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">positions</text>
+</svg>

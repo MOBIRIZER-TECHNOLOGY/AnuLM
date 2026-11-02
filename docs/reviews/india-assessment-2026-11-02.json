@@ -1,0 +1,170 @@
+{
+  "generated_utc": "2026-11-02T15:22:54.787274+00:00",
+  "quality_approved": false,
+  "training_completed_steps": {
+    "text": 10000,
+    "joint": 60000
+  },
+  "loss_selected_step": 1750,
+  "reported_case_executions": {
+    "best_validation": 530,
+    "final_validation": 530,
+    "best_test": 920,
+    "export_validation": 66,
+    "final_export_validation": 66
+  },
+  "report_sha256": {
+    "best_validation": "806776c0eba0476796dac95fa7a72b32f69dfa8e96bdddf5641d4a3428b04c60",
+    "final_validation": "8b7c1ea2cecbac3e00e0a68df30f85c20c087f242e35ccd9f08c62885797699d",
+    "best_test": "363d35084f9465de852b4f5da45cb6290705102dea878919974ee5dcfa27ee96",
+    "export_validation": "667ba119e4bd7bb7a9d296b2f8a0083a2efd4973ecc4bbf9df24988668180ec7",
+    "final_export_validation": "5dda97f0af0899a6a0422ce81ddaaaa9ab341ebaab28b0504841527907984447"
+  },
+  "speech_metrics": {
+    "hi_in": {
+      "best_validation": {
+        "wer": 0.980440097799511
+      },
+      "final_validation": {
+        "wer": 0.9486552567237164
+      },
+      "best_test": {
+        "wer": 0.9945945945945946
+      }
+    },
+    "en_us": {
+      "best_validation": {
+        "wer": 1.6009280742459397
+      },
+      "final_validation": {
+        "wer": 0.9071925754060325
+      },
+      "best_test": {
+        "wer": 1.698581560283688
+      }
+    },
+    "bn_in": {
+      "best_validation": {
+        "wer": 0.9967845659163987
+      },
+      "final_validation": {
+        "wer": 0.9935691318327974
+      },
+      "best_test": {
+        "wer": 0.9989711934156379
+      }
+    },
+    "gu_in": {
+      "best_validation": {
+        "wer": 0.9923076923076923
+      },
+      "final_validation": {
+        "wer": 0.9692307692307692
+      },
+      "best_test": {
+        "wer": 0.9954597048808173
+      }
+    },
+    "kn_in": {
+      "best_validation": {
+        "wer": 1.0
+      },
+      "final_validation": {
+        "wer": 1.0363636363636364
+      },
+      "best_test": {
+        "wer": 1.0
+      }
+    },
+    "ml_in": {
+      "best_validation": {
+        "wer": 1.0
+      },
+      "final_validation": {
+        "wer": 1.015075376884422
+      },
+      "best_test": {
+        "wer": 1.0
+      }
+    },
+    "mr_in": {
+      "best_validation": {
+        "wer": 1.0
+      },
+      "final_validation": {
+        "wer": 1.0
+      },
+      "best_test": {
+        "wer": 1.0
+      }
+    },
+    "or_in": {
+      "best_validation": {
+        "wer": 0.9974489795918368
+      },
+      "final_validation": {
+        "wer": 1.0
+      },
+      "best_test": {
+        "wer": 0.9902912621359223
+      }
+    },
+    "pa_in": {
+      "best_validation": {
+        "wer": 0.9885057471264368
+      },
+      "final_validation": {
+        "wer": 1.0367816091954023
+      },
+      "best_test": {
+        "wer": 0.983159582999198
+      }
+    },
+    "ta_in": {
+      "best_validation": {
+        "wer": 1.0
+      },
+      "final_validation": {
+        "wer": 1.0164609053497942
+      },
+      "best_test": {
+        "wer": 1.001531393568147
+      }
+    },
+    "te_in": {
+      "best_validation": {
+        "wer": 0.9963503649635036
+      },
+      "final_validation": {
+        "wer": 0.9890510948905109
+      },
+      "best_test": {
+        "wer": 0.9986559139784946
+      }
+    },
+    "as_in": {
+      "best_validation": {
+        "wer": 1.0087209302325582
+      },
+      "final_validation": {
+        "wer": 0.997093023255814
+      },
+      "best_test": {
+        "wer": 0.9975550122249389
+      }
+    },
+    "ur_pk": {
+      "best_validation": {
+        "wer": 0.9423459244532804
+      },
+      "final_validation": {
+        "wer": 1.0139165009940359
+      },
+      "best_test": {
+        "wer": 0.944015444015444
+      }
+    }
+  },
+  "model_and_export_checks": "Local FP32 decoder/projector parameter equality and tokenizer parity passed; both local exports exercised.",
+  "scope": "Exploratory first-N eligible samples, not full official benchmarks. Test set did not select the checkpoint. Text rerun provenance retained in full reports."
+}

@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "reviewed_on": "2026-11-01",
+  "license": "CC-BY-4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "sources": {
+    "docci": {
+      "creator": "Google LLC; Onoe et al., DOCCI (2024)",
+      "page": "https://google.github.io/docci/",
+      "descriptions": "https://storage.googleapis.com/docci/data/docci_descriptions.jsonlines?generation=1714384012999810",
+      "images": "https://storage.googleapis.com/docci/data/docci_images.tar.gz?generation=1714249456173037"
+    },
+    "fleurs": {
+      "creator": "Google; Conneau et al., FLEURS (2022)",
+      "page": "https://huggingface.co/datasets/google/fleurs",
+      "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+      "base": "https://huggingface.co/datasets/google/fleurs/resolve/70bb2e84b976b7e960aa89f1c648e09c59f894dd/",
+      "languages": ["en_us", "hi_in"]
+    },
+    "banking77": {
+      "creator": "PolyAI; Casanueva et al., BANKING77 (2020)",
+      "page": "https://github.com/PolyAI-LDN/task-specific-datasets",
+      "revision": "57ec275d8078af65b7731c2a98be812d844a6d6b",
+      "base": "https://raw.githubusercontent.com/PolyAI-LDN/task-specific-datasets/57ec275d8078af65b7731c2a98be812d844a6d6b/"
+    }
+  }
+}

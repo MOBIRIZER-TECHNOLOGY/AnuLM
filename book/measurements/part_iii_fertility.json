@@ -1,0 +1,99 @@
+{
+ "source": "data/v2/val.u16 (held-out split of the base-v2 run)",
+ "tokenizer": "data/multi32k.json",
+ "n_docs": 3000,
+ "seed": 0,
+ "invalid_utf8_docs": 0,
+ "bpe_py_reencode_exact": 3000,
+ "distinct_ids_used": 29666,
+ "meta_bytes_per_token": {
+  "english": 4.426,
+  "hindi_web": 9.371,
+  "hindi_wiki": 9.341,
+  "python": 4.039
+ },
+ "meta_bytes_per_token_all": 6.397,
+ "sampler_reach": {
+  "documents": 143364,
+  "never_drawable_docs": 148,
+  "never_drawable_token_share": 0.0345,
+  "docs_over_4096_token_share": 0.1701
+ },
+ "by_script": {
+  "devanagari": {
+   "docs": 1220,
+   "tokens": 762669,
+   "bytes_per_token": 9.406,
+   "chars_per_token": 3.765,
+   "tokens_per_word": 1.354,
+   "bytes_per_char": 2.498,
+   "single_byte_token_share": 0.02323
+  },
+  "latin": {
+   "docs": 1780,
+   "tokens": 1715732,
+   "bytes_per_token": 4.436,
+   "chars_per_token": 4.401,
+   "tokens_per_word": 1.419,
+   "bytes_per_char": 1.008,
+   "single_byte_token_share": 0.06422
+  },
+  "all": {
+   "docs": 3000,
+   "tokens": 2478401,
+   "bytes_per_token": 5.966,
+   "chars_per_token": 4.205,
+   "tokens_per_word": 1.398,
+   "bytes_per_char": 1.419,
+   "single_byte_token_share": 0.05161
+  }
+ },
+ "window_chars_1024": {
+  "bytes_devanagari": 410,
+  "bytes_latin": 1016,
+  "multi32k_devanagari": 3855,
+  "multi32k_latin": 4507
+ },
+ "vocab": {
+  "kinds": {
+   "not valid UTF-8 on its own": 71,
+   "ASCII": 21117,
+   "Devanagari": 11146,
+   "Devanagari only, after leading spaces": 9934,
+   "other valid UTF-8": 177
+  },
+  "byte_length": {
+   "2": 1596,
+   "3": 2844,
+   "4": 3777,
+   "5": 3414,
+   "6": 3522,
+   "7": 3114,
+   "8": 1823,
+   "9": 2313,
+   "10": 2552,
+   "11": 615,
+   "12": 1098,
+   "13": 1711,
+   "14": 172,
+   "15": 381,
+   "16": 3579
+  },
+  "devanagari_byte_length": {
+   "3": 77,
+   "4": 226,
+   "5": 139,
+   "6": 783,
+   "7": 856,
+   "8": 123,
+   "9": 1126,
+   "10": 1769,
+   "11": 81,
+   "12": 792,
+   "13": 1543,
+   "14": 48,
+   "15": 298,
+   "16": 3285
+  }
+ }
+}

@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 250" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 2.2 · Five dated steps</title>
+<desc id="d">2013 word2vec; 2014 attention for translation; 2017 the transformer; 2019 GPT-2, decoder-only; 2024 LLM2Vec, a decoder made bidirectional.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">From word vectors to AnuLM&#x27;s two ways of reading</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">dated by each source&#x27;s first version</text>
+<line x1="60.0" y1="130.0" x2="700.0" y2="130.0" stroke="#56676C" class="f-slate-stroke" stroke-width="2"/>
+<line x1="60.0" y1="126.0" x2="60.0" y2="134.0" stroke="#56676C" class="f-slate-stroke" stroke-width="1"/>
+<line x1="109.2" y1="126.0" x2="109.2" y2="134.0" stroke="#56676C" class="f-slate-stroke" stroke-width="1"/>
+<line x1="158.5" y1="126.0" x2="158.5" y2="134.0" stroke="#56676C" class="f-slate-stroke" stroke-width="1"/>
+<line x1="207.7" y1="126.0" x2="207.7" y2="134.0" stroke="#56676C" class="f-slate-stroke" stroke-width="1"/>
+<line x1="256.9" y1="126.0" x2="256.9" y2="134.0" stroke="#56676C" class="f-slate-stroke" stroke-width="1"/>
+<line x1="306.2" y1="126.0" x2="306.2" y2="134.0" stroke="#56676C" class="f-slate-stroke" stroke-width="1"/>
+<line x1="355.4" y1="126.0" x2="355.4" y2="134.0" stroke="#56676C" class="f-slate-stroke" stroke-width="1"/>
+<line x1="404.6" y1="126.0" x2="404.6" y2="134.0" stroke="#56676C" class="f-slate-stroke" stroke-width="1"/>
+<line x1="453.8" y1="126.0" x2="453.8" y2="134.0" stroke="#56676C" class="f-slate-stroke" stroke-width="1"/>
+<line x1="503.1" y1="126.0" x2="503.1" y2="134.0" stroke="#56676C" class="f-slate-stroke" stroke-width="1"/>
+<line x1="552.3" y1="126.0" x2="552.3" y2="134.0" stroke="#56676C" class="f-slate-stroke" stroke-width="1"/>
+<line x1="601.5" y1="126.0" x2="601.5" y2="134.0" stroke="#56676C" class="f-slate-stroke" stroke-width="1"/>
+<line x1="650.8" y1="126.0" x2="650.8" y2="134.0" stroke="#56676C" class="f-slate-stroke" stroke-width="1"/>
+<line x1="700.0" y1="126.0" x2="700.0" y2="134.0" stroke="#56676C" class="f-slate-stroke" stroke-width="1"/>
+<circle cx="109.2" cy="130" r="6" fill="#56676C" class="f-slate"><title>word2vec (2013) [R03]</title></circle>
+<line x1="109.2" y1="122.0" x2="109.2" y2="92.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="109.2" y="78.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">2013 · word2vec</text>
+<text x="109.2" y="94.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">word vectors from large corpora [R03]</text>
+<circle cx="158.5" cy="130" r="6" fill="#56676C" class="f-slate"><title>attention for translation (2014) [R02]</title></circle>
+<line x1="158.5" y1="138.0" x2="158.5" y2="150.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="158.5" y="164.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">2014 · attention for translation</text>
+<text x="158.5" y="180.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">soft search of the source [R02]</text>
+<circle cx="306.2" cy="130" r="6" fill="#17262E" class="f-slate"><title>the transformer (2017) [R01]</title></circle>
+<line x1="306.2" y1="122.0" x2="306.2" y2="92.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="306.2" y="78.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">2017 · the transformer</text>
+<text x="306.2" y="94.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">scaled dot-product attention [R01]</text>
+<circle cx="404.6" cy="130" r="6" fill="#56676C" class="f-slate"><title>GPT-2 (2019) [R04]</title></circle>
+<line x1="404.6" y1="138.0" x2="404.6" y2="150.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="404.6" y="164.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">2019 · GPT-2</text>
+<text x="404.6" y="180.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">decoder-only language model [R04]</text>
+<circle cx="650.8" cy="130" r="6" fill="#56676C" class="f-slate"><title>LLM2Vec (2024) [R35]</title></circle>
+<line x1="650.8" y1="122.0" x2="650.8" y2="92.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="650.8" y="78.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">2024 · LLM2Vec</text>
+<text x="650.8" y="94.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">a decoder made bidirectional [R35]</text>
+<text x="60.0" y="220.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">Recurrent networks predate all of these.</text>
+</svg>

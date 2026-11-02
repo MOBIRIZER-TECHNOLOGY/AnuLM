@@ -1,0 +1,16 @@
+# Tested application dependencies; install the CUDA torch/torchvision pair first.
+numpy==2.5.2
+Pillow==12.2.0
+soundfile==0.14.0
+tokenizers==0.23.2
+timm==1.0.30
+faster-whisper==1.2.1
+ctranslate2==4.8.4
+pyarrow==26.0.0
+playwright==1.64.1
+huggingface_hub==1.33.0
+httpx==0.28.1
+safetensors==0.8.0
+# Include optional demo/export imports so the bundled verification suites run.
+gradio==6.31.0
+transformers==5.18.0

@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 300" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 30.1 · Packing with masked prompts</title>
+<desc id="d">Two pairs, 10 + 12 and 9 + 7 ids, packed into one row of 39 ids. Inputs are the first 38; targets are shifted by one. Prompt targets are -1; the 19 answer targets are graded.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Two pairs packed into one row, prompts masked</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">the Chapter 30 example · block of 38 · each square is one position</text>
+<text x="30.0" y="76.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">the row: n + 1 = 39 ids (prompt, answer + EOS, prompt, answer + EOS)</text>
+<rect x="31.0" y="84.0" width="16.5" height="26.0" rx="3" fill="#DCE1DF" class="f-rule-fill"><title>id 0: prompt 1</title></rect>
+<rect x="49.5" y="84.0" width="16.5" height="26.0" rx="3" fill="#DCE1DF" class="f-rule-fill"><title>id 1: prompt 1</title></rect>
+<rect x="68.0" y="84.0" width="16.5" height="26.0" rx="3" fill="#DCE1DF" class="f-rule-fill"><title>id 2: prompt 1</title></rect>
+<rect x="86.5" y="84.0" width="16.5" height="26.0" rx="3" fill="#DCE1DF" class="f-rule-fill"><title>id 3: prompt 1</title></rect>
+<rect x="105.0" y="84.0" width="16.5" height="26.0" rx="3" fill="#DCE1DF" class="f-rule-fill"><title>id 4: prompt 1</title></rect>
+<rect x="123.5" y="84.0" width="16.5" height="26.0" rx="3" fill="#DCE1DF" class="f-rule-fill"><title>id 5: prompt 1</title></rect>
+<rect x="142.0" y="84.0" width="16.5" height="26.0" rx="3" fill="#DCE1DF" class="f-rule-fill"><title>id 6: prompt 1</title></rect>
+<rect x="160.5" y="84.0" width="16.5" height="26.0" rx="3" fill="#DCE1DF" class="f-rule-fill"><title>id 7: prompt 1</title></rect>
+<rect x="179.0" y="84.0" width="16.5" height="26.0" rx="3" fill="#DCE1DF" class="f-rule-fill"><title>id 8: prompt 1</title></rect>
+<rect x="197.5" y="84.0" width="16.5" height="26.0" rx="3" fill="#DCE1DF" class="f-rule-fill"><title>id 9: prompt 1</title></rect>
+<rect x="216.0" y="84.0" width="16.5" height="26.0" rx="3" fill="#56676C"><title>id 10: answer 1</title></rect>
+<rect x="234.5" y="84.0" width="16.5" height="26.0" rx="3" fill="#56676C"><title>id 11: answer 1</title></rect>
+<rect x="253.0" y="84.0" width="16.5" height="26.0" rx="3" fill="#56676C"><title>id 12: answer 1</title></rect>
+<rect x="271.5" y="84.0" width="16.5" height="26.0" rx="3" fill="#56676C"><title>id 13: answer 1</title></rect>
+<rect x="290.0" y="84.0" width="16.5" height="26.0" rx="3" fill="#56676C"><title>id 14: answer 1</title></rect>
+<rect x="308.5" y="84.0" width="16.5" height="26.0" rx="3" fill="#56676C"><title>id 15: answer 1</title></rect>
+<rect x="327.0" y="84.0" width="16.5" height="26.0" rx="3" fill="#56676C"><title>id 16: answer 1</title></rect>
+<rect x="345.5" y="84.0" width="16.5" height="26.0" rx="3" fill="#56676C"><title>id 17: answer 1</title></rect>
+<rect x="364.0" y="84.0" width="16.5" height="26.0" rx="3" fill="#56676C"><title>id 18: answer 1</title></rect>
+<rect x="382.5" y="84.0" width="16.5" height="26.0" rx="3" fill="#56676C"><title>id 19: answer 1</title></rect>
+<rect x="401.0" y="84.0" width="16.5" height="26.0" rx="3" fill="#56676C"><title>id 20: answer 1</title></rect>
+<rect x="419.5" y="84.0" width="16.5" height="26.0" rx="3" fill="#56676C"><title>id 21: answer 1</title></rect>
+<rect x="438.0" y="84.0" width="16.5" height="26.0" rx="3" fill="#DCE1DF" class="f-rule-fill"><title>id 22: prompt 2</title></rect>
+<rect x="456.5" y="84.0" width="16.5" height="26.0" rx="3" fill="#DCE1DF" class="f-rule-fill"><title>id 23: prompt 2</title></rect>
+<rect x="475.0" y="84.0" width="16.5" height="26.0" rx="3" fill="#DCE1DF" class="f-rule-fill"><title>id 24: prompt 2</title></rect>
+<rect x="493.5" y="84.0" width="16.5" height="26.0" rx="3" fill="#DCE1DF" class="f-rule-fill"><title>id 25: prompt 2</title></rect>
+<rect x="512.0" y="84.0" width="16.5" height="26.0" rx="3" fill="#DCE1DF" class="f-rule-fill"><title>id 26: prompt 2</title></rect>
+<rect x="530.5" y="84.0" width="16.5" height="26.0" rx="3" fill="#DCE1DF" class="f-rule-fill"><title>id 27: prompt 2</title></rect>
+<rect x="549.0" y="84.0" width="16.5" height="26.0" rx="3" fill="#DCE1DF" class="f-rule-fill"><title>id 28: prompt 2</title></rect>
+<rect x="567.5" y="84.0" width="16.5" height="26.0" rx="3" fill="#DCE1DF" class="f-rule-fill"><title>id 29: prompt 2</title></rect>
+<rect x="586.0" y="84.0" width="16.5" height="26.0" rx="3" fill="#DCE1DF" class="f-rule-fill"><title>id 30: prompt 2</title></rect>
+<rect x="604.5" y="84.0" width="16.5" height="26.0" rx="3" fill="#56676C"><title>id 31: answer 2</title></rect>
+<rect x="623.0" y="84.0" width="16.5" height="26.0" rx="3" fill="#56676C"><title>id 32: answer 2</title></rect>
+<rect x="641.5" y="84.0" width="16.5" height="26.0" rx="3" fill="#56676C"><title>id 33: answer 2</title></rect>
+<rect x="660.0" y="84.0" width="16.5" height="26.0" rx="3" fill="#56676C"><title>id 34: answer 2</title></rect>
+<rect x="678.5" y="84.0" width="16.5" height="26.0" rx="3" fill="#56676C"><title>id 35: answer 2</title></rect>
+<rect x="697.0" y="84.0" width="16.5" height="26.0" rx="3" fill="#56676C"><title>id 36: answer 2</title></rect>
+<rect x="715.5" y="84.0" width="16.5" height="26.0" rx="3" fill="#56676C"><title>id 37: answer 2</title></rect>
+<rect x="734.0" y="84.0" width="16.5" height="26.0" rx="3" fill="#FFFFFF" stroke="#DCE1DF" stroke-width="1"><title>id 38: pad</title></rect>
+<text x="30.0" y="132.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">x = row[:-1]: 38 inputs</text>
+<text x="230.0" y="132.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">y = targets[1:]: 38 targets, position t predicts id t + 1</text>
+<text x="30.0" y="152.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">y: the target at each input position (−1 is never graded)</text>
+<rect x="31.0" y="160.0" width="16.5" height="26.0" rx="3" fill="url(#hatch)"><title>position 0: target −1</title></rect>
+<rect x="49.5" y="160.0" width="16.5" height="26.0" rx="3" fill="url(#hatch)"><title>position 1: target −1</title></rect>
+<rect x="68.0" y="160.0" width="16.5" height="26.0" rx="3" fill="url(#hatch)"><title>position 2: target −1</title></rect>
+<rect x="86.5" y="160.0" width="16.5" height="26.0" rx="3" fill="url(#hatch)"><title>position 3: target −1</title></rect>
+<rect x="105.0" y="160.0" width="16.5" height="26.0" rx="3" fill="url(#hatch)"><title>position 4: target −1</title></rect>
+<rect x="123.5" y="160.0" width="16.5" height="26.0" rx="3" fill="url(#hatch)"><title>position 5: target −1</title></rect>
+<rect x="142.0" y="160.0" width="16.5" height="26.0" rx="3" fill="url(#hatch)"><title>position 6: target −1</title></rect>
+<rect x="160.5" y="160.0" width="16.5" height="26.0" rx="3" fill="url(#hatch)"><title>position 7: target −1</title></rect>
+<rect x="179.0" y="160.0" width="16.5" height="26.0" rx="3" fill="url(#hatch)"><title>position 8: target −1</title></rect>
+<rect x="197.5" y="160.0" width="16.5" height="26.0" rx="3" fill="#7B5E8E"><title>position 9: graded</title></rect>
+<rect x="216.0" y="160.0" width="16.5" height="26.0" rx="3" fill="#7B5E8E"><title>position 10: graded</title></rect>
+<rect x="234.5" y="160.0" width="16.5" height="26.0" rx="3" fill="#7B5E8E"><title>position 11: graded</title></rect>
+<rect x="253.0" y="160.0" width="16.5" height="26.0" rx="3" fill="#7B5E8E"><title>position 12: graded</title></rect>
+<rect x="271.5" y="160.0" width="16.5" height="26.0" rx="3" fill="#7B5E8E"><title>position 13: graded</title></rect>
+<rect x="290.0" y="160.0" width="16.5" height="26.0" rx="3" fill="#7B5E8E"><title>position 14: graded</title></rect>
+<rect x="308.5" y="160.0" width="16.5" height="26.0" rx="3" fill="#7B5E8E"><title>position 15: graded</title></rect>
+<rect x="327.0" y="160.0" width="16.5" height="26.0" rx="3" fill="#7B5E8E"><title>position 16: graded</title></rect>
+<rect x="345.5" y="160.0" width="16.5" height="26.0" rx="3" fill="#7B5E8E"><title>position 17: graded</title></rect>
+<rect x="364.0" y="160.0" width="16.5" height="26.0" rx="3" fill="#7B5E8E"><title>position 18: graded</title></rect>
+<rect x="382.5" y="160.0" width="16.5" height="26.0" rx="3" fill="#7B5E8E"><title>position 19: graded</title></rect>
+<rect x="401.0" y="160.0" width="16.5" height="26.0" rx="3" fill="#7B5E8E"><title>position 20: graded</title></rect>
+<rect x="419.5" y="160.0" width="16.5" height="26.0" rx="3" fill="url(#hatch)"><title>position 21: target −1</title></rect>
+<rect x="438.0" y="160.0" width="16.5" height="26.0" rx="3" fill="url(#hatch)"><title>position 22: target −1</title></rect>
+<rect x="456.5" y="160.0" width="16.5" height="26.0" rx="3" fill="url(#hatch)"><title>position 23: target −1</title></rect>
+<rect x="475.0" y="160.0" width="16.5" height="26.0" rx="3" fill="url(#hatch)"><title>position 24: target −1</title></rect>
+<rect x="493.5" y="160.0" width="16.5" height="26.0" rx="3" fill="url(#hatch)"><title>position 25: target −1</title></rect>
+<rect x="512.0" y="160.0" width="16.5" height="26.0" rx="3" fill="url(#hatch)"><title>position 26: target −1</title></rect>
+<rect x="530.5" y="160.0" width="16.5" height="26.0" rx="3" fill="url(#hatch)"><title>position 27: target −1</title></rect>
+<rect x="549.0" y="160.0" width="16.5" height="26.0" rx="3" fill="url(#hatch)"><title>position 28: target −1</title></rect>
+<rect x="567.5" y="160.0" width="16.5" height="26.0" rx="3" fill="url(#hatch)"><title>position 29: target −1</title></rect>
+<rect x="586.0" y="160.0" width="16.5" height="26.0" rx="3" fill="#7B5E8E"><title>position 30: graded</title></rect>
+<rect x="604.5" y="160.0" width="16.5" height="26.0" rx="3" fill="#7B5E8E"><title>position 31: graded</title></rect>
+<rect x="623.0" y="160.0" width="16.5" height="26.0" rx="3" fill="#7B5E8E"><title>position 32: graded</title></rect>
+<rect x="641.5" y="160.0" width="16.5" height="26.0" rx="3" fill="#7B5E8E"><title>position 33: graded</title></rect>
+<rect x="660.0" y="160.0" width="16.5" height="26.0" rx="3" fill="#7B5E8E"><title>position 34: graded</title></rect>
+<rect x="678.5" y="160.0" width="16.5" height="26.0" rx="3" fill="#7B5E8E"><title>position 35: graded</title></rect>
+<rect x="697.0" y="160.0" width="16.5" height="26.0" rx="3" fill="#7B5E8E"><title>position 36: graded</title></rect>
+<rect x="715.5" y="160.0" width="16.5" height="26.0" rx="3" fill="url(#hatch)"><title>position 37: target −1</title></rect>
+<line x1="198.5" y1="198.0" x2="416.5" y2="198.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.2"/>
+<text x="307.5" y="214.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">answer 1: 12 targets</text>
+<line x1="587.0" y1="198.0" x2="712.5" y2="198.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.2"/>
+<text x="649.8" y="214.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">answer 2: 7 targets</text>
+<rect x="30.0" y="242.0" width="12.0" height="12.0" rx="2" fill="#DCE1DF" class="f-rule-fill"></rect>
+<text x="48.0" y="252.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">prompt id</text>
+<rect x="130.0" y="242.0" width="12.0" height="12.0" rx="2" fill="#56676C"></rect>
+<text x="148.0" y="252.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">answer id (EOS last)</text>
+<rect x="290.0" y="242.0" width="12.0" height="12.0" rx="2" fill="#7B5E8E"></rect>
+<text x="308.0" y="252.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">graded target</text>
+<rect x="410.0" y="242.0" width="12.0" height="12.0" rx="2" fill="url(#hatch)"></rect>
+<text x="428.0" y="252.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">target −1</text>
+<text x="30.0" y="276.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">19 of 38 positions graded: exactly the 12 + 7 answer ids. The last position&#x27;s target is padding.</text>
+</svg>

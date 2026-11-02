@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 29.1 · Which pairs YaRN stretches</title>
+<desc id="d">Pairs 0 to 3 keep their frequency, pairs 12 to 31 are divided by the factor (2 or 4), and pairs 4 to 11 ramp between; at factor 2 pair 4 is divided by 1.06, at factor 4 by 1.09.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">How much YaRN divides each rotary pair&#x27;s frequency</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">released configuration: θ = 1e6, Dh = 64, original context 1,024 · β_fast 32, β_slow 1 · verified</text>
+<rect x="136.1" y="78.0" width="168.4" height="172.0" rx="0" fill="#F0F2F1" class="f-card"><title>pairs 3–12: the ramp</title></rect>
+<text x="108.1" y="72.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">kept</text>
+<text x="220.3" y="72.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">blended</text>
+<text x="482.3" y="72.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">divided by the factor</text>
+<line x1="80.0" y1="250.0" x2="660.0" y2="250.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="254.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">1×</text>
+<line x1="80.0" y1="194.7" x2="660.0" y2="194.7" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="198.7" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">2×</text>
+<line x1="80.0" y1="139.3" x2="660.0" y2="139.3" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="143.3" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">3×</text>
+<line x1="80.0" y1="84.0" x2="660.0" y2="84.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="88.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">4×</text>
+<text x="80.0" y="266.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<text x="154.8" y="266.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">4</text>
+<text x="229.7" y="266.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">8</text>
+<text x="304.5" y="266.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">12</text>
+<text x="379.4" y="266.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">16</text>
+<text x="454.2" y="266.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">20</text>
+<text x="529.0" y="266.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">24</text>
+<text x="603.9" y="266.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">28</text>
+<text x="660.0" y="266.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">31</text>
+<text x="370.0" y="284.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">rotary pair i (fast to slow); pairs 12–31 never complete a turn in 1,024 tokens</text>
+<polyline points="80.0,250.0 98.7,250.0 117.4,250.0 136.1,250.0 154.8,246.7 173.5,243.1 192.3,238.9 211.0,234.2 229.7,228.7 248.4,222.3 267.1,214.8 285.8,205.7 304.5,194.7 323.2,194.7 341.9,194.7 360.6,194.7 379.4,194.7 398.1,194.7 416.8,194.7 435.5,194.7 454.2,194.7 472.9,194.7 491.6,194.7 510.3,194.7 529.0,194.7 547.7,194.7 566.5,194.7 585.2,194.7 603.9,194.7 622.6,194.7 641.3,194.7 660.0,194.7" fill="none" stroke="#0E9488" stroke-width="2"/>
+<circle cx="80.0" cy="250.0" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 0: divided by 1.000</title></circle>
+<circle cx="98.7" cy="250.0" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 1: divided by 1.000</title></circle>
+<circle cx="117.4" cy="250.0" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 2: divided by 1.000</title></circle>
+<circle cx="136.1" cy="250.0" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 3: divided by 1.000</title></circle>
+<circle cx="154.8" cy="246.7" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 4: divided by 1.059</title></circle>
+<circle cx="173.5" cy="243.1" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 5: divided by 1.125</title></circle>
+<circle cx="192.3" cy="238.9" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 6: divided by 1.200</title></circle>
+<circle cx="211.0" cy="234.2" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 7: divided by 1.286</title></circle>
+<circle cx="229.7" cy="228.7" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 8: divided by 1.385</title></circle>
+<circle cx="248.4" cy="222.3" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 9: divided by 1.500</title></circle>
+<circle cx="267.1" cy="214.8" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 10: divided by 1.636</title></circle>
+<circle cx="285.8" cy="205.7" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 11: divided by 1.800</title></circle>
+<circle cx="304.5" cy="194.7" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 12: divided by 2.000</title></circle>
+<circle cx="323.2" cy="194.7" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 13: divided by 2.000</title></circle>
+<circle cx="341.9" cy="194.7" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 14: divided by 2.000</title></circle>
+<circle cx="360.6" cy="194.7" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 15: divided by 2.000</title></circle>
+<circle cx="379.4" cy="194.7" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 16: divided by 2.000</title></circle>
+<circle cx="398.1" cy="194.7" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 17: divided by 2.000</title></circle>
+<circle cx="416.8" cy="194.7" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 18: divided by 2.000</title></circle>
+<circle cx="435.5" cy="194.7" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 19: divided by 2.000</title></circle>
+<circle cx="454.2" cy="194.7" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 20: divided by 2.000</title></circle>
+<circle cx="472.9" cy="194.7" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 21: divided by 2.000</title></circle>
+<circle cx="491.6" cy="194.7" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 22: divided by 2.000</title></circle>
+<circle cx="510.3" cy="194.7" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 23: divided by 2.000</title></circle>
+<circle cx="529.0" cy="194.7" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 24: divided by 2.000</title></circle>
+<circle cx="547.7" cy="194.7" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 25: divided by 2.000</title></circle>
+<circle cx="566.5" cy="194.7" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 26: divided by 2.000</title></circle>
+<circle cx="585.2" cy="194.7" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 27: divided by 2.000</title></circle>
+<circle cx="603.9" cy="194.7" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 28: divided by 2.000</title></circle>
+<circle cx="622.6" cy="194.7" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 29: divided by 2.000</title></circle>
+<circle cx="641.3" cy="194.7" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 30: divided by 2.000</title></circle>
+<circle cx="660.0" cy="194.7" r="3.5" fill="#0E9488" class="f-teal"><title>factor 2, pair 31: divided by 2.000</title></circle>
+<text x="670.0" y="198.7" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">factor 2</text>
+<polyline points="80.0,250.0 98.7,250.0 117.4,250.0 136.1,250.0 154.8,245.0 173.5,238.9 192.3,231.6 211.0,222.3 229.7,210.5 248.4,194.7 267.1,172.5 285.8,139.3 304.5,84.0 323.2,84.0 341.9,84.0 360.6,84.0 379.4,84.0 398.1,84.0 416.8,84.0 435.5,84.0 454.2,84.0 472.9,84.0 491.6,84.0 510.3,84.0 529.0,84.0 547.7,84.0 566.5,84.0 585.2,84.0 603.9,84.0 622.6,84.0 641.3,84.0 660.0,84.0" fill="none" stroke="#C4532F" stroke-width="2"/>
+<circle cx="80.0" cy="250.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 0: divided by 1.000</title></circle>
+<circle cx="98.7" cy="250.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 1: divided by 1.000</title></circle>
+<circle cx="117.4" cy="250.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 2: divided by 1.000</title></circle>
+<circle cx="136.1" cy="250.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 3: divided by 1.000</title></circle>
+<circle cx="154.8" cy="245.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 4: divided by 1.091</title></circle>
+<circle cx="173.5" cy="238.9" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 5: divided by 1.200</title></circle>
+<circle cx="192.3" cy="231.6" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 6: divided by 1.333</title></circle>
+<circle cx="211.0" cy="222.3" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 7: divided by 1.500</title></circle>
+<circle cx="229.7" cy="210.5" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 8: divided by 1.714</title></circle>
+<circle cx="248.4" cy="194.7" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 9: divided by 2.000</title></circle>
+<circle cx="267.1" cy="172.5" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 10: divided by 2.400</title></circle>
+<circle cx="285.8" cy="139.3" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 11: divided by 3.000</title></circle>
+<circle cx="304.5" cy="84.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 12: divided by 4.000</title></circle>
+<circle cx="323.2" cy="84.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 13: divided by 4.000</title></circle>
+<circle cx="341.9" cy="84.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 14: divided by 4.000</title></circle>
+<circle cx="360.6" cy="84.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 15: divided by 4.000</title></circle>
+<circle cx="379.4" cy="84.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 16: divided by 4.000</title></circle>
+<circle cx="398.1" cy="84.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 17: divided by 4.000</title></circle>
+<circle cx="416.8" cy="84.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 18: divided by 4.000</title></circle>
+<circle cx="435.5" cy="84.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 19: divided by 4.000</title></circle>
+<circle cx="454.2" cy="84.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 20: divided by 4.000</title></circle>
+<circle cx="472.9" cy="84.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 21: divided by 4.000</title></circle>
+<circle cx="491.6" cy="84.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 22: divided by 4.000</title></circle>
+<circle cx="510.3" cy="84.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 23: divided by 4.000</title></circle>
+<circle cx="529.0" cy="84.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 24: divided by 4.000</title></circle>
+<circle cx="547.7" cy="84.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 25: divided by 4.000</title></circle>
+<circle cx="566.5" cy="84.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 26: divided by 4.000</title></circle>
+<circle cx="585.2" cy="84.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 27: divided by 4.000</title></circle>
+<circle cx="603.9" cy="84.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 28: divided by 4.000</title></circle>
+<circle cx="622.6" cy="84.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 29: divided by 4.000</title></circle>
+<circle cx="641.3" cy="84.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 30: divided by 4.000</title></circle>
+<circle cx="660.0" cy="84.0" r="3.5" fill="#C4532F" class="f-coral"><title>factor 4, pair 31: divided by 4.000</title></circle>
+<text x="670.0" y="88.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">factor 4</text>
+</svg>

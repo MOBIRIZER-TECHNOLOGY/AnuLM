@@ -128,8 +128,8 @@ Regenerate it after any change to the page, rather than keeping an old
 picture of a newer interface:
 
 ```bash
-python app.py --port 7860 &
-python tools_screenshot.py docs/media/demo-coder.png
+python -m anulm.apps.demo --port 7860 &
+python -m anulm.tools.screenshot docs/media/demo-coder.png
 ```
 
 `tools_screenshot.py` drives the page in headless Chrome the way a visitor

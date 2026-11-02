@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 370" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 40.2 · A 16 GiB card for the released model</title>
+<desc id="d">As served, the fp32 weights plus the grouped path&#x27;s bf16 expert stack take 1.98 GiB; hypothetical bf16, int8 and int4 weights 0.74, 0.37 and 0.20 GiB. A 1,024-token cache takes 30 MiB as served, 20 MiB in bf16; one layer&#x27;s fp32 scores 64 MiB; AdamW&#x27;s training state 5.93 GiB.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Sizes against one 16 GiB card</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">released 400M model · linear axis to 16 GiB · arithmetic from model.py&#x27;s shapes</text>
+<line x1="250.0" y1="64.0" x2="250.0" y2="320.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="250.0" y="336.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0 GiB</text>
+<line x1="362.5" y1="64.0" x2="362.5" y2="320.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="362.5" y="336.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">4 GiB</text>
+<line x1="475.0" y1="64.0" x2="475.0" y2="320.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="475.0" y="336.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">8 GiB</text>
+<line x1="587.5" y1="64.0" x2="587.5" y2="320.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="587.5" y="336.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">12 GiB</text>
+<line x1="700.0" y1="64.0" x2="700.0" y2="320.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="700.0" y="336.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">16 GiB</text>
+<text x="240.0" y="84.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">as served: fp32 + bf16 expert stack</text>
+<rect x="250.0" y="70.0" width="55.8" height="20.0" rx="3" fill="#56676C" class="f-slate"><title>as served: fp32 + bf16 expert stack: 2,128,558,080 bytes</title></rect>
+<text x="313.8" y="85.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">1.98 GiB</text>
+<text x="240.0" y="116.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">hypothetical: weights bf16</text>
+<rect x="250.0" y="102.0" width="20.8" height="20.0" rx="3" fill="#56676C" class="f-slate"><title>hypothetical: weights bf16: 795,319,296 bytes</title></rect>
+<text x="278.8" y="117.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">758 MiB</text>
+<text x="240.0" y="148.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">hypothetical: int8 + scales</text>
+<rect x="250.0" y="134.0" width="10.5" height="20.0" rx="3" fill="#56676C" class="f-slate"><title>hypothetical: int8 + scales: 399,325,072 bytes</title></rect>
+<text x="268.5" y="149.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">381 MiB</text>
+<text x="240.0" y="180.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">hypothetical: int4 + scales</text>
+<rect x="250.0" y="166.0" width="5.5" height="20.0" rx="3" fill="#56676C" class="f-slate"><title>hypothetical: int4 + scales: 211,411,200 bytes</title></rect>
+<text x="263.5" y="181.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">202 MiB</text>
+<text x="240.0" y="212.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">1,024-token cache, as served</text>
+<rect x="250.0" y="198.0" width="2.0" height="20.0" rx="3" fill="#0E9488" class="f-teal"><title>1,024-token cache, as served: 31,457,280 bytes</title></rect>
+<text x="260.0" y="213.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">30 MiB</text>
+<text x="240.0" y="244.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">1,024-token cache, bf16</text>
+<rect x="250.0" y="230.0" width="2.0" height="20.0" rx="3" fill="#0E9488" class="f-teal"><title>1,024-token cache, bf16: 20,971,520 bytes</title></rect>
+<text x="260.0" y="245.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">20 MiB</text>
+<text x="240.0" y="276.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">scores of one layer, fp32</text>
+<rect x="250.0" y="262.0" width="2.0" height="20.0" rx="3" fill="#0E9488" class="f-teal"><title>scores of one layer, fp32: 67,108,864 bytes</title></rect>
+<text x="260.0" y="277.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">64 MiB</text>
+<text x="240.0" y="308.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">AdamW training state, fp32</text>
+<rect x="250.0" y="294.0" width="166.7" height="20.0" rx="3" fill="#C4532F" class="f-coral"><title>AdamW training state, fp32: 6,362,554,368 bytes</title></rect>
+<text x="424.7" y="309.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">5.93 GiB</text>
+<text x="20.0" y="356.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">As served, 478 full contexts fit beside the weights and the expert stack: memory does not limit concurrency here; the lock does.</text>
+</svg>

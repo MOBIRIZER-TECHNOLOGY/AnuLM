@@ -1,0 +1,67 @@
+{
+ "checkpoint": "ckpt_base_v2.pt",
+ "data": "data/v2/val.u16",
+ "seed": 0,
+ "windows": 16,
+ "seq": 512,
+ "positions": 8192,
+ "precision": "bf16 autocast, moe_impl grouped",
+ "top2_tie_share": 0.0179443359375,
+ "topk40_more_than_40_share": 0.3388671875,
+ "topk40_max_survivors": 48,
+ "topk40_mass_T1": {
+  "p10": 0.4521596431732178,
+  "median": 0.8296826779842377,
+  "p90": 0.9957437455654145
+ },
+ "nucleus90_size_T1": {
+  "p10": 1.0,
+  "median": 341.0,
+  "p90": 7647.600000000002,
+  "share_le_40": 0.3939208984375
+ },
+ "T0001_off_argmax": {
+  "mean": 0.009127513512794394,
+  "share_above_1pct": 0.0184326171875
+ },
+ "nucleus90_log2_histogram": {
+  "edges_log2": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15
+  ],
+  "counts": [
+   1436,
+   687,
+   442,
+   305,
+   282,
+   235,
+   256,
+   311,
+   333,
+   443,
+   675,
+   931,
+   1155,
+   646,
+   55
+  ]
+ },
+ "fp32_precision": "fp32, no autocast, moe_impl sparse (the checkpoint's grouped path would run experts in bf16)",
+ "fp32_positions": 4096,
+ "fp32_top2_tie_share": 0.0
+}

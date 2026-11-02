@@ -6,7 +6,7 @@ colorTo: red
 sdk: gradio
 sdk_version: 6.28.0
 python_version: "3.12"
-app_file: app.py
+app_file: space/app.py
 pinned: false
 license: cc-by-nc-sa-4.0
 short_description: Small Sarvam-shaped MoE for Hindi, English and Python
@@ -33,3 +33,10 @@ chooses.
 - Independent academic project; not affiliated with Sarvam AI, BharatGen,
   AI4Bharat or the Government of India. The model invents things: run the
   code, check the facts.
+
+## Source layout
+
+Use the complete organized repository as the Space source. Copy this metadata
+to the Space root README and use `space/requirements.txt` as its root requirements
+file. The entry point is `space/app.py`; the `anulm/` package and `pyproject.toml`
+must be included. Flat copies of the old root Python files are not sufficient.

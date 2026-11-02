@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 23.2 · Memory per training step</title>
+<desc id="d">Peak allocated memory: plain 12.26 GiB, gradient checkpointing 6.64, chunked loss 11.34, both 6.18. Of each, 4.44 GiB is the weights and AdamW moments, resident between steps; the rest is gradients, activations, logits and workspace. The plain run&#x27;s allocator reserves 15.12 GiB, past the 14.65 GiB warning line and below the 15.92 GiB card.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">One training step of the released model, 4 × 1,024 tokens</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">peak memory allocated, GiB · RTX 5070 Ti, bf16 autocast, fused AdamW · measured</text>
+<line x1="200.0" y1="66.0" x2="200.0" y2="252.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="200.0" y="268.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<line x1="263.0" y1="66.0" x2="263.0" y2="252.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="263.0" y="268.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">2</text>
+<line x1="326.1" y1="66.0" x2="326.1" y2="252.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="326.1" y="268.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">4</text>
+<line x1="389.1" y1="66.0" x2="389.1" y2="252.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="389.1" y="268.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">6</text>
+<line x1="452.1" y1="66.0" x2="452.1" y2="252.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="452.1" y="268.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">8</text>
+<line x1="515.2" y1="66.0" x2="515.2" y2="252.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="515.2" y="268.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">10</text>
+<line x1="578.2" y1="66.0" x2="578.2" y2="252.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="578.2" y="268.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">12</text>
+<line x1="641.2" y1="66.0" x2="641.2" y2="252.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="641.2" y="268.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">14</text>
+<line x1="704.2" y1="66.0" x2="704.2" y2="252.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="704.2" y="268.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">16</text>
+<text x="188.0" y="97.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">plain (the released run)</text>
+<rect x="200.0" y="78.0" width="139.1" height="28.0" rx="3" fill="#56676C" class="f-muted-fill"><title>weights and AdamW moments, resident between steps: 4.44 GiB</title></rect>
+<rect x="340.1" y="78.0" width="246.2" height="28.0" rx="3" fill="#0E9488" class="f-teal"><title>plain (the released run): gradients, activations, logits and workspace 7.81 GiB</title></rect>
+<text x="594.3" y="97.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">12.26</text>
+<circle cx="676.5" cy="92" r="4" fill="#FFFFFF" stroke="#17262E" stroke-width="1.5" class="f-paper f-ink-stroke"><title>reserved by the allocator: 15.12 GiB</title></circle>
+<text x="188.0" y="141.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">--grad-ckpt</text>
+<rect x="200.0" y="122.0" width="139.1" height="28.0" rx="3" fill="#56676C" class="f-muted-fill"><title>weights and AdamW moments, resident between steps: 4.44 GiB</title></rect>
+<rect x="340.1" y="122.0" width="69.1" height="28.0" rx="3" fill="#0E9488" class="f-teal"><title>--grad-ckpt: gradients, activations, logits and workspace 2.19 GiB</title></rect>
+<text x="417.1" y="141.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">6.64</text>
+<circle cx="509.7" cy="136" r="4" fill="#FFFFFF" stroke="#17262E" stroke-width="1.5" class="f-paper f-ink-stroke"><title>reserved by the allocator: 9.83 GiB</title></circle>
+<text x="188.0" y="185.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">--ce-chunk 2048</text>
+<rect x="200.0" y="166.0" width="139.1" height="28.0" rx="3" fill="#56676C" class="f-muted-fill"><title>weights and AdamW moments, resident between steps: 4.44 GiB</title></rect>
+<rect x="340.1" y="166.0" width="217.3" height="28.0" rx="3" fill="#0E9488" class="f-teal"><title>--ce-chunk 2048: gradients, activations, logits and workspace 6.90 GiB</title></rect>
+<text x="565.4" y="185.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">11.34</text>
+<circle cx="641.1" cy="180" r="4" fill="#FFFFFF" stroke="#17262E" stroke-width="1.5" class="f-paper f-ink-stroke"><title>reserved by the allocator: 14.00 GiB</title></circle>
+<text x="188.0" y="229.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">both</text>
+<rect x="200.0" y="210.0" width="139.1" height="28.0" rx="3" fill="#56676C" class="f-muted-fill"><title>weights and AdamW moments, resident between steps: 4.44 GiB</title></rect>
+<rect x="340.1" y="210.0" width="54.7" height="28.0" rx="3" fill="#0E9488" class="f-teal"><title>both: gradients, activations, logits and workspace 1.74 GiB</title></rect>
+<text x="402.8" y="229.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">6.18</text>
+<circle cx="470.3" cy="224" r="4" fill="#FFFFFF" stroke="#17262E" stroke-width="1.5" class="f-paper f-ink-stroke"><title>reserved by the allocator: 8.58 GiB</title></circle>
+<line x1="701.7" y1="62.0" x2="701.7" y2="252.0" stroke="#C4532F" class="" stroke-width="1.5" stroke-dasharray="4 3"/>
+<line x1="661.6" y1="62.0" x2="661.6" y2="252.0" stroke="#C4532F" class="" stroke-width="1.5" stroke-dasharray="4 3"/>
+<text x="705.7" y="300.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">card 15.92</text>
+<text x="657.6" y="286.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">warn_if_spilling at 14.65</text>
+<rect x="20.0" y="307.0" width="14.0" height="14.0" rx="3" fill="#56676C" class="f-muted-fill"></rect>
+<text x="40.0" y="318.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">weights + AdamW moments, 12 B × 397.7M = 4.44</text>
+<rect x="330.0" y="307.0" width="14.0" height="14.0" rx="3" fill="#0E9488" class="f-teal"></rect>
+<text x="350.0" y="318.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">gradients, activations, logits, workspace</text>
+<circle cx="640" cy="314" r="4" fill="#FFFFFF" stroke="#17262E" stroke-width="1.5" class="f-paper f-ink-stroke"/>
+<text x="650.0" y="318.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">reserved</text>
+</svg>

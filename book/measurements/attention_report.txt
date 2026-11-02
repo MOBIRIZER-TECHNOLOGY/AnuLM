@@ -1,0 +1,51 @@
+device cuda; 20 layers × 16 heads; window of attention on layers 0–9: 256
+loss on 32,732 held-out tokens (36 targets after an end of document not graded; fp32 without autocast, except the experts: the checkpoint's moe_impl='grouped' runs them in bf16 (model.py 716, 743)): 3.3790 nats (ln V = 10.3972)
+recomputed weights · v against _sdpa's output: largest difference 3.1e-05
+first-position weight over the queries that can see position 0, mean over heads [max head]: L0 0.007 [0.008]; L1 0.006 [0.009]; L2 0.005 [0.007]; L3 0.004 [0.010]; L4 0.003 [0.005]; L5 0.003 [0.007]; L6 0.003 [0.007]; L7 0.004 [0.010]; L8 0.263 [0.643]; L9 0.158 [0.257]; L10 0.396 [0.703]; L11 0.613 [0.753]; L12 0.406 [0.634]; L13 0.539 [0.689]; L14 0.481 [0.693]; L15 0.563 [0.728]; L16 0.652 [0.838]; L17 0.661 [0.860]; L18 0.674 [0.835]; L19 0.029 [0.129]
+per layer: mean over heads [max head] of: previous-token weight | first-token weight | keys in play (uniform) | mean distance
+  layer  0: prev 0.005 [0.007 h15] | first 0.003 [0.003] | in play  191.6 [min 170.3] (215) | dist  105.5
+  layer  1: prev 0.012 [0.037 h11] | first 0.003 [0.004] | in play   89.8 [min  55.6] (215) | dist   95.7
+  layer  2: prev 0.008 [0.028 h14] | first 0.002 [0.003] | in play   97.1 [min  27.1] (215) | dist   96.4
+  layer  3: prev 0.069 [0.532 h2] | first 0.002 [0.004] | in play   79.4 [min   3.6] (215) | dist   65.6
+  layer  4: prev 0.180 [0.797 h15] | first 0.001 [0.002] | in play   80.1 [min   4.6] (215) | dist   51.7
+  layer  5: prev 0.155 [0.612 h9] | first 0.001 [0.003] | in play   57.7 [min   9.7] (215) | dist   45.5
+  layer  6: prev 0.136 [0.363 h12] | first 0.001 [0.003] | in play   51.0 [min  23.6] (215) | dist   43.6
+  layer  7: prev 0.124 [0.342 h1] | first 0.002 [0.004] | in play   51.7 [min  19.0] (215) | dist   45.2
+  layer  8: prev 0.119 [0.367 h2] | first 0.113 [0.275] | in play   35.7 [min  14.5] (215) | dist   63.6
+  layer  9: prev 0.121 [0.881 h14] | first 0.068 [0.110] | in play   41.7 [min   1.9] (215) | dist   53.7
+  layer 10: prev 0.019 [0.089 h3] | first 0.396 [0.703] | in play   26.0 [min   2.8] (288) | dist  159.2
+  layer 11: prev 0.012 [0.075 h15] | first 0.613 [0.753] | in play    6.5 [min   1.6] (288) | dist  207.8
+  layer 12: prev 0.070 [0.160 h9] | first 0.406 [0.634] | in play   13.8 [min   2.6] (288) | dist  135.7
+  layer 13: prev 0.039 [0.086 h7] | first 0.539 [0.689] | in play    9.4 [min   3.3] (288) | dist  173.2
+  layer 14: prev 0.070 [0.584 h3] | first 0.481 [0.693] | in play   13.5 [min   3.4] (288) | dist  170.5
+  layer 15: prev 0.006 [0.028 h8] | first 0.563 [0.728] | in play    8.1 [min   3.3] (288) | dist  199.8
+  layer 16: prev 0.017 [0.081 h11] | first 0.652 [0.838] | in play    5.9 [min   2.4] (288) | dist  214.4
+  layer 17: prev 0.006 [0.016 h3] | first 0.661 [0.860] | in play   13.3 [min   2.4] (288) | dist  220.2
+  layer 18: prev 0.018 [0.060 h15] | first 0.674 [0.835] | in play    5.7 [min   1.4] (288) | dist  205.1
+  layer 19: prev 0.008 [0.011 h5] | first 0.029 [0.129] | in play  181.2 [min 126.5] (288) | dist  124.5
+strongest previous-token heads: L9.h14 0.881, L4.h15 0.797, L4.h14 0.717, L5.h9 0.612, L14.h3 0.584
+heads with previous-token weight > 0.5: 6 of 320
+heads putting > 0.5 of their weight on the first token: 97 of 320; strongest: L17.h15 0.860, L16.h1 0.838, L18.h4 0.835, L17.h2 0.825, L17.h12 0.819
+  MoE layer  1: busiest expert 0.066, idlest 0.024, ratio 2.72 (uniform 0.042)
+  MoE layer  2: busiest expert 0.084, idlest 0.007, ratio 12.04 (uniform 0.042)
+  MoE layer  3: busiest expert 0.095, idlest 0.019, ratio 5.04 (uniform 0.042)
+  MoE layer  4: busiest expert 0.054, idlest 0.030, ratio 1.83 (uniform 0.042)
+  MoE layer  5: busiest expert 0.057, idlest 0.033, ratio 1.70 (uniform 0.042)
+  MoE layer  6: busiest expert 0.051, idlest 0.034, ratio 1.51 (uniform 0.042)
+  MoE layer  7: busiest expert 0.051, idlest 0.036, ratio 1.40 (uniform 0.042)
+  MoE layer  8: busiest expert 0.052, idlest 0.033, ratio 1.59 (uniform 0.042)
+  MoE layer  9: busiest expert 0.055, idlest 0.027, ratio 2.01 (uniform 0.042)
+  MoE layer 10: busiest expert 0.056, idlest 0.030, ratio 1.88 (uniform 0.042)
+  MoE layer 11: busiest expert 0.055, idlest 0.032, ratio 1.72 (uniform 0.042)
+  MoE layer 12: busiest expert 0.053, idlest 0.030, ratio 1.76 (uniform 0.042)
+  MoE layer 13: busiest expert 0.061, idlest 0.029, ratio 2.07 (uniform 0.042)
+  MoE layer 14: busiest expert 0.051, idlest 0.031, ratio 1.65 (uniform 0.042)
+  MoE layer 15: busiest expert 0.060, idlest 0.030, ratio 1.98 (uniform 0.042)
+  MoE layer 16: busiest expert 0.064, idlest 0.029, ratio 2.21 (uniform 0.042)
+  MoE layer 17: busiest expert 0.053, idlest 0.030, ratio 1.77 (uniform 0.042)
+  MoE layer 18: busiest expert 0.053, idlest 0.029, ratio 1.86 (uniform 0.042)
+  MoE layer 19: busiest expert 0.054, idlest 0.034, ratio 1.58 (uniform 0.042)
+sentence tokens: ['The', 'dog', 'bit', 'the', 'man', 'because', 'it', 'was', 'hung', 'ry.']
+largest weight from 'bit' onto 'dog': L4.h15 0.996; row: The 0.00, dog 1.00, bit 0.00, the 0.00, man 0.00, because 0.00, it 0.00, was 0.00, hung 0.00, ry. 0.00
+largest weight from 'it' onto 'dog': L12.h6 0.843 (onto 'man' in that head 0.088); row: The 0.00, dog 0.84, bit 0.04, the 0.02, man 0.09, because 0.01, it 0.01, was 0.00, hung 0.00, ry. 0.00
+largest weight from 'it' onto 'man': L7.h14 0.677

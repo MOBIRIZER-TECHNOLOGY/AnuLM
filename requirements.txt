@@ -1,5 +1,5 @@
 # AnuLM's model, training, sampling, serving and every evaluation need
-# exactly one third-party package: torch. safetensors is needed only to read
+# PyTorch and NumPy for their core paths. safetensors is needed only to read
 # or write an exported checkpoint folder, pyarrow only to read Hugging Face
 # parquet shards; both are listed below and neither is imported by the
 # training path. docs/DEVELOPING.md "Setup" says which script needs what.
@@ -15,6 +15,7 @@
 # `--moe-impl grouped` additionally needs torch.nn.functional.grouped_mm
 # (present in 2.11).
 torch>=2.1
+numpy>=1.24
 
 # Reading and writing the exported (Hugging Face) checkpoint folders:
 # export_hf.py, and load_checkpoint() when given a folder instead of a .pt.

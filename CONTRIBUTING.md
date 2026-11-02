@@ -1,9 +1,17 @@
 # Contributing to AnuLM
 
+For a fresh GPU computer or the portable ZIP, start with
+[START_TRAINING.md](START_TRAINING.md). It includes the pinned training setup,
+machine checks and launch/recovery instructions without GitHub credentials.
+
+Follow [AGENTS.md](AGENTS.md) for the repository's development/training rules.
+The [India training guide](docs/INDIA_TRAINING.md) records the initial multilingual
+run, data provenance, resource limits and recovery procedure.
+
 Thank you for looking. This is a one-GPU academic project, and the most
 useful contributions are the ones that let more people reproduce it, run
 it on more machines, or extend it in a measured way. Open items are in
-[TODO.md](TODO.md) and as GitHub issues; the ones labelled
+[TODO.md](docs/roadmap/TODO.md) and as GitHub issues; the ones labelled
 `good first issue` need no GPU.
 
 ## Set up
@@ -12,8 +20,11 @@ it on more machines, or extend it in a measured way. Open items are in
 git clone https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM.git && cd AnuLM
 pip install --index-url https://download.pytorch.org/whl/cpu torch   # or the CUDA wheel for your driver
 pip install -r requirements.txt
-python quickstart.py          # confirms the install; prints the fix for anything missing
-python test_model.py          # 55 tests, ~2 min, must pass before and after your change
+python -m pip install --no-deps -e .
+python -m anulm.tools.quickstart          # confirms the install; prints the fix for anything missing
+python -m tests.test_model          # model checks; inspect any optional skips
+python -m unittest tests.test_layout # package/legacy-checkpoint checks
+python -m unittest tests.test_multimodal_contracts tests.test_validated_demo # synthetic multimodal contracts and demo evidence checks
 ```
 
 CI runs the tests plus a 50-step training run on Ubuntu and Windows for
@@ -59,7 +70,7 @@ in any model card of a checkpoint trained on it.
 ## Reporting problems
 
 Open an issue — the form asks for exactly what is needed, and `python
-quickstart.py` prints the environment block it wants in one go. For a reproduction that lands
+-m anulm.tools.quickstart` prints the environment block it wants in one go. For a reproduction that lands
 outside the expected numbers in `docs/TUTORIAL.md` §13, include the
 `.last` checkpoint's step and the val-loss curve.
 
@@ -67,3 +78,10 @@ outside the expected numbers in `docs/TUTORIAL.md` §13, include the
 
 Be kind and specific. Credit sources. Do not paste other people's data or
 weights into this repository.
+
+## Book contributions
+
+The complete book is under `book/`. Start at [book/README.md](book/README.md)
+and follow [book/CONTRIBUTING.md](book/CONTRIBUTING.md) for chapter, figure,
+reference and reader-guide changes. The model package layout and migration
+map are documented in [docs/STRUCTURE.md](docs/STRUCTURE.md).

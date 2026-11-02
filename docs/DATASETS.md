@@ -1,5 +1,10 @@
 # Datasets: every source, where to get it, what it is licensed for
 
+For a bounded developer setup, use the new [small multimodal data pack](DATA_SETUP.md):
+pinned DOCCI, English/Hindi FLEURS and BANKING77 subsets, with attribution and
+file checksums. This selects CC BY 4.0 sources without declaring older model
+lineages cleared for commercial use. Full-corpus commands below are separate.
+
 No training data is redistributed in this repository. Every corpus is
 rebuilt from a public source by the scripts named below, so anyone can
 reproduce each checkpoint from scratch. `data/` is gitignored except for
@@ -16,7 +21,7 @@ AnuLM-Omni-400M, the one jointly trained model of the second release, is
 meant for commercial use, so it learns only from the sources below whose
 terms allow that. `omni_data.py` (text and speech) and `omni_images.py`
 (photos, captions, image questions) fetch every one of them from its
-primary source; `python omni_data.py list` prints each with its licence.
+primary source; `python -m anulm.multimodal.omni_data list` prints each with its licence.
 The rows below say, for every source, whether that model uses it.
 
 ## Pretraining corpora

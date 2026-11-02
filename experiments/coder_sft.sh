@@ -55,15 +55,15 @@ echo "=== 2. FINE-TUNE ($(date +%H:%M)) ==="
 # EX_CAP=200000 and longer uncapped, which is long enough to be interrupted.
 RESUME=""; [ -s $OUT.last ] && RESUME="--resume"
 echo "  ${RESUME:-fresh start}"
-python -u finetune.py --ckpt $BASE --qa data/sft_code.jsonl --heldout data/sft_code_heldout.jsonl \
+python -u -m anulm.training.finetune --ckpt $BASE --qa data/sft_code.jsonl --heldout data/sft_code_heldout.jsonl \
     --out $OUT --epochs 1 --lr 5e-5 --eval-every 500 --grad-ckpt $RESUME 2>&1 | grep -v -i "warning\|triton"
 
 echo "=== 3. PASS@1 ($(date +%H:%M)) ==="
 # Concurrently: decoding is launch-bound, so two eval processes raise GPU
 # utilisation rather than halving each other's speed (8% -> 61% measured),
 # and the pair finishes in ~1.2 h instead of ~1.9 h sequentially.
-python -u eval_code.py $BASE $OUT --bench humaneval --device cuda > eval_humaneval_sft.log 2>&1 &
-python -u eval_code.py $BASE $OUT --bench mbpp --device cuda > eval_mbpp_sft.log 2>&1 &
+python -u -m anulm.evaluation.eval_code $BASE $OUT --bench humaneval --device cuda > eval_humaneval_sft.log 2>&1 &
+python -u -m anulm.evaluation.eval_code $BASE $OUT --bench mbpp --device cuda > eval_mbpp_sft.log 2>&1 &
 wait
 for f in eval_humaneval_sft.log eval_mbpp_sft.log; do
   echo "--- $f"; tr '\r' '\n' < $f | grep -E "^checkpoint|^ckpt_|^reference|Traceback|Error"

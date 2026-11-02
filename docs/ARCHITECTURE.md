@@ -1,5 +1,7 @@
 # How Sarvam 30B and 105B are built
 
+> Source layout: implementation files now live under `anulm/`. See [the folder guide](STRUCTURE.md) and [filename migration map](source-paths.json). Historical filenames in measurements describe the original layout.
+
 Findings from reading Sarvam AI's released modelling code and configs. Every
 number here comes from `sarvam/sarvam-*/config.json` or the modelling files,
 not from marketing material. Where a claim comes from a blog post or press

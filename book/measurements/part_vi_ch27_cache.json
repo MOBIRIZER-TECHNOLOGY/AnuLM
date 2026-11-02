@@ -1,0 +1,160 @@
+{
+ "checkpoint": "ckpt_base_v2.pt",
+ "data": "data/v2/val.u16",
+ "seed": 0,
+ "device": "cuda",
+ "gpu": "NVIDIA GeForce RTX 5070 Ti",
+ "torch": "2.11.0+cu128",
+ "cache_bf16_autocast": {
+  "k_shape": [
+   1,
+   4,
+   100,
+   64
+  ],
+  "k_dtype": "torch.float32",
+  "v_dtype": "torch.bfloat16",
+  "bytes_per_token": 30720,
+  "bytes_per_1024": 31457280
+ },
+ "fp32_precision": "fp32, no autocast, moe_impl sparse (the checkpoint's grouped path would run experts in bf16)",
+ "bf16_precision": "bf16 autocast, moe_impl grouped on CUDA, as serve.py",
+ "cached_vs_full_fp32": {
+  "max_abs_logit_diff": 5.14984130859375e-05,
+  "argmax_agree": 128,
+  "positions": 128
+ },
+ "cached_vs_full_bf16": {
+  "max_abs_logit_diff": 1.09375,
+  "argmax_agree": 125,
+  "positions": 128
+ },
+ "greedy_bf16": {
+  "prompts": 8,
+  "prompt_tokens": 256,
+  "new_tokens": 64,
+  "uncached_vs_uncached_other_seed": [
+   null,
+   57,
+   null,
+   12,
+   null,
+   33,
+   null,
+   null
+  ],
+  "cached_vs_uncached_same_seed": [
+   null,
+   null,
+   null,
+   null,
+   null,
+   20,
+   null,
+   null
+  ],
+  "cached_vs_uncached_argmax": [
+   null,
+   null,
+   null,
+   5,
+   null,
+   20,
+   null,
+   null
+  ]
+ },
+ "step_ms_bf16": [
+  {
+   "context": 65,
+   "cached_ms": 29.96,
+   "uncached_ms": 39.86,
+   "sweeps_cached": [
+    36.6,
+    29.96,
+    30.09
+   ],
+   "sweeps_uncached": [
+    39.86,
+    40.12,
+    88.89
+   ]
+  },
+  {
+   "context": 129,
+   "cached_ms": 29.09,
+   "uncached_ms": 40.16,
+   "sweeps_cached": [
+    29.09,
+    29.21,
+    29.39
+   ],
+   "sweeps_uncached": [
+    40.16,
+    40.61,
+    40.62
+   ]
+  },
+  {
+   "context": 257,
+   "cached_ms": 29.16,
+   "uncached_ms": 39.54,
+   "sweeps_cached": [
+    29.2,
+    29.16,
+    29.94
+   ],
+   "sweeps_uncached": [
+    39.54,
+    39.64,
+    40.02
+   ]
+  },
+  {
+   "context": 513,
+   "cached_ms": 28.74,
+   "uncached_ms": 38.48,
+   "sweeps_cached": [
+    28.74,
+    29.06,
+    29.11
+   ],
+   "sweeps_uncached": [
+    38.64,
+    38.48,
+    38.9
+   ]
+  },
+  {
+   "context": 769,
+   "cached_ms": 29.18,
+   "uncached_ms": 38.51,
+   "sweeps_cached": [
+    29.23,
+    29.18,
+    29.33
+   ],
+   "sweeps_uncached": [
+    38.51,
+    41.03,
+    40.19
+   ]
+  },
+  {
+   "context": 1024,
+   "cached_ms": 28.57,
+   "uncached_ms": 38.55,
+   "sweeps_cached": [
+    28.57,
+    28.82,
+    29.81
+   ],
+   "sweeps_uncached": [
+    39.07,
+    38.55,
+    38.64
+   ]
+  }
+ ],
+ "rebuild_ms_bf16": 38.04
+}

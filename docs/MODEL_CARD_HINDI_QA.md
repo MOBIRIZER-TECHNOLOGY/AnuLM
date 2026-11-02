@@ -44,7 +44,7 @@ Tokenizer `multi32k` (`docs/RESULTS.md` §22).
 
 ## Use
 
-`python serve.py --ckpt <this folder>` then open http://127.0.0.1:8000
-and pick *answer a question*, or `python ask.py --ckpt <this folder>` on
+`python -m anulm.inference.serve --ckpt <this folder>` then open http://127.0.0.1:8000
+and pick *answer a question*, or `python -m anulm.inference.ask --ckpt <this folder>` on
 the command line. Temperature 0.3 and repetition penalty 1.3 are the
 settings the samples were produced with.

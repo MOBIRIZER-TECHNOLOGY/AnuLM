@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 9.1 · Five merges on a toy corpus</title>
+<desc id="d">Bytes l and o merge into lo (id 256, count 8); lo and w into low (257, 8); space and low into &#x27; low&#x27; (258, 5); e and r into er (259, 3); space and n into &#x27; n&#x27; (260, 2).</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Five merges on the toy corpus</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">each new id is a pair of older ids · count = the pair&#x27;s frequency when chosen · illustrative</text>
+<rect x="78.5" y="262.0" width="63.0" height="36.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="110.0" y="281.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">&#x27; &#x27;</text>
+<text x="110.0" y="293.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">byte 32</text>
+<rect x="155.0" y="262.0" width="70.0" height="36.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="190.0" y="281.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">&#x27;l&#x27;</text>
+<text x="190.0" y="293.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">byte 108</text>
+<rect x="235.0" y="262.0" width="70.0" height="36.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="270.0" y="281.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">&#x27;o&#x27;</text>
+<text x="270.0" y="293.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">byte 111</text>
+<rect x="315.0" y="262.0" width="70.0" height="36.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="350.0" y="281.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">&#x27;w&#x27;</text>
+<text x="350.0" y="293.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">byte 119</text>
+<rect x="435.0" y="262.0" width="70.0" height="36.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="470.0" y="281.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">&#x27;e&#x27;</text>
+<text x="470.0" y="293.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">byte 101</text>
+<rect x="515.0" y="262.0" width="70.0" height="36.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="550.0" y="281.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">&#x27;r&#x27;</text>
+<text x="550.0" y="293.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">byte 114</text>
+<rect x="598.5" y="262.0" width="63.0" height="36.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="630.0" y="281.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">&#x27; &#x27;</text>
+<text x="630.0" y="293.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">byte 32</text>
+<rect x="670.0" y="262.0" width="70.0" height="36.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="705.0" y="281.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">&#x27;n&#x27;</text>
+<text x="705.0" y="293.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">byte 110</text>
+<line x1="190.0" y1="262.0" x2="230.0" y2="228.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.3"/>
+<line x1="270.0" y1="262.0" x2="230.0" y2="228.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.3"/>
+<rect x="167.0" y="192.0" width="126.0" height="36.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>merge 0: id 256 = &#x27;lo&#x27;, count 8</title></rect>
+<text x="230.0" y="211.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">&#x27;lo&#x27;</text>
+<text x="230.0" y="223.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">id 256 · count 8</text>
+<line x1="230.0" y1="192.0" x2="290.0" y2="168.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.3"/>
+<line x1="350.0" y1="262.0" x2="290.0" y2="168.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.3"/>
+<rect x="227.0" y="132.0" width="126.0" height="36.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>merge 1: id 257 = &#x27;low&#x27;, count 8</title></rect>
+<text x="290.0" y="151.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">&#x27;low&#x27;</text>
+<text x="290.0" y="163.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">id 257 · count 8</text>
+<line x1="110.0" y1="262.0" x2="200.0" y2="108.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.3"/>
+<line x1="290.0" y1="132.0" x2="200.0" y2="108.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.3"/>
+<rect x="137.0" y="72.0" width="126.0" height="36.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#C4532F" stroke-width="2.5"><title>merge 2: id 258 = &#x27; low&#x27;, count 5</title></rect>
+<text x="200.0" y="91.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">&#x27; low&#x27;</text>
+<text x="200.0" y="103.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">id 258 · count 5</text>
+<line x1="470.0" y1="262.0" x2="510.0" y2="228.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.3"/>
+<line x1="550.0" y1="262.0" x2="510.0" y2="228.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.3"/>
+<rect x="447.0" y="192.0" width="126.0" height="36.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>merge 3: id 259 = &#x27;er&#x27;, count 3</title></rect>
+<text x="510.0" y="211.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">&#x27;er&#x27;</text>
+<text x="510.0" y="223.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">id 259 · count 3</text>
+<line x1="630.0" y1="262.0" x2="667.5" y2="228.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.3"/>
+<line x1="705.0" y1="262.0" x2="667.5" y2="228.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.3"/>
+<rect x="604.5" y="192.0" width="126.0" height="36.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>merge 4: id 260 = &#x27; n&#x27;, count 2</title></rect>
+<text x="667.5" y="211.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">&#x27; n&#x27;</text>
+<text x="667.5" y="223.0" class="f-muted" fill="#5E6E72" font-size="9.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">id 260 · count 2</text>
+<text x="20.0" y="200.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">deepest token:</text>
+<text x="20.0" y="214.0" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">&#x27; low&#x27;, 3 merges</text>
+</svg>

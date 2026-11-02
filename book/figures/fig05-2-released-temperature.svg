@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 350" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 5.2 · The released model under temperature</title>
+<desc id="d">Loss by temperature: T 0.5: 4.713, T 0.8: 3.499, T 0.9: 3.390, T 0.93: 3.377, T 0.95: 3.373, T 0.96: 3.372, T 0.97: 3.373, T 0.98: 3.374, T 1: 3.379, T 1.02: 3.387, T 1.05: 3.406, T 1.1: 3.451, T 1.25: 3.678, T 1.5: 4.244, T 2: 5.449. Entropy: T 0.5: 0.937, T 0.8: 2.183, T 0.9: 2.876, T 0.93: 3.114, T 0.95: 3.279, T 0.96: 3.363, T 0.97: 3.449, T 0.98: 3.535, T 1: 3.712, T 1.02: 3.892, T 1.05: 4.167, T 1.1: 4.636, T 1.25: 6.043, T 1.5: 7.989, T 2: 9.732.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">The released model&#x27;s held-out loss and entropy at each temperature</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">32,732 graded tokens · loss of softmax(z / T) on the true token (coral) · mean entropy of that distribution (teal) · measured</text>
+<line x1="70.0" y1="290.0" x2="700.0" y2="290.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="294.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0</text>
+<line x1="70.0" y1="251.1" x2="700.0" y2="251.1" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="255.1" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">2</text>
+<line x1="70.0" y1="212.3" x2="700.0" y2="212.3" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="216.3" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">4</text>
+<line x1="70.0" y1="173.4" x2="700.0" y2="173.4" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="177.4" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">6</text>
+<line x1="70.0" y1="134.6" x2="700.0" y2="134.6" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="138.6" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">8</text>
+<line x1="70.0" y1="95.7" x2="700.0" y2="95.7" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="99.7" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">10</text>
+<text x="107.1" y="306.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.5</text>
+<text x="218.2" y="306.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.8</text>
+<text x="292.4" y="306.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1</text>
+<text x="385.0" y="306.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1.25</text>
+<text x="477.6" y="306.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1.5</text>
+<text x="662.9" y="306.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">2</text>
+<text x="385.0" y="324.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">temperature T</text>
+<text x="62.0" y="76.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">nats</text>
+<polyline points="107.1,198.4 218.2,222.0 255.3,224.1 266.4,224.4 273.8,224.5 277.5,224.5 281.2,224.5 284.9,224.4 292.4,224.4 299.8,224.2 310.9,223.8 329.4,223.0 385.0,218.5 477.6,207.5 662.9,184.1" fill="none" stroke="#C4532F" class="f-coral-stroke" stroke-width="2.5"/>
+<circle cx="107.1" cy="198.4" r="4.5" fill="#C4532F" class="f-coral"><title>T = 0.5: loss 4.713</title></circle>
+<circle cx="218.2" cy="222.0" r="4.5" fill="#C4532F" class="f-coral"><title>T = 0.8: loss 3.499</title></circle>
+<circle cx="255.3" cy="224.1" r="4.5" fill="#C4532F" class="f-coral"><title>T = 0.9: loss 3.390</title></circle>
+<circle cx="266.4" cy="224.4" r="4.5" fill="#C4532F" class="f-coral"><title>T = 0.93: loss 3.377</title></circle>
+<circle cx="273.8" cy="224.5" r="4.5" fill="#C4532F" class="f-coral"><title>T = 0.95: loss 3.373</title></circle>
+<circle cx="277.5" cy="224.5" r="4.5" fill="#C4532F" class="f-coral"><title>T = 0.96: loss 3.372</title></circle>
+<circle cx="281.2" cy="224.5" r="4.5" fill="#C4532F" class="f-coral"><title>T = 0.97: loss 3.373</title></circle>
+<circle cx="284.9" cy="224.4" r="4.5" fill="#C4532F" class="f-coral"><title>T = 0.98: loss 3.374</title></circle>
+<circle cx="292.4" cy="224.4" r="4.5" fill="#C4532F" class="f-coral"><title>T = 1: loss 3.379</title></circle>
+<circle cx="299.8" cy="224.2" r="4.5" fill="#C4532F" class="f-coral"><title>T = 1.02: loss 3.387</title></circle>
+<circle cx="310.9" cy="223.8" r="4.5" fill="#C4532F" class="f-coral"><title>T = 1.05: loss 3.406</title></circle>
+<circle cx="329.4" cy="223.0" r="4.5" fill="#C4532F" class="f-coral"><title>T = 1.1: loss 3.451</title></circle>
+<circle cx="385.0" cy="218.5" r="4.5" fill="#C4532F" class="f-coral"><title>T = 1.25: loss 3.678</title></circle>
+<circle cx="477.6" cy="207.5" r="4.5" fill="#C4532F" class="f-coral"><title>T = 1.5: loss 4.244</title></circle>
+<circle cx="662.9" cy="184.1" r="4.5" fill="#C4532F" class="f-coral"><title>T = 2: loss 5.449</title></circle>
+<polyline points="107.1,271.8 218.2,247.6 255.3,234.1 266.4,229.5 273.8,226.3 277.5,224.7 281.2,223.0 284.9,221.3 292.4,217.9 299.8,214.4 310.9,209.0 329.4,199.9 385.0,172.6 477.6,134.8 662.9,100.9" fill="none" stroke="#0E9488" class="f-teal-stroke" stroke-width="2.5"/>
+<circle cx="107.1" cy="271.8" r="4.5" fill="#0E9488" class="f-teal"><title>T = 0.5: entropy 0.937</title></circle>
+<circle cx="218.2" cy="247.6" r="4.5" fill="#0E9488" class="f-teal"><title>T = 0.8: entropy 2.183</title></circle>
+<circle cx="255.3" cy="234.1" r="4.5" fill="#0E9488" class="f-teal"><title>T = 0.9: entropy 2.876</title></circle>
+<circle cx="266.4" cy="229.5" r="4.5" fill="#0E9488" class="f-teal"><title>T = 0.93: entropy 3.114</title></circle>
+<circle cx="273.8" cy="226.3" r="4.5" fill="#0E9488" class="f-teal"><title>T = 0.95: entropy 3.279</title></circle>
+<circle cx="277.5" cy="224.7" r="4.5" fill="#0E9488" class="f-teal"><title>T = 0.96: entropy 3.363</title></circle>
+<circle cx="281.2" cy="223.0" r="4.5" fill="#0E9488" class="f-teal"><title>T = 0.97: entropy 3.449</title></circle>
+<circle cx="284.9" cy="221.3" r="4.5" fill="#0E9488" class="f-teal"><title>T = 0.98: entropy 3.535</title></circle>
+<circle cx="292.4" cy="217.9" r="4.5" fill="#0E9488" class="f-teal"><title>T = 1: entropy 3.712</title></circle>
+<circle cx="299.8" cy="214.4" r="4.5" fill="#0E9488" class="f-teal"><title>T = 1.02: entropy 3.892</title></circle>
+<circle cx="310.9" cy="209.0" r="4.5" fill="#0E9488" class="f-teal"><title>T = 1.05: entropy 4.167</title></circle>
+<circle cx="329.4" cy="199.9" r="4.5" fill="#0E9488" class="f-teal"><title>T = 1.1: entropy 4.636</title></circle>
+<circle cx="385.0" cy="172.6" r="4.5" fill="#0E9488" class="f-teal"><title>T = 1.25: entropy 6.043</title></circle>
+<circle cx="477.6" cy="134.8" r="4.5" fill="#0E9488" class="f-teal"><title>T = 1.5: entropy 7.989</title></circle>
+<circle cx="662.9" cy="100.9" r="4.5" fill="#0E9488" class="f-teal"><title>T = 2: entropy 9.732</title></circle>
+<text x="656.9" y="204.1" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">loss</text>
+<text x="656.9" y="90.9" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">entropy</text>
+<line x1="277.5" y1="230.5" x2="306.4" y2="241.3" stroke="#17262E" class="f-ink-stroke" stroke-width="1"/>
+<text x="308.4" y="253.3" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">lowest near T = 0.96: 3.372 (T = 1: 3.379)</text>
+</svg>

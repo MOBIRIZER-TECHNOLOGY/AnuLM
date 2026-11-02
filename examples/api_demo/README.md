@@ -1,6 +1,6 @@
 # AnuLM API demo: sample data, requests and real responses
 
-A runnable tour of every endpoint in [`api.py`](../../api.py), with the
+A runnable tour of every endpoint in [`api.py`](../../anulm/apps/api.py), with the
 responses the server actually returned. The full guide is
 [`docs/API.md`](../../docs/API.md).
 
@@ -55,12 +55,12 @@ python examples/api_demo/benchmark.py --n-scale 0.1        # a 2-minute smoke te
 ## Run it
 
 ```bash
-python api.py                                   # terminal 1, repo root: http://127.0.0.1:8000
+python -m anulm.apps.api                                   # terminal 1, repo root: http://127.0.0.1:8000
 python examples/api_demo/run_demo.py            # terminal 2: all 18 requests + the sample data
 python examples/api_demo/openai_client.py       # the OpenAI SDK / LangChain version
 ```
 
-`python api.py --device cpu` works too (the recording was made on the GPU,
+`python -m anulm.apps.api --device cpu` works too (the recording was made on the GPU,
 with the speech and vision models retrained on base v2; first use of each
 model takes a few seconds to load it). Other options:
 

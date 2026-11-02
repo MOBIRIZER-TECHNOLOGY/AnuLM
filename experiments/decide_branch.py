@@ -61,16 +61,16 @@ def main():
         subprocess.run(["schtasks", "/change", "/tn", "anulm_v2", "/disable"], capture_output=True)
         time.sleep(30)
         ps("Get-CimInstance Win32_Process -Filter \"name='python.exe'\" | "
-           "Where-Object { $_.CommandLine -like '*train.py*' -and $_.CommandLine -like '*ckpt_base_v2*' } | "
+           "Where-Object { ($_.CommandLine -like '*train.py*' -or $_.CommandLine -like '*anulm.training.train*') -and $_.CommandLine -like '*ckpt_base_v2*' } | "
            "ForEach-Object { Stop-Process -Id $_.ProcessId -Force }")
         time.sleep(30)
         log("main run paused again (it restarts from the same resume point)")
         if not (ROOT / "ckpt_demo_v2.pt").exists():
             log("ckpt_demo_v2.pt missing; nothing to train on")
             return
-        run("1_train", ["decide.py", "train", "--ckpt", "ckpt_demo_v2.pt", "--out", "ckpt_decide.pt",
+        run("1_train", ['-m', 'anulm.tasks.decide', "train", "--ckpt", "ckpt_demo_v2.pt", "--out", "ckpt_decide.pt",
                         "--epochs", "3", "--batch-size", "8", "--lr", "3e-5", "--eval-every", "500"], 1.5)
-        run("2_eval", ["decide.py", "eval", "--ckpt", "ckpt_decide.pt"], 0.5)
+        run("2_eval", ['-m', 'anulm.tasks.decide', "eval", "--ckpt", "ckpt_decide.pt"], 0.5)
     finally:
         subprocess.run(["schtasks", "/change", "/tn", "anulm_v2", "/enable"], capture_output=True)
         subprocess.run(["schtasks", "/run", "/tn", "anulm_v2"], capture_output=True)

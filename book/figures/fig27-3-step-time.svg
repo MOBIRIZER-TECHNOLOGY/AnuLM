@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 27.3 · Time per step on the released model</title>
+<desc id="d">Cached decode steps take 30.0 ms at context 65 and 28.6 ms at 1,024; uncached forwards 39.9 and 38.6 ms; the rebuild at 1,024 tokens 38.0 ms.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Milliseconds per step, released model, batch 1</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">bf16 autocast · median of 25 calls, lowest of 3 sweeps · RTX 5070 Ti on a shared machine · measured</text>
+<line x1="90.0" y1="270.0" x2="560.0" y2="270.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="82.0" y="274.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0</text>
+<line x1="90.0" y1="238.3" x2="560.0" y2="238.3" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="82.0" y="242.3" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">10</text>
+<line x1="90.0" y1="206.7" x2="560.0" y2="206.7" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="82.0" y="210.7" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">20</text>
+<line x1="90.0" y1="175.0" x2="560.0" y2="175.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="82.0" y="179.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">30</text>
+<line x1="90.0" y1="143.3" x2="560.0" y2="143.3" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="82.0" y="147.3" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">40</text>
+<line x1="90.0" y1="111.7" x2="560.0" y2="111.7" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="82.0" y="115.7" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">50</text>
+<line x1="90.0" y1="80.0" x2="560.0" y2="80.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="82.0" y="84.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">60</text>
+<text x="90.0" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<text x="207.5" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">256</text>
+<text x="325.0" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">512</text>
+<text x="442.5" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">768</text>
+<text x="560.0" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1024</text>
+<text x="325.0" y="304.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">context length (tokens)</text>
+<text x="50.0" y="66.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">ms</text>
+<polyline points="119.8,143.8 149.2,142.8 208.0,144.8 325.5,148.1 443.0,148.1 560.0,147.9" fill="none" stroke="#C4532F" stroke-width="2"/>
+<circle cx="119.8" cy="143.8" r="5" fill="#C4532F" stroke="#FFFFFF" stroke-width="2" class="f-coral f-ring"><title>uncached forward, context 65: 39.9 ms</title></circle>
+<circle cx="149.2" cy="142.8" r="5" fill="#C4532F" stroke="#FFFFFF" stroke-width="2" class="f-coral f-ring"><title>uncached forward, context 129: 40.2 ms</title></circle>
+<circle cx="208.0" cy="144.8" r="5" fill="#C4532F" stroke="#FFFFFF" stroke-width="2" class="f-coral f-ring"><title>uncached forward, context 257: 39.5 ms</title></circle>
+<circle cx="325.5" cy="148.1" r="5" fill="#C4532F" stroke="#FFFFFF" stroke-width="2" class="f-coral f-ring"><title>uncached forward, context 513: 38.5 ms</title></circle>
+<circle cx="443.0" cy="148.1" r="5" fill="#C4532F" stroke="#FFFFFF" stroke-width="2" class="f-coral f-ring"><title>uncached forward, context 769: 38.5 ms</title></circle>
+<circle cx="560.0" cy="147.9" r="5" fill="#C4532F" stroke="#FFFFFF" stroke-width="2" class="f-coral f-ring"><title>uncached forward, context 1024: 38.5 ms</title></circle>
+<text x="572.0" y="155.9" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">uncached forward: 38.5</text>
+<polyline points="119.8,175.1 149.2,177.9 208.0,177.7 325.5,179.0 443.0,177.6 560.0,179.5" fill="none" stroke="#0E9488" stroke-width="2"/>
+<circle cx="119.8" cy="175.1" r="5" fill="#0E9488" stroke="#FFFFFF" stroke-width="2" class="f-teal f-ring"><title>cached decode step, context 65: 30.0 ms</title></circle>
+<circle cx="149.2" cy="177.9" r="5" fill="#0E9488" stroke="#FFFFFF" stroke-width="2" class="f-teal f-ring"><title>cached decode step, context 129: 29.1 ms</title></circle>
+<circle cx="208.0" cy="177.7" r="5" fill="#0E9488" stroke="#FFFFFF" stroke-width="2" class="f-teal f-ring"><title>cached decode step, context 257: 29.2 ms</title></circle>
+<circle cx="325.5" cy="179.0" r="5" fill="#0E9488" stroke="#FFFFFF" stroke-width="2" class="f-teal f-ring"><title>cached decode step, context 513: 28.7 ms</title></circle>
+<circle cx="443.0" cy="177.6" r="5" fill="#0E9488" stroke="#FFFFFF" stroke-width="2" class="f-teal f-ring"><title>cached decode step, context 769: 29.2 ms</title></circle>
+<circle cx="560.0" cy="179.5" r="5" fill="#0E9488" stroke="#FFFFFF" stroke-width="2" class="f-teal f-ring"><title>cached decode step, context 1024: 28.6 ms</title></circle>
+<text x="572.0" y="187.5" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">cached decode step: 28.6</text>
+<rect x="555.0" y="144.5" width="10" height="10" fill="none" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5"><title>rebuild of 1,024 tokens: 38.0 ms</title></rect>
+<text x="572.0" y="135.5" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">rebuild of 1,024: 38.0</text>
+<text x="96.0" y="197.1" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">a decode step costs about 29 ms whatever the context</text>
+</svg>

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 270" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 30.2 · What instruction tuning bought</title>
+<desc id="d">Multiple choice 43.0 to 50.2 percent, token F1 6.3 to 21.8, names the subject 12 to 81 percent.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">What instruction tuning bought, RESULTS §20</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">Hindi Wikipedia questions held out by article · base vs fine-tuned · measured</text>
+<line x1="230.0" y1="66.0" x2="230.0" y2="216.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="230.0" y="232.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<line x1="324.0" y1="66.0" x2="324.0" y2="216.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="324.0" y="232.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">20</text>
+<line x1="418.0" y1="66.0" x2="418.0" y2="216.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="418.0" y="232.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">40</text>
+<line x1="512.0" y1="66.0" x2="512.0" y2="216.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="512.0" y="232.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">60</text>
+<line x1="606.0" y1="66.0" x2="606.0" y2="216.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="606.0" y="232.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">80</text>
+<line x1="700.0" y1="66.0" x2="700.0" y2="216.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="700.0" y="232.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">100</text>
+<text x="218.0" y="92.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">MC (chance 25%)</text>
+<rect x="230.0" y="74.0" width="202.1" height="16.0" rx="3" fill="#C4532F" class="f-coral"><title>MC (chance 25%), base: 43.0</title></rect>
+<text x="438.1" y="86.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">43.0</text>
+<rect x="230.0" y="93.0" width="235.9" height="16.0" rx="3" fill="#0E9488" class="f-teal"><title>MC (chance 25%), fine-tuned: 50.2</title></rect>
+<text x="471.9" y="105.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">50.2</text>
+<text x="218.0" y="140.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">token F1</text>
+<rect x="230.0" y="122.0" width="29.6" height="16.0" rx="3" fill="#C4532F" class="f-coral"><title>token F1, base: 6.3</title></rect>
+<text x="265.6" y="134.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">6.3</text>
+<rect x="230.0" y="141.0" width="102.5" height="16.0" rx="3" fill="#0E9488" class="f-teal"><title>token F1, fine-tuned: 21.8</title></rect>
+<text x="338.5" y="153.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">21.8</text>
+<text x="218.0" y="188.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">names the subject (%)</text>
+<rect x="230.0" y="170.0" width="56.4" height="16.0" rx="3" fill="#C4532F" class="f-coral"><title>names the subject (%), base: 12.0</title></rect>
+<text x="292.4" y="182.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">12.0</text>
+<rect x="230.0" y="189.0" width="380.7" height="16.0" rx="3" fill="#0E9488" class="f-teal"><title>names the subject (%), fine-tuned: 81.0</title></rect>
+<text x="616.7" y="201.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">81.0</text>
+<rect x="230.0" y="246.0" width="12.0" height="12.0" rx="2" fill="#C4532F" class="f-coral"></rect>
+<text x="248.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">base ckpt_hindi_mixed18k</text>
+<rect x="440.0" y="246.0" width="12.0" height="12.0" rx="2" fill="#0E9488" class="f-teal"></rect>
+<text x="458.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">fine-tuned ckpt_hindi_qa</text>
+</svg>

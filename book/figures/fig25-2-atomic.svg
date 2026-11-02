@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 25.2 · In-place and atomic checkpoint writes</title>
+<desc id="d">Top lane: torch.save opens the existing checkpoint for writing, a kill leaves it half written and unreadable. Bottom lane: atomic_save writes a .tmp file beside it, so the same kill leaves the old checkpoint complete; only a finished write is moved into place by os.replace.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Writing a checkpoint so that a kill cannot destroy it</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">two lanes, the same kill at the same moment · the file names are train.py&#x27;s</text>
+<text x="20.0" y="72.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">torch.save(obj, path)  — in place</text>
+<text x="20.0" y="192.0" class="f-ink" fill="#17262E" font-size="13" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">atomic_save(obj, path)  — write beside, then rename</text>
+<rect x="20.0" y="90.0" width="150.0" height="46.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1.2"></rect>
+<text x="95.0" y="110.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">ckpt.pt.last</text>
+<text x="95.0" y="127.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">old, complete</text>
+<line x1="170.0" y1="113.0" x2="208.0" y2="113.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="210.0" y="90.0" width="190.0" height="46.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1.2"></rect>
+<text x="305.0" y="110.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">ckpt.pt.last</text>
+<text x="305.0" y="127.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">opened for writing</text>
+<line x1="400.0" y1="113.0" x2="438.0" y2="113.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="440.0" y="90.0" width="130.0" height="46.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#C4532F" stroke-width="1.2"></rect>
+<text x="505.0" y="110.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">half written</text>
+<text x="505.0" y="127.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">kill arrives</text>
+<line x1="570.0" y1="113.0" x2="598.0" y2="113.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="600.0" y="90.0" width="140.0" height="46.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#C4532F" stroke-width="1.2"></rect>
+<text x="670.0" y="110.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">unreadable</text>
+<text x="670.0" y="127.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">no central directory</text>
+<rect x="20.0" y="210.0" width="150.0" height="46.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1.2"></rect>
+<text x="95.0" y="230.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">ckpt.pt.last</text>
+<text x="95.0" y="247.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">old, complete</text>
+<line x1="170.0" y1="233.0" x2="208.0" y2="233.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="210.0" y="210.0" width="190.0" height="46.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1.2"></rect>
+<text x="305.0" y="230.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">ckpt.pt.last.tmp</text>
+<text x="305.0" y="247.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">torch.save writes here</text>
+<line x1="400.0" y1="233.0" x2="438.0" y2="233.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="440.0" y="210.0" width="130.0" height="46.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#C4532F" stroke-width="1.2"></rect>
+<text x="505.0" y="230.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">half written</text>
+<text x="505.0" y="247.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">kill arrives</text>
+<line x1="570.0" y1="233.0" x2="598.0" y2="233.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="600.0" y="210.0" width="140.0" height="46.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#0E9488" stroke-width="1.2"></rect>
+<text x="670.0" y="230.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">ckpt.pt.last</text>
+<text x="670.0" y="247.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">old, still complete</text>
+<text x="210.0" y="280.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">without the kill: os.replace(tmp, path) swaps the finished file in, in one step</text>
+<text x="210.0" y="298.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">(atomic within a volume, as the code&#x27;s comment says)</text>
+</svg>

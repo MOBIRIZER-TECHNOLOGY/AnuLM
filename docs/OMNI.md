@@ -1,5 +1,10 @@
 # AnuLM-Omni: train the one model yourself
 
+The demo defaults to [approved recorded examples](DEMO_VALIDATION.md). Live
+research controls require `--experimental`; passing synthetic checks alone
+does not approve a real image/audio case. The initial validation catalogue is
+empty until trained artifacts and reviewed held-out results are available.
+
 AnuLM-Omni is one 456M decoder that chats, answers from passages, routes a
 message to an intent, transcribes English and Hindi speech, describes a photo
 and answers questions about it. This page takes you from a fresh clone to
@@ -37,11 +42,14 @@ first and check it does not touch torch), and `huggingface_hub` 2.x breaks
 
 ## 2. Data
 
+Start with the [small pinned data pack](DATA_SETUP.md) for setup and media checks.
+The following older commands fetch full corpora and are not required for that pack.
+
 ```bash
-python omni_data.py list            # every source, its licence, size and status
-python omni_data.py fetch all       # text and speech; skips what is already there
-python omni_images.py fetch         # photos, captions, image questions (~26 GB)
-python omni_data.py check && python omni_images.py check
+python -m anulm.multimodal.omni_data list            # every source, its licence, size and status
+python -m anulm.multimodal.omni_data fetch all       # text and speech; skips what is already there
+python -m anulm.multimodal.omni_images fetch         # photos, captions, image questions (~26 GB)
+python -m anulm.multimodal.omni_data check && python -m anulm.multimodal.omni_images check
 ```
 
 **One dataset needs you first.** Kathbath (AI4Bharat's Hindi read speech) is
@@ -83,11 +91,11 @@ beside it.
 ## 4. Use it
 
 ```bash
-python app_omni.py                  # every tab, one model
+python -m anulm.apps.omni                  # every tab, one model
 ```
 
 ```python
-from serve import Engine
+from anulm.inference.serve import Engine
 chat = Engine("ckpt_omni.pt", "cuda")
 print(chat.generate("What is the capital of India?", 40, 0.0, 1, 0, mode="question")["completion"])
 ```

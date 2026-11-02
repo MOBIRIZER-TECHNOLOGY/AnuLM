@@ -28,5 +28,5 @@ PRESET="num_experts=24 moe_intermediate_size=192 num_experts_per_tok=4 num_share
 RESUME=""; [ -s ckpt_textbook.pt.last ] && RESUME="--resume"
 
 echo "=== TEXTBOOK PHASE: ${RESUME:-fresh start} to $STOP ($(date +%H:%M)) ==="
-python -u train.py $COMMON $RESUME --stop-at "$STOP" --cfg $PRESET 2>&1 | grep -v -i "warning\|triton"
+python -u -m anulm.training.train $COMMON $RESUME --stop-at "$STOP" --cfg $PRESET 2>&1 | grep -v -i "warning\|triton"
 echo "=== PHASE DONE ($(date +%H:%M)) ==="

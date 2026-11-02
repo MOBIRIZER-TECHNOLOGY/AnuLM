@@ -23,11 +23,11 @@ export PYTHONIOENCODING=utf-8
 set -o pipefail
 
 echo "=== 1. FETCH ENGLISH + PYTHON ($(date +%H:%M)) ==="
-[ -s data/english_raw.txt ] || python -u fetch_hindi.py --mb 500 --keep-prob 0.25 --seed 2026 --min-devanagari 0 \
+[ -s data/english_raw.txt ] || python -u -m anulm.data.fetch_hindi --mb 500 --keep-prob 0.25 --seed 2026 --min-devanagari 0 \
     --dump https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2 \
     --out data/english_raw.txt 2>&1 | tr '\r' '\n' | grep -E "wrote|downloaded [0-9.]+ MB of|streaming|Error|Traceback" &
-[ -s data/english_web_raw.txt ] || python -u fetch_web.py --mb 350 --out data/english_web_raw.txt 2>&1 | tr '\r' '\n' | grep -E "wrote|streaming|Error|Traceback" &
-[ -s data/python_raw.txt ] || python -u fetch_code.py --mb 250 --out data/python_raw.txt 2>&1 | tr '\r' '\n' | grep -E "wrote|streaming|Error|Traceback" &
+[ -s data/english_web_raw.txt ] || python -u -m anulm.data.fetch_web --mb 350 --out data/english_web_raw.txt 2>&1 | tr '\r' '\n' | grep -E "wrote|streaming|Error|Traceback" &
+[ -s data/python_raw.txt ] || python -u -m anulm.data.fetch_code --mb 250 --out data/python_raw.txt 2>&1 | tr '\r' '\n' | grep -E "wrote|streaming|Error|Traceback" &
 wait
 for f in english_raw english_web_raw python_raw; do
   [ -s data/$f.txt ] || { echo "$f fetch produced nothing"; exit 1; }
@@ -37,7 +37,7 @@ echo "=== 2. SPLIT + INTERLEAVE ($(date +%H:%M)) ==="
 python - <<'PY'
 import random, time
 from pathlib import Path
-from bpe import DOC_SEP
+from anulm.tokenization.bpe import DOC_SEP
 t0 = time.time()
 def docs(p): return [d for d in Path(p).read_text(encoding="utf-8").split(DOC_SEP) if d.strip()]
 def write(p, ds): Path(p).write_text(DOC_SEP.join(ds) + DOC_SEP, encoding="utf-8", newline="\n")
@@ -72,16 +72,16 @@ print(f"tokenizer sample: {len(parts)} docs, {mb(parts):.0f} MB")
 PY
 
 echo "=== 3. TOKENIZER 32k ($(date +%H:%M)) ==="
-python -u bpe.py train --data data/multi_toksample.txt --vocab 32768 --out data/multi32k.json 2>&1 | grep -E "trained|bytes/token|tokens/word|roundtrip|unique chunks"
+python -u -m anulm.tokenization.bpe train --data data/multi_toksample.txt --vocab 32768 --out data/multi32k.json 2>&1 | grep -E "trained|bytes/token|tokens/word|roundtrip|unique chunks"
 echo "--- fertility per language, multi32k"
 for f in data/bench_hindi.txt data/bench_wikisource.txt data/bench_english.txt data/bench_python.txt; do
-  echo "$f:"; python -u bpe.py stats --tokenizer data/multi32k.json --data $f 2>&1 | grep -E "bytes/token|tokens/word"
+  echo "$f:"; python -u -m anulm.tokenization.bpe stats --tokenizer data/multi32k.json --data $f 2>&1 | grep -E "bytes/token|tokens/word"
 done
 echo "--- the old 16k Hindi tokenizer on English and Python, for contrast"
 for f in data/bench_english.txt data/bench_python.txt; do
-  echo "$f:"; python -u bpe.py stats --tokenizer data/hi16k_mixed.json --data $f 2>&1 | grep -E "bytes/token|tokens/word"
+  echo "$f:"; python -u -m anulm.tokenization.bpe stats --tokenizer data/hi16k_mixed.json --data $f 2>&1 | grep -E "bytes/token|tokens/word"
 done
 
 echo "=== 4. ENCODE ($(date +%H:%M)) ==="
-python -u bpe.py encode --tokenizer data/multi32k.json --data data/multi.txt --out data/multi.multi32k.bin 2>&1 | tail -1
+python -u -m anulm.tokenization.bpe encode --tokenizer data/multi32k.json --data data/multi.txt --out data/multi.multi32k.bin 2>&1 | tail -1
 echo "=== BUILD DONE ($(date +%H:%M)) ==="

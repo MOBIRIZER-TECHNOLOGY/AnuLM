@@ -1,0 +1,48 @@
+{
+ "kv_bytes_per_token": {
+  "bf16": 20480,
+  "fp32": 40960,
+  "autocast (fp32 keys, bf16 values)": 30720
+ },
+ "cat_copy_bytes_full_context": {
+  "served": 16121856000,
+  "bf16": 10747904000
+ },
+ "params": 397659648,
+ "active": 173526528,
+ "weight_bytes": {
+  "fp32": 1590638592,
+  "bf16": 795319296,
+  "int8 (per-row fp16 scales)": 399325072,
+  "int4 (fp16 scale per 64 weights)": 211411200
+ },
+ "contexts_on_16GiB": {
+  "fp32": 743,
+  "bf16": 781,
+  "int8 (per-row fp16 scales)": 800,
+  "int4 (fp16 scale per 64 weights)": 809
+ },
+ "served": {
+  "contexts": 495,
+  "contexts_with_stack": 478,
+  "expert_stack_bytes": 537919488
+ },
+ "paging_illustration": {
+  "used": 536109,
+  "contiguous": 1024000,
+  "paged16": 543488
+ },
+ "speculative_tokens_per_call_gamma4": {
+  "0.6": 2.306,
+  "0.8": 3.362,
+  "0.9": 4.095
+ },
+ "score_matrix_bytes_per_layer": 67108864,
+ "adamw_fp32_bytes": 6362554368,
+ "zero_bytes_per_param_8gpu": {
+  "optimizer states": 9.0,
+  "+ gradients": 5.5,
+  "+ parameters": 2.0
+ },
+ "grad_bytes_fp32": 1590638592
+}

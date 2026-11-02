@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 37.1 · One training step</title>
+<desc id="d">Step 1 draws one of seven tasks with probabilities chat 0.07, read 0.14, intent 0.06, asr_en 0.12, asr_hi 0.32, caption 0.17, vqa 0.12. Step 2 builds that task&#x27;s batch as embeddings and targets. Step 3 runs the single backbone. Step 4 back-propagates, clips, steps AdamW with two learning rates and nudges the router biases.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">One optimizer step of omni_train.py</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">experiments/omni_one.py shares at @773b6a8 · one task&#x27;s batch per step</text>
+<text x="20.0" y="74.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">1. draw one task</text>
+<rect x="20.0" y="84.0" width="46.3" height="40.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>chat (text): p = 0.07</title></rect>
+<text x="44.2" y="101.0" class="f-ink" fill="#17262E" font-size="9.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">chat</text>
+<text x="44.2" y="116.0" class="f-ink" fill="#17262E" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.07</text>
+<rect x="68.3" y="84.0" width="94.6" height="40.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>read (text): p = 0.14</title></rect>
+<text x="116.6" y="101.0" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">read</text>
+<text x="116.6" y="116.0" class="f-ink" fill="#17262E" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.14</text>
+<rect x="164.9" y="84.0" width="39.4" height="40.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>intent (text): p = 0.06</title></rect>
+<text x="185.6" y="101.0" class="f-ink" fill="#17262E" font-size="9.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">intent</text>
+<text x="185.6" y="116.0" class="f-ink" fill="#17262E" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.06</text>
+<rect x="206.3" y="84.0" width="80.8" height="40.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>asr_en (asr): p = 0.12</title></rect>
+<text x="247.7" y="101.0" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">asr_en</text>
+<text x="247.7" y="116.0" class="f-ink" fill="#17262E" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.12</text>
+<rect x="289.1" y="84.0" width="218.8" height="40.0" rx="4" fill="#7B5E8E" class="f-plum"><title>asr_hi (asr): p = 0.32</title></rect>
+<text x="399.5" y="101.0" class="f-onfill" fill="#FFFFFF" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">asr_hi</text>
+<text x="399.5" y="116.0" class="f-onfill" fill="#FFFFFF" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.32</text>
+<rect x="509.9" y="84.0" width="115.3" height="40.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>caption (image): p = 0.17</title></rect>
+<text x="568.6" y="101.0" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">caption</text>
+<text x="568.6" y="116.0" class="f-ink" fill="#17262E" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.17</text>
+<rect x="627.2" y="84.0" width="80.8" height="40.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>vqa (image): p = 0.12</title></rect>
+<text x="668.6" y="101.0" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">vqa</text>
+<text x="668.6" y="116.0" class="f-ink" fill="#17262E" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.12</text>
+<text x="20.0" y="142.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">e.g. asr_hi, drawn with p = 0.32</text>
+<rect x="20.0" y="170.0" width="200.0" height="56.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="120.0" y="195.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">2. its batch builder</text>
+<text x="120.0" y="212.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">speech_encoder.batches</text>
+<line x1="222.0" y1="198.0" x2="262.0" y2="198.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="264.0" y="170.0" width="200.0" height="56.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="364.0" y="195.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">(embeds, targets)</text>
+<text x="364.0" y="212.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">(B, S, D), (B, S) with −1</text>
+<line x1="466.0" y1="198.0" x2="506.0" y2="198.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="508.0" y="170.0" width="232.0" height="56.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#7B5E8E" stroke-width="2.5"></rect>
+<text x="624.0" y="195.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">3. one backbone</text>
+<text x="624.0" y="212.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">model(None, tb, embeds=eb)</text>
+<rect x="20.0" y="254.0" width="220.0" height="50.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="130.0" y="283.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">4. backward, clip at 1.0</text>
+<line x1="242.0" y1="279.0" x2="282.0" y2="279.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="284.0" y="254.0" width="220.0" height="50.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="394.0" y="276.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">AdamW: backbone 5e-5,</text>
+<text x="394.0" y="293.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">projectors 1e-3</text>
+<line x1="506.0" y1="279.0" x2="546.0" y2="279.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="548.0" y="254.0" width="192.0" height="50.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="644.0" y="276.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">router bias nudge</text>
+<text x="644.0" y="293.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">update_expert_biases</text>
+<line x1="624.0" y1="228.0" x2="130.0" y2="252.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)"/>
+</svg>

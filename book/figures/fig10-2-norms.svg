@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 330" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 10.2 · Row norms by how common the token is</title>
+<desc id="d">Mean row norms by held-out count. Input rows: 0 0.013, 1-9 0.064, 10-999 0.367, 1k-100k 0.666, 100k+ 0.783. Output rows: 0 0.508, 1-9 0.508, 10-999 0.513, 1k-100k 0.472, 100k+ 0.365. Initial norm 0.640.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Row norms of the released tables, by how common the token is</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">ckpt_base_v2.pt · counts over the 113M-token held-out split · measured</text>
+<rect x="80.0" y="60.0" width="12.0" height="12.0" rx="2" fill="#C4532F" class="f-coral"></rect>
+<text x="98.0" y="70.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">input row (embed_tokens)</text>
+<rect x="280.0" y="60.0" width="12.0" height="12.0" rx="2" fill="#0E9488" class="f-teal"></rect>
+<text x="298.0" y="70.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">output row (lm_head)</text>
+<line x1="80.0" y1="256.0" x2="690.0" y2="256.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="260.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0.0</text>
+<line x1="80.0" y1="218.2" x2="690.0" y2="218.2" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="222.2" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0.2</text>
+<line x1="80.0" y1="180.4" x2="690.0" y2="180.4" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="184.4" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0.4</text>
+<line x1="80.0" y1="142.7" x2="690.0" y2="142.7" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="146.7" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0.6</text>
+<line x1="80.0" y1="104.9" x2="690.0" y2="104.9" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="108.9" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0.8</text>
+<line x1="80.0" y1="135.1" x2="690.0" y2="135.1" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5" stroke-dasharray="4 3"/>
+<text x="86.0" y="129.1" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">at initialisation, 0.640</text>
+<rect x="105.0" y="253.5" width="34.0" height="2.5" rx="2" fill="#C4532F" class="f-coral"><title>0: in_norm 0.013</title></rect>
+<text x="122.0" y="248.5" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">0.01</text>
+<rect x="143.0" y="160.0" width="34.0" height="96.0" rx="2" fill="#0E9488" class="f-teal"><title>0: out_norm 0.508</title></rect>
+<text x="160.0" y="155.0" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">0.51</text>
+<text x="141.0" y="272.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">0</text>
+<text x="141.0" y="287.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">247 ids</text>
+<rect x="227.0" y="243.9" width="34.0" height="12.1" rx="2" fill="#C4532F" class="f-coral"><title>1-9: in_norm 0.064</title></rect>
+<text x="244.0" y="238.9" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">0.06</text>
+<rect x="265.0" y="160.0" width="34.0" height="96.0" rx="2" fill="#0E9488" class="f-teal"><title>1-9: out_norm 0.508</title></rect>
+<text x="282.0" y="155.0" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">0.51</text>
+<text x="263.0" y="272.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">1-9</text>
+<text x="263.0" y="287.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">399 ids</text>
+<rect x="349.0" y="186.7" width="34.0" height="69.3" rx="2" fill="#C4532F" class="f-coral"><title>10-999: in_norm 0.367</title></rect>
+<text x="366.0" y="181.7" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">0.37</text>
+<rect x="387.0" y="159.1" width="34.0" height="96.9" rx="2" fill="#0E9488" class="f-teal"><title>10-999: out_norm 0.513</title></rect>
+<text x="404.0" y="154.1" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">0.51</text>
+<text x="385.0" y="272.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">10-999</text>
+<text x="385.0" y="287.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">17,008 ids</text>
+<rect x="471.0" y="130.2" width="34.0" height="125.8" rx="2" fill="#C4532F" class="f-coral"><title>1k-100k: in_norm 0.666</title></rect>
+<text x="488.0" y="125.2" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">0.67</text>
+<rect x="509.0" y="166.8" width="34.0" height="89.2" rx="2" fill="#0E9488" class="f-teal"><title>1k-100k: out_norm 0.472</title></rect>
+<text x="526.0" y="161.8" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">0.47</text>
+<text x="507.0" y="272.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">1k-100k</text>
+<text x="507.0" y="287.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">15,031 ids</text>
+<rect x="593.0" y="108.1" width="34.0" height="147.9" rx="2" fill="#C4532F" class="f-coral"><title>100k+: in_norm 0.783</title></rect>
+<text x="610.0" y="103.1" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">0.78</text>
+<rect x="631.0" y="187.1" width="34.0" height="68.9" rx="2" fill="#0E9488" class="f-teal"><title>100k+: out_norm 0.365</title></rect>
+<text x="648.0" y="182.1" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">0.36</text>
+<text x="629.0" y="272.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">100k+</text>
+<text x="629.0" y="287.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">83 ids</text>
+<text x="385.0" y="306.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">occurrences of the id in the held-out split</text>
+</svg>

@@ -1,0 +1,227 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 320" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 26.1 · The loss rewards a leaking mask</title>
+<desc id="d">Two training curves on random ids. The committed model stays at ln 64 = 4.159, the best any honest model can do. The same model with its causal mask removed falls to 0.218 by step 200, because each position can read the id it is asked to predict.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">A model that cheats has the better loss</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">tiny() trained on uniform random ids, where no model can beat ln 64 = 4.159 honestly · book example ch26_silent_failures.py</text>
+<line x1="70.0" y1="262.0" x2="730.0" y2="262.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="266.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0</text>
+<line x1="70.0" y1="220.3" x2="730.0" y2="220.3" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="224.3" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">1</text>
+<line x1="70.0" y1="178.5" x2="730.0" y2="178.5" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="182.5" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">2</text>
+<line x1="70.0" y1="136.8" x2="730.0" y2="136.8" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="140.8" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">3</text>
+<line x1="70.0" y1="95.0" x2="730.0" y2="95.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="99.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">4</text>
+<text x="70.0" y="278.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1</text>
+<text x="235.8" y="278.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">51</text>
+<text x="401.7" y="278.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">101</text>
+<text x="567.5" y="278.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">151</text>
+<text x="730.0" y="278.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">200</text>
+<text x="400.0" y="296.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">training step</text>
+<line x1="70.0" y1="88.4" x2="730.0" y2="88.4" stroke="#17262E" class="f-ink-stroke" stroke-width="1" stroke-dasharray="3 3"/>
+<circle cx="70.0" cy="88.2" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 1: 4.165</title></circle>
+<circle cx="70.0" cy="88.2" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 1: 4.163</title></circle>
+<circle cx="76.6" cy="88.2" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 3: 4.163</title></circle>
+<circle cx="76.6" cy="88.3" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 3: 4.161</title></circle>
+<circle cx="83.3" cy="88.4" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 5: 4.158</title></circle>
+<circle cx="83.3" cy="88.8" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 5: 4.149</title></circle>
+<circle cx="89.9" cy="87.7" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 7: 4.176</title></circle>
+<circle cx="89.9" cy="88.2" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 7: 4.163</title></circle>
+<circle cx="96.5" cy="87.8" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 9: 4.174</title></circle>
+<circle cx="96.5" cy="88.8" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 9: 4.151</title></circle>
+<circle cx="103.2" cy="87.5" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 11: 4.181</title></circle>
+<circle cx="103.2" cy="89.0" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 11: 4.145</title></circle>
+<circle cx="109.8" cy="87.7" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 13: 4.176</title></circle>
+<circle cx="109.8" cy="88.9" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 13: 4.148</title></circle>
+<circle cx="116.4" cy="87.8" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 15: 4.173</title></circle>
+<circle cx="116.4" cy="89.4" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 15: 4.135</title></circle>
+<circle cx="123.1" cy="88.2" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 17: 4.164</title></circle>
+<circle cx="123.1" cy="89.4" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 17: 4.134</title></circle>
+<circle cx="129.7" cy="88.4" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 19: 4.158</title></circle>
+<circle cx="129.7" cy="89.2" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 19: 4.140</title></circle>
+<circle cx="136.3" cy="88.4" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 21: 4.159</title></circle>
+<circle cx="136.3" cy="89.7" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 21: 4.128</title></circle>
+<circle cx="143.0" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 23: 4.163</title></circle>
+<circle cx="143.0" cy="89.3" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 23: 4.138</title></circle>
+<circle cx="149.6" cy="88.4" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 25: 4.159</title></circle>
+<circle cx="149.6" cy="89.4" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 25: 4.136</title></circle>
+<circle cx="156.2" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 27: 4.162</title></circle>
+<circle cx="156.2" cy="89.8" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 27: 4.125</title></circle>
+<circle cx="162.9" cy="87.8" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 29: 4.174</title></circle>
+<circle cx="162.9" cy="90.0" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 29: 4.122</title></circle>
+<circle cx="169.5" cy="88.1" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 31: 4.166</title></circle>
+<circle cx="169.5" cy="89.4" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 31: 4.135</title></circle>
+<circle cx="176.1" cy="88.2" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 33: 4.164</title></circle>
+<circle cx="176.1" cy="89.8" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 33: 4.125</title></circle>
+<circle cx="182.8" cy="88.1" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 35: 4.166</title></circle>
+<circle cx="182.8" cy="90.4" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 35: 4.111</title></circle>
+<circle cx="189.4" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 37: 4.161</title></circle>
+<circle cx="189.4" cy="90.6" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 37: 4.107</title></circle>
+<circle cx="196.0" cy="88.0" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 39: 4.168</title></circle>
+<circle cx="196.0" cy="89.9" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 39: 4.123</title></circle>
+<circle cx="202.7" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 41: 4.162</title></circle>
+<circle cx="202.7" cy="91.1" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 41: 4.095</title></circle>
+<circle cx="209.3" cy="87.9" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 43: 4.170</title></circle>
+<circle cx="209.3" cy="91.4" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 43: 4.086</title></circle>
+<circle cx="215.9" cy="87.9" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 45: 4.170</title></circle>
+<circle cx="215.9" cy="91.8" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 45: 4.078</title></circle>
+<circle cx="222.6" cy="88.6" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 47: 4.155</title></circle>
+<circle cx="222.6" cy="92.8" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 47: 4.053</title></circle>
+<circle cx="229.2" cy="87.9" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 49: 4.170</title></circle>
+<circle cx="229.2" cy="92.7" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 49: 4.056</title></circle>
+<circle cx="235.8" cy="88.5" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 51: 4.158</title></circle>
+<circle cx="235.8" cy="93.4" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 51: 4.039</title></circle>
+<circle cx="242.5" cy="88.0" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 53: 4.169</title></circle>
+<circle cx="242.5" cy="94.3" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 53: 4.017</title></circle>
+<circle cx="249.1" cy="88.1" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 55: 4.166</title></circle>
+<circle cx="249.1" cy="93.3" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 55: 4.043</title></circle>
+<circle cx="255.7" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 57: 4.163</title></circle>
+<circle cx="255.7" cy="96.2" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 57: 3.973</title></circle>
+<circle cx="262.4" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 59: 4.160</title></circle>
+<circle cx="262.4" cy="98.9" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 59: 3.908</title></circle>
+<circle cx="269.0" cy="88.2" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 61: 4.165</title></circle>
+<circle cx="269.0" cy="98.9" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 61: 3.908</title></circle>
+<circle cx="275.6" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 63: 4.162</title></circle>
+<circle cx="275.6" cy="103.1" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 63: 3.808</title></circle>
+<circle cx="282.3" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 65: 4.163</title></circle>
+<circle cx="282.3" cy="101.2" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 65: 3.852</title></circle>
+<circle cx="288.9" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 67: 4.162</title></circle>
+<circle cx="288.9" cy="104.6" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 67: 3.771</title></circle>
+<circle cx="295.5" cy="88.4" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 69: 4.158</title></circle>
+<circle cx="295.5" cy="104.8" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 69: 3.767</title></circle>
+<circle cx="302.2" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 71: 4.162</title></circle>
+<circle cx="302.2" cy="110.9" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 71: 3.621</title></circle>
+<circle cx="308.8" cy="88.5" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 73: 4.158</title></circle>
+<circle cx="308.8" cy="112.2" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 73: 3.590</title></circle>
+<circle cx="315.4" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 75: 4.163</title></circle>
+<circle cx="315.4" cy="117.0" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 75: 3.475</title></circle>
+<circle cx="322.1" cy="88.2" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 77: 4.164</title></circle>
+<circle cx="322.1" cy="116.2" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 77: 3.492</title></circle>
+<circle cx="328.7" cy="88.2" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 79: 4.163</title></circle>
+<circle cx="328.7" cy="120.9" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 79: 3.380</title></circle>
+<circle cx="335.3" cy="88.2" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 81: 4.165</title></circle>
+<circle cx="335.3" cy="123.2" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 81: 3.325</title></circle>
+<circle cx="342.0" cy="88.0" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 83: 4.168</title></circle>
+<circle cx="342.0" cy="129.5" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 83: 3.174</title></circle>
+<circle cx="348.6" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 85: 4.160</title></circle>
+<circle cx="348.6" cy="131.9" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 85: 3.116</title></circle>
+<circle cx="355.2" cy="88.1" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 87: 4.166</title></circle>
+<circle cx="355.2" cy="134.4" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 87: 3.057</title></circle>
+<circle cx="361.9" cy="88.4" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 89: 4.160</title></circle>
+<circle cx="361.9" cy="138.2" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 89: 2.967</title></circle>
+<circle cx="368.5" cy="88.4" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 91: 4.159</title></circle>
+<circle cx="368.5" cy="143.1" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 91: 2.848</title></circle>
+<circle cx="375.1" cy="88.2" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 93: 4.163</title></circle>
+<circle cx="375.1" cy="144.4" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 93: 2.818</title></circle>
+<circle cx="381.8" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 95: 4.161</title></circle>
+<circle cx="381.8" cy="150.7" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 95: 2.667</title></circle>
+<circle cx="388.4" cy="88.2" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 97: 4.163</title></circle>
+<circle cx="388.4" cy="153.9" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 97: 2.589</title></circle>
+<circle cx="395.0" cy="88.1" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 99: 4.166</title></circle>
+<circle cx="395.0" cy="157.8" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 99: 2.496</title></circle>
+<circle cx="401.7" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 101: 4.163</title></circle>
+<circle cx="401.7" cy="161.0" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 101: 2.420</title></circle>
+<circle cx="408.3" cy="88.1" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 103: 4.166</title></circle>
+<circle cx="408.3" cy="165.6" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 103: 2.309</title></circle>
+<circle cx="414.9" cy="88.1" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 105: 4.165</title></circle>
+<circle cx="414.9" cy="165.3" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 105: 2.316</title></circle>
+<circle cx="421.6" cy="88.2" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 107: 4.163</title></circle>
+<circle cx="421.6" cy="171.5" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 107: 2.169</title></circle>
+<circle cx="428.2" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 109: 4.160</title></circle>
+<circle cx="428.2" cy="178.9" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 109: 1.992</title></circle>
+<circle cx="434.8" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 111: 4.161</title></circle>
+<circle cx="434.8" cy="179.9" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 111: 1.966</title></circle>
+<circle cx="441.5" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 113: 4.163</title></circle>
+<circle cx="441.5" cy="187.0" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 113: 1.797</title></circle>
+<circle cx="448.1" cy="88.6" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 115: 4.154</title></circle>
+<circle cx="448.1" cy="193.6" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 115: 1.640</title></circle>
+<circle cx="454.7" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 117: 4.162</title></circle>
+<circle cx="454.7" cy="198.4" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 117: 1.524</title></circle>
+<circle cx="461.4" cy="88.5" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 119: 4.157</title></circle>
+<circle cx="461.4" cy="204.7" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 119: 1.373</title></circle>
+<circle cx="468.0" cy="88.6" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 121: 4.154</title></circle>
+<circle cx="468.0" cy="209.0" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 121: 1.270</title></circle>
+<circle cx="474.6" cy="88.2" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 123: 4.164</title></circle>
+<circle cx="474.6" cy="212.4" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 123: 1.190</title></circle>
+<circle cx="481.3" cy="88.4" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 125: 4.159</title></circle>
+<circle cx="481.3" cy="214.4" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 125: 1.141</title></circle>
+<circle cx="487.9" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 127: 4.161</title></circle>
+<circle cx="487.9" cy="218.9" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 127: 1.032</title></circle>
+<circle cx="494.5" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 129: 4.161</title></circle>
+<circle cx="494.5" cy="219.1" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 129: 1.028</title></circle>
+<circle cx="501.2" cy="88.2" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 131: 4.165</title></circle>
+<circle cx="501.2" cy="222.1" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 131: 0.956</title></circle>
+<circle cx="507.8" cy="88.2" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 133: 4.163</title></circle>
+<circle cx="507.8" cy="224.3" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 133: 0.904</title></circle>
+<circle cx="514.4" cy="88.2" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 135: 4.164</title></circle>
+<circle cx="514.4" cy="228.3" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 135: 0.807</title></circle>
+<circle cx="521.1" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 137: 4.162</title></circle>
+<circle cx="521.1" cy="232.5" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 137: 0.707</title></circle>
+<circle cx="527.7" cy="88.2" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 139: 4.165</title></circle>
+<circle cx="527.7" cy="231.8" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 139: 0.724</title></circle>
+<circle cx="534.3" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 141: 4.162</title></circle>
+<circle cx="534.3" cy="233.1" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 141: 0.693</title></circle>
+<circle cx="541.0" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 143: 4.163</title></circle>
+<circle cx="541.0" cy="237.8" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 143: 0.580</title></circle>
+<circle cx="547.6" cy="88.2" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 145: 4.164</title></circle>
+<circle cx="547.6" cy="239.4" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 145: 0.543</title></circle>
+<circle cx="554.2" cy="88.4" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 147: 4.160</title></circle>
+<circle cx="554.2" cy="239.7" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 147: 0.535</title></circle>
+<circle cx="560.9" cy="88.6" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 149: 4.155</title></circle>
+<circle cx="560.9" cy="240.8" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 149: 0.509</title></circle>
+<circle cx="567.5" cy="88.5" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 151: 4.157</title></circle>
+<circle cx="567.5" cy="241.6" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 151: 0.488</title></circle>
+<circle cx="574.1" cy="88.2" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 153: 4.163</title></circle>
+<circle cx="574.1" cy="243.3" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 153: 0.447</title></circle>
+<circle cx="580.8" cy="88.4" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 155: 4.160</title></circle>
+<circle cx="580.8" cy="244.0" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 155: 0.431</title></circle>
+<circle cx="587.4" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 157: 4.162</title></circle>
+<circle cx="587.4" cy="245.4" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 157: 0.399</title></circle>
+<circle cx="594.0" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 159: 4.163</title></circle>
+<circle cx="594.0" cy="245.9" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 159: 0.385</title></circle>
+<circle cx="600.7" cy="88.4" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 161: 4.159</title></circle>
+<circle cx="600.7" cy="244.6" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 161: 0.416</title></circle>
+<circle cx="607.3" cy="88.2" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 163: 4.164</title></circle>
+<circle cx="607.3" cy="247.3" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 163: 0.352</title></circle>
+<circle cx="613.9" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 165: 4.162</title></circle>
+<circle cx="613.9" cy="246.4" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 165: 0.374</title></circle>
+<circle cx="620.6" cy="88.2" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 167: 4.164</title></circle>
+<circle cx="620.6" cy="246.3" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 167: 0.377</title></circle>
+<circle cx="627.2" cy="88.4" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 169: 4.160</title></circle>
+<circle cx="627.2" cy="245.4" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 169: 0.399</title></circle>
+<circle cx="633.8" cy="88.5" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 171: 4.158</title></circle>
+<circle cx="633.8" cy="249.5" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 171: 0.301</title></circle>
+<circle cx="640.5" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 173: 4.162</title></circle>
+<circle cx="640.5" cy="247.2" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 173: 0.355</title></circle>
+<circle cx="647.1" cy="88.4" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 175: 4.158</title></circle>
+<circle cx="647.1" cy="248.7" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 175: 0.319</title></circle>
+<circle cx="653.7" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 177: 4.161</title></circle>
+<circle cx="653.7" cy="249.8" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 177: 0.293</title></circle>
+<circle cx="660.4" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 179: 4.162</title></circle>
+<circle cx="660.4" cy="248.6" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 179: 0.322</title></circle>
+<circle cx="667.0" cy="88.5" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 181: 4.156</title></circle>
+<circle cx="667.0" cy="249.9" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 181: 0.289</title></circle>
+<circle cx="673.6" cy="88.4" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 183: 4.159</title></circle>
+<circle cx="673.6" cy="252.0" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 183: 0.241</title></circle>
+<circle cx="680.3" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 185: 4.163</title></circle>
+<circle cx="680.3" cy="250.5" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 185: 0.276</title></circle>
+<circle cx="686.9" cy="88.6" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 187: 4.154</title></circle>
+<circle cx="686.9" cy="251.6" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 187: 0.249</title></circle>
+<circle cx="693.5" cy="88.5" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 189: 4.157</title></circle>
+<circle cx="693.5" cy="251.2" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 189: 0.259</title></circle>
+<circle cx="700.2" cy="88.3" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 191: 4.160</title></circle>
+<circle cx="700.2" cy="251.6" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 191: 0.250</title></circle>
+<circle cx="706.8" cy="88.5" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 193: 4.156</title></circle>
+<circle cx="706.8" cy="251.1" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 193: 0.262</title></circle>
+<circle cx="713.4" cy="88.4" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 195: 4.160</title></circle>
+<circle cx="713.4" cy="251.6" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 195: 0.250</title></circle>
+<circle cx="720.1" cy="88.4" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 197: 4.159</title></circle>
+<circle cx="720.1" cy="252.1" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 197: 0.236</title></circle>
+<circle cx="726.7" cy="88.1" r="2.6" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>as committed, step 199: 4.166</title></circle>
+<circle cx="726.7" cy="252.9" r="2.6" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>causal mask removed, step 199: 0.218</title></circle>
+<text x="730.0" y="80.4" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">as committed: stays at ln V</text>
+<text x="96.5" y="195.2" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">mask removed: each position reads</text>
+<text x="96.5" y="211.2" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">the id it must predict, and &quot;learns&quot;</text>
+</svg>

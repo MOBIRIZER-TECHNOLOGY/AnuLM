@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 336" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 14.1 · A rotation by position</title>
+<desc id="d">Two panels. At positions 0 to 2 and at positions 5 to 7, bit&#x27;s query and dog&#x27;s key point in different directions, but the angle between them is the same, so their dot product is 3.844 in both.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">RoPE on the toy: bit&#x27;s query and dog&#x27;s key, turned by their positions</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">D_h = 2, one pair turning 1 radian per position · illustrative · the score is the same in both panels</text>
+<line x1="80.0" y1="225.0" x2="300.0" y2="225.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<line x1="190.0" y1="125.0" x2="190.0" y2="295.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="40.0" y="82.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">positions 0–2</text>
+<text x="40.0" y="98.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">bit at 2, dog at 1: q·k = 3.844</text>
+<line x1="190" y1="225" x2="100.6" y2="221.9" stroke="#C4532F" stroke-width="3"><title>q bit: [-2.235, 0.077]</title></line>
+<circle cx="100.6" cy="221.9" r="4" fill="#C4532F" class="f-coral"/>
+<text x="92.6" y="215.9" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">q bit</text>
+<line x1="190" y1="225" x2="122.7" y2="181.8" stroke="#0E9488" stroke-width="3"><title>k dog: [-1.683, 1.081]</title></line>
+<circle cx="122.7" cy="181.8" r="4" fill="#0E9488" class="f-teal"/>
+<text x="114.7" y="175.8" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">k dog</text>
+<line x1="460.0" y1="225.0" x2="680.0" y2="225.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<line x1="570.0" y1="125.0" x2="570.0" y2="295.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="420.0" y="82.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">positions 5–7</text>
+<text x="420.0" y="98.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">bit at 7, dog at 6: q·k = 3.844</text>
+<line x1="570" y1="225" x2="547.6" y2="138.4" stroke="#C4532F" stroke-width="3"><title>q bit: [-0.560, 2.165]</title></line>
+<circle cx="547.6" cy="138.4" r="4" fill="#C4532F" class="f-coral"/>
+<text x="539.6" y="132.4" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">q bit</text>
+<line x1="570" y1="225" x2="592.4" y2="148.2" stroke="#0E9488" stroke-width="3"><title>k dog: [0.559, 1.920]</title></line>
+<circle cx="592.4" cy="148.2" r="4" fill="#0E9488" class="f-teal"/>
+<text x="600.4" y="142.2" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">k dog</text>
+<text x="20.0" y="322.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">Shifting both positions by 5 turns both vectors by 5 radians; the angle between them, and so their dot product, stays.</text>
+</svg>

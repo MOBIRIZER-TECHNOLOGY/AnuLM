@@ -1,5 +1,7 @@
 # Model card: AnuLM-Omni-400M
 
+Current companion update (2 November 2026): see [current status](CURRENT_STATUS.md) and [language coverage](LANGUAGE_SUPPORT.md). Historical model cards, experiment numbers and commands below must not be presented as measurements of the completed India research run.
+
 One model for everything the AnuLM demo does: chat, answering from passages,
 routing a message to an intent, English and Hindi speech recognition,
 describing a photo and answering a question about it. One 456M decoder
@@ -91,8 +93,8 @@ on, for Hindi and English. It runs on one consumer GPU, and on a CPU.
 
 ```bash
 git clone https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM && cd AnuLM
-python omni_data.py fetch all        # text and speech, from each primary source
-python omni_images.py fetch          # photos, captions, VQA (~26 GB)
+python -m anulm.multimodal.omni_data fetch all        # text and speech, from each primary source
+python -m anulm.multimodal.omni_images fetch          # photos, captions, VQA (~26 GB)
 python experiments/omni_one.py       # chat model, joint training, evaluation, export
 ```
 

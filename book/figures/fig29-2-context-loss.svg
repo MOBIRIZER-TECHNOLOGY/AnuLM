@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 360" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 29.2 · Loss by position past the training length</title>
+<desc id="d">With plain RoPE the loss rises past position 1,024, to 5.23 in the last quarter at 2,048 and 6.27 at 4,096; with YaRN it stays between 3.07 and 3.33, mean 3.170 at 4,096.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Loss by position, released model, no retraining</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">nats per token, each point a quarter of a window · 16 held-out windows · bf16 · measured</text>
+<line x1="80.0" y1="278.9" x2="580.0" y2="278.9" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="282.9" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">3</text>
+<line x1="80.0" y1="223.7" x2="580.0" y2="223.7" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="227.7" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">4</text>
+<line x1="80.0" y1="168.4" x2="580.0" y2="168.4" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="172.4" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">5</text>
+<line x1="80.0" y1="113.2" x2="580.0" y2="113.2" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="117.2" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">6</text>
+<text x="80.0" y="306.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<text x="205.0" y="306.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1,024</text>
+<text x="330.0" y="306.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">2,048</text>
+<text x="455.0" y="306.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3,072</text>
+<text x="580.0" y="306.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">4,096</text>
+<text x="330.0" y="324.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">position in the window</text>
+<line x1="205.0" y1="74.0" x2="205.0" y2="290.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.2" stroke-dasharray="4 3"/>
+<text x="211.0" y="82.0" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">trained length</text>
+<polyline points="95.6,256.2 126.9,266.4 158.1,276.9 189.4,271.8" fill="none" stroke="#56676C" stroke-width="2"/>
+<circle cx="95.6" cy="256.2" r="4" fill="#56676C" stroke="#FFFFFF" stroke-width="1.5" class="f-ring"><title>1,024 as trained, quarter 1: 3.411</title></circle>
+<circle cx="126.9" cy="266.4" r="4" fill="#56676C" stroke="#FFFFFF" stroke-width="1.5" class="f-ring"><title>1,024 as trained, quarter 2: 3.228</title></circle>
+<circle cx="158.1" cy="276.9" r="4" fill="#56676C" stroke="#FFFFFF" stroke-width="1.5" class="f-ring"><title>1,024 as trained, quarter 3: 3.037</title></circle>
+<circle cx="189.4" cy="271.8" r="4" fill="#56676C" stroke="#FFFFFF" stroke-width="1.5" class="f-ring"><title>1,024 as trained, quarter 4: 3.129</title></circle>
+<line x1="600.0" y1="90.0" x2="626.0" y2="90.0" stroke="#56676C" class="" stroke-width="2"/>
+<text x="632.0" y="94.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">1,024 as trained</text>
+<polyline points="111.2,261.3 173.8,274.4 236.2,230.0 298.8,155.8" fill="none" stroke="#C4532F" stroke-width="2" stroke-dasharray="5 4"/>
+<circle cx="111.2" cy="261.3" r="4" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-ring"><title>2,048 plain RoPE, quarter 1: 3.319</title></circle>
+<circle cx="173.8" cy="274.4" r="4" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-ring"><title>2,048 plain RoPE, quarter 2: 3.083</title></circle>
+<circle cx="236.2" cy="230.0" r="4" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-ring"><title>2,048 plain RoPE, quarter 3: 3.886</title></circle>
+<circle cx="298.8" cy="155.8" r="4" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-ring"><title>2,048 plain RoPE, quarter 4: 5.229</title></circle>
+<line x1="600.0" y1="112.0" x2="626.0" y2="112.0" stroke="#C4532F" class="" stroke-width="2" stroke-dasharray="5 4"/>
+<text x="632.0" y="116.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">2,048 plain RoPE</text>
+<polyline points="111.2,260.7 173.8,273.7 236.2,275.3 298.8,272.1" fill="none" stroke="#0E9488" stroke-width="2" stroke-dasharray="5 4"/>
+<circle cx="111.2" cy="260.7" r="4" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-ring"><title>2,048 YaRN ×2, quarter 1: 3.331</title></circle>
+<circle cx="173.8" cy="273.7" r="4" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-ring"><title>2,048 YaRN ×2, quarter 2: 3.095</title></circle>
+<circle cx="236.2" cy="275.3" r="4" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-ring"><title>2,048 YaRN ×2, quarter 3: 3.066</title></circle>
+<circle cx="298.8" cy="272.1" r="4" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-ring"><title>2,048 YaRN ×2, quarter 4: 3.125</title></circle>
+<line x1="600.0" y1="134.0" x2="626.0" y2="134.0" stroke="#0E9488" class="" stroke-width="2" stroke-dasharray="5 4"/>
+<text x="632.0" y="138.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">2,048 YaRN ×2</text>
+<polyline points="142.5,267.8 267.5,192.8 392.5,124.1 517.5,98.1" fill="none" stroke="#C4532F" stroke-width="2"/>
+<circle cx="142.5" cy="267.8" r="4" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-ring"><title>4,096 plain RoPE, quarter 1: 3.201</title></circle>
+<circle cx="267.5" cy="192.8" r="4" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-ring"><title>4,096 plain RoPE, quarter 2: 4.559</title></circle>
+<circle cx="392.5" cy="124.1" r="4" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-ring"><title>4,096 plain RoPE, quarter 3: 5.802</title></circle>
+<circle cx="517.5" cy="98.1" r="4" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.5" class="f-ring"><title>4,096 plain RoPE, quarter 4: 6.272</title></circle>
+<line x1="600.0" y1="156.0" x2="626.0" y2="156.0" stroke="#C4532F" class="" stroke-width="2"/>
+<text x="632.0" y="160.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">4,096 plain RoPE</text>
+<polyline points="142.5,265.6 267.5,271.9 392.5,272.7 517.5,267.9" fill="none" stroke="#0E9488" stroke-width="2"/>
+<circle cx="142.5" cy="265.6" r="4" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-ring"><title>4,096 YaRN ×4, quarter 1: 3.241</title></circle>
+<circle cx="267.5" cy="271.9" r="4" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-ring"><title>4,096 YaRN ×4, quarter 2: 3.128</title></circle>
+<circle cx="392.5" cy="272.7" r="4" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-ring"><title>4,096 YaRN ×4, quarter 3: 3.113</title></circle>
+<circle cx="517.5" cy="267.9" r="4" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.5" class="f-ring"><title>4,096 YaRN ×4, quarter 4: 3.200</title></circle>
+<line x1="600.0" y1="178.0" x2="626.0" y2="178.0" stroke="#0E9488" class="" stroke-width="2"/>
+<text x="632.0" y="182.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">4,096 YaRN ×4</text>
+</svg>
