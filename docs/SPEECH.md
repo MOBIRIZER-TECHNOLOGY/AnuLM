@@ -1,6 +1,6 @@
 # Speech
 
-Current companion update (2 November 2026): see [current status](CURRENT_STATUS.md) and [language coverage](LANGUAGE_SUPPORT.md). Historical model cards, experiment numbers and commands below must not be presented as measurements of the active India run.
+Current companion update (2 November 2026): see [current status](CURRENT_STATUS.md) and [language coverage](LANGUAGE_SUPPORT.md). Historical model cards, experiment numbers and commands below must not be presented as measurements of the completed India research run.
 
 How AnuLM is being taught to listen and to talk, what is built, what is
 measured, and what is still only a plan. Numbers here were measured on the
