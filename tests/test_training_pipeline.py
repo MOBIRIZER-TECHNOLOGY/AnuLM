@@ -290,5 +290,58 @@ class PreflightTests(unittest.TestCase):
             train.real_data_preflight(BadModel(), torch.arange(20, dtype=torch.int16), args)
 
 
+class MakeChatSafetyTests(unittest.TestCase):
+    """make_chat once had no argument parser: `--help` rebuilt data/chat_*.jsonl
+    and, with local sources absent, replaced the 23,022-row release set with a
+    4,781-row one without a word."""
+
+    def setUp(self):
+        from anulm.data import make_chat
+        self.mc = make_chat
+        self.tmp = Path(tempfile.mkdtemp())
+        (self.tmp / "dolly_train.jsonl").write_text(
+            "".join(json.dumps({"question": f"q{i}", "answer": f"a{i}", "lang": "en"}) + "\n" for i in range(400)),
+            encoding="utf-8")
+        (self.tmp / "qa_lora.jsonl").write_text(json.dumps({"question": "क्या?", "answer": "हाँ"}) + "\n",
+                                                encoding="utf-8")
+        self.patches = [patch.object(make_chat, "DATA", self.tmp),
+                        patch.object(make_chat, "oasst2", lambda: []),
+                        patch.object(make_chat, "aya_hindi", lambda: [])]
+        for p in self.patches:
+            p.start()
+
+    def tearDown(self):
+        for p in self.patches:
+            p.stop()
+
+    def test_help_writes_nothing(self):
+        with self.assertRaises(SystemExit) as cm, patch("sys.stdout"):
+            self.mc.main(["--help"])
+        self.assertEqual(cm.exception.code, 0)
+        self.assertFalse((self.tmp / "chat_train.jsonl").exists())
+
+    def test_existing_output_needs_force(self):
+        out = self.tmp / "out"
+        with patch("builtins.print"):
+            self.mc.main(["--out-dir", str(out)])
+        built = (out / "chat_train.jsonl").read_bytes()
+        self.assertEqual(len((out / "chat_heldout.jsonl").read_text(encoding="utf-8").splitlines()), 300)
+        (out / "chat_train.jsonl").write_text("keep me\n", encoding="utf-8")
+        with self.assertRaises(SystemExit) as cm:
+            self.mc.main(["--out-dir", str(out)])
+        self.assertIn("--force", str(cm.exception.code))
+        self.assertEqual((out / "chat_train.jsonl").read_text(encoding="utf-8"), "keep me\n")
+        with patch("builtins.print"):
+            self.mc.main(["--out-dir", str(out), "--force"])
+        self.assertEqual((out / "chat_train.jsonl").read_bytes(), built)
+
+    def test_missing_local_source_fails_instead_of_shrinking_the_set(self):
+        (self.tmp / "qa_lora.jsonl").unlink()
+        with self.assertRaises(SystemExit) as cm:
+            self.mc.main(["--out-dir", str(self.tmp / "out")])
+        self.assertIn("qa_lora.jsonl", str(cm.exception.code))
+        self.assertFalse((self.tmp / "out").exists())
+
+
 if __name__ == "__main__":
     unittest.main()

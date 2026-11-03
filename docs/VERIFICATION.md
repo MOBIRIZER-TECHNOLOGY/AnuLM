@@ -10,7 +10,7 @@ From the repository root (or after `pip install -e .`, from anywhere):
 
 ```bash
 python -m tests.test_model                                                   # 76 tests, ~2 min CPU
-python -m unittest tests.test_training_pipeline tests.test_multimodal_contracts   # 39 tests, seconds
+python -m unittest tests.test_training_pipeline tests.test_multimodal_contracts   # 42 tests, seconds
 python -m tools.smoke                                                        # 11 end-to-end steps, ~1-2 min CPU
 ```
 
@@ -41,7 +41,7 @@ Windows 11, Python 3.14.7, torch 2.11 (CUDA build, run on CPU), transformers 5.1
 | check | result |
 | --- | --- |
 | `tests.test_model` | 76 passed, 0 failed |
-| `tests.test_training_pipeline`, `tests.test_multimodal_contracts` | 39 passed |
+| `tests.test_training_pipeline`, `tests.test_multimodal_contracts` | 42 passed |
 | `tools.smoke` | 11 of 11 steps passed |
 | every `python -m anulm` command with `--help` | 58 of 61 run; see "Known issues" for the three |
 | restructure regression | a 50-step training run before and after the move into `anulm/`: identical loss and router imbalance at every step, val 2.7870 both |
@@ -110,3 +110,8 @@ Found while documenting and reviewing; none is caused by the restructure.
   `finetune` raised a traceback when its default held-out file was absent.
 - `fetch_speech` checked tar members with a string prefix (a sibling folder
   passed) and did not refuse links; it now compares paths and refuses links.
+- `make_chat` had no argument parser: `make_chat --help` rebuilt
+  `data/chat_*.jsonl`, and with `data/dolly_train.jsonl` or `data/qa_lora.jsonl`
+  absent it silently built a 4,781-row set in place of the 23,022-row release
+  set. It now has `--help`, refuses to overwrite without `--force`, and fails
+  when a local source is missing; `omni_data fetch chat` passes `--force`.

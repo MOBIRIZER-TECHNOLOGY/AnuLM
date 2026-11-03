@@ -1,7 +1,14 @@
 """
 Instruction-tuning set for the chat model (finetune.py's {question, answer, lang}).
 
-    python -m anulm make_chat        # -> data/chat_train.jsonl, data/chat_heldout.jsonl
+    python -m anulm make_chat            # -> data/chat_train.jsonl, data/chat_heldout.jsonl
+    python -m anulm make_chat --force    # ... replacing files that already exist
+
+It refuses to overwrite existing output without --force (the release chat set,
+23,022 rows, is not cheap to rebuild), and refuses to run when a local source
+file is missing (data/dolly_train.jsonl, data/qa_lora.jsonl) rather than
+silently building a smaller set without it; `python -m anulm omni_data fetch
+chat` makes both.
 
 Sources, all Apache 2.0 or CC BY-SA, all human-written:
   * databricks-dolly-15k        English instructions (data/dolly_train.jsonl)
@@ -19,6 +26,7 @@ held out.
 
 from __future__ import annotations
 
+import argparse
 import gzip
 import json
 import random
@@ -103,11 +111,25 @@ def hindi_wiki_qa(n: int, rng) -> list[dict]:
             for r in rows[:n]]
 
 
-def main():
+LOCAL_SOURCES = {"dolly_train.jsonl": "Dolly (English)", "qa_lora.jsonl": "Hindi Wikipedia QA"}
+
+
+def main(argv: list[str] | None = None) -> None:
     """Build the chat set: gather every source, repeat the identity pairs 20
     times, drop empty pairs and answers over MAX_ANSWER characters, shuffle,
-    hold out 300 non-identity pairs, and write data/chat_train.jsonl and
-    data/chat_heldout.jsonl."""
+    hold out 300 non-identity pairs, and write chat_train.jsonl and
+    chat_heldout.jsonl into --out-dir (default data/)."""
+    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--out-dir", type=Path, default=DATA, help="where to write the two files (default: data/)")
+    p.add_argument("--force", action="store_true", help="overwrite chat_train.jsonl / chat_heldout.jsonl if they exist")
+    args = p.parse_args(argv)
+    outs = [args.out_dir / f"{name}.jsonl" for name in ("chat_train", "chat_heldout")]
+    existing = [str(o) for o in outs if o.exists()]
+    if existing and not args.force:
+        raise SystemExit(f"refusing to overwrite {', '.join(existing)}; pass --force to rebuild them")
+    missing = [f"data/{f} ({what})" for f, what in LOCAL_SOURCES.items() if not (DATA / f).exists()]
+    if missing:
+        raise SystemExit(f"missing source {', '.join(missing)}; `python -m anulm omni_data fetch chat` builds them")
     rng = random.Random(0)
     parts = {"dolly": [{**r, "source": "dolly"} for r in dolly()], "oasst2": oasst2(), "aya_hi": aya_hindi(),
              "hi_wiki_qa": hindi_wiki_qa(4000, rng)}
@@ -123,8 +145,9 @@ def main():
     held = [r for r in rows if r["source"] != "identity"][:300]
     held_ids = {id(r) for r in held}
     train = [r for r in rows if id(r) not in held_ids]
-    for name, rs in (("chat_train", train), ("chat_heldout", held)):
-        with open(DATA / f"{name}.jsonl", "w", encoding="utf-8") as f:
+    args.out_dir.mkdir(parents=True, exist_ok=True)
+    for out, rs in zip(outs, (train, held)):
+        with open(out, "w", encoding="utf-8") as f:
             for r in rs:
                 f.write(json.dumps({"question": r["question"], "answer": r["answer"], "lang": r["lang"]},
                                    ensure_ascii=False) + "\n")

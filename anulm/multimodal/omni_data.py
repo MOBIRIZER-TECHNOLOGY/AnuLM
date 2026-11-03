@@ -273,7 +273,7 @@ def chat() -> None:
         python -m anulm fetch_hindi --mb 300 --keep-prob 0.3 --out data/hindi_ctx.txt
         python -m anulm make_qa --data data/hindi_ctx.txt --out data/qa_lora.jsonl \\
                           --heldout data/qa_lora_heldout.jsonl
-        python -m anulm make_chat
+        python -m anulm make_chat --force
     """
     tr, he = DATA / "dolly_train.jsonl", DATA / "dolly_heldout.jsonl"
     if not (tr.exists() and he.exists()):
@@ -286,7 +286,7 @@ def chat() -> None:
             run("fetch_hindi.py", "--mb", "300", "--keep-prob", "0.3", "--out", "data/hindi_ctx.txt")
         run("make_qa.py", "--data", "data/hindi_ctx.txt", "--out", "data/qa_lora.jsonl",
             "--heldout", "data/qa_lora_heldout.jsonl")
-    run("make_chat.py")
+    run("make_chat.py", "--force")
 
 
 # --------------------------------------------------------------------- 2. read
