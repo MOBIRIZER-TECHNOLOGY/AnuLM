@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 import os  # noqa: E402
 
@@ -21,7 +21,10 @@ QUESTIONS = [
     "ताजमहल के बारे में बताइए।",
     "बारिश के मौसम पर एक छोटी कविता लिखिए।",
 ]
-for name, path in (("OLD QA model", "release/AnuLM-Hindi-QA-400M"), ("NEW chat model (v2 base)", "ckpt_chat_v2.pt")):
+PAIRS = (("OLD QA model", "release/AnuLM-Hindi-QA-400M"), ("NEW chat model (v2 base)", "ckpt_chat_v2.pt"))
+if len(sys.argv) == 3:  # chat_samples.py OLD NEW
+    PAIRS = (("OLD " + sys.argv[1], sys.argv[1]), ("NEW " + sys.argv[2], sys.argv[2]))
+for name, path in PAIRS:
     if not (ROOT / path).exists():
         print(f"{name}: {path} missing")
         continue

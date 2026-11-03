@@ -51,7 +51,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from anulm.multimodal.audio_codec import ASR_RATE, WhisperEncoder, read_wav
+from .audio_codec import ASR_RATE, WhisperEncoder, audio_chunks, read_wav
 
 STACK = 4                      # 50 Hz -> 12.5 Hz
 MAX_AUDIO_FRAMES = 400         # 400 stacked frames = 32 s, well inside 2048
@@ -103,7 +103,8 @@ class ContinuousSpeech(nn.Module):
         self.vocab = vocab
         self.proj = AudioProjector(in_dim, model.cfg.hidden_size, stack)
 
-    def build(self, states: torch.Tensor, text_ids: list[int], answer_ids: list[int]):
+    def build(self, states: torch.Tensor, text_ids: list[int], answer_ids: list[int],
+              example: str | None = None, task: str | None = None):
         """One example -> (embeds, targets).
 
         Layout mirrors the discrete ASR pair exactly, so the two runs differ in
@@ -118,6 +119,14 @@ class ContinuousSpeech(nn.Module):
         mid = emb(torch.tensor([self.vocab.text_bos], device=dev))
         ans = emb(torch.tensor(answer_ids, device=dev))
         embeds = torch.cat([pre, audio, mid, ans], dim=0)
+        limit = self.model.cfg.block_size
+        if embeds.shape[0] > limit:
+            prefix = f"{task}: " if task else ""
+            name = f" {example!r}" if example is not None else ""
+            raise ValueError(
+                f"{prefix}ASR example{name} builds {embeds.shape[0]} positions "
+                f"(audio, markers, and answer), exceeding model block_size {limit}. "
+                "Shorten the clip or transcript, or use a model with a larger context.")
         # -1 everywhere the loss must not look: the prompt, and the audio that
         # has no id to predict in the first place.
         targets = torch.full((embeds.shape[0],), -1, dtype=torch.long, device=dev)
@@ -127,9 +136,18 @@ class ContinuousSpeech(nn.Module):
 
 
 def load_manifest(prefix: str) -> list[dict]:
+    manifest = Path(prefix).with_suffix(".jsonl")
     rows = [json.loads(l) for l in
-            Path(prefix).with_suffix(".jsonl").read_text(encoding="utf-8").splitlines()
+            manifest.read_text(encoding="utf-8").splitlines()
             if l.strip()]
+    for row in rows:
+        audio = Path(row["audio"]) if row.get("audio") else None
+        if audio is not None and not audio.is_absolute():
+            # New portable manifests resolve beside the manifest. Preserve
+            # older repo-relative paths when no manifest-relative file exists.
+            beside = manifest.parent / audio
+            if beside.is_file():
+                row["audio"] = str(beside.resolve())
     missing = [r for r in rows if not r.get("audio") or not Path(r["audio"]).exists()]
     if missing:
         raise SystemExit(
@@ -140,7 +158,7 @@ def load_manifest(prefix: str) -> list[dict]:
 
 
 def batches(rows, enc: WhisperEncoder, tok, sm: ContinuousSpeech, device: str,
-            batch_size: int, shuffle: bool = True, seed: int = 0):
+            batch_size: int, shuffle: bool = True, seed: int = 0, task: str | None = None):
     """Pad-to-longest batches of (embeds, targets). Whisper runs per clip and
     is the slow part; it is frozen, so its output could be cached per epoch if
     a run ever becomes encoder-bound."""
@@ -157,7 +175,7 @@ def batches(rows, enc: WhisperEncoder, tok, sm: ContinuousSpeech, device: str,
             if states.shape[0] // sm.proj.stack > MAX_AUDIO_FRAMES:
                 continue
             answer = tok.encode(" " + r["text"].strip()) + [tok.eos_id]
-            built.append(sm.build(states, [], answer))
+            built.append(sm.build(states, [], answer, example=r["audio"], task=task))
         if not built:
             continue
         S = max(e.shape[0] for e, _ in built)
@@ -175,7 +193,7 @@ def train(args) -> None:
 
     from anulm.hf_tok import load_tokenizer
     from anulm.model import AnuLM, fit_memory, load_checkpoint
-    from anulm.multimodal.speech_vocab import vocab_of
+    from .speech_vocab import vocab_of
     from anulm.training.train import atomic_save
 
     dev = args.device
@@ -300,7 +318,7 @@ def load_trained(ckpt: str, device: str):
 
     from anulm.hf_tok import load_tokenizer
     from anulm.model import AnuLM, load_checkpoint
-    from anulm.multimodal.speech_vocab import vocab_of
+    from .speech_vocab import vocab_of
     ck = load_checkpoint(ckpt, device)
     if "proj" not in ck:
         raise SystemExit(f"{ckpt} has no projector; it is a discrete-path checkpoint")
@@ -327,23 +345,32 @@ def transcribe(sm, enc, tok, wav_path: str, max_tokens: int = 64, device: str = 
     word is an insertion, so an unguarded WER measures looping as much as
     listening. n=3 is the usual choice for transcripts: real speech rarely
     repeats a trigram inside one utterance.
+
+    Recordings longer than Whisper's 30-second window are transcribed in
+    independent chunks and joined in order; short clips follow the same single
+    decode as before.
     """
     # A path from a file, or 16 kHz samples straight from a microphone.
     audio = read_wav(wav_path, ASR_RATE) if isinstance(wav_path, (str, Path)) else wav_path
-    # In the projector's dtype, so a model cast to bf16 for serving works too.
-    states = torch.from_numpy(enc.encode(audio)).to(device, next(sm.proj.parameters()).dtype)
     emb = sm.model.embed_tokens
-    audio = sm.proj(states[None])[0]
-    prefix = torch.cat([
-        emb(torch.tensor([sm.vocab.speech_bos], device=device)), audio,
-        emb(torch.tensor([sm.vocab.text_bos], device=device))], dim=0)
     autocast = (torch.autocast("cuda", dtype=torch.bfloat16)
                 if device.startswith("cuda") else torch.autocast("cpu", enabled=False))
-    with autocast:
-        out = sm.model.decode_from_embeds(
-            prefix, max_tokens, stop=lambda t: t == tok.eos_id or t >= sm.vocab.text,
-            no_repeat_ngram=no_repeat_ngram, use_cache=use_cache)
-    return tok.decode(out).strip().split("\n")[0]
+    texts = []
+    for chunk in audio_chunks(audio):
+        # In the projector's dtype, so a model cast to bf16 for serving works too.
+        states = torch.from_numpy(enc.encode(chunk)).to(device, next(sm.proj.parameters()).dtype)
+        projected = sm.proj(states[None])[0]
+        prefix = torch.cat([
+            emb(torch.tensor([sm.vocab.speech_bos], device=device)), projected,
+            emb(torch.tensor([sm.vocab.text_bos], device=device))], dim=0)
+        with autocast:
+            out = sm.model.decode_from_embeds(
+                prefix, max_tokens, stop=lambda t: t == tok.eos_id or t >= sm.vocab.text,
+                no_repeat_ngram=no_repeat_ngram, use_cache=use_cache)
+        text = tok.decode(out).strip().split("\n")[0]
+        if text:
+            texts.append(text)
+    return " ".join(texts)
 
 
 def main() -> None:

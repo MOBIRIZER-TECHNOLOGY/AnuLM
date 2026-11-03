@@ -66,17 +66,24 @@ On Windows, `experiments\run_omni_one.cmd` starts it detached. It runs, in order
 3. grows its vocabulary with the audio and image ids (`speech_vocab.py`)
 4. waits for the GPU to be free
 5. measures the chat model it starts from, as the baseline
-6. **trains the one model**: 100,000 steps of seven tasks drawn at random,
-   about 9-10 hours on the GPU above; the first run also caches the image
-   features (~15 minutes)
+6. **trains the one model**: 12,500 optimizer steps, each summing 8 batches
+   drawn at random from the seven tasks (100,000 batches), about 19 hours on
+   the GPU above; the first run also caches the image features (~15 minutes).
+   One batch per step was tried first and drifted the shared decoder: an
+   intent or image-question batch is ~30 answer tokens, too few to steer a
+   full optimizer step, and chat held-out loss went 3.27 -> 5.39
 7. evaluates every task (about 1.5 hours)
 8. writes `logs/omni_one/REPORT.md`: every number beside the model it
    replaced, and whether each release gate passed
 9. exports `release/AnuLM-Omni-400M` (safetensors, config, tokenizer, card)
+10. repeats the full evaluation on that exported bf16 folder; publishing is
+    allowed only when these exported-model results pass every release gate
 
 **If anything stops it** -- a reboot, a crash, a full disk -- fix the cause
 and run the same command. Finished steps are skipped and training resumes
-from its last save (every 10,000 steps, about 50 minutes of work at most).
+from its last save (every 625 steps, about 50 minutes of work at most).
+If the training recipe changes, previous outputs are preserved under
+`logs/omni_one/archive/` and the changed recipe starts fresh.
 `logs/omni_one/pipeline.log` says what happened; each step has its own log
 beside it.
 

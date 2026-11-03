@@ -342,7 +342,7 @@ def librispeech_rows(split_dir: Path) -> tuple[list[dict], int]:
     original kept 28,538 of 28,539). Chapters in HELD_CHAPTERS order, then
     sorted; utterances in transcript order."""
     import soundfile as sf
-    from anulm.multimodal.speech_data import MAX_SECONDS, MIN_SECONDS
+    from .speech_data import MAX_SECONDS, MIN_SECONDS
     chapters = {t.name[: -len(".trans.txt")]: t for t in split_dir.rglob("*.trans.txt")}
     rest = sorted((c for c in chapters if c not in HELD_CHAPTERS), key=lambda c: tuple(map(int, c.split("-"))))
     rows, skipped = [], 0

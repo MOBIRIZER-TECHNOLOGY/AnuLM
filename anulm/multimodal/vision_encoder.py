@@ -40,8 +40,10 @@ synthetic image, and that is a different claim.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
+import os
 import sys
 import time
 from pathlib import Path
@@ -73,7 +75,14 @@ class VisionTower:
         import timm
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         # num_classes=0 drops the head; this returns patch tokens, not a logit.
-        self.model = timm.create_model(name, pretrained=True, num_classes=0).eval().to(self.device)
+        local = Path(name)
+        if local.is_dir():
+            metadata = json.loads((local / "config.json").read_text(encoding="utf-8"))
+            self.model = timm.create_model(metadata["architecture"], pretrained=True, num_classes=0,
+                pretrained_cfg_overlay={**metadata["pretrained_cfg"],
+                    "source": "", "file": str(local / "model.safetensors")}).eval().to(self.device)
+        else:
+            self.model = timm.create_model(name, pretrained=True, num_classes=0).eval().to(self.device)
         for p in self.model.parameters():
             p.requires_grad_(False)
         cfg = timm.data.resolve_model_data_config(self.model)
@@ -142,7 +151,8 @@ class VisionLanguage(nn.Module):
         self.proj = ImageProjector(in_dim, model.cfg.hidden_size, pool)
 
     def build(self, patches: torch.Tensor, answer_ids: list[int],
-              prompt_ids: list[int] | None = None):
+              prompt_ids: list[int] | None = None, example: str | None = None,
+              task: str | None = None):
         """<|image|> patches <|/image|> [prompt] answer, loss on the answer only.
 
         `prompt_ids` is the question for VQA and empty for captioning; it sits
@@ -159,6 +169,14 @@ class VisionLanguage(nn.Module):
             parts.append(emb(torch.tensor(prompt_ids, device=dev)))
         parts.append(emb(torch.tensor(answer_ids, device=dev)))
         embeds = torch.cat(parts, dim=0)
+        limit = self.model.cfg.block_size
+        if embeds.shape[0] > limit:
+            prefix = f"{task}: " if task else ""
+            name = f" {example!r}" if example is not None else ""
+            raise ValueError(
+                f"{prefix}image example{name} builds {embeds.shape[0]} positions "
+                f"(patches, markers, prompt, and answer), exceeding model block_size {limit}. "
+                "Shorten the prompt or answer, increase pooling, or use a model with a larger context.")
         targets = torch.full((embeds.shape[0],), -1, dtype=torch.long, device=dev)
         start = embeds.shape[0] - len(answer_ids)
         targets[start - 1: start - 1 + len(answer_ids)] = torch.tensor(answer_ids, device=dev)
@@ -254,6 +272,29 @@ def prep_parquet(src: str, out_dir: str, manifest: str, limit: int | None = None
     return n_pair
 
 
+def _file_digest(path):
+    digest = hashlib.sha256()
+    with open(path, "rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _tower_digest(tower):
+    model = getattr(tower, "model", None)
+    if model is None:
+        return None
+    if any(p.requires_grad for p in model.parameters()) or model.training:
+        raise ValueError("Feature caching requires a frozen encoder in evaluation mode.")
+    digest = hashlib.sha256()
+    for name, tensor in sorted(model.state_dict().items()):
+        digest.update(f"{name}:{tensor.dtype}:{tuple(tensor.shape)}".encode())
+        raw = tensor.detach().cpu().contiguous().reshape(-1).view(torch.uint8).numpy()
+        for start in range(0, raw.size, 1024 * 1024):
+            digest.update(raw[start:start + 1024 * 1024].tobytes())
+    return digest.hexdigest()
+
+
 def build_cache(rows, tower, path: str | Path, dtype="float16"):
     """Encode every distinct image once into a memmap of (N, patches, dim).
 
@@ -264,25 +305,58 @@ def build_cache(rows, tower, path: str | Path, dtype="float16"):
     per image, so the same pixels were being encoded five times per epoch.
 
     Returns (memmap, {path: row}). At 196 x 768 float16 an image costs 301 kB,
-    so Flickr8k's 6,000 come to 1.8 GB on disk.
+    so Flickr8k's 6,000 come to 1.8 GB on disk. A sidecar fingerprint ties the
+    bytes to image contents, preprocessing, frozen encoder weights, dtype and
+    shape; legacy, partial and stale caches are rebuilt.
     """
     path = Path(path)
     uniq = sorted({r["image"] for r in rows})
+    if not uniq:
+        raise ValueError("Cannot build an image cache from an empty manifest.")
     index = {p_: i for i, p_ in enumerate(uniq)}
     probe = tower.encode(uniq[0])
     shape = (len(uniq), probe.shape[0], probe.shape[1])
-    if path.exists() and path.stat().st_size == int(np.prod(shape)) * 2:
-        print(f"cache: reusing {path} {shape}")
-        return np.memmap(path, dtype=dtype, mode="r", shape=shape), index
+    dtype = np.dtype(dtype)
+    identity = {
+        "version": 2,
+        "images": [{"path": str(Path(image).resolve()), "sha256": _file_digest(image)}
+                   for image in uniq],
+        "tower": getattr(tower, "name", type(tower).__qualname__),
+        "weights_sha256": _tower_digest(tower),
+        "transform": repr(getattr(tower, "transform", None)),
+        "dtype": dtype.name,
+        "shape": list(shape),
+    }
+    fingerprint = hashlib.sha256(json.dumps(
+        identity, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+    ).encode("utf-8")).hexdigest()
+    metadata = {k: v for k, v in identity.items() if k != "images"}
+    metadata["fingerprint"] = fingerprint
+    meta_path = Path(str(path) + ".json")
+    try:
+        cached = json.loads(meta_path.read_text(encoding="utf-8"))
+        expected_size = int(np.prod(shape)) * dtype.itemsize
+        if (cached == metadata and path.stat().st_size == expected_size):
+            print(f"cache: reusing {path} {shape}")
+            return np.memmap(path, dtype=dtype, mode="r", shape=shape), index
+    except (OSError, ValueError):
+        pass
+
     print(f"cache: encoding {len(uniq)} images -> {path} {shape}")
-    mm = np.memmap(path, dtype=dtype, mode="w+", shape=shape)
+    tmp = Path(str(path) + ".tmp")
+    mm = np.memmap(tmp, dtype=dtype, mode="w+", shape=shape)
     t0 = time.time()
     for i, img in enumerate(uniq):
-        mm[i] = tower.encode(img).cpu().numpy().astype(dtype)
+        mm[i] = tower.encode(img).detach().cpu().numpy().astype(dtype)
         if (i + 1) % 500 == 0:
             rate = (i + 1) / max(time.time() - t0, 1e-6)
             print(f"  {i + 1}/{len(uniq)}  {rate:.0f} img/s", flush=True)
     mm.flush()
+    del mm
+    os.replace(tmp, path)
+    meta_tmp = Path(str(meta_path) + ".tmp")
+    meta_tmp.write_text(json.dumps(metadata, sort_keys=True), encoding="utf-8")
+    os.replace(meta_tmp, meta_path)
     print(f"cache: built in {time.time() - t0:.0f}s")
     return np.memmap(path, dtype=dtype, mode="r", shape=shape), index
 
@@ -309,7 +383,8 @@ def load_manifest(path: str) -> list[dict]:
 
 
 def batches(rows, tower: VisionTower, tok, vl: VisionLanguage, device: str,
-            batch_size: int, shuffle: bool = True, seed: int = 0, cache=None):
+            batch_size: int, shuffle: bool = True, seed: int = 0, cache=None,
+            task: str | None = None):
     order = list(range(len(rows)))
     if shuffle:
         np.random.default_rng(seed).shuffle(order)
@@ -323,7 +398,7 @@ def batches(rows, tower: VisionTower, tok, vl: VisionLanguage, device: str,
             else:
                 patches = tower.encode(r["image"]).to(device)
             prompt, answer = qa_ids(tok, r)
-            built.append(vl.build(patches, answer, prompt))
+            built.append(vl.build(patches, answer, prompt, example=r["image"], task=task))
         if not built:
             continue
         S = max(e.shape[0] for e, _ in built)
@@ -370,7 +445,7 @@ def train(args) -> None:
 
     from anulm.hf_tok import load_tokenizer
     from anulm.model import AnuLM, fit_memory, load_checkpoint
-    from anulm.multimodal.speech_vocab import vocab_of
+    from .speech_vocab import vocab_of
     from anulm.training.train import atomic_save
 
     dev = args.device
@@ -495,7 +570,7 @@ def load_trained(ckpt: str, device: str):
 
     from anulm.hf_tok import load_tokenizer
     from anulm.model import AnuLM, load_checkpoint
-    from anulm.multimodal.speech_vocab import vocab_of
+    from .speech_vocab import vocab_of
     ck = load_checkpoint(ckpt, device)
     # omni_train.py keeps the audio projector as `proj` and this one as `vision_proj`
     proj = ck.get("vision_proj", ck.get("proj"))

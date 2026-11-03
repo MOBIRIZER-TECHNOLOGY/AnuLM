@@ -140,6 +140,11 @@ CHAT_MODELS = ("anulm-chat", "anulm-answer", "anulm-vision")
 
 def available(mid: str) -> bool:
     m = MODELS[mid]
+    if A.USE_OMNI:
+        if mid in CHAT_MODELS or mid == "anulm-asr":
+            return True
+        if m.get("backbone") == A.DECIDE_OWN:
+            return m["task"] in A.OMNI_TASKS
     if "ckpt" in m:
         return (HERE / m["ckpt"]).exists()
     if "task" in m:
@@ -652,7 +657,7 @@ def answer_question(req: AnswerRequest):
     qa = models.reader()
     t0 = time.time()
     with GPU:
-        out = qa.ask(req.question.strip())
+        out = qa.ask(req.question.strip()) if qa else {"answer": "", "sources": []}
     if out["answer"] or not req.fallback:
         return {"object": "answer", "question": req.question, "answer": out["answer"] or None,
                 "found": bool(out["answer"]), "sources": out["sources"] if out["answer"] else [],
@@ -674,7 +679,7 @@ def transcriptions(file: UploadFile = File(..., description="WAV, FLAC or OGG au
         raise APIError(400, "language must be 'en' or 'hi'.", param="language")
     if response_format not in ("json", "text", "verbose_json"):
         raise APIError(400, "response_format must be json, text or verbose_json.", param="response_format")
-    if not (HERE / A.CKPTS["asr_" + language]).exists():
+    if not A.USE_OMNI and not (HERE / A.CKPTS["asr_" + language]).exists():
         raise APIError(404, f"No {language} speech model on this server.", param="language")
     suffix = Path(file.filename or "audio.wav").suffix or ".wav"
     f = tempfile.NamedTemporaryFile(suffix=suffix, delete=False)

@@ -101,6 +101,19 @@ def read_wav(path: str | Path, rate: int) -> np.ndarray:
     return resample(data, sr, rate)
 
 
+def audio_chunks(audio: np.ndarray, chunk_samples: int = 30 * ASR_RATE) -> list[np.ndarray]:
+    """Split mono audio into non-overlapping Whisper windows.
+
+    Short and empty inputs keep their original single-chunk path.
+    """
+    if chunk_samples <= 0:
+        raise ValueError("chunk_samples must be positive")
+    audio = np.asarray(audio)
+    if len(audio) <= chunk_samples:
+        return [audio]
+    return [audio[i:i + chunk_samples] for i in range(0, len(audio), chunk_samples)]
+
+
 # --------------------------------------------------------------------------
 # discrete: SNAC codes <-> a flat token stream
 # --------------------------------------------------------------------------
@@ -219,11 +232,20 @@ class WhisperEncoder:
         self.dim = WHISPER_DIM.get(size, 768)
 
     def encode(self, audio) -> np.ndarray:
-        """wav path or 16 kHz samples -> (frames, dim) float32, ~50 Hz."""
+        """Up to 30 seconds of 16 kHz audio -> encoder states.
+
+        Longer audio must be segmented with aligned transcripts by the caller.
+        Reject it explicitly rather than silently training against a cropped clip.
+        """
         if isinstance(audio, (str, Path)):
             audio = read_wav(audio, ASR_RATE)
+        audio = np.asarray(audio, dtype=np.float32)
+        if audio.ndim != 1 or audio.size == 0:
+            raise ValueError("Expected a nonempty mono audio clip at 16 kHz.")
+        if audio.size > 30 * ASR_RATE:
+            raise ValueError("Audio duration exceeds 30 seconds; chunk the audio and align its transcript first.")
         feats = self.whisper.feature_extractor(np.ascontiguousarray(audio, dtype=np.float32))
-        # Whisper's own 30 s window; longer clips are chunked by the caller.
+        # Whisper's fixed maximum feature window, after the explicit duration check.
         sv = self.ct2.StorageView.from_array(np.ascontiguousarray(feats[np.newaxis, :, :3000]))
         out = self.whisper.model.encode(sv).to_device(self.ct2.Device.cpu)
         return np.asarray(out)[0].astype(np.float32)

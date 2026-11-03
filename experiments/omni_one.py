@@ -20,14 +20,19 @@ One model for every task, start to finish, unattended -- and safe to re-run.
   8. report  logs/omni_one/REPORT.md: every number beside the model it
              replaces, and the release gates, pass or fail
   9. export  release/AnuLM-Omni-400M (export_hf.py --kind omni)
- 10. publish only with --publish and only if every gate passed:
+ 10. eval    the exported folder, repeating every release-gate measurement
+ 11. publish only with --publish and only if every exported-model gate passed:
              toonist/AnuLM-Omni-400M on Hugging Face
 
 **Re-running.** Every step records success in logs/omni_one/state.json and is
 skipped next time; a failed step is not recorded, so a re-run retries it and
-everything after it. Training resumes from its last eval (every 10,000 steps,
-about 50 minutes). After a reboot, run the same command again -- that is the
-whole recovery procedure. `experiments/run_omni_one.cmd` starts it detached.
+everything after it. Training resumes from its last eval (every 625 steps of
+8 batches, about 50 minutes). A content fingerprint of the training code,
+command and data invalidates training and all downstream state when they change,
+archiving generated outputs under logs/omni_one/archive rather than deleting them;
+an unchanged interrupted run keeps its resume file. After a reboot, run the same
+command again -- that is the whole recovery procedure.
+`experiments/run_omni_one.cmd` starts it detached.
 
 **What is deliberately not in it.** Flickr30k and A-OKVQA's COCO photos (not
 for commercial use), IndicTTS (terms unclear), the Indian-banking Decide set
@@ -40,6 +45,7 @@ the English speech model's, which learned from LibriSpeech (CC BY 4.0) only.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -49,17 +55,29 @@ import time
 from pathlib import Path
 
 PY = sys.executable
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[1]
 LOGS = ROOT / "logs" / "omni_one"
 OUT = "ckpt_omni.pt"
+RELEASE = "release/AnuLM-Omni-400M"
 REPO = "toonist/AnuLM-Omni-400M"
 KEYS = ("eval @", "done in", "held-out", "WER", "Traceback", "Error", "F1", "acc", "resumed", "task ")
 
-STEPS = 100_000
+# Each optimizer step sums ACCUM batches. One batch per step (the first run,
+# 100,000 steps) let the ~30-token intent and VQA batches each move the shared
+# decoder a full AdamW step: chat held-out went 3.27 -> 5.39. Summing 8 kept
+# every task better at equal batches (logs/ab_projscale, 2026-10-30).
+ACCUM = 8
+STEPS = 12_500                  # x ACCUM = the first run's 100,000 batches
+# 3,000-batch probes, chat held-out loss on the gate's metric (start 3.335):
+# 15% chat at 5e-5 3.50, 25% at 5e-5 3.457, 15% at 2.5e-5 3.43. Both levers
+# are used together here (not probed as a pair).
+LR = 2.5e-5
 # Share of steps per task (not of examples): Hindi speech is the largest and the
 # weakest skill, chat the one that already works and must only be kept.
 TASKS = [
-    ("chat", "text", "data/chat_train.jsonl", 0.07, 8),
+    # 0.07 let the other tasks pull chat off course even with --accum; 0.25 with
+    # half the learning rate (LR below) kept it closest to where it started.
+    ("chat", "text", "data/chat_train.jsonl", 0.25, 8),
     ("read", "text", "data/rc_train.jsonl", 0.14, 4),
     ("intent", "text", "data/omni/intent_train.jsonl", 0.06, 8),
     ("asr_en", "asr", "data/speech_ls100", 0.12, 4),
@@ -95,14 +113,129 @@ def log(m):
 
 def state() -> dict:
     p = LOGS / "state.json"
-    return json.loads(p.read_text()) if p.exists() else {}
+    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
+
+
+def save_state(s):
+    (LOGS / "state.json.tmp").write_text(json.dumps(s, indent=2), encoding="utf-8")
+    os.replace(LOGS / "state.json.tmp", LOGS / "state.json")
 
 
 def mark(name, info=0):
     s = state()
     s[name] = {"ok": info, "at": time.strftime("%Y-%m-%d %H:%M:%S")}
-    (LOGS / "state.json.tmp").write_text(json.dumps(s, indent=2))
-    os.replace(LOGS / "state.json.tmp", LOGS / "state.json")
+    save_state(s)
+
+
+RECIPE_CODE = ("experiments/omni_one.py", "anulm/multimodal/omni_train.py",
+               "anulm/model.py", "anulm/training/train.py", "anulm/training/finetune.py",
+               "anulm/data/make_qa.py", "anulm/multimodal/speech_vocab.py",
+               "anulm/multimodal/speech_encoder.py", "anulm/multimodal/vision_encoder.py",
+               "anulm/multimodal/audio_codec.py", "anulm/hf_tok.py", "anulm/bpe.py",
+               "anulm/hf/configuration_anulm.py")
+RECIPE_STEPS = ("6_train", "7_eval", "8_report", "9_export", "10_export_eval", "10_publish", "11_publish")
+
+
+def training_fingerprint(args) -> str:
+    """Content-hash the code, command and source data that produce OUT."""
+    h = hashlib.sha256(b"AnuLM omni training recipe v1\0")
+    seen = set()
+
+    def add(path, media_base=None):
+        p = Path(path)
+        if not p.is_absolute():
+            p = ROOT / p
+        key = str(p.resolve())
+        if key in seen:
+            return
+        seen.add(key)
+        try:
+            label = p.relative_to(ROOT).as_posix()
+        except ValueError:
+            label = str(p)
+        h.update(f"path\0{label}\0".encode())
+        if not p.exists():
+            h.update(b"missing\0")
+            return
+        if p.is_dir():
+            for f in sorted(x for x in p.rglob("*") if x.is_file()):
+                add(f)
+            return
+        h.update(b"file\0")
+        with p.open("rb") as f:
+            while chunk := f.read(8 << 20):
+                h.update(chunk)
+        h.update(b"\0")
+        if p.suffix == ".jsonl":
+            with p.open(encoding="utf-8") as f:
+                for line in f:
+                    if not line.strip():
+                        continue
+                    row = json.loads(line)
+                    for kind in ("audio", "image"):
+                        if row.get(kind):
+                            add((media_base or p.parent) / row[kind])
+
+    for arg in args:
+        h.update(f"arg\0{arg}\0".encode())
+    for path in RECIPE_CODE:
+        add(path)
+    add("ckpt_chat_mm.pt")
+    for flag in ("--audio-proj-from", "--vision-proj-from"):
+        if flag in args:
+            add(args[args.index(flag) + 1])
+    for _, kind, path, _, _ in TASKS:
+        if kind == "asr":
+            add(Path(path).with_suffix(".jsonl"), ROOT)
+        else:
+            add(path)
+    for path in HELD.values():
+        add(path)
+    return h.hexdigest()
+
+
+def archive_stale(previous):
+    """Move generated outputs aside without overwriting an earlier archive."""
+    curve = Path(OUT).with_name(Path(OUT).stem + "_curve.csv")
+    generated = [ROOT / name for name in (OUT, OUT + ".last", OUT + ".tmp", OUT + ".last.tmp", curve)]
+    generated += [LOGS / name for name in
+                  ("results.json", "export_results.json", "eval_text_vision.json", "export_eval_text_vision.json",
+                   "REPORT.md", "card.md", "done.marker")]
+    existing = [p for p in generated if p.exists()]
+    if not existing:
+        return None
+    name = re.sub(r"[^A-Za-z0-9_-]", "-", previous) if previous else time.strftime("%Y%m%d-%H%M%S")
+    base = LOGS / "archive" / name
+    archive, suffix = base, 2
+    while True:
+        try:
+            archive.mkdir(parents=True)
+            break
+        except FileExistsError:
+            archive = base.with_name(f"{base.name}-{suffix}")
+            suffix += 1
+    for p in existing:
+        os.replace(p, archive / p.name)
+    return archive
+
+
+def prepare_training(args):
+    """Archive a changed recipe; an unchanged interrupted run keeps .last."""
+    fingerprint = training_fingerprint(args)
+    s = state()
+    previous = s.get("training_fingerprint")
+    if previous == fingerprint:
+        return
+    had_training = (previous is not None or any(k in s for k in RECIPE_STEPS)
+                    or any((ROOT / p).exists() for p in (OUT, OUT + ".last")))
+    archive = archive_stale(previous)
+    for name in RECIPE_STEPS:
+        s.pop(name, None)
+    s["training_fingerprint"] = fingerprint
+    save_state(s)
+    log(f"--- training recipe {fingerprint[:12]}: " +
+        ("changed; training and all downstream steps invalidated" if had_training else "recorded") +
+        (f"; archived to {archive}" if archive else ""))
 
 
 class Failed(Exception):
@@ -180,13 +313,14 @@ def wait_gpu():
     return f"GPU free after {(time.time() - t0) / 60:.0f} min"
 
 
-def wer(name, ckpt, prefix, limit):
+def wer(name, ckpt, prefix, limit, stage="7"):
     """speech_encoder.py eval -> the WER it prints, kept in results."""
-    lf = LOGS / f"7_{name}.log"
+    lf = LOGS / f"{stage}_{name}.log"
     if not (ROOT / f"{prefix}.jsonl").exists():
         return None
     r = subprocess.run([PY, "-u", "-m", "anulm.multimodal.speech_encoder", "eval", "--ckpt", ckpt, "--prefix", prefix,
                         "--limit", str(limit)], cwd=str(ROOT), capture_output=True, text=True,
+                       encoding="utf-8", errors="replace",     # Hindi transcripts; Windows' default is cp1252
                        env={**os.environ, "PYTHONIOENCODING": "utf-8"})
     lf.write_text(r.stdout + r.stderr, encoding="utf-8")
     m = re.search(r"WER ([\d.]+)%\s+over (\d+)", r.stdout)
@@ -195,36 +329,47 @@ def wer(name, ckpt, prefix, limit):
     return float(m.group(1))
 
 
-def results() -> dict:
-    p = LOGS / "results.json"
+def results(name="results.json") -> dict:
+    p = LOGS / name
     return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
 
 
-def save_results(d):
-    (LOGS / "results.json").write_text(json.dumps(d, indent=2, ensure_ascii=False), encoding="utf-8")
+def save_results(d, name="results.json"):
+    (LOGS / name).write_text(json.dumps(d, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
-def evaluate():
-    res = results()
+def evaluate(ckpt=OUT, exported=False):
+    result_file = "export_results.json" if exported else "results.json"
+    detail = "export_eval_text_vision" if exported else "eval_text_vision"
+    stage = "10" if exported else "7"
+    res = results(result_file)
     for name, prefix, limit in (("wer_en", "data/speech_ls100", 100),
                                 ("wer_hi_fleurs", "data/fleurs_hi/devtest", 1000),
                                 ("wer_hi_kathbath", "data/kathbath_hi/test", 800),
                                 ("wer_hi_mucs", "data/mucs_hi_en/test", 800)):
         if name not in res:
-            res[name] = wer(name, OUT, prefix, limit)
+            res[name] = wer(name, ckpt, prefix, limit, stage)
             log(f"    {name}: {res[name]}%")
-            save_results(res)
+            save_results(res, result_file)
     if "chat_heldout_loss" not in res:
-        r = subprocess.run([PY, "-u", "-m", "anulm.multimodal.omni_eval", "--ckpt", OUT, "--vision", "--out",
-                            str(LOGS / "eval_text_vision.json")], cwd=str(ROOT), capture_output=True,
-                           text=True, env={**os.environ, "PYTHONIOENCODING": "utf-8"})
-        (LOGS / "7_eval_text_vision.log").write_text(r.stdout + r.stderr, encoding="utf-8")
+        r = subprocess.run([PY, "-u", "-m", "anulm.multimodal.omni_eval", "--ckpt", ckpt, "--vision", "--out",
+                            str(LOGS / f"{detail}.json")], cwd=str(ROOT), capture_output=True,
+                           text=True, encoding="utf-8", errors="replace",
+                           env={**os.environ, "PYTHONIOENCODING": "utf-8"})
+        (LOGS / f"{stage}_eval_text_vision.log").write_text(r.stdout + r.stderr, encoding="utf-8")
         if r.returncode:
-            raise RuntimeError("omni_eval.py failed; see 7_eval_text_vision.log")
-        res.update({k: v for k, v in json.loads((LOGS / "eval_text_vision.json").read_text(encoding="utf-8")).items()
+            raise RuntimeError(f"omni_eval.py failed; see {stage}_eval_text_vision.log")
+        res.update({k: v for k, v in json.loads((LOGS / f"{detail}.json").read_text(encoding="utf-8")).items()
                     if k not in ("ckpt", "seconds")})
-        save_results(res)
+        save_results(res, result_file)
     return {k: v for k, v in res.items() if not isinstance(v, list)}
+
+
+# The separate model each task used before, as measured then (also shown by app_omni.py).
+EARLIER = {"wer_en": "7.1 (asr_en_v3)", "wer_hi_fleurs": "36.5 (asr_hi_v3); 39.6 (v5)",
+           "wer_hi_kathbath": "37.0 (asr_hi_v3); 24.9 (v5)", "wer_hi_mucs": "79.2 (asr_hi_v3); 55.6 (v5)",
+           "wer_hi_mean": "50.9 (asr_hi_v3); 40.0 (v5)",
+           "intent_banking77": "89.0 (Decide adapter)", "read_squad_en": "57.2 (pointer reader)"}
 
 
 def gates(res) -> dict:
@@ -245,10 +390,7 @@ def report():
     if bp.exists():
         base = json.loads(bp.read_text(encoding="utf-8"))
     g = gates(res)
-    earlier = {"wer_en": "7.1 (asr_en_v3)", "wer_hi_fleurs": "36.5 (asr_hi_v3); 39.6 (v5)",
-               "wer_hi_kathbath": "37.0 (asr_hi_v3); 24.9 (v5)", "wer_hi_mucs": "79.2 (asr_hi_v3); 55.6 (v5)",
-               "wer_hi_mean": "50.9 (asr_hi_v3); 40.0 (v5)",
-               "intent_banking77": "89.0 (Decide adapter)", "read_squad_en": "57.2 (pointer reader)"}
+    earlier = EARLIER
     lines = ["# AnuLM-Omni-400M: report", "",
              f"Written {time.strftime('%Y-%m-%d %H:%M')} by experiments/omni_one.py. One decoder, seven tasks.", "",
              "| measure | omni | chat model it started from | earlier separate model | gate | pass |",
@@ -281,13 +423,13 @@ def card() -> str:
 
 
 def publish():
-    res = results()
+    res = results("export_results.json")
     if not all(gates(res).values()):
-        return "gates did not all pass: not published (see REPORT.md)"
+        return "exported-model gates did not all pass: not published (see export_results.json)"
     from huggingface_hub import HfApi
     api = HfApi()
     api.create_repo(REPO, repo_type="model", private=False, exist_ok=True)
-    api.upload_folder(folder_path=str(ROOT / "release" / "AnuLM-Omni-400M"), repo_id=REPO,
+    api.upload_folder(folder_path=str(ROOT / RELEASE), repo_id=REPO,
                       repo_type="model", commit_message="AnuLM-Omni-400M: one model, seven tasks")
     return f"published https://huggingface.co/{REPO}"
 
@@ -316,7 +458,8 @@ def main() -> None:
         once("4_wait_gpu", wait_gpu)
         run("5_base_eval", ["-m", "anulm.multimodal.omni_eval", "--ckpt", "ckpt_chat_v3.pt", "--out", str(LOGS / "eval_base_chat.json")], 2.0)
         args = ["-m", "anulm.multimodal.omni_train", "--ckpt", "ckpt_chat_mm.pt", "--out", OUT, "--steps", str(a.steps),
-                "--eval-every", "10000", "--eval-n", "200", "--log-every", "1000", "--resume",
+                "--accum", str(ACCUM), "--warmup", str(max(1, 500 // ACCUM)), "--lr", str(LR),
+                "--eval-every", "625", "--eval-n", "200", "--log-every", "125", "--resume",
                 "--grad-ckpt"]     # unattended: an out-of-memory at 3 a.m. would stop the night
         if (ROOT / "ckpt_asr_en_v3.pt").exists():      # LibriSpeech-only projector; a clone starts fresh
             args += ["--audio-proj-from", "ckpt_asr_en_v3.pt"]
@@ -324,6 +467,7 @@ def main() -> None:
             args += ["--task", f"{name}={kind}:{path}:{w}:{b}"]
         for name, path in HELD.items():
             args += ["--held", f"{name}={path}"]
+        prepare_training(args)
         # A cap, not a deadline: reaching it leaves ckpt_omni.pt.last, and the
         # re-run resumes. The pipeline re-launches training up to three times.
         for attempt in range(3):
@@ -336,10 +480,11 @@ def main() -> None:
                 log("    resuming training from its last save")
         once("7_eval", evaluate)
         once("8_report", report)
-        run("9_export", ["-m", "anulm.hf.export_hf", OUT, "release/AnuLM-Omni-400M", "--kind", "omni", "--license", "cc-by-sa-4.0",
+        run("9_export", ["-m", "anulm.hf.export_hf", OUT, RELEASE, "--kind", "omni", "--license", "cc-by-sa-4.0",
                          "--card", card(), "--base-model", "toonist/AnuLM-Base-v2-400M", "--repo", REPO], 0.5)
+        once("10_export_eval", lambda: evaluate(RELEASE, exported=True))
         if a.publish:
-            once("10_publish", publish)
+            once("11_publish", publish)
         log("=== OMNI ONE DONE: logs/omni_one/REPORT.md ===")
         (LOGS / "done.marker").write_text(time.strftime("%Y-%m-%d %H:%M:%S"))
     except Failed as e:

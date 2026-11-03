@@ -68,7 +68,7 @@ jobs:
       - name: Test suite
         run: |
           python -u -m tests.test_model
-          python -u -m unittest tests.test_train_safety
+          python -u -m unittest tests.test_training_pipeline tests.test_multimodal_contracts
 
       - name: Train 50 steps end to end
         # Downloads tinyshakespeare, trains, evaluates, saves, and samples from

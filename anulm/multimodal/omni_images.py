@@ -75,7 +75,7 @@ VIZWIZ = "https://vizwiz.cs.colorado.edu/VizWiz_final/"
 
 
 def get(url: str, dest: Path, quiet: bool = False) -> Path:
-    """Download with resume: a partial file continues with a Range request."""
+    """Download with resume; restart if the server ignores the Range request."""
     dest.parent.mkdir(parents=True, exist_ok=True)
     if dest.exists():
         return dest
@@ -84,16 +84,19 @@ def get(url: str, dest: Path, quiet: bool = False) -> Path:
     req = urllib.request.Request(url, headers={"User-Agent": "AnuLM-omni_images",
                                                **({"Range": f"bytes={have}-"} if have else {})})
     t0 = time.time()
-    with urllib.request.urlopen(req, timeout=120) as r, open(part, "ab" if have else "wb") as f:
-        total = have + int(r.headers.get("Content-Length") or 0)
-        done, last = have, 0.0
-        while chunk := r.read(1 << 20):
-            f.write(chunk)
-            done += len(chunk)
-            if not quiet and time.time() - last > 30:
-                last = time.time()
-                rate = (done - have) / max(last - t0, 1e-6) / 1e6
-                print(f"  {dest.name}: {done/1e9:.2f}/{total/1e9:.2f} GB  {rate:.1f} MB/s", flush=True)
+    with urllib.request.urlopen(req, timeout=120) as r:
+        if have and r.status != 206:
+            have = 0
+        with open(part, "ab" if have else "wb") as f:
+            total = have + int(r.headers.get("Content-Length") or 0)
+            done, last = have, 0.0
+            while chunk := r.read(1 << 20):
+                f.write(chunk)
+                done += len(chunk)
+                if not quiet and time.time() - last > 30:
+                    last = time.time()
+                    rate = (done - have) / max(last - t0, 1e-6) / 1e6
+                    print(f"  {dest.name}: {done/1e9:.2f}/{total/1e9:.2f} GB  {rate:.1f} MB/s", flush=True)
     part.replace(dest)
     return dest
 

@@ -47,10 +47,10 @@ class Omni:
     def ear(self):
         """voice.OwnASR's interface over the shared decoder."""
         if self._ear is None:
-            from anulm.multimodal.audio_codec import WhisperEncoder
+            from .audio_codec import WhisperEncoder
             from anulm.hf_tok import load_tokenizer
-            from anulm.multimodal.speech_encoder import ContinuousSpeech
-            from anulm.multimodal.speech_vocab import vocab_of
+            from .speech_encoder import ContinuousSpeech
+            from .speech_vocab import vocab_of
             from anulm.inference.voice import OwnASR
             enc = WhisperEncoder(self.meta.get("whisper", "small"), self.device)
             sm = ContinuousSpeech(self.model, vocab_of(self.meta), enc.dim, self.meta.get("stack", 4)).to(self.device)
@@ -66,8 +66,8 @@ class Omni:
         """vision_encoder.load_trained's (vl, tower, tok) over the shared decoder."""
         if self._eye is None:
             from anulm.hf_tok import load_tokenizer
-            from anulm.multimodal.speech_vocab import vocab_of
-            from anulm.multimodal.vision_encoder import VisionLanguage, VisionTower
+            from .speech_vocab import vocab_of
+            from .vision_encoder import VisionLanguage, VisionTower
             tower = VisionTower(self.meta["tower"], self.device)
             vl = VisionLanguage(self.model, vocab_of(self.meta), tower.dim, self.meta.get("pool", 2)).to(self.device)
             vl.proj.load_state_dict(self.vision_proj)

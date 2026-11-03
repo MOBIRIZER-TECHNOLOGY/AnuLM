@@ -1766,6 +1766,449 @@ def interleaved_split_samples_the_whole_corpus():
     assert float((tail == 1).float().mean()) == 1.0, "the old tail split is all B"
 
 
+# =============================================================================
+# MULTIMODAL AND PIPELINE HARDENING
+# =============================================================================
+
+@test
+def whisper_audio_chunks_cover_long_recordings():
+    """Every sample past Whisper's window must reach a later chunk, while a
+    clip that already fits keeps the original single-chunk path."""
+    import numpy as np
+    from anulm.multimodal.audio_codec import ASR_RATE, audio_chunks
+    window = 30 * ASR_RATE
+    audio = np.arange(2 * window + 17, dtype=np.float32)
+    chunks = audio_chunks(audio)
+    assert [len(c) for c in chunks] == [window, window, 17]
+    assert np.array_equal(np.concatenate(chunks), audio)
+    assert len(audio_chunks(audio[:window])) == 1
+    assert len(audio_chunks(audio[:0])) == 1
+
+
+@test
+def continuous_asr_decodes_long_chunks_in_order():
+    """Continuous ASR must decode each long-recording chunk independently and
+    join the texts in audio order, not return only Whisper's first 30 seconds."""
+    from types import SimpleNamespace
+    import numpy as np
+    from anulm.multimodal.audio_codec import ASR_RATE
+    from anulm.multimodal.speech_encoder import transcribe
+
+    class Encoder:
+        def __init__(self):
+            self.sizes = []
+
+        def encode(self, audio):
+            self.sizes.append(len(audio))
+            return np.zeros((4, 2), dtype=np.float32)
+
+    class Projector:
+        def __init__(self):
+            self.weight = torch.nn.Parameter(torch.zeros(1))
+
+        def parameters(self):
+            return iter([self.weight])
+
+        def __call__(self, states):
+            return states
+
+    class Model:
+        def __init__(self):
+            self.calls = 0
+
+        def embed_tokens(self, ids):
+            return torch.zeros((len(ids), 2), dtype=torch.float32)
+
+        def decode_from_embeds(self, prefix, *args, **kwargs):
+            self.calls += 1
+            return torch.tensor([self.calls])
+
+    class Tokenizer:
+        eos_id = 99
+
+        def __init__(self, texts):
+            self.texts = texts
+
+        def decode(self, ids):
+            return self.texts[int(ids[0]) - 1]
+
+    def run(audio, texts):
+        model = Model()
+        sm = SimpleNamespace(
+            proj=Projector(), model=model,
+            vocab=SimpleNamespace(speech_bos=1, text_bos=2, text=100))
+        enc = Encoder()
+        text = transcribe(sm, enc, Tokenizer(texts), audio, device="cpu")
+        return text, enc.sizes
+
+    text, sizes = run(np.zeros(65 * ASR_RATE, dtype=np.float32), ["one", "two", "three"])
+    assert text == "one two three"
+    assert sizes == [30 * ASR_RATE, 30 * ASR_RATE, 5 * ASR_RATE]
+    text, sizes = run(np.zeros(10, dtype=np.float32), ["short\nignored"])
+    assert text == "short" and len(sizes) == 1
+
+
+@test
+def image_feature_cache_reuses_invalidates_and_recovers():
+    """The frozen-tower cache is reusable only while its sidecar and bytes
+    match. Legacy, partial and interrupted temporary files must cause a clean
+    rebuild rather than stale reads or an append to a partial file."""
+    import tempfile
+    from pathlib import Path
+    import numpy as np
+    from anulm.multimodal.vision_encoder import build_cache
+
+    class Tower:
+        name = "fake-tower"
+
+        def __init__(self):
+            self.calls = []
+
+        def encode(self, path):
+            raw = Path(path).read_bytes()
+            self.calls.append(raw)
+            return torch.full((2, 2), float(sum(raw)))
+
+    with tempfile.TemporaryDirectory() as d:
+        root = Path(d)
+        first, second = root / "first.jpg", root / "second.jpg"
+        first.write_bytes(b"first")
+        second.write_bytes(b"second image")
+        rows = [{"image": str(first)}, {"image": str(second)}, {"image": str(first)}]
+        path = root / "features.npy"
+        sidecar = Path(str(path) + ".json")
+        tower = Tower()
+
+        mm, index = build_cache(rows, tower, path, dtype="float32")
+        assert mm.shape == (2, 2, 2) and len(index) == 2
+        assert len(tower.calls) == 3                 # one probe, then two distinct images
+        del mm
+
+        before = len(tower.calls)
+        mm, _ = build_cache(rows, tower, path, dtype="float32")
+        assert len(tower.calls) == before + 1         # the shape probe only; no re-encoding
+        del mm
+
+        first.write_bytes(b"first image changed")
+        before = len(tower.calls)
+        mm, _ = build_cache(rows, tower, path, dtype="float32")
+        assert len(tower.calls) == before + 3, "an edited image must invalidate the cache"
+        del mm
+
+        sidecar.unlink()                              # a legacy cache has no fingerprint
+        before = len(tower.calls)
+        mm, _ = build_cache(rows, tower, path, dtype="float32")
+        assert len(tower.calls) == before + 3 and sidecar.exists()
+        del mm
+
+        path.write_bytes(b"partial")                 # matching metadata cannot validate short bytes
+        Path(str(path) + ".tmp").write_bytes(b"interrupted")
+        Path(str(sidecar) + ".tmp").write_text("stale", encoding="utf-8")
+        before = len(tower.calls)
+        mm, _ = build_cache(rows, tower, path, dtype="float32")
+        assert len(tower.calls) == before + 3 and mm.shape == (2, 2, 2)
+        assert not Path(str(path) + ".tmp").exists()
+        assert not Path(str(sidecar) + ".tmp").exists()
+        del mm
+
+
+@test
+def sft_packed_cache_invalidates_same_count_content_edits():
+    """A packed cache keyed by row count silently reuses the wrong labels after
+    an edit. Source content must decide reuse even when the JSONL count is equal."""
+    import json, tempfile
+    from pathlib import Path
+    from anulm.training import finetune as F
+
+    original = F.encode_pairs_parallel
+    calls = []
+
+    def encode(tokenizer_path, items, workers):
+        calls.append([dict(r) for r in items])
+        return [([1], [ord(r["answer"]), 99]) for r in items]
+
+    with tempfile.TemporaryDirectory() as d:
+        root = Path(d)
+        source, tokenizer = root / "train.jsonl", root / "tok.json"
+        tokenizer.write_bytes(b"tokenizer")
+        source.write_text(json.dumps({"question": "q", "answer": "a"}) + "\n", encoding="utf-8")
+        cache = Path(f"{source}.tok.b8.pt")
+        F.encode_pairs_parallel = encode
+        try:
+            x1, y1 = F.load_packed(str(source), str(tokenizer), 8, 99, 1)
+            first = torch.load(cache, weights_only=False)
+            x2, y2 = F.load_packed(str(source), str(tokenizer), 8, 99, 1)
+            assert len(calls) == 1 and torch.equal(x1, x2) and torch.equal(y1, y2)
+
+            source.write_text(json.dumps({"question": "q", "answer": "b"}) + "\n", encoding="utf-8")
+            x3, y3 = F.load_packed(str(source), str(tokenizer), 8, 99, 1)
+            second = torch.load(cache, weights_only=False)
+            assert len(calls) == 2 and not torch.equal(y1, y3)
+            assert first["n_items"] == second["n_items"] == 1
+            assert first["cache_key"] != second["cache_key"]
+        finally:
+            F.encode_pairs_parallel = original
+
+
+@test
+def omni_api_availability_and_missing_reader_fallback():
+    """One Omni checkpoint provides the chat/answer/vision/ASR APIs without the
+    legacy component files, and a missing reader falls back to labelled memory."""
+    try:
+        from anulm.inference import api
+    except ImportError as e:
+        print(f"    (skipped: API dependency unavailable: {e})", end="")
+        return
+    import tempfile
+    from pathlib import Path
+
+    old = api.A.USE_OMNI, api.A.HERE, api.HERE, api.models, api.Generation, api.chat_prompt
+    try:
+        with tempfile.TemporaryDirectory() as d:
+            api.A.HERE = api.HERE = Path(d)
+            api.A.USE_OMNI = False
+            assert api.A.Models("cpu", "").reader() is None
+
+            api.A.USE_OMNI = True
+            ids = {m["id"] for m in api.list_models()["data"]}
+            assert {"anulm-chat", "anulm-answer", "anulm-vision", "anulm-asr"} <= ids
+            assert not api.available("anulm-decide-india-banking")
+
+            class Models:
+                def reader(self):
+                    return None
+
+            class Generation:
+                calls = 0
+
+                def __init__(self, *args):
+                    Generation.calls += 1
+
+                def run(self):
+                    return "memory answer"
+
+            api.models = Models()
+            api.Generation = Generation
+            api.chat_prompt = lambda q: q
+            out = api.answer_question(api.AnswerRequest(question="Where?", fallback=True))
+            assert out["answer"] == "memory answer" and not out["found"]
+            assert out["from"] == "memory (anulm-chat; unreliable)"
+            out = api.answer_question(api.AnswerRequest(question="Where?", fallback=False))
+            assert out["answer"] is None and Generation.calls == 1
+    finally:
+        (api.A.USE_OMNI, api.A.HERE, api.HERE,
+         api.models, api.Generation, api.chat_prompt) = old
+
+
+@test
+def legacy_half_keeps_routers_fp32_and_projectors_runnable():
+    """The legacy GPU memory path: routers stay fp32 (bf16 cannot hold their
+    biases), everything else is bf16, and a projector still runs outside
+    autocast. An earlier version kept every small tensor in fp32, which left
+    nn.Linear biases fp32 beside bf16 weights and broke transcribe/caption."""
+    try:
+        from anulm.apps.app_omni import Models
+    except ImportError as e:
+        print(f"    (skipped: app dependency unavailable: {e})", end="")
+        return
+    from anulm.model import AnuLMConfig, Router
+    cfg = AnuLMConfig.nano_30b()
+    module = torch.nn.Module()
+    module.router = Router(cfg)
+    module.proj = torch.nn.Linear(8, 8)
+    with torch.no_grad():
+        module.router.expert_bias.add_(500.0 + torch.arange(cfg.num_experts) * 0.01)
+    out = Models("cuda", "")._half(module)
+    assert out is module
+    assert module.router.weight.dtype == torch.float32
+    assert module.router.expert_bias.dtype == torch.float32
+    assert module.router.expert_bias.unique().numel() == cfg.num_experts, "router biases were rounded"
+    assert module.proj.weight.dtype == module.proj.bias.dtype == torch.bfloat16
+    module.proj(torch.randn(2, 8, dtype=torch.bfloat16))          # no dtype mismatch outside autocast
+    assert all(t.device.type == "cpu" for t in module.parameters())
+
+
+@test
+def downloader_restarts_when_server_ignores_range():
+    """A 200 response to a resume request is a full file, not a continuation:
+    the stale .part bytes must be truncated rather than prepended to it."""
+    import tempfile
+    from pathlib import Path
+    from anulm.multimodal import omni_data as D
+
+    payload = b"fresh complete payload"
+    globals_ = D.download.__globals__
+    old_root, old_urlopen = globals_["ROOT"], globals_["urllib"].request.urlopen
+
+    class Response:
+        status = 200
+        headers = {"Content-Length": str(len(payload))}
+
+        def __init__(self):
+            self.done = False
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self, size):
+            if self.done:
+                return b""
+            self.done = True
+            return payload
+
+    requests = []
+
+    def urlopen(req, timeout):
+        requests.append(req)
+        return Response()
+
+    try:
+        with tempfile.TemporaryDirectory() as d:
+            globals_["ROOT"] = Path(d)
+            globals_["urllib"].request.urlopen = urlopen
+            dest = globals_["ROOT"] / "file.bin"
+            part = Path(str(dest) + ".part")
+            part.write_bytes(b"stale")
+            out = D.download("https://example.invalid/file", dest, size=len(payload))
+            assert requests[0].get_header("Range") == "bytes=5-"
+            assert out == dest and dest.read_bytes() == payload
+            assert not part.exists()
+    finally:
+        globals_["ROOT"], globals_["urllib"].request.urlopen = old_root, old_urlopen
+
+
+@test
+def training_fingerprint_preserves_resume_and_invalidates_downstream():
+    """An unchanged recipe keeps interrupted training state; a changed one
+    archives generated files and clears every downstream completion marker."""
+    import tempfile
+    from pathlib import Path
+    import experiments.omni_one as O
+
+    assert {"anulm/multimodal/omni_train.py", "anulm/multimodal/speech_encoder.py",
+            "anulm/multimodal/vision_encoder.py", "anulm/multimodal/audio_codec.py",
+            "anulm/multimodal/speech_vocab.py"} <= set(O.RECIPE_CODE)
+    old = O.ROOT, O.LOGS, O.training_fingerprint
+    try:
+        with tempfile.TemporaryDirectory() as d:
+            O.ROOT = Path(d)
+            O.LOGS = O.ROOT / "logs" / "omni_one"
+            O.LOGS.mkdir(parents=True)
+            O.training_fingerprint = lambda args: "new-fingerprint"
+            out, resume = O.ROOT / O.OUT, O.ROOT / (O.OUT + ".last")
+            curve = O.ROOT / f"{Path(O.OUT).stem}_curve.csv"
+            results, report = O.LOGS / "results.json", O.LOGS / "REPORT.md"
+            out.write_bytes(b"old")
+            resume.write_bytes(b"resume")
+            curve.write_text("old curve", encoding="utf-8")
+            results.write_text("old results", encoding="utf-8")
+            report.write_text("old report", encoding="utf-8")
+            collision = O.LOGS / "archive" / "old-fingerprint"
+            collision.mkdir(parents=True)
+            (collision / "keep.txt").write_text("keep", encoding="utf-8")
+            O.save_state({"training_fingerprint": "old-fingerprint", "5_base": {"ok": 1},
+                          "6_train": {"ok": 1}, "7_eval": {"ok": 1}})
+
+            O.prepare_training([])
+            state = O.state()
+            archive = O.LOGS / "archive" / "old-fingerprint-2"
+            assert state["training_fingerprint"] == "new-fingerprint"
+            assert "6_train" not in state and "7_eval" not in state
+            assert state["5_base"] == {"ok": 1}
+            assert not out.exists() and not resume.exists()
+            assert not curve.exists() and not results.exists() and not report.exists()
+            assert (archive / out.name).read_bytes() == b"old"
+            assert (archive / resume.name).read_bytes() == b"resume"
+            assert (archive / curve.name).read_text(encoding="utf-8") == "old curve"
+            assert (archive / results.name).read_text(encoding="utf-8") == "old results"
+            assert (archive / report.name).read_text(encoding="utf-8") == "old report"
+            assert (collision / "keep.txt").read_text(encoding="utf-8") == "keep"
+
+            out.write_bytes(b"new")
+            resume.write_bytes(b"new resume")
+            results.write_text("new results", encoding="utf-8")
+            before = O.state()
+            archived = sorted(archive.iterdir())
+            O.prepare_training([])
+            assert out.read_bytes() == b"new" and resume.read_bytes() == b"new resume"
+            assert results.read_text(encoding="utf-8") == "new results"
+            assert O.state() == before and sorted(archive.iterdir()) == archived
+    finally:
+        O.ROOT, O.LOGS, O.training_fingerprint = old
+
+
+@test
+def experiment_scripts_resolve_root_to_the_repository():
+    """Every experiments/*.py that sets ROOT from its own path lands on the
+    repository root. A one-level slip sent omni_one's chdir, data paths and
+    subprocesses to the folder above, where they found nothing."""
+    import re
+    from pathlib import Path as P
+    repo = P(__file__).resolve().parents[1]
+    checked = 0
+    for f in sorted((repo / "experiments").glob("*.py")):
+        m = re.search(r"^ROOT = (Path\(__file__\)[^\n#]*)", f.read_text(encoding="utf-8"), re.M)
+        if m:
+            root = eval(m.group(1), {"Path": P, "__file__": str(f)})
+            assert P(root).resolve() == repo, f"{f.name}: ROOT is {root}"
+            checked += 1
+    assert checked >= 5, f"only {checked} experiment scripts set ROOT; the pattern changed?"
+
+
+# =============================================================================
+# FROM-SCRATCH PIPELINE
+# =============================================================================
+
+
+@test
+def from_scratch_pipeline_runs_and_skips_completed_stages():
+    """The real text-only pipeline trains end to end, then verifies and skips
+    tokenizer, encoding, pretraining, vocabulary growth, and omni training."""
+    import json
+    import os
+    import subprocess
+    import tempfile
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    with tempfile.TemporaryDirectory() as d:
+        work = Path(d)
+        corpus = work / "corpus.txt"
+        tasks = work / "tasks.jsonl"
+        paragraph = ("AnuLM trains from scratch on a small text corpus. "
+                     "This document supplies enough windows for pretraining and validation.")
+        corpus.write_text((paragraph + "\n\n\n") * 12, encoding="utf-8", newline="\n")
+        rows = [{"question": "Hi?", "answer": "Hello.", "lang": "en"},
+                {"question": "Test?", "answer": "Pass.", "lang": "en"},
+                {"question": "Done?", "answer": "Yes.", "lang": "en"}]
+        tasks.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8", newline="\n")
+        cmd = [sys.executable, "-u", "-m", "anulm.training.train_from_scratch",
+               "--corpus", str(corpus), "--work-dir", str(work / "run"),
+               "--workers", "1", "--vocab", "280", "--preset", "30b", "--device", "cpu",
+               "--block-size", "64", "--batch-size", "1", "--pretrain-steps", "1",
+               "--warmup", "1", "--eval-every", "1", "--eval-iters", "1", "--log-every", "1",
+               "--task", f"chat=text:{tasks}:1:1", "--omni-steps", "1",
+               "--omni-warmup", "1", "--omni-eval-every", "1", "--omni-eval-n", "1"]
+        env = dict(os.environ, HF_HUB_OFFLINE="1", TRANSFORMERS_OFFLINE="1")
+
+        def invoke():
+            result = subprocess.run(cmd, cwd=root, env=env, capture_output=True, text=True,
+                                    encoding="utf-8", errors="replace", timeout=120)
+            assert result.returncode == 0, result.stdout + "\n" + result.stderr
+            return result.stdout
+
+        invoke()
+        outputs = ("bpe.json", "corpus.bin", "pretrained.pt", "multimodal_init.pt", "omni.pt")
+        assert all((work / "run" / name).is_file() for name in outputs)
+        second = invoke()
+        for stage in ("tokenizer", "encode", "pretrain", "grow", "omni"):
+            assert f"skip {stage}: verified" in second, second
+        assert "\n$ " not in second, second
+
+
 def main():
     passed, failed = [], []
     for fn in TESTS:

@@ -72,6 +72,7 @@ COMMANDS = {
     "rc_pointer": "anulm.tasks.rc_pointer",
     "finetune": "anulm.training.finetune",
     "train": "anulm.training.train",
+    "train_from_scratch": "anulm.training.train_from_scratch",
 }
 
 

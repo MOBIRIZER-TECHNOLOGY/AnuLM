@@ -139,7 +139,7 @@ def vision(ckpt: str, device: str, limit: int) -> dict:
     """VQA accuracy the standard way -- min(humans who gave this answer / 3, 1)
     -- on data/omni/vqa_test.jsonl, and the captioner's held-out loss on
     caption_test.jsonl plus five captions to read."""
-    from anulm.multimodal.vision_encoder import answer, caption, evaluate, load_manifest, load_trained
+    from .vision_encoder import answer, caption, evaluate, load_manifest, load_trained
     vl, tower, tok = load_trained(ckpt, device)
     res = {}
     base = HERE / "data" / "omni"

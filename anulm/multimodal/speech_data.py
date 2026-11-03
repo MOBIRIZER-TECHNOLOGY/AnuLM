@@ -52,7 +52,7 @@ from pathlib import Path
 
 import numpy as np
 
-from anulm.multimodal.audio_codec import ASR_RATE, FRAME_SLOTS, SNAC_RATE, SnacCodec, read_wav, resample
+from .audio_codec import ASR_RATE, FRAME_SLOTS, SNAC_RATE, SnacCodec, read_wav, resample
 
 MAX_SECONDS = 20.0          # a 2048 context holds 24.6 s; leave room for text
 MIN_SECONDS = 0.4

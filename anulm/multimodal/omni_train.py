@@ -30,8 +30,11 @@ projector (`vision_proj`). The encoders themselves stay frozen and outside.
   image  an image manifest (captions; VQA rows add `question`), SigLIP patches,
          cached once per image in `<manifest>.feats.f16`
 
-**Held out.** The first 2% of each task, as the single-task trainers do, so
-the numbers line up with theirs; at most `--eval-n` of them are scored. The
+**Held out.** The first 2% of distinct input groups (normalized media paths
+or text prompts); repeated captions/recordings stay in one partition. Explicit
+partitions must be nonempty and disjoint. Copied media under different paths
+still requires corpus deduplication. These splits differ from older row-based
+results, which must be rebaselined; at most `--eval-n` examples are scored. The
 best checkpoint is the one with the lowest mean of each task's held-out loss
 divided by its value at step 0, so a task with a large loss (captions) cannot
 drown out one with a small one (speech).
@@ -92,9 +95,9 @@ def load_rows(task: Task, tok, max_len: int) -> list[dict]:
                 rows.append({"p": p, "a": a})
         return rows
     if task.kind == "asr":
-        from anulm.multimodal.speech_encoder import load_manifest
+        from .speech_encoder import load_manifest
         return load_manifest(task.path)
-    from anulm.multimodal.vision_encoder import load_manifest
+    from .vision_encoder import load_manifest
     return load_manifest(task.path)
 
 
@@ -107,6 +110,53 @@ def pad(built, device):
         tb[k, : t.shape[0]] = t
     return eb, tb
 
+
+def _row_group(row, kind):
+    """Keep all captions of one image, recordings, or identical prompts together."""
+    if kind == "image":
+        return str(Path(row["image"]).resolve())
+    if kind == "asr":
+        return str(Path(row["audio"]).resolve())
+    return tuple(row["p"])
+
+
+def split_rows(rows, kind, held_fraction=0.02):
+    """Deterministic group split; repeated views of an input cannot cross it.
+
+    This groups by normalized media path or tokenized prompt. Corpus-level
+    deduplication is still needed to detect copied media at different paths.
+    """
+    groups = list(dict.fromkeys(_row_group(row, kind) for row in rows))
+    if len(groups) < 2:
+        raise ValueError(f"{kind}: need at least two independent input groups for train/held-out splits.")
+    cut = min(len(groups) - 1, max(1, int(len(groups) * held_fraction)))
+    selected = set(groups[:cut])
+    training = [row for row in rows if _row_group(row, kind) not in selected]
+    held = [row for row in rows if _row_group(row, kind) in selected]
+    return training, held
+
+
+def check_split(training, held, kind, name):
+    if not training or not held:
+        raise ValueError(f"{name}: training and held-out partitions must both be nonempty.")
+    overlap = {_row_group(row, kind) for row in training} & {_row_group(row, kind) for row in held}
+    if overlap:
+        raise ValueError(f"{name}: {len(overlap)} input groups overlap between training and held-out data.")
+
+
+
+def disjoint_held(training, held, kind, name):
+    """An explicit held-out file minus every input that training also sees.
+
+    The release data repeats a few prompts across its train and held-out files
+    ("What is the best way to cook a steak?" is in both chat files), and a
+    held-out score over prompts seen in training is optimistic. Those rows are
+    dropped from the held-out side, with a count, rather than refusing to train."""
+    seen = {_row_group(row, kind) for row in training}
+    kept = [row for row in held if _row_group(row, kind) not in seen]
+    if len(kept) < len(held):
+        print(f"{name}: dropped {len(held) - len(kept)} held-out rows whose input is also in training", flush=True)
+    return kept
 
 def text_batches(rows, model, device, batch_size, shuffle=True, seed=0):
     order = np.arange(len(rows))
@@ -131,7 +181,7 @@ class Omni:
     def __init__(self, args):
         from anulm.hf_tok import load_tokenizer
         from anulm.model import AnuLM, fit_memory, load_checkpoint
-        from anulm.multimodal.speech_vocab import vocab_of
+        from .speech_vocab import vocab_of
 
         self.dev = dev = args.device
         ck = load_checkpoint(args.ckpt, dev)
@@ -149,16 +199,20 @@ class Omni:
         kinds = {t.kind for t in self.tasks}
         self.sm = self.vl = self.enc = self.tower = None
         if "asr" in kinds:
-            from anulm.multimodal.audio_codec import WhisperEncoder
-            from anulm.multimodal.speech_encoder import ContinuousSpeech
+            from .audio_codec import WhisperEncoder
+            from .speech_encoder import ContinuousSpeech
             self.enc = WhisperEncoder(args.whisper, dev)
             self.sm = ContinuousSpeech(self.model, self.vocab, self.enc.dim, args.stack).to(dev)
             self._warm(self.sm.proj, args.audio_proj_from, "proj", "audio")
         if "image" in kinds:
-            from anulm.multimodal.vision_encoder import VisionLanguage, VisionTower
+            from .vision_encoder import VisionLanguage, VisionTower
             self.tower = VisionTower(args.tower, dev)
             self.vl = VisionLanguage(self.model, self.vocab, self.tower.dim, args.pool).to(dev)
             self._warm(self.vl.proj, args.vision_proj_from, "proj", "vision")
+        if args.proj_scale == "embed":
+            for m, what in ((self.sm, "audio"), (self.vl, "vision")):
+                if m is not None:
+                    self._match_scale(m.proj, what)
         self.caches = {}
         held = dict(h.split("=", 1) for h in (args.held or []))
         for t in self.tasks:
@@ -166,12 +220,15 @@ class Omni:
             if t.name in held:
                 t.rows, t.held = rows, load_rows(Task(f"{t.name}={t.kind}:{held[t.name]}"), self.tok,
                                                   self.cfg.block_size)
+                t.held = disjoint_held(t.rows, t.held, t.kind, t.name)
             else:
-                cut = max(1, int(len(rows) * 0.02))
-                t.held, t.rows = rows[:cut], rows[cut:]
+                t.rows, t.held = split_rows(rows, t.kind)
+            check_split(t.rows, t.held, t.kind, t.name)
+            self._validate_context(t)
             if t.kind == "image":
-                from anulm.multimodal.vision_encoder import build_cache
-                self.caches[t.name] = build_cache(rows, self.tower, Path(t.path).with_suffix(".feats.f16"))
+                from .vision_encoder import build_cache
+                self.caches[t.name] = build_cache(t.rows + t.held, self.tower,
+                                                  Path(t.path).with_suffix(".feats.f16"))
             if t.weight is None:
                 t.weight = float(len(t.rows))
             print(f"task {t.name:8s} {t.kind:5s} {len(t.rows):7d} train {len(t.held):5d} held  "
@@ -189,17 +246,68 @@ class Omni:
         proj.load_state_dict(src[key])
         print(f"{what} projector warm-started from {path}")
 
+    @torch.no_grad()
+    def _match_scale(self, proj, what):
+        """Shrink the projector's final LayerNorm so its vectors arrive at the
+        size of a text token's embedding. A unit-gain LayerNorm emits norm
+        sqrt(hidden) = 32, about 80x the 0.39 of the chat model's embeddings,
+        and the shared blocks then retune to the loud inputs at the expense of
+        text. For a normalised input z, E||g*z + b||^2 = sum(g^2) + sum(b^2),
+        so one factor on g and b sets the expected norm; it stays learnable
+        and lives in the checkpoint, so inference needs nothing new."""
+        target = self.model.embed_tokens.weight[: self.vocab.text].float().norm(dim=-1).mean()
+        ln = proj.net[-1]
+        now = (ln.weight.float().pow(2).sum() + ln.bias.float().pow(2).sum()).sqrt()
+        ln.weight.mul_(target / now)
+        ln.bias.mul_(target / now)
+        print(f"{what} projector output scaled {now:.2f} -> {target:.3f} (text embedding norm)")
+
+    @torch.no_grad()
+    def _validate_context(self, t: Task):
+        """Fail at startup, not hours in, on an example longer than block_size.
+
+        Running the frozen encoder over every clip and image here cost a full
+        pass of Whisper or SigLIP on every start and resume. The media part is
+        bounded instead: an image always yields the same number of patches, and
+        a clip at most the encoder's 30 s window. Only rows whose text could
+        overflow under that bound are built for real, which raises the
+        descriptive error for the ones that do."""
+        if t.kind == "text":
+            return
+        rows = t.rows + t.held
+        if not rows:
+            return
+        if t.kind == "asr":
+            from .audio_codec import ASR_RATE
+            states = torch.from_numpy(self.enc.encode(np.zeros(30 * ASR_RATE, dtype=np.float32))).to(self.dev)
+            media = self.sm.proj(states[None])[0].shape[0]
+
+            def text(r):
+                return len(self.tok.encode(" " + r["text"].strip())) + 1
+        else:
+            from .vision_encoder import qa_ids
+            media = self.vl.proj(self.tower.encode(rows[0]["image"]).to(self.dev)).shape[0]
+
+            def text(r):
+                return sum(map(len, qa_ids(self.tok, r)))
+        limit = self.model.cfg.block_size
+        risky = [r for r in rows if 2 + media + text(r) > limit]
+        for _ in self.batches(t, risky, t.batch, shuffle=False):
+            pass
+
     def batches(self, t: Task, rows, batch_size, shuffle=True, seed=0):
         if t.kind == "text":
             return text_batches(rows, self.model, self.dev, batch_size, shuffle, seed)
         if t.kind == "asr":
-            from anulm.multimodal.speech_encoder import batches
-            return batches(rows, self.enc, self.tok, self.sm, self.dev, batch_size, shuffle, seed)
-        from anulm.multimodal.vision_encoder import batches
+            from .speech_encoder import batches
+            return batches(rows, self.enc, self.tok, self.sm, self.dev,
+                           batch_size, shuffle, seed, task=t.name)
+        from .vision_encoder import batches
         return batches(rows, self.tower, self.tok, self.vl, self.dev, batch_size, shuffle, seed,
-                       cache=self.caches[t.name])
+                       cache=self.caches.get(t.name), task=t.name)
 
     def next_batch(self, t: Task):
+        exhausted = 0
         while True:
             if t._it is None:
                 t._it = self.batches(t, t.rows, t.batch, seed=self.args.seed + 1000 * t.epoch)
@@ -207,6 +315,9 @@ class Omni:
                 return next(t._it)
             except StopIteration:
                 t._it, t.epoch = None, t.epoch + 1
+                exhausted += 1
+                if exhausted >= 2:
+                    raise ValueError(f"{t.name}: no usable training batches; check lengths and media.")
 
     @torch.no_grad()
     def held_loss(self, t: Task, autocast) -> float:
@@ -218,14 +329,20 @@ class Omni:
             k = int((tb != -1).sum())
             tot, n = tot + loss.item() * k, n + k
         self.model.train()
-        return tot / max(n, 1)
+        if n <= 0 or not math.isfinite(tot):
+            raise ValueError(f"{t.name}: held-out set has no finite graded tokens.")
+        return tot / n
 
     def state(self, step, score, losses) -> dict:
         a = self.args
+        qa_templates = self.ck.get("qa_templates")
+        if qa_templates is None and any(t.kind == "text" for t in self.tasks):
+            from anulm.data.make_qa import PROMPTS
+            qa_templates = PROMPTS
         st = {"model": self.model.state_dict(), "cfg": replace(self.cfg, moe_impl=self.ck["cfg"].moe_impl),
               "speech_text_vocab": self.ck["speech_text_vocab"], "step": step, "val_loss": score,
               "task_losses": losses, "tasks": [t.name for t in self.tasks], "base_ckpt": a.ckpt,
-              "qa_templates": self.ck.get("qa_templates")}
+              "qa_templates": qa_templates}
         if self.sm is not None:
             st.update(proj=self.sm.proj.state_dict(), whisper=a.whisper, stack=a.stack)
         if self.vl is not None:
@@ -276,9 +393,12 @@ def train(args) -> None:
         print(f"resumed from {last} at step {st['step']} (best score {best:.4f})", flush=True)
     else:
         first = evaluate()
+        if any(not math.isfinite(value) or value <= 0 for value in first.values()):
+            raise ValueError("Baseline task losses must be finite and positive.")
         with open(curve, "a", encoding="utf-8") as f:
             f.write("0,1.0," + ",".join(str(first[n]) for n in names) + "\n")
     print("step  start | held-out at step 0: " + "  ".join(f"{k} {v:.4f}" for k, v in first.items()), flush=True)
+    print(f"each optimizer step sums {args.accum} batch(es)", flush=True)     # app_omni.py reads this
     w = np.array([t.weight for t in om.tasks], dtype=float)
     w /= w.sum()
     rng = np.random.default_rng(args.seed + start)
@@ -292,17 +412,23 @@ def train(args) -> None:
             frac = 0.1 + 0.9 * 0.5 * (1 + math.cos(math.pi * prog))
         for g, lr in zip(opt.param_groups, base_lrs):
             g["lr"] = lr * frac
-        t = om.tasks[rng.choice(len(om.tasks), p=w)]
-        eb, tb = om.next_batch(t)
-        with autocast:
-            _, loss = model(None, tb, embeds=eb)
-        loss.backward()
+        # Every AdamW step moves the weights by about lr whatever the batch
+        # held, and an intent or VQA batch is ~30 answer tokens: --accum sums
+        # several batches (any tasks) into one step so each step averages more.
+        for _ in range(args.accum):
+            t = om.tasks[rng.choice(len(om.tasks), p=w)]
+            eb, tb = om.next_batch(t)
+            with autocast:
+                _, loss = model(None, tb, embeds=eb)
+            if not torch.isfinite(loss):
+                raise ValueError(f"{t.name}: non-finite training loss at step {step}.")
+            (loss / args.accum).backward()
+            seen[t.name] += 1
+            run_loss[t.name].append(loss.item())
         torch.nn.utils.clip_grad_norm_(params, 1.0)
         opt.step()
         opt.zero_grad(set_to_none=True)
         imbalance = model.update_expert_biases()
-        seen[t.name] += 1
-        run_loss[t.name].append(loss.item())
         if step % args.log_every == 0:
             msg = "  ".join(f"{k} {np.mean(v):.3f}" for k, v in run_loss.items() if v)
             print(f"step {step:6d} | {msg} | imbalance {imbalance:4.2f}x | "
@@ -321,6 +447,8 @@ def train(args) -> None:
             print(f"  eval @ {step:6d} | score {score:.4f}{flag} | "
                   + "  ".join(f"{k} {v:.4f}" for k, v in losses.items())
                   + f" | batches seen {seen}", flush=True)
+            if args.stop_after and step >= args.stop_after:
+                break            # an A/B probe: the full run's schedule, cut short, no resume file
             if step < args.steps:
                 st = om.state(step, score, losses)
                 st.update(opt=opt.state_dict(), first=first, best=best, seen=seen)
@@ -331,8 +459,8 @@ def train(args) -> None:
 
 
 def main() -> None:
-    from anulm.multimodal.speech_encoder import STACK
-    from anulm.multimodal.vision_encoder import DEFAULT_TOWER, POOL
+    from .speech_encoder import STACK
+    from .vision_encoder import DEFAULT_TOWER, POOL
 
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--ckpt", required=True, help="a checkpoint grown by speech_vocab.py (the chat model)")
@@ -350,6 +478,12 @@ def main() -> None:
     p.add_argument("--log-every", type=int, default=500)
     p.add_argument("--audio-proj-from", help="a speech_encoder.py checkpoint whose projector to start from")
     p.add_argument("--vision-proj-from", help="a vision_encoder.py checkpoint whose projector to start from")
+    p.add_argument("--proj-scale", choices=("ln", "embed"), default="ln",
+                   help="ln: projectors emit their LayerNorm's own scale; embed: start them at the "
+                        "text embeddings' norm")
+    p.add_argument("--accum", type=int, default=1, help="batches summed into each optimizer step")
+    p.add_argument("--stop-after", type=int, default=0,
+                   help="stop at this step (keeping --steps' LR schedule), for short A/B probes")
     p.add_argument("--whisper", default="small")
     p.add_argument("--stack", type=int, default=STACK)
     p.add_argument("--tower", default=DEFAULT_TOWER)
@@ -358,7 +492,10 @@ def main() -> None:
     p.add_argument("--resume", action="store_true", help="continue from <out>.last if it exists")
     p.add_argument("--grad-ckpt", action="store_true", help="recompute activations: less memory, ~30%% slower")
     p.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
-    train(p.parse_args())
+    args = p.parse_args()
+    if args.accum < 1:
+        p.error("--accum must be at least 1 (0 would train nothing and still save a 'best' checkpoint)")
+    train(args)
 
 
 if __name__ == "__main__":

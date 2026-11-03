@@ -34,6 +34,7 @@ Long runs (millions of pairs) are the reason for three more things:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import time
@@ -111,21 +112,45 @@ def pack(pairs, block_size: int, eos: int) -> tuple[torch.Tensor, torch.Tensor]:
     return x[:, :-1].contiguous(), y[:, 1:].contiguous()
 
 
+def _packed_cache_key(source: bytes, tokenizer: bytes, block_size: int, eos: int) -> str:
+    identity = {
+        "version": 1,
+        "source_sha256": hashlib.sha256(source).hexdigest(),
+        "tokenizer_sha256": hashlib.sha256(tokenizer).hexdigest(),
+        "prompt": PROMPT,
+        "prompts": PROMPTS,
+        "block_size": block_size,
+        "eos": eos,
+    }
+    encoded = json.dumps(identity, ensure_ascii=False, sort_keys=True,
+                         separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
 def load_packed(path: str, tokenizer_path: str, block_size: int, eos: int, workers: int):
-    """Packed rows for a jsonl, cached beside it as <jsonl>.<tokenizer>.b<block>.pt."""
+    """Packed rows for a jsonl, cached beside it as <jsonl>.<tokenizer>.b<block>.pt.
+
+    The content key covers the source and tokenizer bytes, prompt templates,
+    block size and EOS. Legacy, partial and stale caches are rebuilt.
+    """
     # split("\n"), not splitlines(): Python also splits on \x0b \x0c \x1c-\x1e
     # \x85 \u2028 \u2029, and json.dumps(ensure_ascii=False) leaves those raw
     # inside strings. One U+2028 in 1.38M code pairs split a valid JSON line in
     # two and failed the entire load with "Unterminated string".
-    items = [json.loads(l) for l in Path(path).read_text(encoding="utf-8").split("\n") if l.strip()]
+    source = Path(path).read_bytes()
+    items = [json.loads(l) for l in source.decode("utf-8").split("\n") if l.strip()]
+    key = _packed_cache_key(source, Path(tokenizer_path).read_bytes(), block_size, eos)
     cache = Path(f"{path}.{Path(tokenizer_path).stem}.b{block_size}.pt")
     if cache.exists():
-        c = torch.load(cache, weights_only=False)
-        if c.get("n_items") == len(items):
-            return c["x"], c["y"]
+        try:
+            c = torch.load(cache, weights_only=False)
+            if c.get("cache_key") == key:
+                return c["x"], c["y"]
+        except Exception:
+            pass
     t0 = time.time()
     x, y = pack(encode_pairs_parallel(tokenizer_path, items, workers), block_size, eos)
-    torch.save({"x": x, "y": y, "n_items": len(items)}, cache)
+    atomic_save({"x": x, "y": y, "n_items": len(items), "cache_key": key}, cache)
     print(f"  packed {len(items)} pairs -> {len(x)} rows in {time.time() - t0:.0f}s (cached at {cache.name})")
     return x, y
 
@@ -258,6 +283,9 @@ def main():
         hx, hy = pack(pairs[:cut], cfg.block_size, tok.eos_id)
         print(f"speech: {len(pairs)} {args.task} pairs from {args.speech}")
     else:
+        if not Path(args.heldout).exists():
+            raise SystemExit(f"no held-out set at {args.heldout}: pass --heldout FILE, a jsonl of the same "
+                             "{question, answer, lang} rows kept out of --qa")
         x, y = load_packed(args.qa, cfg.tokenizer_path, cfg.block_size, tok.eos_id, args.workers)
         hx, hy = load_packed(args.heldout, cfg.tokenizer_path, cfg.block_size, tok.eos_id, args.workers)
     n_ans = int((y != -1).sum())

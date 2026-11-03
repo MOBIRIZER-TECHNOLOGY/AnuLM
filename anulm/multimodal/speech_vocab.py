@@ -53,7 +53,7 @@ from pathlib import Path
 
 import torch
 
-from anulm.multimodal.audio_codec import AUDIO_VOCAB, FRAME_SLOTS, LEVEL_VOCAB
+from .audio_codec import AUDIO_VOCAB, FRAME_SLOTS, LEVEL_VOCAB
 
 # Image tokens are here, in the speech file, because the vocabulary is grown
 # exactly once: adding them later would shift every id after the audio block

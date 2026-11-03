@@ -68,6 +68,30 @@ MBPP = "data/raw/google-research-datasets__mbpp/sanitized/test-00000-of-00001.pa
 STOPS = ["\ndef ", "\nclass ", "\nif __name__", "\nprint(", "\n#", "\nassert "]
 
 
+def mbpp_entry(row: dict) -> str:
+    """The function an MBPP problem asks for.
+
+    Taking it from the first assertion -- the text before its first "(" -- is
+    wrong for 14 of the 257 sanitized problems, because the call is wrapped:
+    `assert math.isclose(volume_sphere(10), ...)` yields "math.isclose", and
+    `assert set(common_in_nested_lists(...)) == ...` yields "set". In question
+    mode the name is put straight into the prompt, so those problems were asked
+    to "Write a Python function `math.isclose`" -- a stdlib function, not the
+    target -- and were near-certain failures regardless of the model.
+
+    The reference solution in `code` names the target outright. Prefer the `def`
+    whose name appears in the assertion, since some solutions define helpers
+    first, and fall back to the old parse only if there is no `def` at all.
+    """
+    import re
+    first = row["test_list"][0]
+    defs = re.findall(r"def\s+([A-Za-z_]\w*)", row.get("code") or "")
+    hit = next((d for d in defs if d in first), None)
+    if hit:
+        return hit
+    return defs[-1] if defs else first.split("(")[0].replace("assert ", "").strip()
+
+
 def load_problems(bench: str) -> list[dict]:
     import pyarrow.parquet as pq
     if bench == "humaneval":
@@ -77,7 +101,7 @@ def load_problems(bench: str) -> list[dict]:
     rows = pq.read_table(MBPP).to_pylist()
     out = []
     for r in rows:
-        entry = r["test_list"][0].split("(")[0].replace("assert ", "").strip()
+        entry = mbpp_entry(r)
         out.append({"id": str(r["task_id"]), "desc": r["prompt"], "entry": entry,
                     "prompt": f'"""\n{r["prompt"]}\n{chr(10).join(r["test_list"])}\n"""\n',
                     "test": "\n".join(r.get("test_imports") or []) + "\n" + "\n".join(r["test_list"]) + "\n"})
@@ -130,11 +154,22 @@ def _kill_tree(proc: subprocess.Popen) -> None:
         pass
 
 
+TIMEOUTS = {"n": 0}
+
+
 def run_program(src: str, workdir: str, timeout: float = 10.0) -> bool:
     """Run `src` in a throwaway directory and say whether it exited 0.
 
     `workdir` is the parent; each call gets a fresh child directory inside it
     which is removed afterwards, so programs cannot see each other's files.
+
+    Timeouts are counted in TIMEOUTS because the limit is WALL CLOCK, which
+    makes pass@1 depend on what else the machine is doing. Two runs of the
+    same checkpoint on the same problems differed by one problem when a
+    20-worker corpus encode was running alongside the second, and section
+    25's published numbers were measured with MBPP and HumanEval scoring
+    concurrently. A run that reports timeouts says how much of its score is
+    load rather than the model.
     """
     cell = tempfile.mkdtemp(dir=workdir)
     try:
@@ -167,6 +202,7 @@ def run_program(src: str, workdir: str, timeout: float = 10.0) -> bool:
             except subprocess.TimeoutExpired:
                 _kill_tree(proc)
                 proc.wait(timeout=5)
+                TIMEOUTS["n"] += 1
                 return False
     finally:
         shutil.rmtree(cell, ignore_errors=True)
@@ -203,7 +239,8 @@ def score(ckpt: str, problems: list[dict], device: str, max_new: int, workdir: s
     mode = mode_override or ("question" if templates else "continue")
     ac = torch.autocast("cuda", dtype=torch.bfloat16, enabled=device.startswith("cuda"))
     bs = cfg.block_size
-    passed, t0 = 0, time.time()
+    passed, t0, per_problem = 0, time.time(), []
+    TIMEOUTS["n"] = 0
     for i, pr in enumerate(problems):
         if mode == "question":
             q = ("Complete the following Python function.\n" + pr["prompt"] if "desc" not in pr
@@ -223,11 +260,17 @@ def score(ckpt: str, problems: list[dict], device: str, max_new: int, workdir: s
             program = pr["prompt"] + cut_at_stops(gen)
         ok = run_program(program + "\n\n" + pr["test"], workdir)
         passed += ok
+        per_problem.append({"id": pr["id"], "passed": bool(ok)})
         if verbose and (ok or verbose > 1):
             print(f"\n--- {pr['id']} {'PASS' if ok else 'FAIL'}\n{program[:800]}")
         print(f"\r  {ckpt}: {i + 1}/{len(problems)}  pass {passed}  ({time.time() - t0:.0f}s)", end="", flush=True)
     print()
-    return {"ckpt": ckpt, "mode": mode, "n": len(problems), "pass": passed, "pass_at_1": passed / len(problems)}
+    if TIMEOUTS["n"]:
+        print(f"  {TIMEOUTS['n']} of {len(problems)} programs hit the {10.0:.0f}s wall-clock "
+              f"timeout; on a busy machine some of those are the machine, not the model")
+    return {"ckpt": ckpt, "mode": mode, "n": len(problems), "pass": passed,
+            "pass_at_1": passed / len(problems), "problems": per_problem,
+            "timeouts": TIMEOUTS["n"]}
 
 
 def main():
