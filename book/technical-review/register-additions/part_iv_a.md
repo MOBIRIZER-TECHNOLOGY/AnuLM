@@ -14,3 +14,9 @@ integrator decides whether to add them to `RESEARCH_REFERENCES.md`.
 Not proposed, but noted: the sliding window's origin (Longformer, Mistral) is
 not cited in Chapter 12; the code comment attributes the semantics to Qwen2,
 and the chapter quotes only that comment.
+
+## Outcome (register worker, 2026-11-03)
+
+All four **verified** and added: [R04] widened (final norm, 1/√N; PDF §2.3), [R01] widened (post-norm, v7 §3.1),
+ResNet as [S16] (abstract), [R50] widened (`enable_gqa` reference code and the "experimental feature" note, from the
+installed torch 2.11.0 docstring).

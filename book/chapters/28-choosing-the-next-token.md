@@ -117,7 +117,7 @@ def book_probs(z, seen_ids, temperature=1.0, top_k=None, penalty=1.0):
 ## 28.2  Temperature, and greedy as its limit
 
 With the *illustrative* logits [2.0, 1.0, 0.5, −1.0] and tokens 0 and 3
-already in the sequence:
+already in the sequence, `book/code-examples/ch28_sampling.py` prints:
 
 ```
 T = 1                              0.609  0.224  0.136  0.030
@@ -295,7 +295,7 @@ at the ninetieth; it fits inside 40 tokens at only 39.4% of positions.
 *measured* in bf16 autocast, as served, on a sample of 8,192 positions from 16
 windows of `data/v2/val.u16` (seed 0), by the same script, which counts with
 the rule of 28.7. The median depends on precision and sample: Chapter 41
-measures its own in fp32 on 8 windows.
+measures its own in fp32 on 8 windows of 512 tokens, and gets 501.
 
 ```python
 def nucleus_size(logits, p):
@@ -312,7 +312,11 @@ def nucleus_size(logits, p):
 ![Figure 28.2 · How many tokens a 0.9 nucleus holds](../figures/fig28-2-nucleus.svg)
 
 *Figure 28.2 · How many tokens a 0.9 nucleus holds.* Positions by nucleus size,
-against top-k's fixed 40. *measured*, `part_vi_ch28_sampling.json`. Whether
+against top-k's fixed 40, on 8,192 positions from 16 windows of
+`data/v2/val.u16` (seed 0), under bf16 autocast as served, counting ties at
+the boundary. *measured*, `part_vi_ch28_sampling.json`. This is the book's
+reference measurement of nucleus sizes; Chapter 41 repeats it in another
+setting. Whether
 such nuclei make better text than top-40 is *not measured here*.
 
 `NOT IN THE REPO` · `MEASURED`

@@ -264,6 +264,21 @@ It found 5 errors and 10 improvements. All were reproduced, then fixed:
 
 **Status:** Chapters 11 and 20 remain reviewed, including this revision.
 
+### Code-first rewrite (recorded 2026-11-03, integration item #12)
+
+After the reviews and the revision above, Chapters 11 and 20 were rewritten
+code-first, like the rest of the book: each idea is now taught from a
+line-cited excerpt pinned to the code. The Stage 5 reviews in this file
+checked the earlier text. The rewritten sections have not been re-reviewed;
+this record does not re-review them. **Open:** a Stage 5 check of the
+rewritten sections of Chapters 11 and 20.
+
+Revised 2026-11-03 (integration items #4/#47): in Ch 11, the caption of
+Figure 11.2, the √d paragraph and the caption of Figure 11.4 now name
+`attention_by_hand.py`, which recomputes their *illustrative* numbers. (Item
+#6: Ch 11 at the pin no longer quotes the bf16 router flip, so nothing there
+needed citing; Ch 20 already cites Ch 23's 3.17% and was not changed.)
+
 ---
 
 ## Figures and front matter (2026-10-31)

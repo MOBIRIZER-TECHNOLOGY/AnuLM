@@ -62,7 +62,8 @@ rates. ε = 10⁻⁸ only guards against dividing by zero.
 
 *Figure 7.1 · Bias correction.* With a constant gradient of 1, the raw first
 and second moments climb from 0; both corrected estimates are 1 from the first
-step. *illustrative* gradient, *verified* arithmetic.
+step. *illustrative* gradient, *verified* arithmetic: `book/code-examples/ch07_optim.py`
+prints the first moment; the second follows the same rule with β₂ = 0.95.
 
 `IN THE REPO` (through `torch.optim.AdamW`)
 
@@ -239,7 +240,9 @@ Three shapes:
   covers the scheduler, not the shape of its decay. While it is flat the run
   can stop or be extended without disturbing anything already done.
 - **Cosine**, the default: half a cosine wave from lr down to `min_lr` over the
-  run. Its value at every step depends on `--steps`, so extending a finished
+  run. That is the cosine annealing of SGDR [R55], taken as a single run:
+  this code has none of SGDR's warm restarts. Its value at every step depends
+  on `--steps`, so extending a finished
   run jumps back up the curve; `--rewarmup` multiplies by a ramp from the
   resume point to soften that.
 
@@ -343,7 +346,8 @@ after the backward pass caps it:
 
 `clip_grad_norm_` treats all gradients as one long vector, computes its length
 ‖g‖, and if that exceeds `grad_clip` multiplies every gradient by
-`grad_clip / ‖g‖`. The direction is kept; only the length is capped. Then the
+`grad_clip / ‖g‖`. The direction is kept; only the length is capped. This is
+gradient norm clipping, proposed against exploding gradients [R56]. Then the
 optimiser steps, and then, outside the loss, the experts' bias update runs
 (Chapter 18). By hand:
 
@@ -555,9 +559,11 @@ used only for the claim in its register row:
 | [R22] | AdamW: weight decay decoupled from the gradient update | CHECKED |
 | [R23] | the warmup-stable-decay (WSD) schedule | CHECKED |
 | [R24] | Muon, an orthogonalised update by Newton–Schulz iteration; a blog post | CHECKED |
+| [R55] | cosine annealing of the learning rate (SGDR; the repo uses no restarts) | CHECKED |
+| [R56] | gradient norm clipping against exploding gradients | CHECKED |
 
-The cosine schedule, warmup and gradient clipping are described without a
-citation; proposals are in `technical-review/register-additions/part_i_ii.md`.
+Warmup is described without a citation; a proposal is in
+`technical-review/register-additions/part_i_ii.md`.
 
 Repository evidence, all at @fdbb09a:
 - `anulm/training/train.py`: `lr_at` 375–400; `OptimizerSet` 403–444 (`set_lr_scale`

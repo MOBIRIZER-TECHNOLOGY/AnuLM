@@ -82,7 +82,8 @@ The bias changed the choice: expert 3 (0.622, +0.15) beat expert 1 (0.731,
 ![Figure 17.1 · The router, one token](../figures/fig17-1-router.svg)
 
 *Figure 17.1 · The router, one token.* The example's numbers: biased scores
-choose, unbiased scores weight. *illustrative*.
+choose, unbiased scores weight. *illustrative*; printed by
+`book/code-examples/ch17_router.py`.
 
 `IN THE REPO`
 
@@ -164,17 +165,19 @@ def autocast():
 F.linear on fp32 inputs under bf16 autocast: torch.bfloat16; with autocast disabled: torch.float32
 ```
 
-The comment's 3.2% comes from a checkpoint it does not name, and is *not
-measured here*. On the released checkpoint, the measurement script of 17.7
-calls `_gate` under bf16 autocast, as before the fix, on the gate's own fp32
-inputs. The forward pass runs without autocast, in fp32 except the experts
-(bf16 on the released grouped path). The expert sets differ for 3.18% of
-tokens on average over the 19 layers (median 2.7%; 1.9% in layer 19 to 10.9%
-in layer 1). *measured*. Chapter 23's figure, the book's reference one, runs
-the whole model under bf16 autocast on a different sample, 32 windows of
-1,024 tokens: 3.17%, from 1.69% in layer 19 to 10.95% in layer 1 (also
-Chapter 26). The two settings differ in what reaches the gate, and the
-results agree to within a few hundredths of a point overall.
+The comment's 3.2% comes from a checkpoint it does not name. Chapter 23 (23.3)
+measures the flip on the released checkpoint, and that is the book's reference
+figure: with the whole model under bf16 autocast, over 32 held-out windows of
+1,024 tokens, a bf16 gate picks a different expert set for 3.17% of
+token-layer choices, from 1.69% in layer 19 to 10.95% in layer 1 (*measured*;
+Chapter 26 repeats it). A second, separate measurement comes from 17.7's
+script, `ch16_measure_trained.py`. It runs the forward pass without autocast
+(fp32 except the experts, bf16 on the released grouped path) on 64 windows of
+512 tokens, and calls `_gate` under bf16 autocast on the gate's fp32 inputs.
+There the sets differ for 3.18% of tokens on average over the 19 layers
+(median 2.7%; 1.9% in layer 19 to 10.9% in layer 1). *measured*. The two
+settings differ in sample, window length and what reaches the gate; the
+overall rates agree to within a few hundredths of a point.
 
 `IN THE REPO` · `IMPLEMENTATION-DEPENDENT` (which operations autocast re-casts)
 
@@ -293,12 +296,14 @@ config refused: top_k=8 exceeds the 4 experts reachable through 1 of 4 groups
 ```
 
 Expert 0 scores 0.953, the best of 16, but its group's second best is 0.047, so
-the group is worth 1.000 and loses. *illustrative*.
+the group is worth 1.000 and loses. *illustrative*; printed by
+`book/code-examples/ch17_router.py`.
 
 ![Figure 17.2 · Group-limited routing](../figures/fig17-2-groups.svg)
 
 *Figure 17.2 · Group-limited routing.* The example's scores in four groups;
-expert 0 is masked with its group. *illustrative*.
+expert 0 is masked with its group. *illustrative*; the scores of
+`book/code-examples/ch17_router.py`.
 
 The test checks the limit and the sum of 2.5 on 64 random tokens:
 
@@ -448,7 +453,8 @@ biased-score weights, token 0: [0.625, 0.625, 0.625, 0.625] (all near 2.5/4 = 0.
 - With `n_group > 1`, only the best groups, each worth its best two scores,
   may supply experts; the released model has one group.
 - The gate runs in fp32 with autocast off; on the released checkpoint a bf16
-  gate would choose a different expert set for 3.2% of tokens on average.
+  gate would choose a different expert set for 3.17% of token-layer choices
+  (Chapter 23's measurement), 10.95% in layer 1.
 - Trained router scores average 0.04, and the measured weights differ from a
   softmax over the chosen four logits by about 0.013 per weight.
 

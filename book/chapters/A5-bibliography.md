@@ -76,6 +76,16 @@ of the first version. An arXiv identifier `arXiv:NNNN.NNNNN` resolves at
 | R51 | PyTorch | 2026 | Automatic Mixed Precision package - torch.amp | PyTorch 2.11 documentation | CHECKED |
 | R52 | PyTorch | 2026 | torch.compile | PyTorch 2.11 documentation | CHECKED |
 | R53 | PyTorch | 2026 | torch.nn.functional.grouped_mm | PyTorch 2.11 documentation | CHECKED |
+| R54 | Yergeau | 2003 | UTF-8, a transformation format of ISO 10646 | RFC 3629; doi:10.17487/RFC3629 | CHECKED |
+| R55 | Loshchilov | 2016 | SGDR: Stochastic Gradient Descent with Warm Restarts | arXiv:1608.03983 | CHECKED |
+| R56 | Pascanu | 2012 | On the difficulty of training Recurrent Neural Networks | arXiv:1211.5063 | CHECKED |
+| R57 | Kalamkar | 2019 | A Study of BFLOAT16 for Deep Learning Training | arXiv:1905.12322 | CHECKED |
+| R58 | Yu | 2022 | Orca: A Distributed Serving System for Transformer-Based Generative Models | OSDI '22, pp. 521–538 (no arXiv id) | CHECKED |
+| R59 | Dettmers | 2022 | LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale | arXiv:2208.07339 | CHECKED |
+| R60 | Frantar | 2022 | GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers | arXiv:2210.17323 | CHECKED |
+| R61 | Shoeybi | 2019 | Megatron-LM: Training Multi-Billion Parameter Language Models Using Model Parallelism | arXiv:1909.08053 | CHECKED |
+| R62 | Huang | 2018 | GPipe: Efficient Training of Giant Neural Networks using Pipeline Parallelism | arXiv:1811.06965 | CHECKED |
+| R63 | Greshake | 2023 | Not what you've signed up for: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection | arXiv:2302.12173 | CHECKED |
 
 ## E.2  Supporting references
 
@@ -94,7 +104,11 @@ of the first version. An arXiv identifier `arXiv:NNNN.NNNNN` resolves at
 | S11 | Hinton | 2015 | Distilling the Knowledge in a Neural Network | arXiv:1503.02531 | CHECKED |
 | S12 | Schulman | 2017 | Proximal Policy Optimization Algorithms | arXiv:1707.06347 | CHECKED |
 | S13 | Li | 2020 | PyTorch Distributed: Experiences on Accelerating Data Parallel Training | arXiv:2006.15704 | CHECKED |
+| S14 | Elman | 1990 | Finding Structure in Time | doi:10.1207/s15516709cog1402_1; Cognitive Science 14(2):179–211 | CHECKED |
+| S15 | Hochreiter | 1997 | Long Short-Term Memory | doi:10.1162/neco.1997.9.8.1735; Neural Computation 9(8):1735–1780 | CHECKED |
+| S16 | He | 2015 | Deep Residual Learning for Image Recognition | arXiv:1512.03385 | CHECKED |
+| S17 | Press | 2016 | Using the Output Embedding to Improve Language Models | arXiv:1608.05859 | CHECKED |
 
-*verified*: the 66 rows are generated from `RESEARCH_REFERENCES.md` by
+*verified*: the 80 rows are generated from `RESEARCH_REFERENCES.md` by
 `ch41_audit.py --bibliography`, and `ch41_audit.py` fails if this page and the
 register disagree (Appendix F). At the time of writing every entry is CHECKED.

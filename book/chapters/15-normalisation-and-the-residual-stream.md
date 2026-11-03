@@ -47,7 +47,8 @@ RMSNorm drops the re-centring and divides by the root mean square alone
   model.RMSNorm vs F.rms_norm: 0.0e+00
 ```
 
-*illustrative*. RMSNorm keeps each direction and sets the RMS to 1.
+*illustrative*, printed by `book/code-examples/ch15_norms.py`. RMSNorm keeps
+each direction and sets the RMS to 1.
 LayerNorm subtracts the mean first, which in two dimensions leaves ±(1, −1)
 or zero: *bit*, [1, 1], vanishes. At width 1,024 re-centring discards one
 direction of 1,024. `anulm/model.py`'s RMSNorm matches PyTorch's `F.rms_norm`.
@@ -186,7 +187,8 @@ before the output head:
 ```
 
 The other arrangement normalises the stream itself, *after* each addition:
-post-norm, drawn in Figure 15.1. GPT-2 moved layer normalisation to each
+post-norm, drawn in Figure 15.1, the original Transformer's LayerNorm(x +
+Sublayer(x)) [R01]. GPT-2 moved layer normalisation to each
 sub-block's input [R04], and a later analysis found pre-norm models train
 without the warm-up stage and reach comparable results [R10]. AnuLM has
 pre-norm and RMSNorm.
@@ -292,8 +294,8 @@ the matrices that write into it:
 The loop then redraws the *last* matrix of every residual branch, `dense`
 (`o_proj` in MLA) and every `down_proj`, with standard deviation
 0.02/√(2L): two branches per layer. The comment credits nanoGPT; GPT-2's
-report describes the same 1/√N rule for N residual layers. The example runs one random batch through
-the freshly built released model, then again with those matrices at 0.02:
+report describes the same 1/√N rule for N residual layers [R04]. The example
+runs one random batch through the freshly built released model, then again with those matrices at 0.02:
 
 ```python
     for label in ("scaled (model.py)", "all 0.02"):
@@ -412,7 +414,8 @@ used only for the claim in its register row:
 
 | ID | Used for | Status |
 |---|---|---|
-| [R04] | GPT-2 moved layer normalisation to the input of each sub-block | CHECKED |
+| [R01] | post-norm: LayerNorm(x + Sublayer(x)) around each sub-layer | CHECKED |
+| [R04] | GPT-2 moved layer normalisation to the input of each sub-block; residual-layer weights scaled at initialisation by 1/√N | CHECKED |
 | [R08] | RMSNorm: normalising by the root mean square, without re-centring | CHECKED |
 | [R09] | LayerNorm: normalising with the mean and variance within a layer | CHECKED |
 | [R10] | pre-norm transformers without the warm-up stage reach comparable results | CHECKED |

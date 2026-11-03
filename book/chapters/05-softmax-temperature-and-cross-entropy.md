@@ -285,7 +285,8 @@ ids already emitted, and −∞ for any id that would repeat an n-gram
 ![Figure 5.1 · Temperature reshapes, never reorders](../figures/fig05-1-temperature.svg)
 
 *Figure 5.1 · Temperature reshapes, never reorders.* The three-logit example
-at T = 0.5, 1 and 2. *illustrative* logits, *verified* probabilities.
+at T = 0.5, 1 and 2. *illustrative* logits, *verified* probabilities, printed
+by `book/code-examples/ch05_softmax.py`.
 
 `IN THE REPO`
 
@@ -418,7 +419,19 @@ dividing by zero.
 ![Figure 5.3 · The gradient of cross-entropy](../figures/fig05-3-gradient.svg)
 
 *Figure 5.3 · The gradient of cross-entropy.* For the three-logit example with
-true token 0: p, y and p − y. *illustrative*.
+true token 0: p, y and p − y. *illustrative*. The arithmetic: logits (2.0, 1.0,
+0.1) give e<sup>z</sup> = (7.389, 2.718, 1.105), which sum to 11.212, so
+p = (0.659, 0.242, 0.099); with y = (1, 0, 0), p − y = (−0.341, 0.242, 0.099).
+The figure script, `book/tools/figures/part_i_ii.py`, recomputes it and checks
+it against autograd. The arithmetic: logits (2.0, 1.0,
+0.1) give e<sup>z</sup> = (7.389, 2.718, 1.105), which sum to 11.212, so
+p = (0.659, 0.242, 0.099); with y = (1, 0, 0), p − y = (−0.341, 0.242, 0.099).
+The figure script, `book/tools/figures/part_i_ii.py`, recomputes it and checks
+it against autograd. The arithmetic: logits (2.0, 1.0,
+0.1) give e<sup>z</sup> = (7.389, 2.718, 1.105), which sum to 11.212, so
+p = (0.659, 0.242, 0.099); with y = (1, 0, 0), p − y = (−0.341, 0.242, 0.099).
+The figure script, `book/tools/figures/part_i_ii.py`, recomputes it and checks
+it against autograd.
 
 `IN THE REPO`
 

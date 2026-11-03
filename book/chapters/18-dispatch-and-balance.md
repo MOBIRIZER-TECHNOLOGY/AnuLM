@@ -58,7 +58,8 @@ find each expert's tokens.
 ![Figure 18.1 · Three ways to dispatch](../figures/fig18-1-dispatch.svg)
 
 *Figure 18.1 · Three ways to dispatch.* The example's ten slots through the
-sparse, dense and grouped paths. *illustrative*.
+sparse, dense and grouped paths. *illustrative*; the index tensors printed by
+`book/code-examples/ch18_dispatch_balance.py`.
 
 `IN THE REPO`
 
@@ -402,9 +403,10 @@ the differences within a layer matter. (Rerunning the whole model, as Chapter
 count, because changed choices alter the later layers' inputs.) The export
 script's comment, the wrapper's warning (`anulm/hf/modeling_anulm.py` lines 120–133)
 and `docs/DEVELOPING.md` line 302 say the output "collapses" into repeated
-tokens. Chapter 39 finds that this does not reproduce at the pin; it likely
-dates from before the router's fp32 fix (17.4). It is *not measured here*. The
-comment:
+tokens. What collapses is the biases, to one value per layer, and with them
+the expert choices; the output does not. Chapter 39 finds that the repeated
+tokens do not reproduce at the pin; the warning likely dates from before the
+router's fp32 fix (17.4). The comment:
 
 > **In the repo** · `anulm/hf/export_hf.py` · `main` · lines 328–338 · @fdbb09a
 
@@ -526,8 +528,9 @@ step's 16,384 slots: noisy, and biased upward. It reads 3.75× at step 0
 
 ## 18.8  Common mistakes, and how to catch them
 
-- **Storing the bias in bf16** (18.6). *Catch it:* compare `topk_idx` before
-  and after saving.
+- **Storing the bias in bf16** (18.6). Many expert choices change, while the
+  loss rises only 0.003 nats (Chapter 39), so the loss will not show it.
+  *Catch it:* compare `topk_idx` before and after saving.
 - **No `update_expert_biases`** in a new loop: nothing fails. *Catch it:* log
   the ratio, as `anulm/training/train.py` does.
 - **The bias as a `Parameter`**, moved by AdamW. *Catch it:*
@@ -564,8 +567,8 @@ step's 16,384 slots: noisy, and biased upward. It reads 3.75× at step 0
   45% of tokens, about 12% of individual choices; in one layer one expert
   would receive every token.
 - Their mean drifted into the hundreds, which costs fp32 resolution; bf16
-  storage leaves one or two distinct values per layer, at a measured cost of
-  0.003 nats (Chapter 39).
+  storage leaves one or two distinct values per layer. That changes about half
+  the expert sets, yet costs only 0.003 nats of loss (Chapter 39).
 - A sequence balance loss and a z-loss add about 0.003 to a loss of 3.38;
   imbalance is best read as a median over layers on a large sample.
 

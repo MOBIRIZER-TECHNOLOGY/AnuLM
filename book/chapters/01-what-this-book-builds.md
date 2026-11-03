@@ -33,7 +33,7 @@ repository the rest of the book reads.
 | loss | the average of −log p over the true next tokens (Chapter 3) |
 | checkpoint | a file of trained weights and their configuration, such as `ckpt_base_v2.pt` |
 | preset | a named configuration of sizes in `anulm/model.py`, such as `nano_30b` |
-| the pin | commit `fdbb09a`, which every line number in this book refers to: the `anulm/` package layout after a code-quality pass; it is not on GitHub yet (1.7) |
+| the pin | commit `fdbb09a`, which every line number in this book refers to: the `anulm/` package layout after a code-quality pass, on the GitHub branch `port-bundle-fixes` (1.7) |
 
 ---
 
@@ -411,10 +411,10 @@ of width 384 and 16 experts, 2 active per token: 17.4M parameters, 6.6M active
 
 A citation, such as 1.2's, names a file, a symbol, the lines and the commit.
 The pin, `fdbb09a`, is the `anulm/` package layout after a code-quality pass
-(weights-only loading, exceptions for bad input, honest test skips). It is not on GitHub yet,
-and the public `main` (`ae59238`) still has the old flat layout, whose line
-numbers differ, so always read the code at the pin (the front matter has the
-details). From a clone that has the branch:
+(weights-only loading, exceptions for bad input, honest test skips). It is on
+the GitHub branch `port-bundle-fixes`; the default branch, `main` (`ae59238`),
+still has the old flat layout, whose line numbers differ, so always read the
+code at the pin (the front matter has the details). From a clone:
 
 ```bash
 git show fdbb09a:anulm/model.py | sed -n '1144,1173p'

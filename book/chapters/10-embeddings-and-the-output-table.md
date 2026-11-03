@@ -42,7 +42,8 @@ F.embedding == one_hot @ W: (1, 3) ids -> (1, 3, 32) vectors; rows with a gradie
 ![Figure 10.1 · A lookup is a one-hot product](../figures/fig10-1-lookup.svg)
 
 *Figure 10.1 · A lookup is a one-hot product.* The one-hot row for id 5 picks
-row 5 of **W**; every other row is multiplied by 0. *illustrative*.
+row 5 of **W**; every other row is multiplied by 0. *illustrative*;
+`book/code-examples/ch10_embeddings.py` checks the lookup against the product.
 
 Two consequences follow from the matrix form. The lookup is linear, so its
 gradient is the one-hot matrix transposed times the incoming gradient: only
@@ -77,7 +78,8 @@ class AnuLM(nn.Module):
   (out, in), so it is also (V, D), and `lm_head(h)` computes h **W**ᵀ: one
   score, a *logit*, per id.
 - **Tying:** with `tie_word_embeddings`, line 843 makes the head's weight *the
-  same tensor* as the embedding. The default is `False` (line 117, "Sarvam
+  same tensor* as the embedding. Tying the input and output embeddings is
+  recommended by [S17]. The default is `False` (line 117, "Sarvam
   unties both models"), and so is the released model (*verified*).
 
 ```
@@ -138,7 +140,8 @@ def initial_loss_is_ln_vocab():
 ```
 
 At the released size the book example simulates just the head, drawn as
-`_init_weights` draws it, on synthetic unit-RMS inputs (*illustrative*):
+`_init_weights` draws it, on synthetic unit-RMS inputs (*illustrative*;
+`book/code-examples/ch10_embeddings.py`, `first_loss`):
 
 > Book example, not repository code · `book/code-examples/ch10_embeddings.py` · `first_loss`
 
@@ -181,7 +184,9 @@ released config at random init (seed 0, 4 x 256 random ids): loss 10.621, logit 
 
 The bump grows with the
 square of the initial spread: at `initializer_range` 0.05 the released head
-would start 1.28 above ln V (*illustrative*, printed by the example).
+would start 1.28 above ln V (*illustrative*, printed by
+`book/code-examples/ch10_embeddings.py`: σ = 0.05 · √1,024 = 1.6, and
+σ²/2 = 1.28).
 
 `IN THE REPO`
 
@@ -508,10 +513,15 @@ and at 400M the full recipe's early lead did not hold (*measured*).
 
 ## References
 
-Research references cited in this chapter (`RESEARCH_REFERENCES.md`): none.
+Research references cited in this chapter (`RESEARCH_REFERENCES.md`), each
+used only for the claim in its register row:
+
+| ID | Used for | Status |
+|---|---|---|
+| [S17] | tying a language model's input and output embeddings (the repo unties by default) | CHECKED |
+
 The merge tree is this repository's own idea, measured only in
-`docs/RESULTS.md` §32. A register entry for weight tying is proposed in
-`technical-review/register-additions/part_iii.md`.
+`docs/RESULTS.md` §32.
 
 Repository evidence, all at @fdbb09a:
 - `anulm/model.py`:

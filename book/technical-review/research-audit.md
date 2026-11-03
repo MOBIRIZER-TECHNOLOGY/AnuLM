@@ -8,15 +8,15 @@ Written 2026-11-03 by `book/tools/research_audit.py` from `RESEARCH_REFERENCES.m
 
 | | count |
 |---|---|
-| total | 66 |
+| total | 80 |
 | cited | 0 |
-| checked | 66 |
+| checked | 80 |
 | corrected | 0 |
 | rejected | 0 |
 
-Inventory entries (R): 53; supplementary (S): 13.
+Inventory entries (R): 63; supplementary (S): 17.
 
-Corrected at some point (from the corrections log, now promoted): 16 — `R01`, `R04`, `R07`, `R10`, `R15`, `R36`, `R37`, `R38`, `R44`, `R49`, `R50`, `R51`, `R52`, `R53`, `S01`, `S05`.
+Corrected at some point (from the corrections log, now promoted): 18 — `R01`, `R04`, `R07`, `R10`, `R15`, `R19`, `R36`, `R37`, `R38`, `R44`, `R49`, `R50`, `R51`, `R52`, `R53`, `R58`, `S01`, `S05`.
 
 ## Missing or unresolved identifiers
 
@@ -38,9 +38,9 @@ Chapter files scanned: 47.
 
 - none
 
-**In the register, not cited by any chapter:** 3
+**In the register, not cited by any chapter:** 4
 
-`R27`, `R28`, `S11`
+`R27`, `R28`, `S11`, `S16`
 
 ## Claims (Stage 5, by review)
 

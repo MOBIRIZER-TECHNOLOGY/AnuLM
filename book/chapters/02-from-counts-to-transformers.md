@@ -242,7 +242,9 @@ output at all. Two designs let it in:
 
 - A **recurrent network** (RNN) carries a state vector from position to
   position, updating it with each token: unlimited context in principle, but
-  one position at a time.
+  one position at a time. Elman's network feeds its hidden state back to
+  itself, a memory of its earlier states [S14]; the LSTM adds gate units that
+  keep error flowing across time lags of more than 1,000 steps [S15].
 - **Attention.** In 2014 a translation model learned to soft-search the source
   sentence for the parts relevant to each target word [R02]. The 2017
   **transformer** was built from scaled dot-product and multi-head attention
@@ -258,7 +260,9 @@ output at all. Two designs let it in:
 ## 2.5  Encoder, decoder, and why AnuLM is a decoder
 
 The 2017 transformer had an encoder and a decoder [R01]. An **encoder** reads
-the whole input, every position seeing every other; a **decoder** writes one
+the whole input, every position seeing every other; BERT pre-trains such
+representations, conditioning on left and right context in all layers [S01].
+A **decoder** writes one
 token at a time, each position seeing only earlier ones. GPT-2 was a decoder
 only, trained as a language model on web text [R04]. AnuLM is a decoder too:
 
@@ -410,6 +414,9 @@ used only for the claim in its register row:
 | [R03] | word2vec: continuous word vectors learned from large corpora | CHECKED |
 | [R04] | GPT-2, a decoder-only language model trained on WebText | CHECKED |
 | [R35] | LLM2Vec: bidirectional attention and masked next-token prediction | CHECKED |
+| [S01] | BERT: deep bidirectional representations, conditioned on left and right context | CHECKED |
+| [S14] | Elman's recurrent links: hidden state fed back as a memory of prior states | CHECKED |
+| [S15] | LSTM: gate units keeping error flow constant over long time lags | CHECKED |
 
 
 Repository evidence, all at @fdbb09a:

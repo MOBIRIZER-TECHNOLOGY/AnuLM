@@ -11,6 +11,10 @@ Chapter 22: the training loop of train.py, checked in two ways.
    optimiser. Two micro-batches must give the gradient of one batch of twice
    the size; forgetting to divide by M doubles it.
 
+Part 1 reads data/v2/meta.json from the repository root (found from this
+file's location, so the script runs from any directory). Without the v2
+corpus, part 1 is skipped and part 2 still runs.
+
     python book/code-examples/ch22_one_step.py
 """
 
@@ -33,7 +37,8 @@ from anulm import model as Mdl  # noqa: E402  the repository's model.py, unchang
 from anulm.training import train as T  # noqa: E402  the repository's train.py, unchanged
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-RELEASED = ("--preset 350m --moe-impl grouped --data data/v2/meta.json --block-size 1024 --batch-size 4 "
+META = ROOT / "data" / "v2" / "meta.json"          # repository-relative: runs from any directory
+RELEASED = ("--preset 350m --moe-impl grouped --block-size 1024 --batch-size 4 "
             "--steps 0 --seed 2026 --cfg num_experts=24 moe_intermediate_size=192 num_experts_per_tok=4 "
             "num_shared_experts=0 sliding_window=256 max_window_layers=10 bias_update_rate=3e-3")
 
@@ -41,7 +46,8 @@ RELEASED = ("--preset 350m --moe-impl grouped --data data/v2/meta.json --block-s
 def dry_run():
     """train.main() with the released arguments, zero steps, on the CPU."""
     with tempfile.TemporaryDirectory() as d:
-        sys.argv = ["train.py", "--device", "cpu", "--out", str(Path(d) / "ckpt.pt")] + RELEASED.split()
+        sys.argv = ["train.py", "--device", "cpu", "--out", str(Path(d) / "ckpt.pt"),
+                    "--data", str(META)] + RELEASED.split()
         buf = io.StringIO()
         with contextlib.redirect_stdout(buf):
             T.main()
@@ -75,8 +81,11 @@ def step(model, opt, batches, args, step_no, divide=True):
 
 
 def main():
-    for line in dry_run():
-        print(line)
+    if META.exists():
+        for line in dry_run():
+            print(line)
+    else:
+        print(f"skipping part 1: {META} not found (it needs the v2 corpus, local only)")
 
     torch.manual_seed(0)
     cfg = tiny()

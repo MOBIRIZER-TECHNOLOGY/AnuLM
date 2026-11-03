@@ -1,0 +1,65 @@
+{
+ "about": "Sources the book measures from that are not in git (git-ignored or untracked, on the author's machine only). The numbers the chapters quote from them are recorded in the book/measurements/ files named here.",
+ "sources": [
+  {
+   "source": "v2_train_run.log (repository root; written by train.py during the base-v2 run)",
+   "chapters": [
+    18,
+    22
+   ],
+   "recorded_in": {
+    "18": "part_iv_b_trained.json -> training_log (also part_iv_b_trained_report.txt)",
+    "22": "part_v_a_run.json (train, eval, resumes, invocations, stable_end, decay_drop, tokens, tail_loss_*)"
+   },
+   "parsed_by": [
+    "book/code-examples/ch16_measure_trained.py",
+    "book/code-examples/ch22_read_run_log.py"
+   ]
+  },
+  {
+   "source": "logs/omni_one/6_train.log and logs/omni_one/results.json (the October joint run)",
+   "chapters": [
+    37
+   ],
+   "recorded_in": {
+    "37": "part_viii_ix_omni_log.json (first, evals, resumed_at, batches_seen_replayed, release_gates)"
+   },
+   "parsed_by": [
+    "book/code-examples/ch37_task_mix.py"
+   ]
+  },
+  {
+   "source": "release/AnuLM-Base-v2-400M/ (local export; local copy of huggingface.co/toonist/AnuLM-Base-v2-400M)",
+   "chapters": [
+    39
+   ],
+   "recorded_in": {
+    "39": "part_viii_ix_export.json (release_files, release_header, router_bias, heldout_loss)"
+   },
+   "parsed_by": [
+    "book/code-examples/ch39_export_roundtrip.py"
+   ],
+   "code_files_vs_pin": {
+    "model.py": {
+     "pin_file": "anulm/model.py",
+     "identical_to_pin": false,
+     "sha1_release": "788d83a54b2f",
+     "sha1_pin": "8cb49eb6c321"
+    },
+    "configuration_anulm.py": {
+     "pin_file": "anulm/hf/configuration_anulm.py",
+     "identical_to_pin": false,
+     "sha1_release": "24480ddd3101",
+     "sha1_pin": "b5739e152b4f"
+    },
+    "modeling_anulm.py": {
+     "pin_file": "anulm/hf/modeling_anulm.py",
+     "identical_to_pin": false,
+     "sha1_release": "0502c547ffb4",
+     "sha1_pin": "bea6dcb4284c"
+    }
+   },
+   "code_files_vs_pin_note": "measured 2026-11-03 on the local copy, line endings normalised; the Hub copy was not compared"
+  }
+ ]
+}

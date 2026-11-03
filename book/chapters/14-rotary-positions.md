@@ -97,14 +97,15 @@ def rotate(v, angle):
   |q_bit| before 2.236, after 2.236
 ```
 
-*illustrative*. The query moves with the shift; its scores do not. Against
+*illustrative*, printed by `book/code-examples/ch14_rope.py`. The query moves
+with the shift; its scores do not. Against
 *dog* it was 4 unrotated (Chapter 11) and is 3.844 here; against itself it
 stays 3, and the length is preserved.
 
 ![Figure 14.1 · A rotation by position](../figures/fig14-1-rope-toy.svg)
 
 *Figure 14.1 · A rotation by position.* *illustrative*; drawn from
-`apply_rope`'s output.
+`apply_rope`'s output, as `book/code-examples/ch14_rope.py` prints it.
 
 `IN THE REPO`
 

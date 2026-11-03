@@ -133,7 +133,7 @@ def dpo_loss(pol_chosen, pol_rejected, ref_chosen, ref_rejected, beta: float = 0
 (rejected); reference −13.0 and −14.0: m = 0.1·(1 + 1) = 0.2, loss
 −log σ(0.2) = 0.5981. At the first step m = 0 and the loss is ln 2. The
 gradient on log π<sub>θ</sub>(a<sup>+</sup>) is −β·σ(−m), whose size grows
-towards β as m falls:
+towards β as m falls. `book/code-examples/ch34_preferences.py` recomputes it:
 
 ```python
     pc, pr, rc, rr = torch.tensor([-12.0]), torch.tensor([-15.0]), torch.tensor([-13.0]), torch.tensor([-14.0])
@@ -201,7 +201,8 @@ step 10: loss 0.4422  margin +0.587  log p chosen  -9.955  rejected -15.594
 step 20: loss 0.3025  margin +1.041  log p chosen  -8.085  rejected -18.263
 ```
 
-*illustrative*: twenty steps on `tiny()`, one made-up pair. The chosen answer
+*illustrative*: twenty steps on `tiny()`, one made-up pair, printed by
+`book/code-examples/ch34_preferences.py`. The chosen answer
 rises here, but the loss sees only the difference: both can fall while it
 falls. The lab book's Chapter 11 reports that on its sums task, cured by the
 SFT term; here it is *not measured here*.
@@ -226,6 +227,7 @@ def group_advantages(rewards, eps=1e-4):
 **By hand** (*illustrative*). Rewards 1, 0, 0, 1: mean 0.5, sample standard
 deviation √(4·0.25/3) = 0.5774, advantages ±0.866. A group all right or all
 wrong has every advantage 0 and teaches nothing.
+`book/code-examples/ch34_preferences.py` prints:
 
 ```
 group advantages: [[0.866, -0.866, -0.866, 0.866], [0.0, 0.0, 0.0, 0.0]]
@@ -233,8 +235,9 @@ group advantages: [[0.866, -0.866, -0.866, 0.866], [0.0, 0.0, 0.0, 0.0]]
 
 ![Figure 34.2 · Group-relative advantages](../figures/fig34-2-grpo-group.svg)
 
-*Figure 34.2 · Group-relative advantages.* *illustrative*: from the example's
-`group_advantages`, asserted by the figure script.
+*Figure 34.2 · Group-relative advantages.* *illustrative*: from
+`group_advantages` in `book/code-examples/ch34_preferences.py`, asserted by the
+figure script.
 
 The loss raises every id of an answer by the answer's advantage, and
 penalises drift from the reference with a KL estimate at each position:
@@ -299,7 +302,8 @@ def grpo_step(policy, reference, opt, prompt, reward_fn, G=8, n_new=4):
 GRPO, mean reward per 10 steps: [0.541, 0.622, 0.734, 0.85, 0.9, 0.956]
 ```
 
-*illustrative*: sixty steps on `tiny()`; the made-up reward, the share of even
+*illustrative*: sixty steps on `tiny()`, printed by
+`book/code-examples/ch34_preferences.py`; the made-up reward, the share of even
 answer ids, stands in for a checker.
 
 `NOT IN THE REPO`

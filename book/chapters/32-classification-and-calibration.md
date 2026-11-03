@@ -267,7 +267,8 @@ bin with |0.8 − 0.8| = 0, so ECE = 0. That is the test's own case (printed by
 the example as `ECE 0.0e+00`).
 
 The example then makes 2,000 overconfident predictions: logits three times
-too large, on 10 classes, seed 0 (*illustrative*). It checks its own ECE
+too large, on 10 classes, seed 0 (*illustrative*;
+`book/code-examples/ch32_decide_calibration.py`). It checks its own ECE
 against `metrics` and lets `fit_temperature` find τ:
 
 ```python
@@ -284,14 +285,15 @@ tau 3.00  accuracy 43.8%  mean confidence 44.7%  ECE 3.06%  Brier 0.695  conf>=0
 ece_by_hand equals decide.metrics: True; argmax unchanged by tau: True
 ```
 
-*illustrative*: printed by the example. The grid finds the factor of 3 put
+*illustrative*: printed by `book/code-examples/ch32_decide_calibration.py`.
+The grid finds the factor of 3 put
 in; accuracy is unchanged, and confidence falls to match it.
 
 ![Figure 32.2 · Reliability before and after temperature scaling](../figures/fig32-2-reliability.svg)
 
 *Figure 32.2 · Reliability before and after temperature scaling.*
-*illustrative*: the example's made-up data, recomputed and asserted by the
-figure script.
+*illustrative*: the made-up data of `book/code-examples/ch32_decide_calibration.py`,
+recomputed and asserted by the figure script.
 
 `IN THE REPO`
 

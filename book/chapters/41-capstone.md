@@ -755,14 +755,18 @@ mass inside sample.py's default top-k 50: 10th pct 0.480, median 0.815, 90th pct
 ![Figure 41.3 · Nucleus sizes on the released model](../figures/fig41-3-nucleus.svg)
 
 *Figure 41.3 · Nucleus sizes on the released model.* At p = 0.9, 13.1% of
-positions need one token and the median needs 501. *measured* on a sample of
-4,092 positions of `data/v2/val.u16`, in fp32;
+positions need one token and the median needs 501. *measured* on 4,092
+positions from 8 windows of 512 tokens of `data/v2/val.u16` (seed 0), in true
+fp32 (`moe_impl` `sparse`, no autocast); Chapter 28's Figure 28.2 is the
+reference measurement, in bf16 on 16 windows;
 `book/measurements/part_x_released.json`.
 
 No fixed k fits both: where one token holds 90% of the mass, `top_k=50` still
 admits 49 more, and where the mass is spread, 50 tokens hold under 0.480 of it
-at one position in ten. Chapter 28 measured 16 windows under bf16 autocast, as
-the serving code runs, and found a median of 341 at p = 0.9, counting tokens tied at the boundary
+at one position in ten. Chapter 28's measurement (28.6) is the book's
+reference one. It differs from this one in three ways: 16 windows instead of
+8, bf16 autocast as the serving code runs instead of true fp32, and tokens
+tied at the boundary counted. It found a median of 341 at p = 0.9
 (`part_vi_ch28_sampling.json`). With a spread this wide, the median moves with
 the sample; the range, from 1 token to thousands, does not. Whether top-p's
 samples are better is *not measured here*.

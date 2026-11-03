@@ -229,7 +229,9 @@ reads key/value head h // `n_rep`. A tiled `repeat` pairs them differently:
 ```
 
 *verified*: `enable_gqa` groups the heads the same way; the tiled pairing
-differs by 2.93 without any error. After attention, `transpose` and `view` lay
+differs by 2.93 without any error. PyTorch's documentation says the same: with
+`enable_gqa=True` its reference implementation repeats each key and value head
+with `repeat_interleave`, and it calls GQA an experimental feature [R50]. After attention, `transpose` and `view` lay
 the H outputs side by side, (B, S, H·D<sub>h</sub>), for `dense`.
 
 The other branch is a switch:
@@ -391,6 +393,7 @@ used only for the claim in its register row:
 | [R01] | multi-head attention | CHECKED |
 | [R12] | grouped-query attention; reached by uptraining MHA checkpoints | CHECKED |
 | [R13] | multi-query attention: keys and values shared across all heads, for incremental decoding | CHECKED |
+| [R50] | the documented `enable_gqa` behaviour of SDPA (`repeat_interleave` of key and value heads; experimental) | CHECKED |
 
 Repository evidence, all at @fdbb09a:
 - `anulm/model.py`: `AnuLMConfig.__post_init__` 129–131 and 150–154, `NATIVE_GQA` 384–387,

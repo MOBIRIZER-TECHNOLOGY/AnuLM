@@ -41,7 +41,7 @@ cost.
 ## 8.1  Text is bytes
 
 Unicode gives every character a number, its code point, and UTF-8 writes that
-number as one to four bytes. Every byte after the first has the bit pattern
+number as one to four bytes [R54]. Every byte after the first has the bit pattern
 `10xxxxxx`, a *continuation byte*; the first byte's leading bits say how many
 follow. The whole rule fits in a function (*verified* against Python's
 encoder):
@@ -483,10 +483,14 @@ decode errors in 1,512 bytes from the 17M Hindi model (*measured*).
 
 ## References
 
-Research references cited in this chapter (`RESEARCH_REFERENCES.md`): none.
-UTF-8 is described from Python's encoder, which the book example checks; a
-register entry for the UTF-8 standard is proposed in
-`technical-review/register-additions/part_iii.md`.
+Research references cited in this chapter (`RESEARCH_REFERENCES.md`), each
+used only for the claim in its register row:
+
+| ID | Used for | Status |
+|---|---|---|
+| [R54] | UTF-8: one to four bytes per character; the first byte's high bits give the length, continuation bytes are `10xxxxxx` | CHECKED |
+
+The UTF-8 rule as coded here is also checked against Python's encoder.
 
 Repository evidence, all at @fdbb09a:
 - `anulm/model.py`: `AnuLMConfig` line 47; `AnuLM.generate` 1171–1179.

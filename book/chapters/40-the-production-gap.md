@@ -114,8 +114,10 @@ One sequence, `x` of shape (1, S), holds the lock for its whole reply.
 PagedAttention divides the KV cache into blocks of a fixed number of tokens,
 in the vLLM serving system [R46], so memory can be reserved a block at a time.
 A second technique usually comes with it, continuous batching: requests join
-and leave the running batch between decoding steps. The register has no source
-for it yet. Both are absent here. With made-up request lengths:
+and leave the running batch between decoding steps. Orca introduced this as
+iteration-level scheduling, one model iteration at a time, with a finished
+request returned at once and a new one admitted next [R58]; "continuous
+batching" is the later name. Both are absent here. With made-up request lengths:
 
 ```python
     rng = np.random.default_rng(0)
@@ -131,7 +133,8 @@ for it yet. Both are absent here. With made-up request lengths:
    reserved: contiguous 1,024,000 (47.6% idle); pages of 16: 543,488 (1.4% idle)
 ```
 
-*illustrative*. Counting only weights and KV cache, 16 GiB holds at most 495
+*illustrative*, printed by `book/code-examples/ch40_gap_arithmetic.py`.
+Counting only weights and KV cache, 16 GiB holds at most 495
 full contexts as served, 478 with the grouped path's bf16 expert copy (40.3):
 an upper bound that leaves out activations, workspace and allocator overhead.
 Concurrency is *not measured here*; in the code, the lock caps it at one.
@@ -196,10 +199,14 @@ the experts occupy memory twice: fp32 parameters plus 0.54 GB of bf16.
    as served: fp32 weights, 30,720 B/token of cache: 495 full contexts on 16 GiB; 478 with the grouped path's bf16 expert stack (0.54 GB)
 ```
 
-*illustrative* formats, *verified* arithmetic: four hypothetical deployments
+*illustrative* formats, *verified* arithmetic (`book/code-examples/ch40_gap_arithmetic.py`): four hypothetical deployments
 with a bf16 cache, then the model as served; each context count is an upper
 bound from weights and cache alone. QLoRA's 4-bit NormalFloat (NF4)
-is one published 4-bit format [R33]. The quality cost is *not measured here*,
+is one published 4-bit format [R33]. LLM.int8() multiplies in int8 with a
+separate normalisation constant for each inner product [R59], close to the
+per-row int8 line (the paper also splits off outlier features, which that line
+does not model). GPTQ quantises weights after training to 3 or 4 bits, using
+approximate second-order information [R60]. The quality cost is *not measured here*,
 but Chapter 39 found a trap: the router biases share a large offset, so plain
 bf16 rounding erases their differences, changing about half the expert
 choices for 0.003 nats; centring them first made it free. The only quantised
@@ -253,6 +260,8 @@ geometric sum 1 + α + … + α<sup>γ</sup>:
 ```
 
 *illustrative*: no α is measured; the draft's cost comes off these counts.
+The counts are (1 − α⁵)/(1 − α), printed by
+`book/code-examples/ch40_gap_arithmetic.py`.
 
 `NOT IN THE REPO`
 
@@ -331,8 +340,10 @@ partitions them across GPUs [R48]; the three lines are this book's arithmetic
 for partitioning one more kind of state at a time. Data parallelism runs a full
 copy of the model on each GPU, on different batches, and averages gradients
 every step; PyTorch buckets them and overlaps that with the backward pass
-[S13]. Tensor parallelism splits each weight matrix across GPUs, and pipeline
-parallelism gives each GPU a contiguous run of layers; both are absent too.
+[S13]. Tensor parallelism splits each weight matrix across GPUs, Megatron-LM's
+intra-layer model parallelism [R61], and pipeline parallelism gives each GPU a
+contiguous run of layers, splitting the batch so the stages overlap [R62];
+both are absent too.
 
 `NOT IN THE REPO`
 
@@ -425,7 +436,8 @@ What is still missing:
 ```
 
 Retrieved passages enter the prompt with the same standing as the question,
-so a passage holding instructions can steer the reply: prompt injection. Its
+so a passage holding instructions can steer the reply: indirect prompt
+injection, through data likely to be retrieved [R63]. Its
 effect here is *not measured*.
 
 `IN THE REPO` (the key check, the warning, the caps, error ids, the lock) · `NOT IN THE REPO` (per-user auth, rate limits, metrics, filters)
@@ -489,6 +501,12 @@ used only for the claim in its register row:
 | [R47] | speculative decoding: 2–3× faster T5-XXL decoding with identical outputs | CHECKED |
 | [R48] | ZeRO: model states dominate memory and are partitioned | CHECKED |
 | [R50] | PyTorch SDPA chooses among three implementations automatically | CHECKED |
+| [R58] | Orca's iteration-level scheduling (later called continuous batching) | CHECKED |
+| [R59] | LLM.int8(): int8 matrix multiplication with vector-wise scales | CHECKED |
+| [R60] | GPTQ: post-training 3- or 4-bit weight quantisation with second-order information | CHECKED |
+| [R61] | Megatron-LM: intra-layer (tensor) model parallelism | CHECKED |
+| [R62] | GPipe: pipeline parallelism over sub-sequences of layers, with batch splitting | CHECKED |
+| [R63] | indirect prompt injection through retrieved data | CHECKED |
 | [S08] | FlashAttention-2: better parallelism and work partitioning | CHECKED |
 | [S10] | speculative sampling: several tokens per target-model call | CHECKED |
 | [S13] | PyTorch DDP: bucketing gradients, overlapping communication | CHECKED |

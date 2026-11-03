@@ -18,3 +18,10 @@ The register's existing entries cover the rest of Part III: [R05] for BPE
 adapted to subword segmentation and [R04] for byte-level BPE with a base
 vocabulary of 256, both CHECKED and both cited in Chapter 9 only for those
 claims.
+
+## Outcome (register worker, 2026-11-03)
+
+- RFC 3629: **verified** at the RFC Editor's text (§3 table of octet sequences), added as [R54].
+- Press & Wolf: **verified** (arXiv abstract; EACL 2017 per the arXiv comment), added as [S17].
+- Gage 1994: **not added**. No primary source reachable (secondary pages only, and they disagree on the venue);
+  no chapter makes the claim.

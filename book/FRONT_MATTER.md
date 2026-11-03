@@ -33,14 +33,12 @@ Every code citation names a file, a symbol, line numbers and a commit:
 > **In the repo** · `anulm/model.py` · `_sdpa` · lines 414–418 · @fdbb09a
 
 The line numbers are checked against commit `fdbb09a` by the book's own tools.
-That commit is on the repository's `restructure` branch, which moved
-the code into the `anulm/` package, and it is not on GitHub yet. The public
-`main`,
-[`ae59238`](https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/tree/ae592387dc373cc6f579abce444c7f08c9e373a3),
-still has the old flat layout (`anulm/model.py` at the root, not `anulm/model.py`),
-so its line numbers differ and the HTML edition does not link citations yet.
-Once the branch is published, `tools/build_preview.py` links every citation
-whose file is identical at the published commit. The lab book under `course/`,
+That commit is on the repository's
+[`port-bundle-fixes`](https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/tree/port-bundle-fixes) branch on GitHub, which holds the code in the
+`anulm/` package. The default branch, `main`
+([`ae59238`](https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/tree/ae592387dc373cc6f579abce444c7f08c9e373a3)),
+still has the old flat layout (`model.py` at the root), so its line numbers
+differ: read the code at the pin, not at `main`. The lab book under `course/`,
 which the "Build it" boxes point to, is in the pin.
 
 ## Licences

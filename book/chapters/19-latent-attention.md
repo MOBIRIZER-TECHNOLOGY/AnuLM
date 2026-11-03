@@ -54,8 +54,9 @@ scored against the cached c directly, without expanding anything. A rotation
 between W<sub>UK</sub> and c depends on the key's position, so it cannot be
 folded into the query, and every key would have to be expanded again. Keeping
 the rotation in its own slice keeps the shortcut open. DeepSeek-V2 introduced
-the decoupled rotary key [R19]; the absorption argument is stated here without
-a register source.
+the decoupled rotary key, and gives this same argument: W<sub>UK</sub> can be
+absorbed into the query, and a position-dependent rotation between them would
+force every prefix key to be recomputed [R19].
 
 **This repository does not absorb.** It expands every step, so here the split
 buys no cache saving over rotating after expansion; it even caches
@@ -336,7 +337,8 @@ layer, 7,077,888 for `nano_105b` at its full context, T = `block_size` = 256.
 Half of that, T·D<sub>c</sub>·H·D<sub>n</sub> = 3,538,944, makes the keys;
 absorbing `kv_b_proj`'s key half into the query removes that half. The value
 half needs its own move: weight the cached c by the attention weights first,
-then apply `kv_b_proj`'s value half, which can be folded into `o_proj`. Both
+then apply `kv_b_proj`'s value half, which can be folded into `o_proj`. These
+are the two absorptions DeepSeek-V2 describes for inference [R19]. Both
 are possible because no rotation sits between `kv_b_proj` and c. Neither is
 implemented here. The example checks the key-side algebra:
 
@@ -464,7 +466,7 @@ used only for the claim in its register row:
 
 | ID | Used for | Status |
 |---|---|---|
-| [R19] | multi-head latent attention; the decoupled RoPE strategy with a shared rope key | CHECKED |
+| [R19] | multi-head latent attention; the decoupled RoPE strategy with a shared rope key; absorbing the key and value up-projections at inference, and why RoPE blocks that | CHECKED |
 | [R49] | Sarvam 105B's configuration and modelling code (`q_lora_rank` optional and unset; the 512 + 64 sizes) | CHECKED |
 
 Repository evidence, all at @fdbb09a:

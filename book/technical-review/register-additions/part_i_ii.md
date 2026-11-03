@@ -18,3 +18,12 @@ Not proposed: a source for learning-rate warmup. The chapter states warmup's
 purpose as reasoning about Adam's early moment estimates and cites nothing;
 [R10] (pre-norm without warmup) is the nearest checked source and is not used
 for that claim.
+
+## Outcome (register worker, 2026-11-03)
+
+- Elman 1990: **verified**, added as [S14]. Claim from the abstract (Crossref publisher deposit): hidden unit
+  patterns fed back to themselves give the network a dynamic memory. The abstract credits the idea to Jordan (1986).
+- Hochreiter & Schmidhuber 1997: **verified**, added as [S15] (abstract via Crossref).
+- S01 widening: **verified** and added, without "(an encoder-only model)", which the abstract does not say.
+- SGDR: **verified**, added as [R55]; the cosine annealing is eq. 5 in the full text (checked in the arXiv PDF).
+- Pascanu et al. 2012: **verified**, added as [R56] (abstract).

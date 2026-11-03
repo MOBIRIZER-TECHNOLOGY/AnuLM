@@ -30,3 +30,10 @@ FFN(x) = max(0, xW₁ + b₁)W₂ + b₂ with d_ff = 2048 = 4 × 512.
 - **How verified:** from my knowledge of the paper's §2.1.2–2.1.3; not
   re-opened in this session. The chapter's numeric check of the key-side
   algebra (`ch19_mla.py` `absorb`) does not depend on the paper.
+
+## Outcome (register worker, 2026-11-03)
+
+- §1: withdrawn, not added (R01 §3.3 does give max(0, xW₁ + b₁)W₂ + b₂, checked, should it be wanted again).
+- §2: **verified** in the arXiv PDF text: (a) absorption of W^UK into W^Q and W^UV into W^O (§2.1.2); (b) RoPE
+  incompatible with that absorption, keys of all prefix tokens would be recomputed (§2.1.3); (c) query compression to
+  reduce activation memory in training (§2.1.2, eq. 12–13). All three added to [R19]'s claims.

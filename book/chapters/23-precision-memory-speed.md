@@ -45,7 +45,7 @@ float16     16        5       10   0.000977   6.55e+04     6.1e-05
 ```
 
 *verified*: printed by `ch23_precision.py`. bf16 keeps fp32's exponent and
-range, so 10⁻⁸ survives, but only about two decimal digits: 257 becomes 256.
+range [R57], so 10⁻⁸ survives, but only about two decimal digits: 257 becomes 256.
 fp16 has finer steps, but 10⁻⁸ underflows to zero and 70,000 overflows.
 
 ![Figure 23.1 · fp32, bf16 and fp16](../figures/fig23-1-formats.svg)
@@ -187,9 +187,13 @@ router in bf16 vs fp32: 19,717 of 622,592 token-layer choices differ (3.17%), ov
 `data/v2/val.u16` (statistics only), saved in
 `book/measurements/part_v_a_memory.json`. The comment's 3.2% holds on the
 released checkpoint, and at layer 1 one choice in nine changes. This is the
-book's reference figure for the flip rate; Chapter 26 reproduces it.
-Chapter 17 reports 3.2% from a different setting, 64 windows of 512 tokens. The
-rate depends on the sample, the window length (layers 0–9 see at most 256
+book's reference figure for the flip rate; Chapters 17, 20 and 26 cite it, and
+Chapter 26 reproduces it. The method compares two gate calls on the same input
+at each layer, while the model itself keeps routing in fp32. A run that routed
+every layer in bf16, as before the fix, would also feed later layers different
+inputs, so its rate could differ (*not measured here*). Chapter 17 reports a
+separate measurement, 3.18%, from a different setting: no autocast, 64 windows
+of 512 tokens. The rate depends on the sample, the window length (layers 0–9 see at most 256
 tokens either way, layers 10–19 see the whole window), the kernels and the
 PyTorch version.
 
@@ -512,6 +516,7 @@ B·S·259 numbers, tiny beside the activations; chunking only adds recomputation
 | [R51] | the autocast API | CHECKED |
 | [R52] | the `torch.compile` API | CHECKED |
 | [R53] | `F.grouped_mm`, the grouped GEMM | CHECKED |
+| [R57] | bf16 represents the same range of values as fp32 | CHECKED |
 
 Repository evidence, all at @fdbb09a:
 - `anulm/training/train.py`: `warn_if_spilling` 219–234, `main` 645–650, 701–702, 880.

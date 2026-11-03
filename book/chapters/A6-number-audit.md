@@ -29,8 +29,9 @@ figures and four appendix tables.
 ## F.1  The repository at the pin
 
 The line numbers refer to commit `fdbb09a`, the `anulm/` package layout
-after a code-quality pass, which is not on GitHub yet; the public `main`
-(`ae59238`) has the old flat layout, whose line numbers differ (front matter).
+after a code-quality pass, on the GitHub branch `port-bundle-fixes`; the
+default branch, `main` (`ae59238`), has the old flat layout, whose line
+numbers differ (front matter).
 To work on exactly the cited code, export the pin rather than checking it out:
 
 ```bash
@@ -93,6 +94,16 @@ the chapter prints what it prints. They fall into three kinds:
 `trace_forward.py` (Chapter 20) and `ch41_shapes.py` (Appendix A) print every
 shape; `ch41_arithmetic.py` prints Appendix B's counts.
 
+Four sources the book measures from are not in git: they exist only on the
+author's machine. They are the base run's log `v2_train_run.log` (Chapters 18
+and 22), the joint run's `logs/omni_one/6_train.log` and `results.json`
+(Chapter 37), and the local export `release/AnuLM-Base-v2-400M/` (Chapter 39).
+The numbers the chapters quote from them are kept in `book/measurements/`:
+`part_iv_b_trained.json`, `part_v_a_run.json`, `part_viii_ix_omni_log.json`
+and `part_viii_ix_export.json`. `local_sources.json` lists each source, the
+file that holds its numbers and the script that parsed it. Without the source,
+check a quoted number against that file.
+
 ## F.4  The audit script
 
 `book/code-examples/ch41_audit.py` (**Book example, not repository code**) does
@@ -121,10 +132,10 @@ paragraph itself. A reviewer can then check each of those against its
 chapter's example.
 
 **With `--run`, it runs the self-contained examples.** Each runs in a temporary
-directory. The audit skips any example whose source names `ckpt_base_v2` or
-`measurements`, and lists what it skipped. The test is textual, so a few
-self-contained scripts that merely mention the checkpoint in a comment are
-skipped too.
+directory. The audit skips the examples in its `SKIP` list, each with its
+reason: they need `ckpt_base_v2.pt`, the v2 corpus, the base run's log or a
+local export in `release/`. It prints what it skipped and why, and fails if
+the list names a file that does not exist. A new example runs unless someone adds it to the list.
 
 It exits with status 1 if an appendix check fails or an example run fails.
 

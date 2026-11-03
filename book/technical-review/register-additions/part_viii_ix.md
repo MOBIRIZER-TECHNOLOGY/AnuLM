@@ -90,3 +90,8 @@ text), so the claim cell is limited to what the abstract says.
   (`data:` lines, `data: [DONE]`); no source is needed.
 - safetensors (Chapter 39) is described only by the header the book example
   reads from the released file.
+
+## Outcome (register worker, 2026-11-03)
+
+All six **verified** and added: Orca [R58], LLM.int8() [R59], GPTQ [R60], Megatron-LM [R61], GPipe [R62],
+Greshake et al. [R63]. Orca's join/leave claim is not in the abstract; it was confirmed in the paper body (USENIX PDF).

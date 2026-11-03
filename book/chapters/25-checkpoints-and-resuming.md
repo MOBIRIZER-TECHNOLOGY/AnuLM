@@ -73,8 +73,10 @@ comments; 1.59 GB is 1.48 GiB.
 | `step` (0-based), `val_loss`, `best_val` | 1,899,999, 3.3523 | 1,899,999, 3.3523, 3.3523 |
 
 The optimizer state is twice the model. The run ended on its best
-evaluation, so both files hold the same weights: all 1,551 tensors are equal
-(*verified* by the same script).
+evaluation, so both files should hold the same weights. Equal `step` and
+`val_loss` only suggest it, so the script checks it directly: it compares all
+1,551 tensors of the two files with `torch.equal`, and every one is equal
+(*verified*; `same_weights` in the saved JSON).
 
 `IN THE REPO` · `MEASURED`
 
@@ -117,7 +119,8 @@ point, 4.6 GB the Hindi 350M run's (§8), 4.86 GB the released run's (25.1).
 ![Figure 25.2 · In-place and atomic checkpoint writes](../figures/fig25-2-atomic.svg)
 
 *Figure 25.2 · In-place and atomic checkpoint writes.* *illustrative*; the
-behaviour of each lane is verified by the book example below.
+behaviour of each lane is verified by the book example below,
+`book/code-examples/ch25_resume.py`.
 
 After the kill at step 265,000, a scheduled task restarted training every 30
 minutes; each restart died on the unreadable file in 11 seconds, and for about

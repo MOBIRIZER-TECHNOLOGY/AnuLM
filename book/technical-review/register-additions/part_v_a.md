@@ -15,3 +15,7 @@
 Chapter 23 does not cite it. It states the range from `torch.finfo` (*verified*) and that the
 repository has no loss scaler (a repository fact). If the integrator accepts the entry, 23.1
 could cite it for the range sentence only.
+
+## Outcome (register worker, 2026-11-03)
+
+**Verified** (arXiv API abstract) and added as [R57], for the range sentence only.

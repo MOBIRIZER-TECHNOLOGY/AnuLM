@@ -118,8 +118,9 @@ V = X W_V:  The [0, 1]   dog [2, 0]   bit [1, 1]
 
 ![Figure 11.2 · One attention row by hand](../figures/fig11-2-soft-lookup.svg)
 
-*Figure 11.2 · One attention row by hand.* *illustrative*; drawn by
-`tools/make_figures.py` from the same matrices.
+*Figure 11.2 · One attention row by hand.* *illustrative*; the numbers are
+recomputed by `book/code-examples/attention_by_hand.py` (11.3), and the figure
+is drawn by `tools/make_figures.py` from the same matrices.
 
 | Step | Operation | The *bit* row |
 |---|---|---|
@@ -247,7 +248,7 @@ It scores 2,000 random queries against the same 256 random keys. For each
 row of weights it records three things: the largest weight; the *keys in play*,
 e<sup>H</sup> with H = −Σ p log p, which is 256 for uniform weights and 1 for
 one-hot; and whether the largest weight exceeds 0.99. Each is averaged over the
-rows (*illustrative*, seed 0):
+rows (*illustrative*, seed 0; `book/code-examples/attention_by_hand.py`, 11.4):
 
 | d | std of q·k | √d | largest weight, unscaled | keys in play, unscaled | rows above 0.99, unscaled | largest weight, ÷√d | keys in play, ÷√d |
 |---|---|---|---|---|---|---|---|
@@ -258,7 +259,8 @@ rows (*illustrative*, seed 0):
 ![Figure 11.4 · Why divide by √d](../figures/fig11-4-sqrt-d.svg)
 
 *Figure 11.4 · Why divide by √d.* The keys in play from the table, on a log
-scale. *illustrative*.
+scale. *illustrative*; `tools/make_figures.py` repeats the seeded draw of
+`book/code-examples/attention_by_hand.py`.
 
 Unscaled, a random width-64 head uses 2.5 of 256 keys, and one row in eight is
 nearly one-hot. There ∂p<sub>i</sub>/∂s<sub>j</sub> =

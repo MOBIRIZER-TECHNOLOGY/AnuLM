@@ -55,8 +55,8 @@ def before_and_after() -> None:
     print("  a row with every key masked:", torch.full((3,), float("-inf")).softmax(-1).tolist())
 ```
 
-`toy()` returns Chapter 11's **Q**, **K** and **V**; `s` is (3, 3). It prints
-(*illustrative*):
+`toy()` returns Chapter 11's **Q**, **K** and **V**; `s` is (3, 3).
+`book/code-examples/ch12_masks.py` prints (*illustrative*):
 
 ```
   −∞ before:  rows [1.0, 0.0, 0.0] sums [1.0, 1.0, 1.0]

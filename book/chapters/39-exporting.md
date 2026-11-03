@@ -156,7 +156,10 @@ experts it picks, to compare with the native model:
 windows of Chapter 20; one sample, one seed. Greedy prompts are the first 64
 tokens of 8 of those windows; only statistics are printed. These numbers,
 saved in `book/measurements/part_viii_ix_export.json`, ran on the GPU; a CPU
-rerun (2026-11-03) moved each loss by at most 0.00005.
+rerun (2026-11-03) moved each loss by at most 0.00005. The native loss, 3.37908, differs
+from Chapter 20's 3.37895 on the same windows because Chapter 20's script runs
+the experts in bfloat16 on the `grouped` path and this one runs them in
+float32 on `sparse`; both round to 3.379.
 
 Three readings:
 
@@ -184,6 +187,9 @@ logarithmic axis. *measured*: `book/measurements/part_viii_ix_export.json`.
 > warning (`anulm/hf/modeling_anulm.py` lines 120–133) say that 16-bit router biases
 > make the output collapse into repeated tokens. Neither reproduces at
 > @fdbb09a with this checkpoint: the measured costs are 0.003 and 0.004 nats.
+> What does collapse is the biases, to one or two values per layer, and so
+> the expert choices: about half of them change (Chapter 18). The choices
+> change a lot; the loss barely moves.
 > They probably predate the fix that runs the router in float32 (Chapter 17);
 > that history is *not verified here*. Keeping the small tensors in float32
 > remains the safe choice, since it is exact and costs 2 MB. An export that

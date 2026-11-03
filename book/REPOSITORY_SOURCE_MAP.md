@@ -4,12 +4,12 @@ The table every chapter cites from. Line numbers are taken at `@fdbb09a`, the
 tip of the `restructure` branch (the `anulm/` package layout), from the root
 copy of the repository.
 
-The pin is not on GitHub yet. The public `main` on
-[GitHub](https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM) (`ae59238`) still has
-the old flat layout, so its line numbers differ and the HTML preview links no
-citations. When the branch is published, add a line `Public commit:` followed
-by its full 40-character hash in backticks here; `tools/build_preview.py` then
-links every citation whose file is identical at that commit.
+The pin is on [GitHub](https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM), on the
+branch `port-bundle-fixes`. The default branch, `main` (`ae59238`), still has
+the old flat layout, whose line numbers differ. `tools/build_preview.py` links
+every citation whose file is identical at this commit:
+
+Public commit: `fdbb09a14df5a3655bc0a3ee164d41864ae953b8`
 
 Re-pinned from `@773b6a8` on 2026-11-03 by `tools/repin.py`; every moved
 citation, with the old and new code line, is in

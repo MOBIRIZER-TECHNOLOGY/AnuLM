@@ -42,7 +42,8 @@ vocab_size 262, eos_id 261
 ![Figure 9.1 · Five merges on a toy corpus](../figures/fig09-1-merges.svg)
 
 *Figure 9.1 · Five merges on a toy corpus.* Each new token is a pair of
-older ones; the number is the pair's count when it was chosen. *illustrative*.
+older ones; the number is the pair's count when it was chosen. *illustrative*;
+the counts are printed by `book/code-examples/ch09_bpe_from_scratch.py`.
 
 `(l, o)` and `(o, w)` both occur 8 times; the tie goes to the smaller pair,
 108 < 111. And ` slowest` keeps ` ` and `s` apart: no merge makes ` s`.

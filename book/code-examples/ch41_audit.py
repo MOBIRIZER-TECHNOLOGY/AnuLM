@@ -22,9 +22,12 @@ The checks:
   `ch41_shapes.py`'s output. This is membership only: it does not check that
   a shape sits in the right row.
 
-`--run` runs each example in a temporary directory, and skips any whose source
-names `ckpt_base_v2` or `measurements` (they need the released checkpoint, or
-write the book's measurement files); it lists what it skipped.
+`--run` runs each example in a temporary directory, except those in SKIP below:
+an explicit list of the examples that need the released checkpoint (most of
+them also the GPU and the v2 corpus), the v2 corpus itself, the base run's
+log, or a local export in release/. It lists what it skipped and why, and
+reports a SKIP entry that names no file. No example writes `book/measurements/` unless given `--save`, so running
+the rest is safe.
 
 It exits 1 if a check fails or an example run fails.
 """
@@ -43,6 +46,37 @@ BOOK = HERE.parent
 ROOT = BOOK.parent
 CH = BOOK / "chapters"
 PIN = "fdbb09a"
+GPU = "needs ckpt_base_v2.pt and data/v2; measured on the GPU"
+
+# Examples --run does not run, with the reason. Everything else runs, from a temporary directory.
+SKIP = {
+    "ch09_bpe_from_scratch.py": "needs release/AnuLM-Base-v2-400M (the local export's tokenizers)",
+    "ch09_measure_fertility.py": "needs data/v2 (the base run's corpus)",
+    "ch10_measure_tables.py": "needs ckpt_base_v2.pt and data/v2",
+    "ch12_measure_masks.py": GPU,
+    "ch13_measure_groups.py": GPU,
+    "ch14_measure_shift.py": GPU,
+    "ch15_measure_stream.py": GPU,
+    "ch16_measure_trained.py": "needs ckpt_base_v2.pt, data/v2 and v2_train_run.log; measured on the GPU",
+    "ch21_windows.py": "needs release/AnuLM-Base-400M/tokenizer.json (experiments/build_v2.py reads it)",
+    "ch21_measure_corpus.py": "needs data/v2 (the base run's corpus)",
+    "ch22_read_run_log.py": "needs v2_train_run.log (the base run's log, local only)",
+    "ch23_measure.py": GPU,
+    "ch24_measure_val_noise.py": GPU,
+    "ch25_measure_resume_point.py": "needs ckpt_base_v2.pt and ckpt_base_v2.pt.last",
+    "ch26_measure_router_bf16.py": GPU,
+    "ch27_measure_cache.py": GPU,
+    "ch28_measure_sampling.py": GPU,
+    "ch29_measure_context.py": GPU,
+    "ch30_measure_chat_split.py": "needs ckpt_base_v2.pt and data/chat_*.jsonl",
+    "ch31_measure_lora.py": "needs ckpt_base_v2.pt; measured on the GPU",
+    "ch35_wider_vocab.py": GPU,
+    "ch36_projectors.py": "needs ckpt_base_v2.pt, ckpt_omni.pt and data/omni",
+    "ch39_export_roundtrip.py": "needs ckpt_base_v2.pt, data/v2 and release/AnuLM-Base-v2-400M",
+    "ch41_checkpoints.py": "needs ckpt_base_v2.pt, data/v2 and release/AnuLM-Base-v2-400M",
+    "measure_attention.py": GPU,
+    "measure_part_i_ii.py": GPU,
+}
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -140,9 +174,8 @@ def run_examples() -> list[str]:
     for p in sorted(HERE.glob("*.py")):
         if p.name == Path(__file__).name:
             continue
-        src = p.read_text(encoding="utf-8", errors="replace")
-        if "ckpt_base_v2" in src or "measurements" in src:
-            skipped.append(p.name)
+        if p.name in SKIP:
+            skipped.append(f"{p.name} ({SKIP[p.name]})")
             continue
         t0 = time.time()
         with tempfile.TemporaryDirectory() as tmp:
@@ -154,7 +187,10 @@ def run_examples() -> list[str]:
         if status != "ok":
             failed.append(f"example {p.name}: {status}")
         print(f"  {p.name:<34} {status:<8} {time.time() - t0:6.1f} s")
-    print(f"skipped (need the released checkpoint, or write book/measurements): {', '.join(skipped)}")
+    print("skipped:")
+    for x in skipped:
+        print(f"  {x}")
+    failed += [f"SKIP names a missing example: {n}" for n in sorted(SKIP) if not (HERE / n).exists()]
     return failed
 
 
