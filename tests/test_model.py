@@ -1815,6 +1815,7 @@ def continuous_asr_decodes_long_chunks_in_order():
     class Model:
         def __init__(self):
             self.calls = 0
+            self.cfg = SimpleNamespace(block_size=1024)      # transcribe sizes its budget from it
 
         def embed_tokens(self, ids):
             return torch.zeros((len(ids), 2), dtype=torch.float32)

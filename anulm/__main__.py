@@ -24,6 +24,7 @@ COMMANDS = {
     "app_omni": "anulm.apps.app_omni",
     "app_vision": "anulm.apps.app_vision",
     "app_voice": "anulm.apps.app_voice",
+    "validated_demo": "anulm.apps.validated_demo",
     "convert_parquet": "anulm.data.convert_parquet",
     "convert_translate": "anulm.data.convert_translate",
     "fetch_code": "anulm.data.fetch_code",

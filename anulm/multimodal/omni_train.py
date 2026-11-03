@@ -95,8 +95,8 @@ def load_rows(task: Task, tok, max_len: int) -> list[dict]:
                 rows.append({"p": p, "a": a})
         return rows
     if task.kind == "asr":
-        from .speech_encoder import load_manifest
-        return load_manifest(task.path)
+        from .speech_encoder import load_manifest, whisper_window_rows
+        return whisper_window_rows(load_manifest(task.path), task.name)
     from .vision_encoder import load_manifest
     return load_manifest(task.path)
 

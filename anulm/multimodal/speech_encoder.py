@@ -157,6 +157,32 @@ def load_manifest(prefix: str) -> list[dict]:
     return rows
 
 
+WHISPER_SECONDS = 30.0      # the encoder's window; WhisperEncoder.encode refuses anything longer
+
+
+def clip_seconds(row: dict) -> float:
+    """A manifest row's duration: its recorded `seconds`, else the WAV header's
+    (soundfile reads only the header, so this is cheap even for float WAVs)."""
+    if row.get("seconds") is not None:
+        return float(row["seconds"])
+    import soundfile as sf
+    return float(sf.info(row["audio"]).duration)
+
+
+def whisper_window_rows(rows: list[dict], name: str = "asr") -> list[dict]:
+    """Training rows that fit Whisper's 30-second window, with a count of the rest.
+
+    A longer clip cannot be encoded whole, and cropping it would pair half the
+    audio with the whole transcript -- a wrong label. Five FLEURS Hindi train
+    clips run 31-36 s; they stopped the first joint-training step. Evaluation
+    keeps long clips: `transcribe` decodes them in 30-second chunks."""
+    kept = [r for r in rows if clip_seconds(r) <= WHISPER_SECONDS]
+    if len(kept) < len(rows):
+        print(f"{name}: dropped {len(rows) - len(kept)} of {len(rows)} clips longer than "
+              f"{WHISPER_SECONDS:.0f} s (Whisper's window)", flush=True)
+    return kept
+
+
 def batches(rows, enc: WhisperEncoder, tok, sm: ContinuousSpeech, device: str,
             batch_size: int, shuffle: bool = True, seed: int = 0, task: str | None = None):
     """Pad-to-longest batches of (embeds, targets). Whisper runs per clip and
@@ -221,7 +247,7 @@ def train(args) -> None:
     print(f"projector: {enc.dim} x{args.stack} -> {cfg.hidden_size}, {n_proj/1e6:.2f}M params "
           f"(whisper-{args.whisper} frozen)")
 
-    rows = load_manifest(args.prefix)
+    rows = whisper_window_rows(load_manifest(args.prefix), args.prefix)
     cut = max(1, int(len(rows) * 0.02))
     held, rows = rows[:cut], rows[cut:]
     steps = max(1, int(math.ceil(len(rows) / args.batch_size * args.epochs)))
@@ -363,9 +389,15 @@ def transcribe(sm, enc, tok, wav_path: str, max_tokens: int = 64, device: str = 
         prefix = torch.cat([
             emb(torch.tensor([sm.vocab.speech_bos], device=device)), projected,
             emb(torch.tensor([sm.vocab.text_bos], device=device))], dim=0)
+        # The transcript must fit beside the audio in the context: a 30 s chunk
+        # is ~377 positions, and decode_from_embeds asserts past block_size.
+        budget = min(max_tokens, sm.model.cfg.block_size - prefix.shape[0])
+        if budget < 1:
+            raise ValueError(f"a {len(chunk) / ASR_RATE:.1f} s chunk fills the model's "
+                             f"{sm.model.cfg.block_size}-position context; no room for a transcript")
         with autocast:
             out = sm.model.decode_from_embeds(
-                prefix, max_tokens, stop=lambda t: t == tok.eos_id or t >= sm.vocab.text,
+                prefix, budget, stop=lambda t: t == tok.eos_id or t >= sm.vocab.text,
                 no_repeat_ngram=no_repeat_ngram, use_cache=use_cache)
         text = tok.decode(out).strip().split("\n")[0]
         if text:

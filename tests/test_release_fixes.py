@@ -309,6 +309,208 @@ class OmniRecipeTests(unittest.TestCase):
         self.assertNotEqual(base, recipe_of(args, [SimpleNamespace(name="chat", weight=0.07, batch=8)]))
 
 
+class ValidatedDemoTests(unittest.TestCase):
+    """validated_demo shows a case only if every piece of its evidence checks out."""
+
+    def setUp(self):
+        from anulm.apps import validated_demo as vd
+        self.vd = vd
+        self.root = Path(tempfile.mkdtemp())
+        self.catalogue = self.root / "catalogue.json"
+        self.report = {"case_id": "c1", "task": "text", "status": "passed", "approved": True,
+                       "reviewed_by": "reviewer", "validated_at": "2026-11-03", "criteria": "exact match",
+                       "output": "Delhi", "source_revision": "abc1234", "input": "Capital of India?",
+                       "dataset": {"source": "a held-out set", "license": "CC BY 4.0", "held_out": True},
+                       "artifacts": []}
+        for role in ("checkpoint", "tokenizer", "encoder"):
+            (self.root / role).write_bytes(role.encode())
+            self.report["artifacts"].append({"role": role, "path": role, "sha256": vd.digest(self.root / role)})
+
+    def save(self, cases=None):
+        rp = self.root / "report.json"
+        rp.write_text(json.dumps(self.report), encoding="utf-8")
+        entry = {"id": "c1", "report": {"path": "report.json", "sha256": self.vd.digest(rp)}}
+        self.catalogue.write_text(json.dumps({"version": 1, "cases": cases or [entry]}), encoding="utf-8")
+
+    def reasons(self):
+        cases, excluded = self.vd.load_cases(self.catalogue, self.root)
+        self.assertEqual(cases, [])
+        return " | ".join(excluded)
+
+    def test_a_complete_case_is_shown(self):
+        self.save()
+        cases, excluded = self.vd.load_cases(self.catalogue, self.root)
+        self.assertEqual([c["id"] for c in cases], ["c1"])
+        self.assertEqual(excluded, [])
+
+    def test_missing_empty_and_malformed_catalogues_show_nothing(self):
+        self.assertIn("no catalogue", self.reasons())
+        for text in ("{}", "[]", "not json", '{"version": 2, "cases": []}'):
+            self.catalogue.write_text(text, encoding="utf-8")
+            self.assertIn("invalid", self.reasons())
+        self.catalogue.write_text('{"version": 1, "cases": []}', encoding="utf-8")
+        self.assertEqual(self.vd.load_cases(self.catalogue, self.root), ([], []))
+
+    def test_each_failure_is_excluded_with_its_own_reason(self):
+        for change, reason in [({"status": "pending"}, "not 'passed'"),
+                               ({"approved": False}, "not approved"),
+                               ({"reviewed_by": " "}, "reviewed_by"),
+                               ({"case_id": "other"}, "for case 'other'"),
+                               ({"task": "video"}, "task 'video'"),
+                               ({"dataset": {"source": "x", "license": "y", "held_out": False}}, "held-out")]:
+            saved = dict(self.report)
+            self.report.update(change)
+            self.save()
+            with self.subTest(change=change):
+                self.assertIn(f"c1: ", self.reasons())
+                self.assertIn(reason, self.reasons())
+            self.report = saved
+
+    def test_a_changed_or_missing_file_or_one_outside_the_repo_is_excluded(self):
+        self.save()
+        (self.root / "checkpoint").write_bytes(b"retrained")
+        self.assertIn("checkpoint has changed", self.reasons())
+        self.report["artifacts"][0]["path"] = "../elsewhere"
+        self.save()
+        self.assertIn("outside the repository", self.reasons())
+        self.report["artifacts"] = self.report["artifacts"][1:]
+        self.save()
+        self.assertIn("lack checkpoint", self.reasons())
+
+    def test_media_cases_need_their_input_and_an_encoder(self):
+        img = self.root / "photo.jpg"
+        img.write_bytes(b"jpeg")
+        self.report.update(task="image", input={"path": "photo.jpg", "sha256": self.vd.digest(img)})
+        self.save()
+        self.assertEqual(len(self.vd.load_cases(self.catalogue, self.root)[0]), 1)
+        img.write_bytes(b"another photo")
+        self.assertIn("image input", self.reasons())
+
+    def test_duplicate_ids_and_each_file_hashed_once(self):
+        self.save()
+        entry = json.loads(self.catalogue.read_text(encoding="utf-8"))["cases"][0]
+        self.save(cases=[entry, entry])
+        cases, excluded = self.vd.load_cases(self.catalogue, self.root)
+        self.assertEqual(len(cases), 1)
+        self.assertEqual(excluded, ["c1: duplicate id"])
+        h = self.vd.Hasher()
+        with patch.object(Path, "open", wraps=Path.open, autospec=True) as opened:
+            h(self.root / "checkpoint")
+            h(self.root / "checkpoint")
+        self.assertEqual(opened.call_count, 1)
+
+    def test_the_shipped_catalogue_is_valid(self):
+        cases, excluded = self.vd.load_cases()
+        self.assertEqual(excluded, [])
+
+
+class SpeechSafetyTests(unittest.TestCase):
+    def setUp(self):
+        try:
+            import soundfile  # noqa: F401
+        except ImportError:
+            self.skipTest("soundfile not installed")
+
+    def test_training_drops_clips_longer_than_whispers_window(self):
+        # Five FLEURS Hindi train clips (31-36 s, float WAVs with no `seconds`)
+        # stopped the joint run at its first step.
+        import numpy as np
+        import soundfile as sf
+        from anulm.multimodal.speech_encoder import whisper_window_rows
+        d = Path(tempfile.mkdtemp())
+        for name, secs in (("short", 2.0), ("long", 31.0)):
+            sf.write(d / f"{name}.wav", np.zeros(int(secs * 16000), np.float32), 16000, subtype="FLOAT")
+        rows = [{"audio": str(d / "short.wav"), "text": "a"},            # duration from the header
+                {"audio": str(d / "long.wav"), "text": "b"},
+                {"audio": str(d / "short.wav"), "text": "c", "seconds": 29.9},
+                {"audio": str(d / "short.wav"), "text": "d", "seconds": 30.5}]
+        with patch("builtins.print"):
+            kept = whisper_window_rows(rows, "test")
+        self.assertEqual([r["text"] for r in kept], ["a", "c"])
+
+    def test_whisper_refuses_nan_audio_and_oversized_chunks(self):
+        import numpy as np
+        from anulm.multimodal.audio_codec import ASR_RATE, WhisperEncoder, audio_chunks
+        for bad in (np.array([0.0, np.nan], np.float32), np.array([np.inf] * 10, np.float32)):
+            with self.assertRaises(ValueError):
+                WhisperEncoder.encode(SimpleNamespace(), bad)          # refused before the model is touched
+        with self.assertRaises(ValueError):
+            audio_chunks(np.zeros(10), 31 * ASR_RATE)
+        self.assertEqual(len(audio_chunks(np.zeros(70 * ASR_RATE))), 3)
+
+    def test_transcript_budget_fits_the_context(self):
+        # decode_from_embeds asserts past block_size; transcribe now asks for at
+        # most what fits beside the audio.
+        import numpy as np
+        from anulm.multimodal import speech_encoder as se
+        asked = []
+        model = SimpleNamespace(cfg=SimpleNamespace(block_size=50), embed_tokens=torch.nn.Embedding(10, 4),
+                                decode_from_embeds=lambda prefix, n, **k: asked.append((prefix.shape[0], n)) or [])
+        sm = SimpleNamespace(model=model, proj=torch.nn.Linear(4, 4),
+                             vocab=SimpleNamespace(speech_bos=1, text_bos=2, text=8))
+        enc = SimpleNamespace(encode=lambda chunk: np.zeros((40, 4), np.float32))
+        tok = SimpleNamespace(eos_id=3, decode=lambda ids: "")
+        se.transcribe(sm, enc, tok, np.zeros(16000, np.float32), max_tokens=64, device="cpu")
+        self.assertEqual(asked, [(42, 8)])                              # 50 - (1 + 40 + 1)
+        enc.encode = lambda chunk: np.zeros((49, 4), np.float32)
+        with self.assertRaises(ValueError):
+            se.transcribe(sm, enc, tok, np.zeros(16000, np.float32), device="cpu")
+
+
+class ExportParityTests(unittest.TestCase):
+    """export_hf --weights-dtype float32 is exact, and every export checks itself."""
+
+    @classmethod
+    def setUpClass(cls):
+        try:
+            import safetensors  # noqa: F401
+        except ImportError:
+            raise unittest.SkipTest("safetensors not installed")
+        cls.tmp = Path(tempfile.mkdtemp())
+        tok = cls.tmp / "tok.json"
+        BPE([(104, 105), (256, 33)]).save(tok)
+        torch.manual_seed(0)
+        cfg = tiny(vocab_size=259, tokenizer_path=str(tok))
+        cls.state = AnuLM(cfg).state_dict()
+        cls.ckpt = cls.tmp / "ck.pt"
+        torch.save({"model": cls.state, "cfg": cfg, "step": 7, "val_loss": 1.5}, cls.ckpt)
+
+    def export(self, name, *extra):
+        import os
+        out = self.tmp / name
+        r = subprocess.run([sys.executable, "-m", "anulm", "export_hf", str(self.ckpt), str(out), "--license", "mit",
+                            *extra], cwd=ROOT, capture_output=True, text=True, timeout=300,
+                           env={**os.environ, "PYTHONPATH": str(ROOT), "PYTHONIOENCODING": "utf-8"})
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        return out, r.stdout
+
+    def test_float32_export_reloads_bit_identical(self):
+        from anulm.model import load_checkpoint
+        out, log = self.export("fp32", "--weights-dtype", "float32")
+        self.assertIn("parity: reloaded", log)
+        back = load_checkpoint(str(out))["model"]
+        self.assertEqual(set(back), set(self.state))
+        for k, v in self.state.items():
+            self.assertEqual(back[k].dtype, v.dtype, k)
+            self.assertTrue(torch.equal(back[k], v), k)
+        self.assertIn("float32 on disk", (out / "config.json").read_text(encoding="utf-8"))
+
+    def test_default_export_passes_its_own_parity_check(self):
+        out, log = self.export("mixed")
+        self.assertIn("parity: reloaded", log)
+        self.assertIn("tokenizer agrees", log)
+
+    def test_parity_check_catches_a_changed_tensor(self):
+        from anulm.hf.export_hf import check_parity, to_bf16
+        out, _ = self.export("tamper")
+        want = to_bf16(self.state)
+        k = max(want, key=lambda k: want[k].numel())               # the largest tensor, whatever its dtype
+        want[k] = want[k] + 1
+        with self.assertRaises(SystemExit) as cm:
+            check_parity(out, want, {}, None, None)
+        self.assertIn(k, str(cm.exception))
+
+
 class LayoutTests(unittest.TestCase):
     def test_root_model_is_the_package_module(self):
         import model as legacy

@@ -4,7 +4,8 @@ Export a training checkpoint to a Hugging Face-style folder, and load it back.
     python -m anulm export_hf ckpt_coder_sft.pt release/AnuLM-Coder-400M \
         --license cc-by-nc-sa-4.0 --card docs/MODEL_CARD.md
 
-The folder holds `model.safetensors` (weights in bfloat16, no pickle),
+The folder holds `model.safetensors` (weights in bfloat16, no pickle;
+`--weights-dtype float32` keeps every weight exactly as trained),
 `config.json` (the architecture config plus step, val loss, prompt
 templates and provenance), the tokenizer the checkpoint was trained with,
 and a `README.md` model card with the YAML front matter the Hub reads.
@@ -107,6 +108,37 @@ def front_matter(args, cfg, ck) -> str:
     return "\n".join(lines) + "\n\n"
 
 
+PARITY_TEXTS = ("Hello, world.", "भारत की राजधानी नई दिल्ली है।", "def f(x):\n    return x + 1")
+
+
+def check_parity(out: Path, weights: dict | None, groups: dict, tok_src: Path | None, tok_file: str | None) -> None:
+    """Reload the exported folder the way every script does (load_checkpoint)
+    and require it to hold exactly what was meant to be written: the same
+    tensor names, dtypes and values for the backbone and every extra group,
+    and a tokenizer that encodes sample English, Hindi and Python text to the
+    same ids as the checkpoint's own. Raises SystemExit naming the mismatches."""
+    back = load_checkpoint(str(out), "cpu", base=False)
+    bad = []
+    for name, want, got in [("model", weights, back.get("model"))] + \
+            [(g, sd, back.get(g)) for g, sd in groups.items()]:
+        if want is None:
+            continue
+        if not isinstance(got, dict) or set(got) != set(want):
+            bad.append(f"{name}: tensor names differ")
+            continue
+        bad += [f"{name}/{k}" for k, v in want.items()
+                if got[k].dtype != v.dtype or not torch.equal(got[k], v.detach().cpu())]
+    if tok_src is not None and tok_file:
+        from anulm.hf_tok import load_tokenizer
+        a, b = load_tokenizer(tok_src), load_tokenizer(out / tok_file)
+        bad += [f"tokenizer: {t[:20]!r}" for t in PARITY_TEXTS if a.encode(t) != b.encode(t)]
+    if bad:
+        raise SystemExit(f"export parity FAILED for {out}: {len(bad)} mismatch(es), e.g. {', '.join(bad[:5])}")
+    n = len(weights or {}) + sum(len(sd) for sd in groups.values())
+    print(f"  parity: reloaded {n} tensors bit-identical to what was written"
+          + (", tokenizer agrees on sample text" if tok_file else ""))
+
+
 def tensor_groups(ck: dict) -> dict[str, dict[str, torch.Tensor]]:
     """The checkpoint's state dicts other than the backbone's: the speech or
     vision projector, LoRA adapters, a classifier or pointer head."""
@@ -124,7 +156,7 @@ def usage_text(kind: str, repo: str, name: str) -> str:
                 "frozen; faster-whisper downloads it on first use.\n\n```bash\n"
                 f"hf download {repo} --local-dir {name}\n"
                 f"python -m anulm speech_encoder eval --ckpt {name} --prefix data/fleurs_hi/devtest\n```\n\n"
-                "```python\nfrom speech_encoder import load_trained\n"
+                "```python\nfrom anulm.multimodal.speech_encoder import load_trained\n"
                 f"asr = load_trained(\"{repo}\", \"cuda\")   # a Hub id or the downloaded folder\n```\n")
     if kind in ("caption", "vqa"):
         return ("\n\n## How to load\n\nWith the AnuLM repository. The image encoder is SigLIP "
@@ -132,7 +164,7 @@ def usage_text(kind: str, repo: str, name: str) -> str:
                 "from anulm.multimodal.vision_encoder import load_trained\n"
                 f"vl, tower, tok = load_trained(\"{repo}\", \"cuda\")   # a Hub id or the downloaded folder\n```\n")
     if kind == "decide":
-        return ("\n\n## How to load\n\nWith the AnuLM repository:\n\n```python\nfrom decide import Decide\n"
+        return ("\n\n## How to load\n\nWith the AnuLM repository:\n\n```python\nfrom anulm.tasks.decide import Decide\n"
                 f"d = Decide(\"{repo}\", device=\"cuda\")   # fetches the model it was trained on, if it is an adapter\n"
                 "print(d(\"my card has not arrived yet\"))\n```\n")
     if kind == "omni":
@@ -146,7 +178,7 @@ def usage_text(kind: str, repo: str, name: str) -> str:
                 "```bash\ngit clone https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM && cd AnuLM\n"
                 "python -m anulm app_omni          # every tab on this one model\n```\n")
     if kind == "reader":
-        return ("\n\n## How to load\n\nWith the AnuLM repository:\n\n```python\nfrom rc_pointer import PointerQA\n"
+        return ("\n\n## How to load\n\nWith the AnuLM repository:\n\n```python\nfrom anulm.tasks.rc_pointer import PointerQA\n"
                 f"qa = PointerQA(\"{repo}\", \"cuda\")\n```\n")
     return (
         "\n\n## How to load\n\n"
@@ -195,6 +227,11 @@ def main() -> None:
                    help="the backbone checkpoint a LoRA/head adapter was trained on: the export keeps "
                         "only the adapter, after checking its backbone copy equals CKPT, and records "
                         "--base-model as where to fetch the backbone from")
+    p.add_argument("--weights-dtype", choices=("mixed", "float32"), default="mixed",
+                   help="mixed (default): big tensors bfloat16, small ones float32, half the size; "
+                        "float32: every weight exactly as trained, for an export that must match the .pt")
+    p.add_argument("--skip-parity", action="store_true",
+                   help="do not reload the folder to check it holds exactly what was written")
     args = p.parse_args()
 
     out = Path(args.out)
@@ -225,9 +262,10 @@ def main() -> None:
 
     # 1. weights. An open encoder's (ModernBERT) go into backbone/ in its own
     # format, beside its config and tokenizer, so transformers loads it as-is.
-    n_params = 0
+    n_params, sd, flat_groups = 0, None, {}
     if "model" in ck:
-        sd = to_bf16(ck["model"])
+        sd = (to_bf16(ck["model"]) if args.weights_dtype == "mixed"
+              else {k: v.detach().cpu().contiguous() for k, v in ck["model"].items()})
         save_file(sd, str(out / "model.safetensors"), metadata={"format": "pt", "exported_from": Path(args.ckpt).name})
         n_params = sum(v.numel() for v in sd.values())
     if hf_state is not None:
@@ -242,6 +280,7 @@ def main() -> None:
         extras["hf_backbone"] = "backbone"
     if groups:
         flat = {f"{g}/{k}": v.detach().cpu().contiguous() for g, sd_ in groups.items() for k, v in sd_.items()}
+        flat_groups = groups
         save_file(flat, str(out / "extras.safetensors"), metadata={"format": "pt"})
         n_extra = sum(v.numel() for v in flat.values())
         print(f"  extras: {', '.join(groups)} ({n_extra/1e6:.2f}M params, float32)")
@@ -288,7 +327,9 @@ def main() -> None:
             "torch_dtype": "float32",
             "weights_dtype": ("bfloat16 on disk for the big tensors, float32 for the small "
                               "ones (router bias, norms); load in float32 -- 16-bit weights "
-                              "change the expert routing and break the model"),
+                              "change the expert routing and break the model")
+                             if args.weights_dtype == "mixed" else
+                             "float32 on disk: every weight exactly as trained",
         })
     if args.kind != "lm":
         # Not a plain language model: transformers' AutoModelForCausalLM
@@ -319,7 +360,8 @@ def main() -> None:
     repo = args.repo or f"toonist/{out.name}"
     usage = usage_text(args.kind, repo, out.name)
     if "model" in ck:
-        usage += (f"\nWeights: `model.safetensors`, bfloat16, {sum(v.numel() for v in ck['model'].values())/1e6:.1f}M "
+        precision = "bfloat16 (small tensors float32)" if args.weights_dtype == "mixed" else "float32"
+        usage += (f"\nWeights: `model.safetensors`, {precision}, {sum(v.numel() for v in ck['model'].values())/1e6:.1f}M "
                   f"parameters. Tokenizer: `{tok_file}`. {TOKENIZER_NOTE if tok_file else ''}\n")
     elif args.adapter_of:
         usage += (f"\nAdapter only: `extras.safetensors` holds the {', '.join(groups)} weights "
@@ -327,6 +369,8 @@ def main() -> None:
                   f"(https://huggingface.co/{args.base_model}).\n")
     (out / "README.md").write_text(front_matter(args, cfg, ck) + body + usage, encoding="utf-8", newline="\n")
 
+    if not args.skip_parity:
+        check_parity(out, sd, flat_groups, Path(cfg.tokenizer_path) if tok_file else None, tok_file)
     total = sum(f.stat().st_size for f in out.rglob("*") if f.is_file())
     print(f"exported {args.ckpt} -> {out}/  ({total/1e9:.2f} GB, {n_params/1e6:.1f}M params, step {ck.get('step')})")
     for f in sorted(x for x in out.rglob("*") if x.is_file()):

@@ -106,8 +106,8 @@ def audio_chunks(audio: np.ndarray, chunk_samples: int = 30 * ASR_RATE) -> list[
 
     Short and empty inputs keep their original single-chunk path.
     """
-    if chunk_samples <= 0:
-        raise ValueError("chunk_samples must be positive")
+    if not 0 < chunk_samples <= 30 * ASR_RATE:
+        raise ValueError("chunk_samples must be positive and at most Whisper's 30-second window")
     audio = np.asarray(audio)
     if len(audio) <= chunk_samples:
         return [audio]
@@ -244,6 +244,10 @@ class WhisperEncoder:
             raise ValueError("Expected a nonempty mono audio clip at 16 kHz.")
         if audio.size > 30 * ASR_RATE:
             raise ValueError("Audio duration exceeds 30 seconds; chunk the audio and align its transcript first.")
+        if not np.isfinite(audio).all():
+            # NaN or inf samples (a corrupt file, a bad resample) do not fail
+            # downstream: they produce a confident, meaningless transcript.
+            raise ValueError("Audio contains NaN or infinite samples.")
         feats = self.whisper.feature_extractor(np.ascontiguousarray(audio, dtype=np.float32))
         # Whisper's fixed maximum feature window, after the explicit duration check.
         sv = self.ct2.StorageView.from_array(np.ascontiguousarray(feats[np.newaxis, :, :3000]))
