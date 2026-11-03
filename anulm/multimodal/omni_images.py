@@ -41,7 +41,6 @@ from __future__ import annotations
 import argparse
 import collections
 import csv
-import io
 import json
 import random
 import re

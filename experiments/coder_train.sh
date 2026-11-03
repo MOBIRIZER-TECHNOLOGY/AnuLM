@@ -1,5 +1,5 @@
 #!/bin/bash
-# Phases 3-6 of docs/CODER_PLAN.md: pretraining, in resumable pieces.
+# Phases 3-6 of docs/history/CODER_PLAN.md: pretraining, in resumable pieces.
 #
 #     bash experiments/coder_train.sh 100000     # train to step 100k, then exit
 #     bash experiments/coder_train.sh 200000     # later: resume, train to 200k

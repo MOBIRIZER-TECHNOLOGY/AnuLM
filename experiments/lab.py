@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import os
 import sys
 import time
@@ -23,7 +22,7 @@ import torch.nn.functional as F
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
-from anulm.model import AnuLM, AnuLMConfig  # noqa: E402
+from anulm.model import AnuLM, AnuLMConfig, safe_load  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(ROOT, "data", "ctx_mix.multi32k.bin")
@@ -289,7 +288,7 @@ def main():
     a = p.parse_args()
 
     torch.manual_seed(a.seed)
-    blob = torch.load(DATA, weights_only=False)
+    blob = safe_load(DATA)
     ids = blob["ids"]
     # The corpus file is ORDERED (mostly Hindi first, English at the end), so a
     # tail split is English-only. Interleave instead: every 10th chunk of 256k

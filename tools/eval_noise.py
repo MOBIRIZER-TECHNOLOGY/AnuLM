@@ -6,19 +6,25 @@ seed is fixed so successive evals see the SAME windows, which makes them
 comparable; it does not make them accurate. If the standard error across
 window-sets is comparable to the deltas being read off the curve, then the
 "plateaus" are the instrument, not the model.
+
+    python tools/eval_noise.py        # needs ckpt_coder.pt and data/coder.code32k.bin
 """
 import sys
 from dataclasses import replace
+from pathlib import Path
 
 import torch
 
-sys.path.insert(0, r"C:\workspace\AnuLM")
-from anulm.model import AnuLM                      # noqa: E402
+# The repository root, wherever it is checked out, so `python tools/eval_noise.py`
+# finds the package and the checkpoint without a machine-specific path.
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from anulm.model import AnuLM, safe_load           # noqa: E402
 from anulm.training.train import eval_windows, make_batch        # noqa: E402
 
 DEV = "cuda"
-CKPT = r"C:\workspace\AnuLM\ckpt_coder.pt"
-BIN = r"C:\workspace\AnuLM\data\coder.code32k.bin"
+CKPT = ROOT / "ckpt_coder.pt"
+BIN = ROOT / "data" / "coder.code32k.bin"
 
 
 @torch.no_grad()
@@ -33,13 +39,13 @@ def val_loss(model, data, batch_size, block_size, iters, seed):
 
 
 def main():
-    ck = torch.load(CKPT, map_location=DEV, weights_only=False)
+    ck = safe_load(CKPT, map_location=DEV)
     cfg = replace(ck["cfg"], moe_impl="grouped")
     model = AnuLM(cfg).to(DEV).eval()
     model.load_state_dict(ck["model"])
     print(f"checkpoint step {ck['step'] + 1:,}, recorded val {ck['val_loss']:.4f}")
 
-    blob = torch.load(BIN, weights_only=False)
+    blob = safe_load(BIN)
     data = blob["ids"]
     n = int(0.9 * len(data))
     val = data[n:]

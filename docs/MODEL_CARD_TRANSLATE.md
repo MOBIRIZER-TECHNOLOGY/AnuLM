@@ -3,7 +3,7 @@
 An English ↔ Hindi sentence translator: the three-language AnuLM base
 (`AnuLM-Base-400M`, step 36,000) fine-tuned for one pass over two million
 sentence pairs. Full log and samples: `docs/RESULTS.md` §24 and
-`docs/TRANSLATE_PLAN.md`.
+`docs/history/TRANSLATE_PLAN.md`.
 
 **Licence: CC BY-NC 4.0, research use only.** Samanantar is CC BY-NC 4.0
 and the IIT Bombay corpus is released for research; the weights inherit

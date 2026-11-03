@@ -98,4 +98,4 @@ Trained 2026-09-18 from scratch on one machine, on public-domain text, by
 the pipeline in the repository. No Sarvam weights are used or
 redistributed; AnuLM is an independent re-implementation of a published
 architecture. `docs/PUBLISHING.md` is how anything here gets released and
-`TASKS.md` is the operations log.
+`docs/history/TASKS.md` is the operations log.

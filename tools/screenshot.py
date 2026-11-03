@@ -4,7 +4,7 @@
     python -m tools.screenshot docs/media/demo-coder.png
 
 Why this exists rather than "take a screenshot": the image in
-`docs/ANNOUNCEMENT.md` shows a real model answering a real prompt, and it has
+`docs/history/ANNOUNCEMENT.md` shows a real model answering a real prompt, and it has
 to stay true when the page changes. This drives the page the way a visitor
 does -- picks a checkpoint, presses Load, types, presses Generate, waits for
 output -- and only then captures it. If the interface breaks, this fails

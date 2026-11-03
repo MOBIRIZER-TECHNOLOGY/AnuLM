@@ -3,8 +3,8 @@
 One page on what the finished coder checkpoint is: the data it saw and where
 that data came from, the architecture, how it was trained, what it can and
 cannot do, and how to try it. Written 2026-09-18 from the files on disk;
-`docs/CODER_PLAN.md` is the plan and the day-by-day log, `docs/RESULTS.md`
-§25 the full curves and samples, `TASKS.md` the operations.
+`docs/history/CODER_PLAN.md` is the plan and the day-by-day log, `docs/RESULTS.md`
+§25 the full curves and samples, `docs/history/TASKS.md` the operations.
 
 ## In one paragraph
 
@@ -133,7 +133,7 @@ so single readings carry about ±0.03 of noise; the trend is real, the
 last-digit comparisons are not (`docs/RESULTS.md` §25, "A review of the
 training loop"). The run was owned by a Windows scheduled task that
 restarted it after every interruption; the operational lessons are in
-`TASKS.md`.
+`docs/history/TASKS.md`.
 
 ## Capability
 
@@ -191,7 +191,7 @@ decoding; untick it to sample at the temperature shown. `serve.py` takes an
 exported folder wherever it takes a `.pt`, so
 `python -m anulm serve --ckpt AnuLM-Coder-400M` after an `hf download` is the
 shortest path from the Hub to the page. On the machine the run was done on,
-a 30-minute scheduled task (`run_serve.cmd`) kept the server up; `TASKS.md`
+a 30-minute scheduled task (`run_serve.cmd`) kept the server up; `docs/history/TASKS.md`
 has that pattern and what became of it.
 
 ```bash

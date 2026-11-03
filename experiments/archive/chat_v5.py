@@ -2,7 +2,7 @@
 Chat v5: the human-written chat data with a small share of clean Indian data (RESULTS 40's
 next step), then recipe-F Decide adapters on it. Unattended; nothing touches the app.
 
-    python experiments/chat_v5.py [--root <checkout>]
+    python experiments/archive/chat_v5.py [--root <checkout>]
 
   1. data/chat_train_v5.jsonl = chat_train.jsonl (23,022 human-written pairs) plus ~20%:
      3,000 WikiHow Hindi guides (native Hindi; questions percent-decoded -- in v4 they were
@@ -26,7 +26,7 @@ import urllib.parse
 from pathlib import Path
 
 PY = sys.executable
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]          # experiments/archive/ -> the repository
 LOGS = ROOT / "logs" / "chat_v5"
 F_ARGS = ["--lora-targets", "dense", "--lora-rank", "64", "--lr", "2e-4"]
 KEYS = ("eval @", "done in", "held-out", "accuracy", "calibrated", "latency", "Traceback", "Error")

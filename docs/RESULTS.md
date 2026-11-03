@@ -1381,7 +1381,7 @@ for MC (all 137 for English) and 60 decoded:
   writes the function's docstring and first comment correctly and then
   invents the body; the tuned one writes a shorter, more plausible body
   that is usually still wrong. What separates this from a coder is
-  the coder plan's 2.8B tokens (`docs/CODER_PLAN.md`), not the recipe.
+  the coder plan's 2.8B tokens (`docs/history/CODER_PLAN.md`), not the recipe.
 ### What it answers, decoded (`ask.py`, temperature 0.3, repetition penalty 1.3)
 
 ```
@@ -1425,7 +1425,7 @@ it is why MC (recognition) moves much further than F1 (production).
 ## 24. English ↔ Hindi translation
 
 The demo the three-language model exists for, decided in
-`docs/TRANSLATE_PLAN.md` to run before the coder because it is a day of
+`docs/history/TRANSLATE_PLAN.md` to run before the coder because it is a day of
 GPU rather than a week. The base already writes both languages; what it
 lacks is the alignment between them, which is what parallel text teaches.
 
@@ -1511,7 +1511,7 @@ page's *translate* mode is for.
 
 ## 25. A Python coder: 700,000 steps, then instruction tuning
 
-`docs/CODER_PLAN.md` is the one-week plan for a checkpoint of this
+`docs/history/CODER_PLAN.md` is the one-week plan for a checkpoint of this
 architecture that writes working Python: 700,000 steps over a 2.78B-token
 corpus that is 65% Python, then instruction tuning, then pass@1 on
 HumanEval and MBPP. This section is the log of it, kept in the order the
@@ -1890,7 +1890,7 @@ well. It reads as `Last Result: -1073741510` on the task
 and it killed the run twice — phase 1 at step 10,000, phase 2 at step
 105,000, 2 h 51 min of idle GPU between them. The wrapper now launches the
 trainer through `start`, which gives it a console of its own; nothing in
-the interactive console can signal it. `TASKS.md` holds the commands.
+the interactive console can signal it. `docs/history/TASKS.md` holds the commands.
 
 ---
 
@@ -2001,7 +2001,7 @@ the architecture extends to 4x without retraining, gently, and YaRN helps at
 the far end. It says nothing about whether *training* at 2,048 with YaRN
 produces a model that is genuinely good there, which is the other half of the
 question and needs GPU time rather than an evaluation. That run is in flight —
-`TASKS.md`, "In flight: long context at 2,048" — continuing this same
+`docs/history/TASKS.md`, "In flight: long context at 2,048" — continuing this same
 checkpoint on 46M tokens of the same three-language mix.
 
 Two caveats worth stating rather than burying. The evaluation corpus is Hindi
@@ -2039,7 +2039,7 @@ This trains it there. `AnuLM-Base-400M`, continued for **10,000 steps at
 block 2,048 with YaRN** (`yarn_original_context=512`, factor 4) on 46M tokens
 of the base's own three-language proportions — 82M tokens seen, which is 55%
 on top of the 148M the base was trained with. Five hours on one RTX 5070 Ti,
-unattended; `TASKS.md` has the recipe and the scheduled-task setup.
+unattended; `docs/history/TASKS.md` has the recipe and the scheduled-task setup.
 
 ### First, a result that was wrong
 
@@ -2193,7 +2193,7 @@ Every section above scores a model on a metric. This one asks what the
 the thing behind the demo page are different programs, and only one of them
 had ever been run four thousand times.
 
-`tools_sweep.py` drives `serve.Engine` -- the same object `serve.py` and
+`tools/sweep.py` drives `serve.Engine` -- the same object `serve.py` and
 `app.py` use, with the same templates, stop rules and decoding -- over every
 prompt in three real sets, and records every reply:
 
@@ -2260,7 +2260,7 @@ against the base's 3.0%.
 
 ### The replies are kept
 
-`sweep/<segment>.jsonl` holds every prompt and reply. `tools_samples.py`
+`sweep/<segment>.jsonl` holds every prompt and reply. `tools/samples.py`
 selects from them for `docs/SAMPLES.md` and the demo page, choosing the
 replies **nearest the median repetition** among those that stopped on their
 own -- typical output rather than the best in the file -- and the aggregate
@@ -2537,7 +2537,7 @@ To separate the method from the backbone, the identical pointer reader
 (same data, one epoch, same learning rate) was trained on **Qwen3-0.6B-Base**
 (Apache 2.0, 36T tokens) instead of this project's 400M base. This is a
 comparison, not a from-scratch result: anything built on it must be labelled
-as built on Qwen3. `tools_qwen.py` loads Qwen3's dense checkpoints into
+as built on Qwen3. `tools/qwen.py` loads Qwen3's dense checkpoints into
 `model.py` unchanged in function: against transformers' `Qwen3ForCausalLM`,
 maximum logit difference 0.00 and 100% next-token agreement on English, Hindi
 and code. `hf_tok.py` puts its tokenizer behind `bpe.BPE`'s interface.
@@ -2668,7 +2668,7 @@ obvious next speed-up, and its accuracy cost is still to be measured.
 
 The main base-v2 run keeps its learning rate at the peak until step 2.2M
 (~6 Oct). With a warmup-stable-decay schedule, most of what the final decay
-buys can be had early by decaying a **copy**. `experiments/demo_branch.py`
+buys can be had early by decaying a **copy**. `experiments/archive/demo_branch.py`
 paused the run at step 700k and trained the copy 700k -> 800k with the
 learning rate falling linearly to its floor. The main run was not touched:
 it resumed from the same resume point the same day.
@@ -2745,7 +2745,7 @@ for Jev.
 ## 36. Decide: speed, and decoder vs encoder backbones
 
 **Speed** (`experiments/decide_speed.py`, trained BANKING77 model; results in
-`logs/decide_speed/`). On the RTX 5070 Ti, one query takes about 44 ms
+`docs/results/decide_speed/`). On the RTX 5070 Ti, one query takes about 44 ms
 whatever the number of options: 44.8 ms with 2 options, 44.2 ms with 77,
 42.7 ms with 150 (632 tokens). At batch 1 the GPU is bound by per-layer
 overhead, not by tokens; the message alone (10 tokens) still takes 39 ms.
@@ -2882,7 +2882,7 @@ mature open English encoder by a wide margin.
 
 Base v2 (`ckpt_base_v2.pt`, 1.9M steps, held-out loss 3.3523 against the
 demo base's 3.393) replaced the demo base under every post-trained model
-(`experiments/post_v2.py`, `experiments/omni_v3.py`; logs under `logs/`).
+(`experiments/archive/post_v2.py`, `experiments/omni_v3.py`; logs under `logs/`).
 Each new model was scored beside the one it replaced on the same held-out
 set before the swap. One seed throughout.
 

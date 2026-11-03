@@ -1,7 +1,7 @@
 """
-Post-training on the final base (TASKS.md "After base v2", steps 2-6), unattended.
+Post-training on the final base (docs/history/TASKS.md "After base v2", steps 2-6), unattended.
 
-    python experiments/post_v2.py
+    python experiments/archive/post_v2.py
 
   2. chat: full fine-tune of ckpt_base_v2.pt -> ckpt_chat_v3.pt, samples vs v2
   3. lookup reader -> ckpt_rc_pointer_v3.pt, SQuAD eval
@@ -26,7 +26,7 @@ import sys
 import time
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]          # experiments/archive/ -> the repository
 LOGS = ROOT / "logs" / "post_v2"
 PY = sys.executable
 BASE = "ckpt_base_v2.pt"

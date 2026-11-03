@@ -1,16 +1,14 @@
 """
-Refresh the *Live status* block of TASKS.md, and the assistant's live-state
-memory file, from what is on disk.
+Refresh the *Live status* block of docs/history/TASKS.md from what is on disk.
 
     python -m tools.update_tasks                # once
     python -m tools.update_tasks --loop 3600    # every hour, until killed
 
-Two outputs, because the machine can lose power at any moment and both
-readers matter. TASKS.md is for the human: what is running, which step,
-what to type to resume. The memory file is for a *fresh assistant
-session*, which otherwise starts knowing nothing -- it is written to the
-project memory directory, so the next session reads the current step,
-the resume command and the open decisions without re-deriving them.
+TASKS.md is for the human: what is running, which step, what to type to
+resume. It writes only inside the repository (TASKS.md, tasks_history.log and
+the run's *_curve.csv); it used to also rewrite a file in one person's
+assistant-memory folder under the home directory, which does not belong in a
+shared tool and was removed.
 
 Reads the step, val loss and best val from `ckpt_coder.pt.last` (and any
 other `<name>.pt.last` given with --ckpt), whether a training process is
@@ -36,7 +34,7 @@ from datetime import datetime
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parents[1]
-TASKS = HERE / "docs" / "TASKS.md"
+TASKS = HERE / "docs" / "history" / "TASKS.md"
 HISTORY = HERE / "tasks_history.log"
 CURVE = HERE / "coder_curve.csv"          # the 700k-step coder run's record
 
@@ -55,19 +53,9 @@ def curve_path(ckpt_name: str) -> Path:
     return HERE / f"{stem}_curve.csv"
 START, END = "<!-- live-status -->", "<!-- /live-status -->"
 
-# The assistant's per-project memory directory. Written every refresh so a
-# session started after a power cut inherits the live state instead of
-# re-deriving it from checkpoints and logs.
-MEMORY = (Path.home() / ".claude" / "projects" / "C--workspace-AnuLM"
-          / "memory" / "live-training-state.md")
-MEMORY_INDEX = MEMORY.parent / "MEMORY.md"
-INDEX_LINE = ("- [Live training state](live-training-state.md) — rewritten hourly by "
-              "update_tasks.py; current step, resume command, open decisions\n")
-
-
 def _read(path: Path) -> dict | None:
-    import torch  # noqa: local import so --help works without torch
-    ck = torch.load(path, map_location="cpu", mmap=True, weights_only=False)
+    from anulm.model import safe_load   # local import so --help works without torch
+    ck = safe_load(path, map_location="cpu", mmap=True)
     return {"step": int(ck.get("step", -1)),
             "val": ck.get("val_loss", ck.get("best")),
             "best": ck.get("best_val", ck.get("best")),
@@ -273,84 +261,10 @@ def _save_one(curve: Path, ckpts_state, log_glob: str | None) -> int:
     return len(rows)
 
 
-def write_memory(rows_state: list[tuple[str, dict]], procs: int) -> None:
-    """Rewrite the live-state memory file, and make sure MEMORY.md points at it.
-
-    Everything here is re-derived from disk on every call, so it can never
-    drift from reality the way a hand-written note does. Keep it short:
-    it is loaded into a session's context, and the durable background
-    (what the project is, which traps were hit) lives in the other memory
-    files and in TASKS.md.
-    """
-    now = datetime.now().strftime("%Y-%m-%d %H:%M")
-    alive = "training IS running" if procs else "**nothing is running**"
-    lines = []
-    for name, st in rows_state:
-        if st and "step" in st:
-            v = f"{st['val']:.4f}" if isinstance(st["val"], float) else st["val"]
-            b = f"{st['best']:.4f}" if isinstance(st["best"], float) else st["best"]
-            lines.append(f"- `{name}`: step **{st['step'] + 1:,}**, val {v}, best {b}, "
-                         f"saved {st['saved']}" + (f" ({st['error']})" if "error" in st else ""))
-        elif st:
-            lines.append(f"- `{name}`: {st.get('error', 'unreadable')}")
-        else:
-            lines.append(f"- `{name}`: not on disk")
-    body = f"""---
-name: live-training-state
-description: Live coder-run state, rewritten hourly by update_tasks.py — current step, how to resume, what is still open
-metadata:
-  type: project
----
-
-**Rewritten {now} by `update_tasks.py`; {alive}.** Everything below is read
-from disk each hour, so it is current as of that timestamp. If the machine
-lost power, the step below is where to resume from.
-
-{chr(10).join(lines)}
-
-GPU: {gpu()}.
-
-**To resume after any interruption** (power cut, reboot, crash): the
-scheduled task `anulm_coder` fires every 30 min and restarts training
-by itself, so usually do nothing. To force it:
-`schtasks /run /tn anulm_coder`. To check it is really training and
-not crash-looping, compare the step above against the previous hourly line
-in `C:\\workspace\\AnuLM\\tasks_history.log` — a step that has not
-moved means the loop is spinning.
-
-**Target:** step 700,000 of the coder pretraining, ~0.4 s/step. Then
-`EX_CAP=0 bash experiments/coder_sft.sh` (instruction tune + pass@1),
-then `python -m anulm serve --ckpt ckpt_coder_sft.pt` for the demo.
-
-**Known at the last probe (step 250,000, tuned):** MBPP 5.1% (13/257),
-HumanEval 0.0%. Val loss is noisy at the default `--eval-iters 20`
-(+/-0.125), so only moves larger than ~0.03 mean anything.
-
-Full detail: `C:\\workspace\\AnuLM\\TASKS.md` and
-`docs/CODER_PLAN.md`. Related: [[training-state-2026-09-10]],
-[[project-moved-from-transformers]].
-"""
-    try:
-        MEMORY.parent.mkdir(parents=True, exist_ok=True)
-        tmp = MEMORY.with_suffix(".md.tmp")
-        tmp.write_text(body, encoding="utf-8", newline="\n")
-        os.replace(tmp, MEMORY)
-        if MEMORY_INDEX.exists():
-            idx = MEMORY_INDEX.read_text(encoding="utf-8")
-            if "live-training-state.md" not in idx:
-                MEMORY_INDEX.write_text(idx.rstrip("\n") + "\n" + INDEX_LINE,
-                                        encoding="utf-8", newline="\n")
-        else:
-            MEMORY_INDEX.write_text(INDEX_LINE, encoding="utf-8", newline="\n")
-    except Exception as e:                      # never let this kill the loop
-        print(f"  (memory write failed: {type(e).__name__}: {e})", flush=True)
-
-
 def update(ckpts: list[str]) -> str:
     text = TASKS.read_text(encoding="utf-8")
     a, b = text.index(START), text.index(END) + len(END)
     block, hist, states = render(ckpts)
-    write_memory(states, python_procs())
     n_curve = save_curve(states)
     # Atomic, because two writers can overlap: the long-running --loop process
     # and the every-30-min scheduled one-shot. Both produce near-identical

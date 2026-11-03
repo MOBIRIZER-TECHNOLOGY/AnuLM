@@ -2,7 +2,7 @@
 The second batch of Indian-language data -> training-ready jsonl, one file per
 source, in chat_train.jsonl's format ({question, answer, lang, source}).
 
-    python experiments/prep_indic_extra.py          # writes data/extra_hi/*.jsonl + README.md
+    python experiments/archive/prep_indic_extra.py          # writes data/extra_hi/*.jsonl + README.md
 
 Inputs (downloaded 2026-10-18, each in its own folder under data/):
   hinglish/hinglish_upload_v1.json    findnitai/english-to-hinglish, Apache-2.0
@@ -27,7 +27,7 @@ from pathlib import Path
 
 import pyarrow.parquet as pq
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]          # experiments/archive/ -> the repository
 D = ROOT / "data"
 OUT = D / "extra_hi"
 MAX_Q, MAX_A = 1500, 3000
@@ -177,7 +177,7 @@ def main():
                     + ("; 1 of 32 shards" if name == "wikichat" else ""))
 
     lines = ["# data/extra_hi: Indian-language training data, ready for finetune.py --qa", "",
-             "Built by `experiments/prep_indic_extra.py`. Each file has rows of "
+             "Built by `experiments/archive/prep_indic_extra.py`. Each file has rows of "
              "`{question, answer, lang, source}`; chat_heldout questions and questions already in "
              "chat_train_v4.jsonl are removed.", "",
              "| file | rows | lang | source | licence | note |", "|---|---:|---|---|---|---|"]

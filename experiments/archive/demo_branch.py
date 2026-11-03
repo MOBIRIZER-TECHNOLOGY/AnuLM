@@ -1,7 +1,7 @@
 """
 A demo-ready base without waiting for the main run: branch at 700k, decay, tune.
 
-    python experiments/demo_branch.py
+    python experiments/archive/demo_branch.py
 
 The main base-v2 run uses a warmup-stable-decay schedule, so most of what the
 final decay buys can be had early by decaying a COPY of a mid-run checkpoint.
@@ -27,9 +27,15 @@ import sys
 import time
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]          # experiments/archive/ -> the repository
 LOGS = ROOT / "logs" / "demo_branch"
 PY = sys.executable
+
+# PowerShell (.NET) regex for the main training run's command line: the package
+# entry points (`python -m anulm train`, `python -m anulm.training.train`) and the
+# pre-package `train.py`. The old `-like '*train.py*'` matched only the last, so
+# once the run moved into anulm/ the pause found nothing to stop.
+TRAIN_RE = r"\btrain\.py|anulm\.training\.train\b|anulm\s+train\b"
 MAIN_LOG = ROOT / "v2_train_run.log"
 PAUSE_AT = "eval @ 699999"
 
@@ -54,7 +60,7 @@ def ps(cmd: str) -> str:
 
 def train_py_running() -> bool:
     return "yes" in ps("if (Get-CimInstance Win32_Process -Filter \"name='python.exe'\" | "
-                       "Where-Object { $_.CommandLine -like '*train.py*' }) { 'yes' }")
+                       "Where-Object { $_.CommandLine -match '" + TRAIN_RE + "' }) { 'yes' }")
 
 
 def run(name: str, args: list[str], cap_h: float) -> int | str:
@@ -86,7 +92,7 @@ def main():
         log("pausing the main run: disable anulm_v2, stop its train.py")
         subprocess.run(["schtasks", "/change", "/tn", "anulm_v2", "/disable"], capture_output=True)
         ps("Get-CimInstance Win32_Process -Filter \"name='python.exe'\" | "
-           "Where-Object { $_.CommandLine -like '*train.py*' -and $_.CommandLine -like '*ckpt_base_v2*' } | "
+           "Where-Object { $_.CommandLine -match '" + TRAIN_RE + "' -and $_.CommandLine -like '*ckpt_base_v2*' } | "
            "ForEach-Object { Stop-Process -Id $_.ProcessId -Force }")
         for _ in range(60):
             if not train_py_running():

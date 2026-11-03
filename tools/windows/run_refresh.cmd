@@ -1,5 +1,5 @@
 @echo off
-REM One refresh of TASKS.md and the assistant's live-state memory file, then
+REM One refresh of docs/history/TASKS.md's live-status block, then
 REM exit. Registered as the scheduled task anulm_refresh, every 30 min.
 REM
 REM Deliberately has NO guard against a concurrent run_updater.cmd: that

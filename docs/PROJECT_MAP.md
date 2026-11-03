@@ -15,8 +15,10 @@ For the corpora themselves — links, licences, fetch commands, disk sizes — s
 
 ## 1. What the thing is
 
-One 353M-parameter sparse mixture-of-experts transformer, carrying Sarvam's
-architecture, trained from scratch on one consumer GPU. The `350m` preset:
+One sparse mixture-of-experts transformer, carrying Sarvam's architecture,
+trained from scratch on one consumer GPU: 353M parameters with the byte
+vocabulary, 397.7M (about 174M active per token) with the 32k vocabulary of
+every released model. The `350m` preset:
 
 | | |
 | --- | --- |

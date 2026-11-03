@@ -1,6 +1,6 @@
 # Sample outputs
 
-Real replies from `tools_sweep.py`, which runs every released checkpoint over thousands of held-out prompts. Selected by the rule in `tools_samples.py` -- nearest the median repetition among replies that stopped on their own -- so these are typical, not the best in the file. The aggregate numbers for the whole sweep are in each section and in `docs/RESULTS.md`.
+Real replies from `tools/sweep.py`, which runs every released checkpoint over thousands of held-out prompts. Selected by the rule in `tools/samples.py` -- nearest the median repetition among replies that stopped on their own -- so these are typical, not the best in the file. The aggregate numbers for the whole sweep are in each section and in `docs/RESULTS.md`.
 
 ## Writing Python
 

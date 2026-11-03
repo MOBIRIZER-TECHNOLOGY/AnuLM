@@ -49,7 +49,6 @@ from pathlib import Path
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from .audio_codec import ASR_RATE, WhisperEncoder, audio_chunks, read_wav
 

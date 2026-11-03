@@ -9,7 +9,7 @@ is `docs/RESULTS.md` §24. The rest of this file is the plan as written, with
 what actually happened recorded against it.
 
 Decided 2026-09-10: the English <-> Hindi translation demo ran before the
-Python coder (docs/CODER_PLAN.md), because it is a day of GPU instead of a
+Python coder (docs/history/CODER_PLAN.md), because it is a day of GPU instead of a
 week. The coder's data and corpus were built and waiting; its training
 started when the translation run released the GPU (it finished 2026-09-15).
 
@@ -29,7 +29,7 @@ losing at most one eval interval.
 | 4 | Score chrF, 300 sentences/direction | `experiments/translate_eval.sh` | 40 min | skipped for the full run; 50-sentence preview at step 48k was 44.5 / 43.0 |
 | 5 | Score chrF on all 1012 (the number to quote) | `python -m anulm eval_translate ckpt_translate.pt --device cuda` | 55 min | **done 2026-09-10 15:00: 41.5 en->hi, 43.4 hi->en** (docs/RESULTS.md §24) |
 | 6 | Demo: web UI translate mode | `serve.py --ckpt ckpt_translate.pt` | minutes | done: the page shows a *translate* mode whenever the checkpoint carries the direction templates |
-| 7 | Hand the GPU to the coder | `experiments/coder_train.sh 100000` ... | days 3-7 | done: the coder took the GPU 2026-09-10 15:29 and finished 2026-09-15 (docs/CODER_PLAN.md) |
+| 7 | Hand the GPU to the coder | `experiments/coder_train.sh 100000` ... | days 3-7 | done: the coder took the GPU 2026-09-10 15:29 and finished 2026-09-15 (docs/history/CODER_PLAN.md) |
 
 Suggested phasing for step 3: `translate_train.sh 25000` (3 h), sleep,
 `translate_train.sh 50000` (3 h), sleep, `translate_train.sh` (to the end).

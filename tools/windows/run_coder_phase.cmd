@@ -9,7 +9,7 @@ REM is not already alive. The training itself is launched with `start`, in a
 REM console of its own -- a task run with an interactive token otherwise
 REM shares the interactive console, and a Ctrl+C there kills it
 REM (STATUS_CONTROL_C_EXIT, -1073741510). That cost two restarts on
-REM 2026-09-10/11. See TASKS.md.
+REM 2026-09-10/11. See docs/history/TASKS.md.
 cd /d "%~dp0..\.."
 
 if "%1"=="" goto :guard

@@ -4,7 +4,7 @@
 #
 # The coder in section 25 reached 4.9% HumanEval on a corpus that is 53% raw
 # GitHub Python and 7% exercises. phi-1-small reached ~45% at a similar size
-# on 7B tokens of textbook-quality Python, and docs/CODER_PLAN.md said so at
+# on 7B tokens of textbook-quality Python, and docs/history/CODER_PLAN.md said so at
 # the time. This inverts the ratio to find out how much of that gap is the
 # data rather than the model.
 #

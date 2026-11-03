@@ -163,7 +163,7 @@ stretch, unattended, owned by the `anulm_coder` scheduled task.
 | val | 3.276 | 3.161 | 3.049 | 2.869 | 2.734 | **2.723** |
 
 The full 138-point curve is in `coder_curve.csv` (steps 255,000 and
-260,000 are permanently lost; see TASKS.md). What remains is the final
+260,000 are permanently lost; see docs/history/TASKS.md). What remains is the final
 instruction tune and its pass@1 -- run it **uncapped** (`EX_CAP=0`), since
 the capped probe's answer loss was still falling when its epoch ended.
 
@@ -319,7 +319,7 @@ So the choice is only about how often you want to be asked for a command:
 
 | granularity | gates left | each | when it makes sense |
 | --- | --- | --- | --- |
-| **one target of 700000** | 0 | 49.8 h unattended | the default now; nothing to do but read `TASKS.md` |
+| **one target of 700000** | 0 | 49.8 h unattended | the default now; nothing to do but read `docs/history/TASKS.md` |
 | every 50,000 | 9 | 5.5 h | you want to eyeball pass@1 on a ladder |
 | as written, 3 phases | 3 | ~16 h | no reason left |
 

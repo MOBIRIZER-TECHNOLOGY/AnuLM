@@ -29,7 +29,7 @@ from pathlib import Path
 
 import torch
 
-from anulm.model import AnuLM, AnuLMConfig
+from anulm.model import AnuLM, AnuLMConfig, safe_load
 
 
 def config_from(hf: dict, tokenizer_path: str, block_size: int = 2048) -> AnuLMConfig:
@@ -86,7 +86,7 @@ def check(src: str, ck: str) -> None:
     ids = torch.tensor([tok.encode(text)])
     ref = AutoModelForCausalLM.from_pretrained(src, torch_dtype=torch.float32).eval()
     want = ref(ids).logits
-    c = torch.load(ck, map_location="cpu", weights_only=False)
+    c = safe_load(ck, map_location="cpu")
     m = AnuLM(c["cfg"]).eval()
     m.load_state_dict(c["model"])
     got, _ = m(ids, ids)

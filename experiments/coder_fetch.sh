@@ -1,5 +1,5 @@
 #!/bin/bash
-# Phase 1 of docs/CODER_PLAN.md: fetch everything the Python-coder run needs.
+# Phase 1 of docs/history/CODER_PLAN.md: fetch everything the Python-coder run needs.
 # Every download skips files already present, so rerun after any interruption.
 export PATH="/usr/bin:/bin:$PATH"   # before dirname: a detached Git Bash has no MSYS tools on PATH
 cd "$(dirname "$0")/.." || exit 1

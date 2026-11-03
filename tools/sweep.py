@@ -29,7 +29,7 @@ picked later without re-running) and prints a summary per segment.
 
 **Resumable, because it has to be.** Four thousand generations is hours, and
 on Windows a process started from a terminal does not outlive the session
-that started it -- `TASKS.md` has the story and the scheduled-task pattern
+that started it -- `docs/history/TASKS.md` has the story and the scheduled-task pattern
 that does. So a rerun reads what is already in the jsonl, skips those
 prompts and appends; `run_sweep.cmd` is the wrapper a task fires every 30
 minutes, and a firing while the sweep is alive is a no-op.

@@ -19,7 +19,6 @@ strongest form of the claim and the hardest case for it.
 from __future__ import annotations
 
 import argparse
-import math
 from dataclasses import replace
 from pathlib import Path
 
@@ -44,13 +43,6 @@ def load_val(path: Path, cfg, frac: float = 0.1) -> torch.Tensor:
 
 
 DEVICE = "cpu"
-
-
-@torch.no_grad()
-def eval_at(state, cfg, data, length: int, batches: int, seed: int = 0) -> float:
-    """Mean loss over fixed windows of `length` tokens."""
-    w = eval_windows(state, cfg, data, length, batches, seed)
-    return sum(w) / len(w)
 
 
 def eval_windows(state, cfg, data, length: int, batches: int, seed: int = 0) -> list[float]:

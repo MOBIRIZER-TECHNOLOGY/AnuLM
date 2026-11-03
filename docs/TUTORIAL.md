@@ -160,7 +160,7 @@ checkpoints are usable and scorable at any phase boundary:
 python -m anulm eval_code ckpt_coder.pt --bench humaneval --device cuda
 ```
 
-`docs/MODEL_CARD.md` describes the finished checkpoint; `docs/CODER_PLAN.md`
+`docs/MODEL_CARD.md` describes the finished checkpoint; `docs/history/CODER_PLAN.md`
 is the day-by-day log of this exact run, including what went wrong.
 
 ### Running for days without a terminal
@@ -169,7 +169,7 @@ A multi-day run must not depend on a shell staying open. On Linux use
 `tmux` or `nohup bash experiments/coder_train.sh > coder.log 2>&1 &`, or
 a systemd user service. On Windows a Task Scheduler task is the only
 thing that survives a closed session; `run_coder_phase.cmd` and
-`TASKS.md` document the pattern (a 30-minute task with a live-process
+`docs/history/TASKS.md` document the pattern (a 30-minute task with a live-process
 guard and a done-marker) and the mistakes that cost idle GPU hours here.
 Every training script resumes from `<ckpt>.last`, so a killed run loses
 at most one save interval.

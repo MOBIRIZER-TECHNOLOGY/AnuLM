@@ -1,5 +1,5 @@
 """
-Speech and vision decoders on the final base (TASKS.md "After base v2", step 7), unattended.
+Speech and vision decoders on the final base (docs/history/TASKS.md "After base v2", step 7), unattended.
 
     python experiments/omni_v3.py [--root <checkout>]
 

@@ -116,7 +116,7 @@ commenter will find.
 
 ## The image
 
-![The demo: AnuLM-Coder-400M writing is_prime](media/demo-coder-1280.png)
+![The demo: AnuLM-Coder-400M writing is_prime](../media/demo-coder-1280.png)
 
 `docs/media/demo-coder-1280.png` (1280 x 1039, good for a feed) and
 `demo-coder.png` (2x, for anywhere that wants it sharp). It is the real page
@@ -132,7 +132,7 @@ python -m anulm app --port 7860 &
 python -m tools.screenshot docs/media/demo-coder.png
 ```
 
-`tools_screenshot.py` drives the page in headless Chrome the way a visitor
+`tools/screenshot.py` drives the page in headless Chrome the way a visitor
 does -- picks the checkpoint, presses Load, types, presses Generate, waits
 for output -- and fails loudly if any of that stops working, so the image
 cannot quietly become a photograph of a broken page.

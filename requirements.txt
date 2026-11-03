@@ -1,8 +1,10 @@
-# AnuLM's model, training, sampling, serving and every evaluation need
-# exactly one third-party package: torch. safetensors is needed only to read
-# or write an exported checkpoint folder, pyarrow only to read Hugging Face
-# parquet shards; both are listed below and neither is imported by the
-# training path. docs/DEVELOPING.md "Setup" says which script needs what.
+# AnuLM's model, training, sampling, serving and every evaluation need two
+# third-party packages: torch and numpy (train.py memory-maps the token .bin
+# files through numpy; rag.py, the speech and vision code use it too).
+# safetensors is needed only to read or write an exported checkpoint folder,
+# pyarrow only to read Hugging Face parquet shards; both are listed below and
+# neither is imported by the training path. docs/DEVELOPING.md "Setup" says
+# which script needs what.
 #
 # CPU-only (what sections 1-5 of docs/RESULTS.md ran on):
 #   pip install --index-url https://download.pytorch.org/whl/cpu torch
@@ -15,6 +17,7 @@
 # `--moe-impl grouped` additionally needs torch.nn.functional.grouped_mm
 # (present in 2.11).
 torch>=2.1
+numpy
 
 # Reading and writing the exported (Hugging Face) checkpoint folders:
 # export_hf.py, and load_checkpoint() when given a folder instead of a .pt.

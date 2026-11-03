@@ -9,7 +9,7 @@ One model for every task, start to finish, unattended -- and safe to re-run.
              sources that allow commercial use (docs/DATASETS.md, NOTICE)
   2. chat    the chat model: ckpt_chat_v3.pt if it is here, else the released
              base (toonist/AnuLM-Base-v2-400M) fine-tuned on data/chat_train.jsonl
-             exactly as experiments/post_v2.py made chat v3
+             exactly as experiments/archive/post_v2.py made chat v3
   3. grow    speech_vocab.py adds the audio and image ids -> ckpt_chat_mm.pt
   4. wait    for the GPU (no other process holding more than 1 GB of it)
   5. base    the text report card of the chat model it starts from (omni_eval.py)

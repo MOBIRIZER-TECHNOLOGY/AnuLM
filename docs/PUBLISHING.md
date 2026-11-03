@@ -30,7 +30,7 @@ still matters was published before it went: the four exported checkpoints
 (Hugging Face and `release/`), the tokenizers under `data/`,
 `coder_curve.csv` and the numbers in `docs/RESULTS.md`. The corpora are
 re-fetchable by the scripts; the `.pt` training checkpoints, with their
-optimizer state, are not — `TASKS.md` records what that means.
+optimizer state, are not — `docs/history/TASKS.md` records what that means.
 
 ## 1. What is released, under which licence
 
@@ -60,9 +60,9 @@ full provenance table; keep it in sync with this one.
   (only the type string changed — the merges are byte-for-byte identical,
   so re-uploading the Hub copies is optional). Everything else carrying the
   old name was renamed with the project: the corpus fetchers'
-  User-Agent, the scheduled tasks (`anulm_*`) and the paths in `TASKS.md`
+  User-Agent, the scheduled tasks (`anulm_*`) and the paths in `docs/history/TASKS.md`
   and `update_tasks.py`. The old working directory and its five scheduled
-  tasks were deleted on 2026-09-18; `TASKS.md` records what that took with
+  tasks were deleted on 2026-09-18; `docs/history/TASKS.md` records what that took with
   it and what had already been published.
 - Local machine specifics removed from anything that ships: the Windows
   wrappers use `%LOCALAPPDATA%`, no user names, e-mails or host names remain

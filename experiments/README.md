@@ -48,9 +48,9 @@ bash experiments/translate_train.sh        #      resume from ckpt_translate.pt.
 bash experiments/translate_eval.sh         #      chrF on 300 FLORES sentences per direction, ~40 min
 LIMIT= bash experiments/translate_eval.sh  #      all 1,012 sentences, ~2.5 h -- the number to quote
 
-bash experiments/coder_fetch.sh            # docs/CODER_PLAN.md phase 1: ~15 GB of Python, English, exercises, tests
+bash experiments/coder_fetch.sh            # docs/history/CODER_PLAN.md phase 1: ~15 GB of Python, English, exercises, tests
 bash experiments/coder_build.sh            # phase 2: convert, mix (65/30/5), code32k tokenizer, encode (done)
-                                           #   long runs belong to a scheduled task now -- see TASKS.md
+                                           #   long runs belong to a scheduled task now -- see docs/history/TASKS.md
 bash experiments/coder_train.sh 250000     # phases 3-6: pretrain to step N and exit; rerun to continue; no arg = to 700k
                                            #   (step 100k done 2026-09-11, val 3.436; RESULTS.md 25)
 bash experiments/coder_sft.sh              # phase 7: instruction-tune, then pass@1 on HumanEval and MBPP
@@ -79,3 +79,9 @@ launched detached (PowerShell `Start-Process`) has no MSYS tools; and the
 `| grep -v` filters block-buffer, so a run's log fills in 4 KB chunks and a
 run killed mid-phase leaves the log short of what the checkpoint holds --
 read the checkpoint's `step` if you need progress mid-run.
+
+## Archived one-offs
+
+`experiments/archive/` holds the dated machine-operations scripts of single
+unattended runs (the demo branch, the Decide branches, post-training on base
+v2, chat v5, ...); its README says what each was and when.

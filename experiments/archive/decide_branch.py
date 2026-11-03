@@ -1,9 +1,9 @@
 """
 Train AnuLM-Decide in the GPU window after the demo branch, then resume pretraining.
 
-    python experiments/decide_branch.py        # launched detached
+    python experiments/archive/decide_branch.py        # launched detached
 
-Waits for the demo branch (experiments/demo_branch.py) to finish. That script's
+Waits for the demo branch (experiments/archive/demo_branch.py) to finish. That script's
 last act restarts the main run from ckpt_base_v2.pt.last; this one pauses it
 again at once -- it has done no work yet, and it will restart from the same
 resume point -- trains the decision model on the decayed demo base, evaluates
@@ -17,9 +17,15 @@ import sys
 import time
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]          # experiments/archive/ -> the repository
 LOGS = ROOT / "logs" / "decide"
 PY = sys.executable
+
+# PowerShell (.NET) regex for the main training run's command line: the package
+# entry points (`python -m anulm train`, `python -m anulm.training.train`) and the
+# pre-package `train.py`. The old `-like '*train.py*'` matched only the last, so
+# once the run moved into anulm/ the pause found nothing to stop.
+TRAIN_RE = r"\btrain\.py|anulm\.training\.train\b|anulm\s+train\b"
 BRANCH_LOG = ROOT / "logs" / "demo_branch" / "pipeline.log"
 
 
@@ -61,7 +67,7 @@ def main():
         subprocess.run(["schtasks", "/change", "/tn", "anulm_v2", "/disable"], capture_output=True)
         time.sleep(30)
         ps("Get-CimInstance Win32_Process -Filter \"name='python.exe'\" | "
-           "Where-Object { $_.CommandLine -like '*train.py*' -and $_.CommandLine -like '*ckpt_base_v2*' } | "
+           "Where-Object { $_.CommandLine -match '" + TRAIN_RE + "' -and $_.CommandLine -like '*ckpt_base_v2*' } | "
            "ForEach-Object { Stop-Process -Id $_.ProcessId -Force }")
         time.sleep(30)
         log("main run paused again (it restarts from the same resume point)")

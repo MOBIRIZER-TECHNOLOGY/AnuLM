@@ -1,7 +1,7 @@
 #!/bin/bash
 # Translation demo, phase 1: pairs and the test set. CPU, minutes.
 # Needs data/raw/ai4bharat__samanantar, data/raw/cfilt__iitb-english-hindi and
-# data/raw/flores200 (fetch_hf.py / curl, see docs/TRANSLATE_PLAN.md).
+# data/raw/flores200 (fetch_hf.py / curl, see docs/history/TRANSLATE_PLAN.md).
 export PATH="/usr/bin:/bin:$PATH"   # before dirname: a detached Git Bash has no MSYS tools on PATH
 cd "$(dirname "$0")/.." || exit 1
 export PYTHONIOENCODING=utf-8

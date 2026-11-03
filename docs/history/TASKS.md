@@ -132,9 +132,8 @@ wrapper die with "cannot access the file".
 | weights + optimizer + sampler position | `ckpt_coder.pt.last` | 5,000 steps (~33 min) | yes, and the write is atomic |
 | best-val weights | `ckpt_coder.pt` | when val improves | yes, atomic |
 | the val-loss curve | `coder_curve.csv` | 30 min | yes |
-| live status for you | `TASKS.md` live block | 30 min | yes |
+| live status for you | `docs/history/TASKS.md` live block | 30 min | yes |
 | one status line, appended | `tasks_history.log` | 30 min | yes |
-| live state for a fresh assistant session | `…/memory/live-training-state.md` | 30 min | yes |
 
 **Worst case from a power cut: 33 minutes of training**, plus up to 30
 minutes before the task notices and restarts. Nothing else is lost.
@@ -149,17 +148,16 @@ whose log line has since disappeared*, and is written with `os.replace`.
 
 Six points had already been lost before it existed. Four were recovered
 from values recorded elsewhere (steps 5,000 and 10,000 from the phase-1
-table in `docs/CODER_PLAN.md`; 105,000 and 265,000 from checkpoints read at
-the time) by `tools_backfill_curve.py`, which is kept so the provenance is
+table in `docs/history/CODER_PLAN.md`; 105,000 and 265,000 from checkpoints read at
+the time) by `tools/backfill_curve.py`, which is kept so the provenance is
 auditable. **Steps 255,000 and 260,000 are permanently gone** — they were
 written only to the log of the run that was killed at 265,000.
 
 **What a refresh writes.** The *Live status* block at the bottom of this
-file, a line in `tasks_history.log`, the curve CSV, and
-`~/.claude/projects/C--workspace-AnuLM/memory/live-training-state.md`
-— the last one so a fresh assistant session after a power cut inherits the
-current step, the resume command and the open decisions instead of
-re-deriving them.
+file, a line in `tasks_history.log` and the curve CSV, all inside the
+repository. (It once also rewrote a live-state file in one person's
+assistant-memory folder under the home directory; that was removed, because a
+shared tool should not write outside the repository.)
 
 `run_coder_phase.cmd` does three things on each firing: alert once if the
 phase has just completed, exit if training is already alive, otherwise
@@ -340,7 +338,7 @@ held-out accuracy; if two are within ~0.5 points (one seed), take the
 smaller adapter. If D wins, check its serving speed before shipping it: the
 sparse MoE path is slower than the grouped one the app uses.
 
-## Translation demo (docs/TRANSLATE_PLAN.md) — done
+## Translation demo (docs/history/TRANSLATE_PLAN.md) — done
 
 | # | step | status |
 | --- | --- | --- |
@@ -350,7 +348,7 @@ sparse MoE path is slower than the grouped one the app uses.
 | 4–5 | chrF on all 1,012 FLORES sentences per direction | done 2026-09-10 15:00: **41.5 en→hi, 43.4 hi→en** |
 | 6 | demo: `python -m anulm serve --ckpt ckpt_translate.pt` | ready |
 
-## Coder demo (docs/CODER_PLAN.md) — done
+## Coder demo (docs/history/CODER_PLAN.md) — done
 
 Each phase call trains from the last save to the step given and exits.
 0.39 s/step measured; 5,000 steps between saves.
@@ -359,8 +357,8 @@ Each phase call trains from the last save to the step given and exits.
 | --- | --- | --- | --- | --- |
 | 1 fetch | `bash experiments/coder_fetch.sh` | | | done 2026-09-10 |
 | 2 build | `bash experiments/coder_build.sh` | | | done 2026-09-10 05:45 |
-| 3 | `bash experiments/coder_train.sh 100000` | 0 → 100k | 11 h | **done 2026-09-11 04:52**, best val 3.4361 at step 85k; curve in docs/CODER_PLAN.md |
-| 4 | `bash experiments/coder_train.sh 250000` | → 250k | 16 h | **done 2026-09-12 02:24**, best val 3.2758 (final eval); curve in docs/CODER_PLAN.md |
+| 3 | `bash experiments/coder_train.sh 100000` | 0 → 100k | 11 h | **done 2026-09-11 04:52**, best val 3.4361 at step 85k; curve in docs/history/CODER_PLAN.md |
+| 4 | `bash experiments/coder_train.sh 250000` | → 250k | 16 h | **done 2026-09-12 02:24**, best val 3.2758 (final eval); curve in docs/history/CODER_PLAN.md |
 | 4b | instruction-tune the step-250k checkpoint for an early read | `EX_CAP=200000 bash experiments/coder_sft.sh` | 3 h | **done 2026-09-12 11:03: MBPP 5.1% (13/257), HumanEval 0.0%**, answer loss 2.28 → 1.15 |
 | 5-7 | pretrain to the end, one unattended run (phases collapsed) | task `anulm_coder` → `run_coder_phase.cmd 700000` | 47.8 h | **done 2026-09-14 18:38**, best val 2.7222 at step 685k; task now disabled |
 | 8 | `bash experiments/coder_sft.sh` | instruction tune + pass@1 | 7.7 h uncapped | **done 2026-09-15 04:01**: MBPP **12.5%** (32/257) tuned, HumanEval **4.9%** (8/164) base; answer loss 1.644 -> 0.918 |
@@ -377,7 +375,7 @@ noise to wrong-but-real programs. **Instruction-tuned at step 250,000 it
 scores MBPP 5.1% (13/257), HumanEval 0.0%** -- the first non-zero, and the
 evidence that the remaining pretraining is buying a known-good pipeline
 more compute. Watch MBPP, not HumanEval, at this size. See
-docs/CODER_PLAN.md.
+docs/history/CODER_PLAN.md.
 
 ## Retraining on more data
 

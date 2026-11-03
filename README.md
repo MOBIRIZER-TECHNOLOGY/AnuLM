@@ -151,17 +151,17 @@ CPU wheel silently reports cuda unavailable.
 | [docs/MODEL_CARD.md](docs/MODEL_CARD.md) | The finished Python coder on one page: every data source with its size and share, the architecture as read from the checkpoint, the training run, the benchmark numbers with the prompt mode that produced each, and how to try it. |
 | The other cards: [base](docs/MODEL_CARD_BASE.md), [base at 2K](docs/MODEL_CARD_BASE2K.md), [question answerer](docs/MODEL_CARD_HINDI_QA.md), [translator](docs/MODEL_CARD_TRANSLATE.md), [base v2](docs/MODEL_CARD_BASE_V2.md), [the one model](docs/MODEL_CARD_OMNI.md) ([how to train it](docs/OMNI.md)) | One page each — what the checkpoint does and does not do, its data and licence, its numbers, how to run it. `export_hf.py` copies these into the Hugging Face repos, so the card on the Hub and the card here are the same file. |
 | [docs/TUTORIAL.md](docs/TUTORIAL.md) | From a fresh machine to your own AnuLM: install, a first model in 20 min on CPU, then every real run in order with the time, disk, GPU and expected number for each. Start here. |
-| [docs/PROJECT_MAP.md](docs/PROJECT_MAP.md) | The project as a system: the 353M/151M-active preset, every pipeline stage and the file that owns it, the three ways a non-text modality reaches the backbone, where each corpus comes from and what is actually measured. Read it after ARCHITECTURE.md. |
+| [docs/PROJECT_MAP.md](docs/PROJECT_MAP.md) | The project as a system: the `350m` preset (397.7M parameters, about 174M active per token, in every released model with the 32k vocabulary), every pipeline stage and the file that owns it, the three ways a non-text modality reaches the backbone, where each corpus comes from and what is actually measured. Read it after ARCHITECTURE.md. |
 | [docs/DATASETS.md](docs/DATASETS.md) | Every data source with its link, licence, size, the script that fetches it and the checkpoint that used it; which licence each released checkpoint inherits. |
 | [docs/DEVELOPING.md](docs/DEVELOPING.md) | Setup, layout, testing, how to extend, known gaps and gotchas. |
+| [docs/VERIFICATION.md](docs/VERIFICATION.md) | Does this code work? The test and smoke commands to run, the results they gave on the development machine, what has not been checked, and the known open issues. |
+| [docs/SPEECH.md](docs/SPEECH.md) | How AnuLM learns to listen and talk: the Whisper-and-Piper cascade baseline against speech tokens in the model's own vocabulary, what is built, what is measured, and what is still only a plan. |
 | [TODO.md](docs/TODO.md), [CONTRIBUTING.md](CONTRIBUTING.md) | Open work, ordered by usefulness and labelled by whether it needs a GPU, and how to contribute a measured change. |
 | [docs/PUBLISHING.md](docs/PUBLISHING.md) | How this is released: licences per artefact, weight export to safetensors, Hugging Face upload, Zenodo DOI, the Space. |
 | [docs/SAMPLES.md](docs/SAMPLES.md) | What the released models actually produced on 4,131 held-out prompts, selected by rule rather than by eye, with the aggregate numbers beside them (§30). |
-| [docs/ANNOUNCEMENT.md](docs/ANNOUNCEMENT.md) | Post drafts for LinkedIn and X, with a table giving the source of every number in them and honest answers to the questions a reader will ask. |
-| [docs/TRANSLATE_PLAN.md](docs/TRANSLATE_PLAN.md), [docs/CODER_PLAN.md](docs/CODER_PLAN.md) | The two demo plans, with status: both finished. Translation is scored on FLORES-200; the coder ran its 700k steps, was instruction-tuned, and is served by `serve.py`. |
 | [experiments/README.md](experiments/README.md) | One script per results section from §9 on, and how to resume the long ones. |
 | [demo_colab.ipynb](examples/demo_colab.ipynb), [app.py](anulm/apps/app.py), [space/](space/) | The hosted demo: three cells in Colab that download a checkpoint and launch `app.py` with a public link, and the Space files for the day Gradio Spaces are free to host again. |
-| [TASKS.md](docs/TASKS.md) | The running to-do list for the two demos, the resume command for each step, and a live-status block that `update_tasks.py --loop 3600` rewrites hourly from the checkpoint on disk, so a power cut loses nothing but the last interval. |
+| [docs/history/](docs/history/) | Historical and working notes, kept for provenance: [TASKS.md](docs/history/TASKS.md), the machine's run log and recovery procedure for the finished coder and translation runs (its live-status block is rewritten by `tools/update_tasks.py`); [CODER_PLAN.md](docs/history/CODER_PLAN.md) and [TRANSLATE_PLAN.md](docs/history/TRANSLATE_PLAN.md), the two finished demo plans; [ANNOUNCEMENT.md](docs/history/ANNOUNCEMENT.md), the launch post drafts with the source of every number. |
 | `sarvam/*_annotated.py` | The annotated Sarvam code, read beside `sarvam/sarvam-30b/` and `sarvam/sarvam-105b/`. |
 
 |                     | total   | active/token | experts hold | layers | attention |
@@ -523,7 +523,7 @@ python -m anulm serve --ckpt ckpt_coder_sft.pt  # the demo, at http://127.0.0.1:
 
 `docs/MODEL_CARD.md` is the one-page summary of the finished checkpoint.
 
-`docs/CODER_PLAN.md` is the week-long plan for a Python-writing checkpoint
+`docs/history/CODER_PLAN.md` is the week-long plan for a Python-writing checkpoint
 of this architecture: 700k steps over a 2.78B-token corpus that is 65%
 Python, then instruction tuning on exercise-style pairs and pass@1 on
 HumanEval and MBPP (`eval_code.py`, which executes what the model writes).
@@ -539,7 +539,7 @@ For scale, CodeParrot-110M reaches ~4% on HumanEval after 25B tokens; this
 reaches 4.9% after 2.87B. `docs/RESULTS.md` §25 has the full curve, the
 samples, and why the tuned model's HumanEval zero was a prompting artifact
 worth 3 points. The run belonged to a scheduled task that restarted it
-through crashes and power cuts; `TASKS.md` is the recovery procedure.
+through crashes and power cuts; `docs/history/TASKS.md` is the recovery procedure.
 
 ## Accuracy: the golden set
 

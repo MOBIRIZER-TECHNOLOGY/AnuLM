@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If you use AnuLM in academic work, please cite it as below."
 title: "AnuLM: a small, trainable mixture-of-experts language model in the shape of Sarvam 30B, trained from scratch on one GPU for Hindi, English and Python"
 type: software
-version: 0.1.0
+version: 0.2.0
 date-released: 2026-09-18
 license: MIT
 repository-code: "https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM"

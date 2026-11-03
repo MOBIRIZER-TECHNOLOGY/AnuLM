@@ -5,6 +5,9 @@
 
 Each command is a module of the package, and `python -m anulm.training.train`
 is the same program. `python -m anulm` with no command lists them all.
+Only modules with an `if __name__ == "__main__":` block are commands; the
+library modules (omni, muon, hf_tok, ...) are imported, not run.
+tests/test_quality_layout.py keeps this table and the package in step.
 """
 
 import runpy
@@ -12,15 +15,11 @@ import sys
 
 COMMANDS = {
     "bidirectional": "anulm.bidirectional",
-    "bigram_teacher": "anulm.bigram_teacher",
     "bpe": "anulm.bpe",
-    "hf_tok": "anulm.hf_tok",
     "lora": "anulm.lora",
     "model": "anulm.model",
-    "muon": "anulm.muon",
     "quickstart": "anulm.quickstart",
     "app": "anulm.apps.app",
-    "app_benchmark": "anulm.apps.app_benchmark",
     "app_omni": "anulm.apps.app_omni",
     "app_vision": "anulm.apps.app_vision",
     "app_voice": "anulm.apps.app_voice",
@@ -53,14 +52,12 @@ COMMANDS = {
     "hf_upgrade": "anulm.hf.hf_upgrade",
     "api": "anulm.inference.api",
     "ask": "anulm.inference.ask",
-    "langchain_anulm": "anulm.inference.langchain_anulm",
     "rag": "anulm.inference.rag",
     "sample": "anulm.inference.sample",
     "sample_many": "anulm.inference.sample_many",
     "serve": "anulm.inference.serve",
     "voice": "anulm.inference.voice",
     "audio_codec": "anulm.multimodal.audio_codec",
-    "omni": "anulm.multimodal.omni",
     "omni_data": "anulm.multimodal.omni_data",
     "omni_eval": "anulm.multimodal.omni_eval",
     "omni_images": "anulm.multimodal.omni_images",

@@ -4,7 +4,7 @@ REM http://127.0.0.1:8000. Registered as the scheduled task anulm_serve,
 REM firing every 30 minutes; a firing while the server is up is a no-op, a
 REM firing after a crash or reboot brings it back. The guard matches the port,
 REM so a second serve.py on another port (a test, a second checkpoint) is ignored. The server itself runs
-REM in its own console via `start` (see TASKS.md for why), so nothing in an
+REM in its own console via `start` (see docs/history/TASKS.md for why), so nothing in an
 REM interactive shell can Ctrl+C it.
 REM
 REM To stop serving for good:

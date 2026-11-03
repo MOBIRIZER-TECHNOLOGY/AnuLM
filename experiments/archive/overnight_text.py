@@ -11,7 +11,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]          # experiments/archive/ -> the repository
 DATA = ROOT / "data"          # held-out prompts also in training are dropped by omni_train
 WORK_DIR = ROOT / "runs" / "overnight-text-v1"
 CONSOLE_LOG = WORK_DIR / "console.log"

@@ -4,19 +4,31 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "anulm"
-version = "0.1.0"
+version = "0.2.0"
 description = "A small, trainable mixture-of-experts language model"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {file = "LICENSE"}
+authors = [{name = "The AnuLM authors"}]
 dependencies = ["torch>=2.1", "numpy"]
+
+[project.urls]
+Homepage = "https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM"
+Repository = "https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM"
+Issues = "https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/issues"
 
 [project.optional-dependencies]
 export = ["safetensors>=0.4", "transformers", "tokenizers"]
 data = ["pyarrow>=15"]
-demo = ["gradio>=5"]
+# Downloading released checkpoints (app.py, quickstart.py, load_checkpoint on a
+# Hub id). The demo needs it to fetch its models, so `demo` includes it.
+hub = ["huggingface_hub>=0.30"]
+# tokenizers: the released models ship a Hugging Face tokenizer.json, which
+# hf_tok.load_tokenizer reads when serving them.
+demo = ["gradio>=5", "huggingface_hub>=0.30", "tokenizers"]
 # The OpenAI-compatible API imports the demo's model loaders, hence gradio.
-api = ["fastapi>=0.110", "uvicorn>=0.29", "python-multipart>=0.0.9", "gradio>=5"]
+api = ["fastapi>=0.110", "uvicorn>=0.29", "python-multipart>=0.0.9", "gradio>=5",
+       "huggingface_hub>=0.30", "tokenizers"]
 
 [project.scripts]
 anulm = "anulm.__main__:main"
@@ -27,3 +39,15 @@ py-modules = ["model"]
 
 [tool.setuptools.packages.find]
 include = ["anulm*"]
+
+# Lint configuration only: the code is not run through a formatter (it keeps
+# column-aligned inline comments), and these rules catch real bugs, not style.
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+extend-exclude = ["book", "sarvam", "release", "logs", "course"]
+[tool.ruff.lint]
+select = ["E9", "F63", "F7", "F82", "F401", "F811", "F841", "B006", "S307", "S602", "E722"]
+[tool.ruff.lint.per-file-ignores]
+"experiments/**" = ["E402"]
+"tests/**" = ["F841"]

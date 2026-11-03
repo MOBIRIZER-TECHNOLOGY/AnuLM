@@ -1,5 +1,5 @@
 #!/bin/bash
-# Phase 2 of docs/CODER_PLAN.md: convert, mix, tokenizer, encode.
+# Phase 2 of docs/history/CODER_PLAN.md: convert, mix, tokenizer, encode.
 # CPU only, ~2 hours. Safe to rerun; each step skips work already done.
 export PATH="/usr/bin:/bin:$PATH"   # before dirname: a detached Git Bash has no MSYS tools on PATH
 cd "$(dirname "$0")/.." || exit 1

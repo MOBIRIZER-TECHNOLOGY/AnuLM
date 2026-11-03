@@ -1,5 +1,5 @@
 #!/bin/bash
-# Phase 7 of docs/CODER_PLAN.md: instruction-tune the coder and measure it.
+# Phase 7 of docs/history/CODER_PLAN.md: instruction-tune the coder and measure it.
 #
 #     bash experiments/coder_sft.sh                 # from ckpt_coder.pt
 #     EX_CAP=200000 bash experiments/coder_sft.sh   # 1.5 h of tuning, not 6.4 h

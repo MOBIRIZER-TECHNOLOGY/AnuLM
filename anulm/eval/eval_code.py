@@ -47,7 +47,6 @@ script is for; do not point it at a checkpoint someone else trained.
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import shutil
 import subprocess
@@ -60,7 +59,7 @@ from pathlib import Path
 import torch
 
 from anulm.bpe import BPE
-from anulm.data.make_qa import PROMPTS, template_for
+from anulm.data.make_qa import PROMPTS
 from anulm.model import AnuLM, load_checkpoint
 
 HUMANEVAL = "data/raw/openai__openai_humaneval/openai_humaneval/test-00000-of-00001.parquet"

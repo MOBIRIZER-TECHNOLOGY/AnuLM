@@ -1,6 +1,6 @@
 @echo off
-REM Hourly refresh of TASKS.md's live-status block, if not already running.
-REM Registered as the scheduled task anulm_updater. See TASKS.md.
+REM Hourly refresh of docs/history/TASKS.md's live-status block, if not already running.
+REM Registered as the scheduled task anulm_updater. See docs/history/TASKS.md.
 cd /d "%~dp0..\.."
 powershell -NoProfile -Command "if (Get-CimInstance Win32_Process -Filter \"name='python.exe'\" | Where-Object { $_.CommandLine -like '*tools.update_tasks*' }) { exit 1 }"
 if errorlevel 1 exit /b 0

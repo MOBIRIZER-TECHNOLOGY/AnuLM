@@ -4,7 +4,7 @@ REM (docs/RESULTS.md section 27, TODO item "Longer context"). Started by
 REM run_ctx_phase.cmd through `start`, which gives it its OWN console -- a
 REM Ctrl+C in the console the scheduled task shares with any interactive
 REM shell then cannot reach it. That trap cost two restarts on 2026-09-10/11;
-REM TASKS.md has the story. Do not call this directly.
+REM docs/history/TASKS.md has the story. Do not call this directly.
 cd /d "%~dp0..\.."
 echo %date% %time% ctx train start, target %1 >> ctx_train_guard.log
 "%LOCALAPPDATA%\Python\pythoncore-3.14-64\python.exe" -u -m anulm train --preset 350m --grad-ckpt ^

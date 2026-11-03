@@ -34,11 +34,30 @@ Thumbs.db
 tasks_history.log
 golden/*.old.jsonl
 release/
+logs/
 
-# Tokenizers are small and every checkpoint needs its own; ship them.
+# The demo's password file (the demo says it is ignored; keep it so).
+/.demo_auth
+
+# Assistant and editor state from this machine.
+/.claude/
+
+# Packaging and tool caches.
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+
+# Tokenizers are small and every checkpoint needs its own; ship them. The
+# whitelist names them, so stray JSON in data/ (contamination reports, caches)
+# cannot be committed by accident.
 !data/
 data/*
-!data/*.json
+!data/code32k.json
+!data/hi16k*.json
+!data/multi32k.json
+!data/rag_demo_questions.jsonl
 sweep/
 
 # Run outputs belong in runs/ or checkpoints/, never at the repository root.
@@ -49,3 +68,4 @@ checkpoints/
 
 # The book's HTML/PDF preview is build output (book/tools/build_preview.py).
 book/preview/
+course/preview/
