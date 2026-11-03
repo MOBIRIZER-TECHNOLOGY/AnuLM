@@ -214,6 +214,15 @@ English speech model transcribed 20 clips word for word as the `.pt` did
 2.8643 -> 2.8612 and one greedy caption ran on by a few words -- the
 bfloat16 rounding, the same trade the 0.1.0 exports made.
 
+Since 2026-11-03 every export checks itself: `export_hf` reloads the folder
+with `load_checkpoint` and stops unless every tensor is bit-identical to what
+it meant to write (the bfloat16-rounded backbone in the default mode, the
+untouched weights with `--weights-dtype float32`) and the tokenizer encodes
+sample English, Hindi and Python text to the same ids. `--weights-dtype
+float32` doubles the folder size and makes the export exactly the `.pt`, for
+a release whose numbers must match the checkpoint they were measured on;
+`--skip-parity` turns the check off.
+
 ## 4. Create the remotes
 
 - GitHub: create `MOBIRIZER-TECHNOLOGY/AnuLM` (public, no template, no licence

@@ -10,7 +10,7 @@ From the repository root (or after `pip install -e .`, from anywhere):
 
 ```bash
 python -m tests.test_model                                                   # 76 tests, ~2 min CPU
-python -m unittest tests.test_training_pipeline tests.test_multimodal_contracts tests.test_release_fixes   # 65 tests, seconds
+python -m unittest tests.test_training_pipeline tests.test_multimodal_contracts tests.test_release_fixes   # 79 tests, seconds
 python -m tools.smoke                                                        # 11 end-to-end steps, ~1-2 min CPU
 ```
 
@@ -41,7 +41,7 @@ Windows 11, Python 3.14.7, torch 2.11 (CUDA build, run on CPU), transformers 5.1
 | check | result |
 | --- | --- |
 | `tests.test_model` | 76 passed, 0 failed |
-| `tests.test_training_pipeline`, `tests.test_multimodal_contracts`, `tests.test_release_fixes` | 65 passed, 1 skipped (the installed-command check, because another copy of AnuLM is installed on this machine) |
+| `tests.test_training_pipeline`, `tests.test_multimodal_contracts`, `tests.test_release_fixes` | 79 passed, 1 skipped (the installed-command check, because another copy of AnuLM is installed on this machine) |
 | `tools.smoke` | 11 of 11 steps passed |
 | every `python -m anulm` command with `--help` | 58 of 61 run; see "Known issues" for the three |
 | restructure regression | a 50-step training run before and after the move into `anulm/`: identical loss and router imbalance at every step, val 2.7870 both |
@@ -74,6 +74,8 @@ Found while documenting and reviewing; none is caused by the restructure.
 - `decide train-general` ignores a loaded head/LoRA mode and always optimises
   the full model.
 - `voice --hear` always uses Whisper and ignores `--ear own`.
+- The reviewed-cases page (`validated_demo`) ships with an empty catalogue:
+  no Omni result has been recorded and reviewed yet (docs/DEMO_VALIDATION.md).
 - `ask` does not support byte-level checkpoints (no tokenizer). It loads the
   project's BPE and Hugging Face `tokenizer.json` checkpoints.
 - `rag`, `finetune` and the `eval_*` scripts still load tokenizers with
@@ -120,6 +122,21 @@ machine (2026-11-02); these came out of that comparison. Each has a test in
   letting those tests skip, and installs the package to test the command from
   outside the checkout. `pyproject.toml` gains an `api` extra.
 - A stray `anulm/training/train.py.orig` from the restructure was removed.
+
+Second pass, the same day:
+
+- Five FLEURS Hindi training clips are longer than Whisper's 30-second window
+  and stopped the first Omni training step; training now drops such clips with
+  a count (cropping would pair half the audio with the whole transcript).
+  Whisper refuses NaN or infinite audio, and `transcribe` asks for at most the
+  tokens that fit beside the audio in the context.
+- Decontamination checked every 4th 13-word window of a document, which missed
+  6 of 8 positions of an exact 13-word overlap; it checks every window now.
+- `export_hf` reloads every export and stops unless it is bit-identical to what
+  it meant to write; `--weights-dtype float32` makes an export exactly the
+  `.pt`. Exported model cards no longer show flat-layout imports.
+- `python -m anulm validated_demo` shows only recorded, reviewed cases and runs
+  no model (docs/DEMO_VALIDATION.md).
 
 ## Fixed in the documentation round
 

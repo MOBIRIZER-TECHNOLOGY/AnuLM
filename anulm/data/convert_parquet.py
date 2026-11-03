@@ -38,6 +38,11 @@ def clean(text: str) -> str:
 
 
 def ngrams(text: str, stride: int = 1) -> set:
+    """Hashes of every NGRAM-word window of `text` (lower-cased words).
+
+    Documents are checked at stride 1. Checking every 4th window (as this once
+    did, to save time) misses an overlap of 13-15 words: it yields only 1-3
+    matching windows, and those can all fall between the checked positions."""
     w = _WORDS.findall(text.lower())
     return {hash(tuple(w[i:i + NGRAM])) for i in range(0, max(len(w) - NGRAM + 1, 0), stride)}
 
@@ -167,7 +172,7 @@ def textbook(args) -> None:
             if len(doc) < 80:
                 dropped += 1
                 continue
-            if bench and (ngrams(doc, stride=4) & bench):
+            if bench and (ngrams(doc) & bench):
                 contaminated += 1
                 continue
             fh.write(doc + DOC_SEP)
@@ -202,7 +207,7 @@ def clean_corpus(args) -> None:
     written = 0
     with open(args.out, "w", encoding="utf-8", newline="\n") as fh:
         for doc in iter_documents(args.inputs[0]):
-            if ngrams(doc, stride=4) & bench:
+            if ngrams(doc) & bench:
                 contaminated += 1
                 continue
             fh.write(doc + DOC_SEP)
@@ -298,7 +303,7 @@ def main():
                     a = m.group(1).strip()
                 if not q or not a or len(a) > args.max_answer_chars or len(q) > args.max_answer_chars:
                     continue
-                if bench and (ngrams(q + "\n" + a, stride=4) & bench):
+                if bench and (ngrams(q + "\n" + a) & bench):
                     stats["contaminated"] += 1
                     continue
                 yield {"title": q.split("\n")[0][:60], "question": q, "answer": a, "lang": "py"}

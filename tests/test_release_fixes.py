@@ -404,6 +404,20 @@ class ValidatedDemoTests(unittest.TestCase):
         self.assertEqual(excluded, [])
 
 
+class DecontaminationTests(unittest.TestCase):
+    def test_a_13_word_overlap_at_any_offset_is_caught(self):
+        # Documents were checked every 4th window: an overlap of exactly 13
+        # words is one window, and 3 offsets in 4 were never looked at.
+        from anulm.data.convert_parquet import NGRAM, ngrams
+        bench_words = [f"b{i}" for i in range(NGRAM)]
+        bench = ngrams(" ".join(bench_words))
+        for offset in range(8):
+            doc = " ".join([f"x{i}" for i in range(offset)] + bench_words + ["tail", "words"])
+            with self.subTest(offset=offset):
+                self.assertTrue(ngrams(doc) & bench)
+        self.assertFalse(ngrams(" ".join(bench_words[:-1] + ["other"])) & bench)
+
+
 class SpeechSafetyTests(unittest.TestCase):
     def setUp(self):
         try:

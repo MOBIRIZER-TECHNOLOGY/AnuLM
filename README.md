@@ -124,6 +124,7 @@ python -m anulm app   --ckpt ckpt_coder_sft.pt    # the same demo as a Gradio ap
 python -m anulm app_vision                        # show it a photograph and read the caption (pip install timm pillow)
 python -m anulm app_voice                         # talk to it: Whisper hears, Piper speaks (pip install faster-whisper piper-tts)
 python -m anulm app_omni                          # listen, look, chat and decide on one page, all with AnuLM's own models
+python -m anulm validated_demo                    # only recorded, reviewed results; runs no model (docs/DEMO_VALIDATION.md)
 ```
 
 Every program is a module of the `anulm/` package and runs from the repository
