@@ -49,6 +49,8 @@ NOT_FOUND = ("not found in the passages", "अनुच्छेदों मे
 
 
 class Pointer(nn.Module):
+    """An AnuLM backbone with a 2-way linear head scoring every position as
+    the answer's start and its end."""
     def __init__(self, model: AnuLM):
         super().__init__()
         self.model = model
@@ -57,6 +59,8 @@ class Pointer(nn.Module):
         nn.init.zeros_(self.head.bias)
 
     def forward(self, idx):
+        """idx (B, S) -> (start, end) logits, (B, S) each in fp32. Causal
+        attention, so right padding does not affect the real tokens."""
         m = self.model
         x = F.embedding(idx, m._table("in"))
         cos, sin = m.rotary(idx.shape[1], x.device, x.dtype)
@@ -79,7 +83,9 @@ def split_row(row):
 def encode(tok, qword, q, body, answer=None):
     """-> (ids, start, end). Question first, then passages. With `answer`,
     the passages are encoded in three pieces around its first occurrence so
-    the span's token positions are exact; (0, 0) if absent / unanswerable."""
+    the span's token positions are exact; (0, 0) with no answer (unanswerable).
+    None when an answer is given but not found in the passages or past MAX_LEN;
+    load_rows drops those examples."""
     head = [tok.eos_id] + tok.encode(f"{qword}: {q}\n\n")
     if answer and answer not in NOT_FOUND:
         i = body.find(answer)
@@ -98,6 +104,9 @@ def encode(tok, qword, q, body, answer=None):
 
 
 def load_rows(path, tok, n=None):
+    """Encode the first `n` rows of a make_rc.py jsonl file ->
+    [(ids, start, end, row)]. Rows whose answer is not in the passages, or
+    ends past MAX_LEN, are dropped."""
     rows = [json.loads(l) for l in open(path, encoding="utf-8")][:n]
     out = []
     for r in rows:
@@ -125,6 +134,10 @@ def best_span(s, e, n):
 
 
 def load(ckpt, device):
+    """-> (Pointer, tokenizer, checkpoint dict). A trained reader brings its
+    head and sets the module-level MAX_LEN from the checkpoint; a plain
+    AnuLM checkpoint gets a fresh head. Grouped MoE on CUDA, sparse
+    otherwise."""
     global MAX_LEN
     ck = load_checkpoint(ckpt, "cpu")
     MAX_LEN = ck.get("max_len", MAX_LEN)
@@ -142,6 +155,9 @@ def load(ckpt, device):
 
 
 def train(a):
+    """`rc_pointer train`: fine-tune backbone and head on data/rc_train.jsonl
+    with cross-entropy on the start and end positions; saves on the best
+    span loss over data/rc_heldout.jsonl. Needs CUDA."""
     global MAX_LEN
     MAX_LEN = a.max_len
     torch.manual_seed(0)
@@ -239,6 +255,8 @@ def truecase(question: str, passages: list[str]) -> str:
 
 
 class PointerQA:
+    """Retrieve passages with rag.Retriever and extract the answer span from
+    them with a trained Pointer."""
     def __init__(self, ckpt="ckpt_rc_pointer.pt", device="cuda", retriever=None):
         self.p, self.tok, _ = load(ckpt, device)
         self.p.eval()
@@ -247,6 +265,8 @@ class PointerQA:
 
     @torch.no_grad()
     def extract(self, qword, q, body):
+        """The best answer span in `body` for question `q`, or "" when no span
+        outscores the no-answer position."""
         ids, _, _ = encode(self.tok, qword, q, body)
         x = torch.tensor([ids], device=self.device)
         with torch.autocast("cuda", dtype=torch.bfloat16, enabled=self.device.startswith("cuda")):
@@ -301,6 +321,9 @@ class PointerQA:
 
 
 def evaluate(a):
+    """`rc_pointer eval`: EM / F1 and the no-answer rate on the first `--n`
+    rows of four reading-comprehension sets, given their gold passages;
+    then the end-to-end demo questions with retrieval."""
     from anulm.inference.rag import em_f1
     qa = PointerQA(a.ckpt)
     for name in ("squad_en", "mlqa_hi", "xquad_hi", "indicqa_hi"):
@@ -325,6 +348,7 @@ def evaluate(a):
 
 
 def main():
+    """Command-line entry point: the train, eval and ask subcommands."""
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)

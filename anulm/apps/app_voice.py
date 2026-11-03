@@ -54,6 +54,9 @@ class VoiceLoader:
         self.source: str | None = None
 
     def load(self, source: str) -> Voice:
+        """The Voice for `source`, as `voice.load_engine` takes it (a .pt, an exported
+        folder or a Hub repo id), reusing it when unchanged and evicting the old
+        model otherwise. Whisper and Piper stay loaded."""
         if self.voice is not None and self.source == source:
             return self.voice
         from anulm.inference.voice import load_engine
@@ -67,6 +70,8 @@ class VoiceLoader:
 
 
 def build(loader: VoiceLoader, initial: str | None = None) -> gr.Blocks:
+    """The Gradio page: checkpoint picker, microphone input, and the reply as
+    text, audio and per-stage timings. `initial` preselects a picker entry."""
     with gr.Blocks(title="AnuLM — voice") as demo:
         gr.Markdown("## AnuLM — talk to it\n"
                     "Record, and it answers out loud. Whisper hears, AnuLM thinks, "
@@ -92,7 +97,7 @@ def build(loader: VoiceLoader, initial: str | None = None) -> gr.Blocks:
                 timing = gr.Markdown()
 
         def do_load(source):
-            v = loader.load(source)
+            v = loader.load(MODELS.get(source, source))     # a picker label names a repo id
             mode = mode_for(v.engine.info)
             return (f"{header_for(v.engine)}\n\n"
                     f"*heard speech becomes a prompt, and the model will "
@@ -101,7 +106,7 @@ def build(loader: VoiceLoader, initial: str | None = None) -> gr.Blocks:
         def do_run(audio, source, toks, temp):
             if audio is None:
                 return "", "", None, "*record something first*"
-            v = loader.load(source)
+            v = loader.load(MODELS.get(source, source))
             rate, data = audio
             r = v.reply((rate, data), int(toks), float(temp))
             if not r.heard:
@@ -122,6 +127,8 @@ def build(loader: VoiceLoader, initial: str | None = None) -> gr.Blocks:
 
 
 def main() -> None:
+    """Command line: turn `--ckpt` or ANULM_REPO into its picker label when it is
+    a listed repo, load Whisper and Piper, and launch the page."""
     p = argparse.ArgumentParser(description="Talk to AnuLM in a browser.")
     p.add_argument("--ckpt", help="preselect a checkpoint (label or Hub repo id)")
     p.add_argument("--whisper", default="small", help="tiny/base/small/medium/large-v3")

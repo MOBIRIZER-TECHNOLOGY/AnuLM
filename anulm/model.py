@@ -38,6 +38,11 @@ import torch.nn.functional as F
 
 @dataclass
 class AnuLMConfig:
+    """Every hyperparameter of an AnuLM model. Pickled into each checkpoint as
+    ``cfg``. `__post_init__` checks that the routing and attention settings are
+    consistent and fills `head_dim`; the static presets give the scaled-down
+    Sarvam 30B, 105B and the 350M shapes."""
+
     # --- tokens / context -----------------------------------------------
     vocab_size: int = 259           # 256 bytes + BOS + EOS + PAD (byte mode)
     block_size: int = 256
@@ -211,12 +216,16 @@ class AnuLMConfig:
 # =============================================================================
 
 class RMSNorm(nn.Module):
+    """Root-mean-square norm over the last dimension with a learned gain, no
+    bias and no mean subtraction."""
+
     def __init__(self, dim: int, eps: float = 1e-6):
         super().__init__()
         self.weight = nn.Parameter(torch.ones(dim))
         self.eps = eps
 
     def forward(self, x):
+        """Normalise in fp32, cast back to x's dtype, then apply the gain."""
         dtype = x.dtype
         x = x.float()
         x = x * torch.rsqrt(x.pow(2).mean(-1, keepdim=True) + self.eps)
@@ -233,6 +242,7 @@ class SwiGLU(nn.Module):
         self.down_proj = nn.Linear(intermediate_size, hidden_size, bias=False)
 
     def forward(self, x):
+        """down(silu(gate(x)) * up(x)); (..., D) -> (..., D)."""
         return self.down_proj(F.silu(self.gate_proj(x)) * self.up_proj(x))
 
 
@@ -251,6 +261,8 @@ def _yarn_correction_range(beta_fast, beta_slow, dim, base, orig_ctx):
 
 
 def yarn_mscale(scale: float, mscale: float) -> float:
+    """YaRN's temperature factor 0.1 * mscale * ln(scale) + 1 for a context
+    extension of `scale`; exactly 1.0 when there is no extension (scale <= 1)."""
     if scale <= 1:
         return 1.0
     return 0.1 * mscale * math.log(scale) + 1.0
@@ -325,6 +337,8 @@ class Rotary(nn.Module):
 
 
 def rotate_half(x):
+    """(x1, x2) -> (-x2, x1) over the two halves of the last dimension: the
+    split-halves rotation that apply_rope pairs with cos/sin."""
     x1, x2 = x[..., : x.shape[-1] // 2], x[..., x.shape[-1] // 2:]
     return torch.cat((-x2, x1), dim=-1)
 
@@ -402,6 +416,10 @@ def _sdpa(q, k, v, mask, S, scale, dropout_p):
 # =============================================================================
 
 class GQAttention(nn.Module):
+    """Grouped-query attention, Sarvam 30B style: one fused QKV projection,
+    n_head query heads sharing n_kv_head key/value heads, optional QK-norm
+    before RoPE, and SDPA for the attention itself."""
+
     def __init__(self, cfg: AnuLMConfig, rotary: Rotary):
         super().__init__()
         self.n_head = cfg.n_head
@@ -425,6 +443,10 @@ class GQAttention(nn.Module):
 
     def forward(self, x, cos, sin, cache: Optional[dict] = None, start: int = 0,
                 window: Optional[int] = None, bidir_mask: Optional[torch.Tensor] = None):
+        """x: (B, S, D) -> (B, S, D). With `cache` (one layer's dict) the new
+        K/V are appended to it and the queries, at absolute positions
+        start..start+S-1, attend to everything cached. `window` limits each
+        query to its last `window` keys; `bidir_mask` replaces causal masking."""
         B, S, _ = x.shape
         qkv = self.query_key_value(x)
         qkv = qkv.view(B, S, self.n_head + 2 * self.n_kv_head, self.head_dim)
@@ -470,6 +492,10 @@ class GQAttention(nn.Module):
 # =============================================================================
 
 class MLAttention(nn.Module):
+    """Multi-head latent attention, Sarvam 105B style: keys and values are
+    rebuilt from a small shared latent (kv_lora_rank wide) plus one rotary key
+    shared by all heads, and only that latent and rotary key are cached."""
+
     def __init__(self, cfg: AnuLMConfig, rotary: Rotary):
         super().__init__()
         self.n_head = cfg.n_head
@@ -501,6 +527,8 @@ class MLAttention(nn.Module):
 
     def forward(self, x, cos, sin, cache: Optional[dict] = None, start: int = 0,
                 window: Optional[int] = None, bidir_mask: Optional[torch.Tensor] = None):
+        """x: (B, S, D) -> (B, S, D). Same arguments as GQAttention.forward;
+        the cache holds the normalised latent ``c`` and the rotated ``k_pe``."""
         B, S, _ = x.shape
 
         q = self.q_proj(x).view(B, S, self.n_head, self.q_head_dim).transpose(1, 2)
@@ -638,6 +666,11 @@ class Router(nn.Module):
 
 
 class MoE(nn.Module):
+    """Sparse mixture of SwiGLU experts behind a Router, plus an optional
+    shared expert that sees every token. `cfg.moe_impl` picks how the routed
+    experts are run (sparse, dense or grouped); all three route identically,
+    and grouped runs the expert matmuls in bf16, so its output differs by rounding."""
+
     def __init__(self, cfg: AnuLMConfig):
         super().__init__()
         self.top_k = cfg.num_experts_per_tok
@@ -719,6 +752,7 @@ class MoE(nn.Module):
         return stacked
 
     def train(self, mode: bool = True):
+        """nn.Module.train, also dropping the cached stacked expert weights."""
         self._stacked = None            # weights are about to move; drop the copy
         return super().train(mode)
 
@@ -754,6 +788,10 @@ class MoE(nn.Module):
 # =============================================================================
 
 class Block(nn.Module):
+    """One pre-norm decoder layer: attention then MLP, each with a residual.
+    The MLP is a dense SwiGLU for the first `first_k_dense_replace` layers and
+    an MoE after that."""
+
     def __init__(self, cfg: AnuLMConfig, layer_idx: int, rotary: Rotary):
         super().__init__()
         self.input_layernorm = RMSNorm(cfg.hidden_size, cfg.rms_norm_eps)
@@ -780,6 +818,11 @@ class Block(nn.Module):
 
 
 class AnuLM(nn.Module):
+    """The language model: token embedding, `n_layer` Blocks sharing one
+    Rotary, a final RMSNorm and an untied (by default) LM head. Also carries
+    KV-cached generation, the aux-loss-free expert-bias update and the optional
+    merge-tree reparameterisation of the token tables."""
+
     def __init__(self, cfg: AnuLMConfig):
         super().__init__()
         self.cfg = cfg
@@ -929,6 +972,8 @@ class AnuLM(nn.Module):
         return self._merged[side]
 
     def train(self, mode: bool = True):
+        """nn.Module.train, also dropping the eval-mode cache of composed
+        merge-tree tables."""
         self._merged = None             # weights may change from here on
         return super().train(mode)
 

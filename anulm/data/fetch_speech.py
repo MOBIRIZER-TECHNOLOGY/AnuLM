@@ -50,6 +50,13 @@ except (AttributeError, ValueError):
 
 
 def fetch(split: str, root: Path = ROOT, keep_archive: bool = True) -> Path:
+    """Download and unpack one LibriSpeech split under `root`, and return the split's
+    directory.
+
+    Skips everything when the split is already unpacked, and the download when
+    the archive is already there at nearly full size. Refuses an archive member
+    that would land outside `root`.
+    """
     if split not in SPLITS:
         raise SystemExit(f"unknown split {split!r}; one of {', '.join(SPLITS)}")
     root.mkdir(parents=True, exist_ok=True)
@@ -80,11 +87,19 @@ def fetch(split: str, root: Path = ROOT, keep_archive: bool = True) -> Path:
     with tarfile.open(archive) as tf:
         # LibriSpeech archives are well formed, but a tarball is still an
         # instruction list: refuse any member that would land outside root.
+        # A prefix test would pass a sibling such as root + "_evil", and a link
+        # member can point anywhere, so compare whole paths and refuse links.
+        base = root.resolve()
         for m in tf.getmembers():
             target = (root / m.name).resolve()
-            if not str(target).startswith(str(root.resolve())):
+            if target != base and base not in target.parents:
                 raise SystemExit(f"refusing path outside the corpus dir: {m.name}")
-        tf.extractall(root)
+            if m.issym() or m.islnk():
+                raise SystemExit(f"refusing link member in the archive: {m.name}")
+        if hasattr(tarfile, "data_filter"):       # 3.12+: the stdlib's own safe-extract rules too
+            tf.extractall(root, filter="data")
+        else:
+            tf.extractall(root)
     if not keep_archive:
         archive.unlink()
 
@@ -96,6 +111,7 @@ def fetch(split: str, root: Path = ROOT, keep_archive: bool = True) -> Path:
 
 
 def main() -> None:
+    """Command line: fetch `--split`, or list the splits with `--list`."""
     p = argparse.ArgumentParser(description="Fetch LibriSpeech.")
     p.add_argument("--split", default="dev-clean")
     p.add_argument("--list", action="store_true", help="show the splits and their sizes")

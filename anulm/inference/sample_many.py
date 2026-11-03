@@ -40,6 +40,8 @@ PROMPTS = [
 
 
 def main() -> None:
+    """Command-line entry point: load `--ckpt` once and print a sample for each
+    prompt in PROMPTS (or the `--only` group), reseeding before each."""
     p = argparse.ArgumentParser()
     p.add_argument("--ckpt", default="ckpt_coder.pt")
     p.add_argument("--tokens", type=int, default=100)
@@ -58,7 +60,7 @@ def main() -> None:
     cfg = replace(ck["cfg"], moe_impl="grouped" if args.device.startswith("cuda") else ck["cfg"].moe_impl)
     model = AnuLM(cfg).to(args.device).eval()
     model.load_state_dict(ck["model"])
-    print(f"{args.ckpt}: step {ck['step'] + 1:,}, val loss {ck['val_loss']:.4f}, "
+    print(f"{args.ckpt}: step {(ck.get('step') or 0) + 1:,}, val loss {'n/a' if ck.get('val_loss') is None else format(ck['val_loss'], '.4f')}, "
           f"{cfg.moe_impl} dispatch, {args.device}\n")
 
     tok, eos_id = None, 257

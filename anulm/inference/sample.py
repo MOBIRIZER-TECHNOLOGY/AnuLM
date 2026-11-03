@@ -24,6 +24,9 @@ except (AttributeError, ValueError):
 
 
 def main():
+    """Command-line entry point: load `--ckpt`, sample `--tokens` tokens after
+    `--prompt` (stopping at EOS when the vocabulary has one), and print the
+    prompt and continuation with the decoding speed."""
     p = argparse.ArgumentParser()
     p.add_argument("--ckpt", type=str, default="ckpt.pt")
     p.add_argument("--prompt", type=str, default="\n")
@@ -52,7 +55,7 @@ def main():
     cfg = replace(cfg, moe_impl=args.moe_impl)
     model = AnuLM(cfg).to(args.device).eval()
     model.load_state_dict(ck["model"])
-    print(f"loaded step {ck['step']}, val loss {ck['val_loss']:.4f}  "
+    print(f"loaded step {ck.get('step', 'n/a')}, val loss {'n/a' if ck.get('val_loss') is None else format(ck['val_loss'], '.4f')}  "
           f"(moe_impl={cfg.moe_impl}, cache={'off' if args.no_cache else 'on'})\n")
 
     tok = None

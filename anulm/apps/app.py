@@ -7,7 +7,7 @@ Gradio front end for AnuLM: a laptop demo, a Colab cell, or a Hugging Face Space
     python -m anulm app --host 0.0.0.0                         # reachable from your phone on the same wifi
     ANULM_REPO=toonist/AnuLM-Coder-400M python -m anulm app    # download the weights from the Hub first
 
-The page holds all four released checkpoints in a dropdown and loads one on
+The page holds all five released checkpoints in a dropdown and loads one on
 demand, because they do different things and the interesting thing about this
 project is the comparison: the same 398M network writes Python, translates,
 answers questions or continues prose depending only on what it was tuned on.
@@ -100,6 +100,9 @@ def load_samples() -> dict:
 
 
 def samples_markdown(data: dict, per_segment: int = 4) -> str:
+    """Markdown for the samples accordion: for each segment (code, translate,
+    continue) its title, blurb and sweep statistics, then its first
+    `per_segment` samples with prompt and completion truncated."""
     out = []
     for seg in ("code", "translate", "continue"):
         d = data.get(seg)
@@ -119,6 +122,8 @@ def samples_markdown(data: dict, per_segment: int = 4) -> str:
 
 
 def kind_of(info: dict) -> str:
+    """The page kind of a loaded checkpoint -- coder, translate, qa or base -- read off
+    Engine's info flags."""
     if info.get("coder"):
         return "coder"
     if info.get("translate"):
@@ -129,22 +134,26 @@ def kind_of(info: dict) -> str:
 
 
 def labels_for(kind: str) -> dict[str, str]:
+    """Mode name -> label shown on the page, for the modes `kind` offers; the coder has its
+    own labels."""
     return {m: (CODER_LABELS.get(m) if kind == "coder" else None) or MODE_LABELS[m]
             for m in MODES[kind]}
 
 
 def examples_for(kind: str) -> list[list[str]]:
+    """The example rows, [prompt, mode label], for a page kind."""
     labels = labels_for(kind)
     return [[p, labels[m]] for m in MODES[kind] for p in EXAMPLES.get(kind, {}).get(m, [])]
 
 
 def default_temp(kind: str) -> float:
+    """The starting temperature for a page kind: 0.2 coder, 0.3 qa and translate, 0.8 base."""
     return 0.2 if kind == "coder" else 0.3 if kind in ("qa", "translate") else 0.8
 
 
 class Loader:
     """Holds at most one Engine. Switching evicts the previous one, because
-    four of these in float32 is 6.4 GB and Colab's free tier has 12."""
+    five of these in float32 is 8 GB and Colab's free tier has 12."""
 
     def __init__(self, device: str):
         self.device = device
@@ -152,6 +161,9 @@ class Loader:
         self.source: str | None = None
 
     def load(self, source: str) -> Engine:
+        """The Engine for `source` -- a .pt, an exported folder, or a Hub repo id,
+        downloaded first -- reusing the loaded one for the same source and evicting
+        it otherwise."""
         if self.engine is not None and self.source == source:
             return self.engine
         self.engine = None                       # drop the old weights first
@@ -172,6 +184,8 @@ class Loader:
 
 
 def header_for(engine: Engine) -> str:
+    """One line of Markdown describing a loaded engine: name, parameters, attention,
+    layers, experts, context and device."""
     i = engine.info
     return (f"**{i['ckpt']}** · {i['params_total_m']}M params ({i['params_active_m']}M active) · "
             f"{i['attn'].upper()} × {i['layers']} layers · {i['experts']} experts top-{i['top_k']} · "
@@ -179,6 +193,9 @@ def header_for(engine: Engine) -> str:
 
 
 def build(loader: Loader, initial: str | None = None) -> gr.Blocks:
+    """The Gradio page: checkpoint picker, mode, prompt, sampling controls and
+    output, plus the recorded samples when docs/samples.json exists. `initial`
+    is a picker label to load when the page opens."""
     with gr.Blocks(title="AnuLM") as demo:
         gr.Markdown("# AnuLM · a small Sarvam-shaped MoE\n"
                     "398M parameters, 174M active per token, trained from scratch on one "
@@ -275,6 +292,8 @@ def build(loader: Loader, initial: str | None = None) -> gr.Blocks:
 
 
 def main() -> None:
+    """Command line: add `--ckpt` or ANULM_REPO to the picker as the initial
+    model, print the LAN address when serving on 0.0.0.0, and launch the page."""
     p = argparse.ArgumentParser()
     p.add_argument("--ckpt", default=None, help="a .pt or an exported folder to preload")
     p.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")

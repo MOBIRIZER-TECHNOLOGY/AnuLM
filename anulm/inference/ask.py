@@ -37,6 +37,10 @@ TRANSLATE = ["The train to Mumbai leaves at six in the morning.",
 
 
 def main() -> None:
+    """Command-line entry point: load `--ckpt` once and print the answer to
+    each prompt (the arguments, or the built-in set for `--mode`), wrapped
+    in the checkpoint's template unless it has none or `--mode continue`.
+    Needs a checkpoint with a project BPE tokenizer."""
     p = argparse.ArgumentParser()
     p.add_argument("prompts", nargs="*", help="ask these instead of the built-in set")
     p.add_argument("--ckpt", default="ckpt_multi_qa.pt")
@@ -58,7 +62,7 @@ def main() -> None:
     model.load_state_dict(ck["model"])
 
     templates = ck.get("qa_templates") or ({"hi": ck["qa_template"]} if ck.get("qa_template") else None)
-    print(f"{args.ckpt}: step {ck['step'] + 1:,}, val {ck['val_loss']:.4f}, "
+    print(f"{args.ckpt}: step {(ck.get('step') or 0) + 1:,}, val {'n/a' if ck.get('val_loss') is None else format(ck['val_loss'], '.4f')}, "
           f"base {ck.get('base_ckpt', '-')}, templates {sorted(templates) if templates else 'none (base model)'}\n")
 
     from anulm.bpe import BPE

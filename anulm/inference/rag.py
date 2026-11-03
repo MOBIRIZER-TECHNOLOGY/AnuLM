@@ -49,10 +49,14 @@ SKIP_SECTIONS = ("References", "Related pages", "Other websites", "संदर�
 
 
 def words(text: str) -> list[str]:
+    """Lower-cased words of `text`: runs of Latin letters, digits and
+    Devanagari (matras included), as the index tokenises them."""
     return WORD.findall(text.lower())
 
 
 def term_ids(text: str) -> np.ndarray:
+    """The crc32 hash bucket of each word in `text`, int64, in order and with
+    repeats."""
     return np.array([zlib.crc32(w.encode()) & (BUCKETS - 1) for w in words(text)], dtype=np.int64)
 
 
@@ -97,6 +101,11 @@ def _tokenise(batch):
 
 
 def build(langs=("simple", "hi"), workers: int = 12) -> None:
+    """Build the BM25 index under data/rag/ from the Wikipedia parquet files
+    of `langs`: chunk every article, tokenise the chunks in `workers`
+    processes, and save the CSR postings with precomputed BM25 weights, the
+    per-article title index, and chunks.jsonl. The dense index is separate
+    (`Dense.build`)."""
     import multiprocessing as mp
 
     import pandas as pd
@@ -184,6 +193,8 @@ class Dense:
         self.mat = None
 
     def embed(self, texts: list[str], max_len: int = 256):
+        """Mean-pooled, L2-normalised e5 embeddings, (len(texts), hidden) in
+        `self.dtype`. Callers add e5's "query: " / "passage: " prefixes."""
         torch = self.torch
         b = self.tok(texts, padding=True, truncation=True, max_length=max_len,
                      return_tensors="pt").to(self.device)
@@ -194,6 +205,8 @@ class Dense:
         return torch.nn.functional.normalize(v.float(), dim=-1).to(self.dtype)
 
     def build(self, chunks: list[dict], batch: int = 512) -> None:
+        """Embed every chunk as "passage: title. text" and save the (N, hidden)
+        fp16 matrix to data/rag/dense_e5s.npy, rows in `chunks` order."""
         torch = self.torch
         t0 = time.time()
         order = sorted(range(len(chunks)), key=lambda i: len(chunks[i]["text"]))   # less padding
@@ -207,6 +220,8 @@ class Dense:
         print(f"dense index: {tuple(out.shape)} in {time.time() - t0:.0f}s")
 
     def search(self, query: str, k: int):
+        """-> (chunk indices, cosine scores) of the `k` nearest chunks. Loads the
+        saved matrix onto the device on first use."""
         torch = self.torch
         if self.mat is None:
             self.mat = torch.from_numpy(np.load(RAG / "dense_e5s.npy")).to(self.device, self.dtype)
@@ -216,6 +231,9 @@ class Dense:
 
 
 class Retriever:
+    """Search over the chunks `build` wrote: BM25, or dense e5 retrieval when
+    dense_e5s.npy exists (the default mode is then "dense"), or a fusion of
+    the two. Hits are the chunk dicts (lang, title, text) plus a score."""
     def __init__(self, root: Path = RAG):
         self.indptr = np.load(root / "indptr.npy")
         self.docs = np.load(root / "docs.npy", mmap_mode="r")
@@ -238,8 +256,10 @@ class Retriever:
 
     def search(self, query: str, k: int = 3, lang: str | None = None,
                title_w: float = 0.0, lead_b: float = 0.0, mode: str | None = None) -> list[dict]:
-        """mode "bm25" (default), "dense", or "hybrid": reciprocal-rank fusion
-        of both top-100 lists, sum of 1 / (60 + rank)."""
+        """mode "bm25", "dense", or "hybrid": reciprocal-rank fusion of both
+        top-100 lists, sum of 1 / (60 + rank). Without `mode`, the retriever's
+        own: "dense" once dense_e5s.npy exists, else "bm25". title_w and lead_b
+        apply to bm25 only."""
         mode = mode or self.mode
         if mode == "bm25":
             return self.bm25(query, k, lang, title_w, lead_b)
@@ -291,6 +311,8 @@ DEVANAGARI = re.compile(r"[ऀ-ॿ]")
 
 
 def torch_no_grad():
+    """torch.no_grad(), with torch imported only when it is called, so this
+    module imports without torch."""
     import torch
     return torch.no_grad()
 
@@ -316,6 +338,9 @@ class RagQA:
         self.r = retriever or Retriever()
 
     def prompt(self, question: str, passages: list[str]) -> tuple[str, str]:
+        """-> (prompt, lang). Numbered passages, each cut to 120 words, then the
+        question, in the checkpoint's rc-hi or rc-en template; Hindi when the
+        question contains Devanagari."""
         lang = "hi" if DEVANAGARI.search(question) else "en"
         qword = "प्रश्न" if lang == "hi" else "Question"
         body = "\n\n".join(f"[{i + 1}] {' '.join(p.split()[:120])}" for i, p in enumerate(passages))
@@ -323,6 +348,8 @@ class RagQA:
 
     @torch_no_grad()
     def read(self, prompt: str, max_tokens: int = 32) -> str:
+        """Greedy answer to `prompt`, at most `max_tokens` tokens, first line only.
+        The prompt is cut from the left to leave room for the answer."""
         import torch
         ids = self.tok.encode(prompt)[-(self.model.cfg.block_size - max_tokens):]
         x = torch.tensor([ids], device=self.device)
@@ -333,6 +360,8 @@ class RagQA:
         return self.tok.decode(new).strip().split("\n")[0]
 
     def ask(self, question: str, k: int = 3) -> dict:
+        """Retrieve `k` passages and read the answer from them -> {answer, lang,
+        sources (titles), retrieve_s, read_s}."""
         t0 = time.time()
         hits = self.r.search(question, k)
         prompt, lang = self.prompt(question, [h["text"] for h in hits])
@@ -351,6 +380,9 @@ def _norm(s: str) -> list[str]:
 
 
 def em_f1(pred: str, golds: list[str]) -> tuple[float, float]:
+    """SQuAD-style exact match and token F1 of `pred` against the best of
+    `golds`, after lower-casing, stripping punctuation (the danda included)
+    and dropping English articles."""
     from collections import Counter
     p = _norm(pred)
     best_em = best_f1 = 0.0
@@ -407,6 +439,9 @@ def eval_sets(n: int):
 
 
 def evaluate(n: int, grid=((0, 0), (1, 0), (2, 0), (4, 0), (2, 2), (4, 4), (2, 5))) -> None:
+    """Retrieval recall: R@1/3/10 (the answer string appears in the top-k
+    chunks) on `n` MLQA Hindi and SQuAD questions, for each (title_w, lead_b)
+    in `grid`."""
     r = Retriever()
     for name, items in eval_sets(n):
         print(f"\n{name}: {len(items)} questions, answer string in top-k chunks")
@@ -422,6 +457,7 @@ def evaluate(n: int, grid=((0, 0), (1, 0), (2, 0), (4, 0), (2, 2), (4, 4), (2, 5
 
 
 def main() -> None:
+    """Command-line entry point: build, search, eval, eval-reader and ask."""
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     p = argparse.ArgumentParser()
     sub = p.add_subparsers(dest="cmd", required=True)

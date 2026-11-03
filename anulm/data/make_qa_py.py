@@ -38,6 +38,8 @@ PROMPT_EXPLAIN = "What does this Python function do?\n{code}"
 
 
 def first_sentence(doc: str) -> str | None:
+    """A docstring's first sentence, whitespace collapsed; None if it is not
+    15-200 characters or starts with `:`, `@` or `>>>`."""
     doc = " ".join(doc.strip().split())
     m = _FIRST_SENTENCE.match(doc)
     s = (m.group(1) if m else doc).strip()
@@ -68,6 +70,10 @@ def functions(body: str):
 
 
 def main():
+    """Command line: alternate write and explain pairs from the corpus's
+    documented functions, de-duplicated on (name, description) and capped at
+    `--max`. Functions from the first `--heldout-frac` of the shuffled files go
+    to the held-out set."""
     p = argparse.ArgumentParser()
     p.add_argument("--data", default="data/python.txt")
     p.add_argument("--out", default="data/qa_python.jsonl")
@@ -84,6 +90,7 @@ def main():
     seen: set[tuple[str, str]] = set()
     train, held = [], []
     kind = 0
+    i = -1                                   # an empty corpus scans 0 files
     for i, d in enumerate(docs):
         body = d.split("\n", 2)[2] if d.count("\n") >= 2 else ""
         for n, src, stripped in functions(body):

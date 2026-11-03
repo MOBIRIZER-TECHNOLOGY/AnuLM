@@ -134,6 +134,9 @@ class WindowSampler:
         self.pos = 0
 
     def next(self) -> torch.Tensor:
+        """The next `batch_size` window start offsets, (B,) int64. Starts a new
+        epoch, with a fresh offset and order, when the current one cannot fill a
+        whole batch; the leftover windows of that epoch are skipped."""
         if self.pos + self.B > len(self.order):
             self.epoch += 1
             self._new_epoch()
@@ -143,12 +146,16 @@ class WindowSampler:
 
     @property
     def epochs_done(self) -> float:
+        """Fractional epochs completed, for the training log."""
         return self.epoch + self.pos / max(len(self.order), 1)
 
     def state(self) -> dict:
+        """Epoch, position, current order and generator state, for the `.last`
+        checkpoint."""
         return {"epoch": self.epoch, "pos": self.pos, "order": self.order, "g": self.g.get_state()}
 
     def load_state(self, s: dict):
+        """Restore what `state()` saved, so a resumed run continues the same order."""
         self.epoch, self.pos, self.order = s["epoch"], s["pos"], s["order"]
         self.g.set_state(s["g"])
 
@@ -232,6 +239,10 @@ def warn_if_spilling(device: str, frac: float = 0.92) -> bool:
 
 
 def make_batch(data: torch.Tensor, ix: torch.Tensor, block_size: int, device: str):
+    """Inputs and next-token targets for the windows starting at `ix`: two
+    (len(ix), block_size) int64 tensors on `device`, y shifted one id right of
+    x. Accepts a tensor or a memory-mapped numpy array; pinned on CUDA so the
+    copy can be asynchronous."""
     if isinstance(data, np.ndarray):            # a memory-mapped corpus (load_memmap)
         rows = np.stack([data[i: i + block_size + 1] for i in ix.tolist()]).astype(np.int64)
         x, y = torch.from_numpy(rows[:, :-1]), torch.from_numpy(rows[:, 1:])
@@ -244,6 +255,10 @@ def make_batch(data: torch.Tensor, ix: torch.Tensor, block_size: int, device: st
 
 
 def validate_split_lengths(train_data, val_data, test_data, block_size: int) -> None:
+    """Raise a readable RuntimeError when a split is too short for one window
+    at `block_size`, instead of an indexing error later. Train needs
+    block_size + 1 tokens, validation and test block_size + 2; a split given
+    as None is skipped."""
     if len(train_data) <= block_size:
         raise RuntimeError(
             f"training split has {len(train_data)} tokens; training needs at least {block_size + 1} "
@@ -362,6 +377,10 @@ def strided_windows(data: torch.Tensor, batch_size: int, block_size: int, n: int
 
 
 def lr_at(step: int, args, start_step: int = 0) -> float:
+    """Learning rate at `step`: linear warmup over `--warmup`, then cosine decay
+    to `--min-lr` by `--steps`, or with `--schedule wsd` a flat peak and a
+    linear decay over the last `--decay-frac`. On a resume from `start_step`,
+    `--rewarmup` scales the cosine value up from 0 over that many steps."""
     if step < args.warmup:
         return args.lr * (step + 1) / max(args.warmup, 1)
     if getattr(args, "schedule", "cosine") == "wsd":
@@ -399,26 +418,32 @@ class OptimizerSet:
         self._base = [[g["lr"] for g in o.param_groups] for o in self.opts]
 
     def set_lr_scale(self, scale: float):
+        """Set every param group's lr to its initial lr times `scale`."""
         for o, bases in zip(self.opts, self._base):
             for g, b in zip(o.param_groups, bases):
                 g["lr"] = b * scale
 
     @property
     def lr(self):                       # representative lr, for logging
+        """The first group's current lr."""
         return self.opts[0].param_groups[0]["lr"]
 
     def zero_grad(self, set_to_none=True):
+        """zero_grad on every optimizer."""
         for o in self.opts:
             o.zero_grad(set_to_none=set_to_none)
 
     def step(self):
+        """step every optimizer."""
         for o in self.opts:
             o.step()
 
     def state_dict(self):
+        """A list with one state dict per optimizer, in construction order."""
         return [o.state_dict() for o in self.opts]
 
     def load_state_dict(self, sd):
+        """Load the list `state_dict()` returned, one entry per optimizer."""
         for o, s in zip(self.opts, sd):
             o.load_state_dict(s)
 
@@ -454,8 +479,8 @@ def make_optimizer(model: AnuLM, args):
 
 
 @torch.no_grad()
-def evaluate(model, data, args, iters: int | None = None) -> float:
-    """Mean LM loss over a fixed set of windows (see eval_windows). In eval mode
+def evaluate(model, data, args, iters: int | None = None) -> tuple[float, float]:
+    """(mean LM loss, its standard error) over a fixed set of windows (see eval_windows). In eval mode
     the router regularisers are off, so this is pure cross-entropy.
 
     **How many windows this needs.** The default of 20 iterations is 20 x
@@ -513,6 +538,12 @@ def evaluate(model, data, args, iters: int | None = None) -> float:
 
 
 def main():
+    """Command-line training entry point (`python -m anulm train`). Loads byte
+    text, a BPE `.bin`, a memory-mapped `meta.json` corpus or encoded
+    `splits.json`, builds the model from a preset, trains with periodic
+    evaluation, and writes the best-val checkpoint to `--out` and a resume
+    point to `<out>.last`. With a test split, the best checkpoint is scored on
+    it at the end."""
     p = argparse.ArgumentParser()
     p.add_argument("--preset", choices=["30b", "105b", "350m"], default="30b",
                    help="30b = GQA + high rope_theta; 105b = MLA + YaRN-ready; "
