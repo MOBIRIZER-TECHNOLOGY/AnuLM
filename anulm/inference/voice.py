@@ -144,6 +144,9 @@ class OwnASR:
         self.ckpt = ckpt
 
     def hear(self, audio, language: str | None = None) -> dict:
+        """Transcribe a path, or (rate, samples), with the trained checkpoint ->
+        {text, language, seconds}. `language` is ignored; the reported one is
+        the script of the transcript."""
         from anulm.multimodal.speech_encoder import transcribe
         if isinstance(audio, tuple):
             audio = to_mono16k(*audio)
@@ -173,6 +176,8 @@ class TTS:
         return Path(onnx), Path(cfg)
 
     def voice(self, lang: str):
+        """The PiperVoice for `lang`, downloaded and loaded on first use, then
+        kept."""
         if lang not in self.loaded:
             from piper import PiperVoice
             onnx, cfg = self._fetch(lang)
@@ -226,6 +231,7 @@ def windows_say(text: str, lang: str) -> tuple[int, np.ndarray]:
 
 
 def write_wav(path: str | Path, rate: int, samples: np.ndarray) -> Path:
+    """Write mono 16-bit PCM at `rate` to `path`; returns the path."""
     path = Path(path)
     with wave.open(str(path), "wb") as f:
         f.setnchannels(1)
@@ -260,6 +266,9 @@ def speakable(text: str, max_chars: int = 400) -> str:
 
 @dataclass
 class Reply:
+    """One turn of the voice loop: what was heard and in which language, the
+    text spoken back and its audio (int16 at `rate`), the generation mode,
+    and seconds per stage under ``hear``, ``think`` and ``say``."""
     heard: str
     language: str
     said: str
@@ -269,6 +278,7 @@ class Reply:
     timings: dict
 
     def summary(self) -> str:
+        """Two lines for the console: what was heard, what was said, with timings."""
         t = self.timings
         return (f"heard ({self.language}, {t['hear']}s): {self.heard}\n"
                 f"said  ({self.mode}, {t['think']}s think, {t['say']}s speak): {self.said}")
@@ -288,6 +298,9 @@ class Voice:
     def reply(self, audio, max_tokens: int = 120, temperature: float = 0.3,
               top_k: int = 40, seed: int = 0, mode: str | None = None,
               repetition_penalty: float = 1.0) -> Reply:
+        """Hear `audio`, generate a reply with the engine (mode from its /info
+        flags unless given), trim it with `speakable` and synthesise it. Silence
+        returns an empty Reply with mode "-" and no generation."""
         h = self.asr.hear(audio)
         if not h["text"]:
             return Reply("", h["language"], "", 22_050, np.zeros(0, np.int16), "-",
@@ -337,6 +350,9 @@ def record(seconds: float | None = None, rate: int = ASR_RATE) -> tuple[int, np.
 
 
 def main() -> None:
+    """Command-line entry point: answer a `--wav` file or a `--mic` recording
+    out loud and write the reply to `--out`; `--say` and `--hear` test the
+    voice or Whisper alone without loading a model."""
     p = argparse.ArgumentParser(description=__doc__.split("\n")[1],
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--ckpt", default="toonist/AnuLM-Hindi-QA-400M",

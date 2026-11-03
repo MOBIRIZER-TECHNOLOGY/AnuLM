@@ -30,6 +30,12 @@ from anulm.model import AnuLM, load_checkpoint
 
 @torch.no_grad()
 def score(ckpt: str, text: str, device: str, batch_size: int = 8) -> dict:
+    """Full-sequence loss of `ckpt` on `text`, in non-overlapping windows of its
+    block_size, `batch_size` windows at a time.
+
+    Returns nats/token, bits/byte and bits/char, with the tokenizer, parameter
+    count, tokens scored and the checkpoint's own step and val loss.
+    """
     ck = load_checkpoint(ckpt, "cpu")
     cfg = ck["cfg"]
     m = AnuLM(cfg).to(device).eval()
@@ -75,6 +81,8 @@ def score(ckpt: str, text: str, device: str, batch_size: int = 8) -> dict:
 
 
 def main():
+    """Command line: score each checkpoint on the benchmark file (DOC_SEP replaced by a
+    blank line) and print one row per checkpoint."""
     p = argparse.ArgumentParser()
     p.add_argument("ckpts", nargs="+")
     p.add_argument("--bench", default="data/bench_hindi.txt")

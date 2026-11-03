@@ -48,11 +48,18 @@ IDENTITY_HI = [
 
 
 def dolly():
+    """The Dolly rows from data/dolly_train.jsonl, or an empty list if that file is absent."""
     p = DATA / "dolly_train.jsonl"
     return [json.loads(l) for l in open(p, encoding="utf-8")] if p.exists() else []
 
 
 def oasst2():
+    """First-turn pairs from OpenAssistant oasst2, downloaded to data/raw/oasst2.
+
+    Each English or Hindi root prompt is paired with its rank-0 assistant reply,
+    or its first reply when none is ranked; `lang` is hi when the prompt
+    contains Devanagari.
+    """
     from huggingface_hub import hf_hub_download
     path = hf_hub_download("OpenAssistant/oasst2", "2023-11-05_oasst2_ready.trees.jsonl.gz",
                            repo_type="dataset", local_dir=str(DATA / "raw" / "oasst2"))
@@ -71,6 +78,8 @@ def oasst2():
 
 
 def aya_hindi():
+    """The Hindi rows of CohereForAI/aya_dataset, downloaded to data/raw/aya, as
+    question/answer pairs."""
     import pandas as pd
     from huggingface_hub import hf_hub_download
     path = hf_hub_download("CohereForAI/aya_dataset", "data/train-00000-of-00001.parquet",
@@ -95,6 +104,10 @@ def hindi_wiki_qa(n: int, rng) -> list[dict]:
 
 
 def main():
+    """Build the chat set: gather every source, repeat the identity pairs 20
+    times, drop empty pairs and answers over MAX_ANSWER characters, shuffle,
+    hold out 300 non-identity pairs, and write data/chat_train.jsonl and
+    data/chat_heldout.jsonl."""
     rng = random.Random(0)
     parts = {"dolly": [{**r, "source": "dolly"} for r in dolly()], "oasst2": oasst2(), "aya_hi": aya_hindi(),
              "hi_wiki_qa": hindi_wiki_qa(4000, rng)}

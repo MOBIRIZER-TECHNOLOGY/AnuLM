@@ -69,15 +69,18 @@ class LoRALinear(nn.Module):
         self.drop = nn.Dropout(dropout) if dropout else nn.Identity()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """base(x) + scale * dropout(x) @ A.T @ B.T, the adapter run in x's dtype."""
         out = self.base(x)
         h = self.drop(x) @ self.lora_a.t().to(x.dtype)
         return out + (h @ self.lora_b.t().to(x.dtype)) * self.scale
 
     @torch.no_grad()
     def merged_weight(self) -> torch.Tensor:
+        """W + scale * B @ A: the single weight equivalent to this layer."""
         return self.base.weight + (self.lora_b @ self.lora_a) * self.scale
 
     def extra_repr(self) -> str:
+        """Rank, alpha and scale, for print(model)."""
         return f"r={self.r}, alpha={self.alpha}, scale={self.scale:g}"
 
 
@@ -110,6 +113,8 @@ def apply_lora(model: nn.Module, r: int = 16, alpha: float = 32.0,
 
 
 def lora_parameters(model: nn.Module):
+    """The trainable adapter tensors (`lora_a`, `lora_b`): what the optimizer
+    should be given."""
     return [p for n, p in model.named_parameters() if "lora_" in n and p.requires_grad]
 
 
@@ -133,6 +138,9 @@ def router_state_dict(model: nn.Module) -> dict:
 
 
 def load_lora(model: nn.Module, state: dict, strict: bool = True) -> None:
+    """Load adapter tensors from `lora_state_dict` into a model already wrapped
+    by `apply_lora` with the same targets. With `strict`, a key the model has
+    no parameter for raises KeyError."""
     missing = [n for n in state if n not in dict(model.named_parameters())]
     if missing and strict:
         raise KeyError(f"adapter has {len(missing)} keys the model does not: {missing[:3]}")
@@ -159,6 +167,8 @@ def merge_lora(model: nn.Module) -> int:
 
 
 def summarise(model: nn.Module) -> str:
+    """One line: trainable vs total parameters and the fp32 gradient and AdamW
+    moment memory the trainable ones cost."""
     total = sum(p.numel() for p in model.parameters())
     train = sum(p.numel() for p in model.parameters() if p.requires_grad)
     return (f"LoRA: {train/1e6:.2f}M trainable of {total/1e6:.1f}M "
@@ -205,6 +215,8 @@ def _merge_cli(args) -> int:
 
 
 def main() -> int:
+    """`python -m anulm.lora merge ADAPTER OUT [--base B]`: fold an adapter into
+    its base checkpoint."""
     import argparse
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)

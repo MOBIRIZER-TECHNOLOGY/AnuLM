@@ -83,6 +83,8 @@ TOKENIZER_CONFIG = {
 
 
 def as_token(raw: bytes) -> str:
+    """A vocabulary entry's raw bytes as the printable string `tokenizers` stores, via
+    GPT-2's byte map."""
     return "".join(B2U[b] for b in raw)
 
 
@@ -211,6 +213,9 @@ def main_for(src: Path, outdir: Path) -> None:
 
 
 def main() -> int:
+    """Command line: convert `argv[1]` (bpe.py's JSON) into tokenizer.json and
+    tokenizer_config.json in the folder `argv[2]`, verifying before the config is
+    written. The same work as `main_for`, with progress printed."""
     if len(sys.argv) < 3:
         print(__doc__)
         return 2

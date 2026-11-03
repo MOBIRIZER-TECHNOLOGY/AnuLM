@@ -57,9 +57,13 @@ class AnuLMCache:
         self.seen = seen                     # tokens already in the cache
 
     def get_seq_length(self, layer_idx: int = 0) -> int:
+        """Tokens already in the cache; the same for every layer, so `layer_idx` is
+        ignored."""
         return self.seen
 
     def get_max_cache_shape(self) -> Optional[int]:
+        """None: the cache has no fixed maximum length (`forward` bounds positions by
+        `block_size`)."""
         return None
 
     def __len__(self) -> int:
@@ -67,6 +71,9 @@ class AnuLMCache:
 
 
 class AnuLMPreTrainedModel(PreTrainedModel):
+    """Base class tying AnuLM into `PreTrainedModel`: the config class, weight
+    initialisation, and a `from_pretrained` that rebuilds the rotary tables and
+    warns about 16-bit weights."""
     config_class = AnuLMConfig
     base_model_prefix = ""                   # the checkpoint has no prefix
     supports_gradient_checkpointing = True
@@ -103,6 +110,12 @@ class AnuLMPreTrainedModel(PreTrainedModel):
 
     @classmethod
     def from_pretrained(cls, *args, **kwargs):
+        """`PreTrainedModel.from_pretrained`, then rebuild the rotary tables on the
+        weights' device.
+
+        Issues a RuntimeWarning when the weights were loaded in bfloat16 or float16,
+        which changes the expert routing; load in float32.
+        """
         model = super().from_pretrained(*args, **kwargs)
         model.rebuild_rotary(device=next(model.parameters()).device)
         dtype = next(model.parameters()).dtype
@@ -131,6 +144,14 @@ class AnuLMPreTrainedModel(PreTrainedModel):
 
 
 class AnuLMForCausalLM(AnuLMPreTrainedModel, GenerationMixin):
+    """AnuLM as a transformers causal LM, for `from_pretrained` and `generate`.
+
+    Holds the native embedding, decoder layers, final norm and output head under
+    their checkpoint names, returns logits for every position, a loss when
+    `labels` is given, and keeps the native per-layer KV cache. Greedy decoding
+    and sampling on unpadded input are supported; beam search and
+    `inputs_embeds` are not.
+    """
     def __init__(self, config: AnuLMConfig):
         super().__init__(config)
         native = config.to_native()
@@ -153,15 +174,19 @@ class AnuLMForCausalLM(AnuLMPreTrainedModel, GenerationMixin):
 
     # --- transformers plumbing -------------------------------------------
     def get_input_embeddings(self):
+        """The token embedding, `embed_tokens`."""
         return self.embed_tokens
 
     def set_input_embeddings(self, value):
+        """Replace the token embedding."""
         self.embed_tokens = value
 
     def get_output_embeddings(self):
+        """The output projection, `lm_head`."""
         return self.lm_head
 
     def set_output_embeddings(self, value):
+        """Replace the output projection."""
         self.lm_head = value
 
     def _set_gradient_checkpointing(self, enable: bool = True, **kwargs):
@@ -248,6 +273,8 @@ class AnuLMForCausalLM(AnuLMPreTrainedModel, GenerationMixin):
 
     def prepare_inputs_for_generation(self, input_ids, past_key_values=None,
                                       attention_mask=None, use_cache=True, **kwargs):
+        """The `forward` arguments for one step of `generate`: with a cache, only the
+        ids it has not seen yet. `attention_mask` is dropped (see `forward`)."""
         # With a cache, only the tokens it has not seen are new.
         if past_key_values is not None:
             input_ids = input_ids[:, past_key_values.seen:]

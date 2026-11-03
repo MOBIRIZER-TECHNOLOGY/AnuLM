@@ -56,6 +56,8 @@ def window(context: str, answer: str, start: int, words: int = PASSAGE_WORDS) ->
 
 
 def _negatives(item):
+    """Up to two passages BM25 returns for the question that contain none of its answers.
+    Runs in a pool worker."""
     q, answers = item["question"], item["answers"]
     hits = _R.search(q, 8)
     negs = [h["text"] for h in hits if not any(a.lower() in h["text"].lower() for a in answers)]
@@ -63,6 +65,13 @@ def _negatives(item):
 
 
 def build_example(rng, it, negs, lang, allow_unanswerable=True):
+    """One reading-comprehension item from a loaded row `it` and its hard negatives `negs`.
+
+    The negatives (cut to PASSAGE_WORDS words) and a window of the right passage
+    are shuffled and numbered. With probability NEG_FRAC, when
+    `allow_unanswerable` is set and there are two negatives, the right passage is
+    left out and the answer is the not-found string. `lang` is en or hi.
+    """
     passages = [" ".join(n.split()[:PASSAGE_WORDS]) for n in negs]
     unanswerable = allow_unanswerable and rng.random() < NEG_FRAC and len(passages) >= 2
     if not unanswerable:
@@ -77,6 +86,9 @@ def build_example(rng, it, negs, lang, allow_unanswerable=True):
 
 
 def load(path, n=None, seed=0):
+    """SQuAD-format parquet rows as {context, question, answers, start}, `start`
+    being the first answer's character offset. When the file has more than `n`
+    rows, `n` are sampled with `seed`; rows with no answer text are dropped."""
     import pandas as pd
     df = pd.read_parquet(path)
     if n and len(df) > n:
@@ -90,6 +102,9 @@ def load(path, n=None, seed=0):
 
 
 def main():
+    """Build every file: hard negatives from BM25 in six worker processes, then
+    the examples, with 600 training examples held out. Writes
+    data/rc_train.jsonl, data/rc_heldout.jsonl and data/rc_eval_*.jsonl."""
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     rng = random.Random(0)
     jobs = {

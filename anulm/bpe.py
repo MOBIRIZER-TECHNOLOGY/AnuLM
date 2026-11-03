@@ -49,6 +49,8 @@ MAX_TRAIN_CHUNK_BYTES = 48        # ignore absurd chunks (URLs, minified junk)
 
 
 class BPE:
+    """A trained byte-level BPE: its merge list, the id -> bytes vocabulary and
+    an EOS id one past the last merge. Build one with `train` or `load`."""
     def __init__(self, merges: list[tuple[int, int]]):
         self.merges = merges
         # rank = priority at encode time = order the merge was learned
@@ -64,12 +66,16 @@ class BPE:
 
     @property
     def vocab_size(self) -> int:
+        """Ids in use: 256 bytes + the merges + EOS."""
         return self.eos_id + 1
 
     # ---------------- training ----------------
 
     @classmethod
     def train(cls, text: str, vocab_size: int, verbose: bool = True) -> "BPE":
+        """Learn merges from `text` until `vocab_size` ids, EOS included, are used
+        or no pair occurs twice. Chunks longer than MAX_TRAIN_CHUNK_BYTES, and
+        single bytes, are left out of the counts."""
         assert vocab_size > 256
         t0 = time.time()
         chunks = Counter(
@@ -170,6 +176,7 @@ class BPE:
         return seq
 
     def encode(self, text: str) -> list[int]:
+        """Token ids for `text`, with no EOS. Lossless: decode(encode(x)) == x."""
         ids: list[int] = []
         for c in CHUNK_RE.findall(text):
             ids.extend(self._encode_chunk(c.encode("utf-8")))
@@ -186,6 +193,8 @@ class BPE:
         return ids
 
     def decode(self, ids) -> str:
+        """Text for `ids`. Ids outside the vocabulary, EOS among them, are dropped;
+        invalid UTF-8 becomes U+FFFD."""
         # EOS (and anything else outside the vocab) decodes to nothing.
         return b"".join(self.vocab.get(int(i), b"") for i in ids).decode("utf-8", errors="replace")
 
@@ -199,6 +208,7 @@ class BPE:
     TYPES = (TYPE, "nanosarvam-bpe")
 
     def save(self, path: str | Path):
+        """Write the merge list as JSON, the format `load` reads."""
         Path(path).write_text(json.dumps({
             "type": self.TYPE, "version": 1,
             "merges": [list(p) for p in self.merges],
@@ -206,6 +216,8 @@ class BPE:
 
     @classmethod
     def load(cls, path: str | Path) -> "BPE":
+        """Read a tokenizer `save` wrote; also accepts the pre-rename
+        ``nanosarvam-bpe`` type."""
         d = json.loads(Path(path).read_text(encoding="utf-8"))
         assert d.get("type") in cls.TYPES, (
             f"{path}: not an AnuLM tokenizer (type {d.get('type')!r}, "
@@ -216,6 +228,8 @@ class BPE:
 # ---------------- CLI ----------------
 
 def cmd_train(args):
+    """`bpe train`: learn a tokenizer from `--data`, save it to `--out`, and
+    print compression stats on the first 2M characters."""
     text = Path(args.data).read_text(encoding="utf-8")
     print(f"training vocab {args.vocab} on {len(text.encode('utf-8'))/1e6:.1f} MB")
     tok = BPE.train(text, args.vocab)
@@ -324,6 +338,8 @@ def _stats(tok, text):
 
 
 def cmd_stats(args):
+    """`bpe stats`: bytes/token, tokens/word and a roundtrip check of
+    `--tokenizer` on the first 5M characters of `--data`."""
     tok = BPE.load(args.tokenizer)
     text = Path(args.data).read_text(encoding="utf-8")[: 5_000_000]
     print(f"{args.tokenizer}: vocab {tok.vocab_size}")

@@ -28,11 +28,15 @@ _DEVA = re.compile(r"[ऀ-ॿ]")
 
 
 def devanagari_ratio(s: str) -> float:
+    """Fraction of the letters in `s` that are Devanagari; 0 when there are none."""
     letters = [c for c in s if c.isalpha()]
     return sum(1 for c in letters if _DEVA.match(c)) / max(len(letters), 1)
 
 
 def good_pair(en: str, hi: str) -> bool:
+    """Whether a sentence pair passes the filters: 3-200 words a side, a length
+    ratio of at most 3:1, a Hindi side at least 80% Devanagari, no Devanagari and
+    no "http" on the English side, and no newline in either."""
     ne, nh = len(en.split()), len(hi.split())
     if not (3 <= ne <= 200 and 3 <= nh <= 200) or max(ne, nh) > 3 * min(ne, nh):
         return False
@@ -42,6 +46,9 @@ def good_pair(en: str, hi: str) -> bool:
 
 
 def parquet_pairs(patterns):
+    """Yield (english, hindi) from every parquet file matching the glob `patterns`,
+    in IITB's `translation` layout or Samanantar's src/tgt columns. Either side
+    may be None."""
     import pyarrow.parquet as pq
     for pattern in patterns:
         for path in sorted(glob.glob(pattern)):
@@ -55,17 +62,23 @@ def parquet_pairs(patterns):
 
 
 def write(path, items):
+    """Write `items` to `path` as JSON lines, UTF-8 with LF newlines."""
     with Path(path).open("w", encoding="utf-8", newline="\n") as f:
         for it in items:
             f.write(json.dumps(it, ensure_ascii=False) + "\n")
 
 
 def both_directions(en: str, hi: str):
+    """The two items for one pair, en-hi and hi-en, as {title, question, answer,
+    lang}; the title is the first 40 characters of the source sentence."""
     return [{"title": en[:40], "question": en, "answer": hi, "lang": "en-hi"},
             {"title": hi[:40], "question": hi, "answer": en, "lang": "hi-en"}]
 
 
 def main():
+    """Command line: write FLORES devtest as the scoring file (`--flores`), or
+    filter, de-duplicate and shuffle parallel pairs into a training file and an
+    optional held-out file."""
     p = argparse.ArgumentParser()
     p.add_argument("--samanantar", nargs="*", default=[])
     p.add_argument("--iitb", nargs="*", default=[])

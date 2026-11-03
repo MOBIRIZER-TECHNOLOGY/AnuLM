@@ -84,12 +84,18 @@ def strip_wikitext(s: str) -> str:
 
 
 def devanagari_ratio(s: str) -> float:
+    """Fraction of all characters in `s`, spaces and punctuation included, that are
+    Devanagari; 0.0 if `s` is empty."""
     if not s:
         return 0.0
     return sum(1 for ch in s if "ऀ" <= ch <= "ॿ") / len(s)
 
 
 def main():
+    """Command line: stream the dump, keep articles that pass `--min-chars` and
+    `--min-devanagari` (each with probability `--keep-prob`) until `--mb` of
+    prose, write them to `--out` as title + body documents, and print the byte
+    and script statistics."""
     p = argparse.ArgumentParser()
     p.add_argument("--mb", type=float, default=8.0)
     p.add_argument("--out", type=str, default="data/hindi.txt")

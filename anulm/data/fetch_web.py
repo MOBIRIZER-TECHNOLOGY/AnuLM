@@ -30,6 +30,9 @@ _BLANKS = re.compile(r"\n{3,}")
 
 
 def looks_like_prose(text: str, min_bytes: int, max_bytes: int) -> bool:
+    """Whether a C4 page is kept: `min_bytes` to `max_bytes` of UTF-8, no NUL, at
+    least 95% ASCII characters, and at least half its non-empty lines ending on
+    . ! ? or a quote."""
     n = len(text.encode("utf-8"))
     if n < min_bytes or n > max_bytes or "\x00" in text:
         return False
@@ -42,6 +45,8 @@ def looks_like_prose(text: str, min_bytes: int, max_bytes: int) -> bool:
 
 
 def main():
+    """Command line: stream the `--shards` until `--mb` of de-duplicated prose is
+    collected, and write it to `--out`."""
     p = argparse.ArgumentParser()
     p.add_argument("--mb", type=float, default=350.0)
     p.add_argument("--out", default="data/english_web.txt")

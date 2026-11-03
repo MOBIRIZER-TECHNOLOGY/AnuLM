@@ -35,6 +35,7 @@ OK, WARN, BAD = "ok", "--", "!!"
 
 
 def have(mod: str) -> bool:
+    """True if `mod` is importable, checked without importing it."""
     return importlib.util.find_spec(mod) is not None
 
 
@@ -49,6 +50,7 @@ def n_tests() -> int:
 
 
 def row(status: str, what: str, detail: str) -> None:
+    """Print one aligned line of the report."""
     print(f"  [{status:2s}] {what:22s} {detail}")
 
 
@@ -163,6 +165,7 @@ def report(state: dict) -> bool:
 
 
 def run(cmd: list[str]) -> int:
+    """Echo `cmd`, run it from the repository root, return its exit code."""
     print(f"\n$ {' '.join(cmd)}\n", flush=True)
     return subprocess.call(cmd, cwd=HERE)
 
@@ -215,6 +218,9 @@ def demo(state: dict) -> int:
 
 
 def main() -> int:
+    """Check the machine and print what to do next; then, if nothing blocks,
+    run `--train` or `--demo` when asked. Returns the exit code (1 when a
+    blocker was found)."""
     p = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     p.add_argument("--train", action="store_true", help="train a 17M model and sample it")
     p.add_argument("--demo", action="store_true", help="download a released 400M checkpoint and serve it")

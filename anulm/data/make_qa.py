@@ -97,6 +97,9 @@ def lead_paragraph(body: str, title: str) -> str | None:
 
 
 def answer_from(lead: str, max_chars: int) -> str | None:
+    """The answer for a lead: its first danda-terminated sentence, plus the second
+    when the first is under 40 characters or both fit in `max_chars`. None if
+    the result is over `max_chars` or under 40 characters."""
     sents = [s.strip() for s in _SENTENCE.findall(lead)]
     if not sents:
         return None
@@ -113,6 +116,8 @@ def answer_from(lead: str, max_chars: int) -> str | None:
 
 
 def main():
+    """Command line: one QA pair per Wikipedia article in `--data`, shuffled and split into
+    train and held-out JSON lines."""
     p = argparse.ArgumentParser()
     p.add_argument("--data", default="data/hindi_full.txt")
     p.add_argument("--out", default="data/qa_hindi.jsonl")

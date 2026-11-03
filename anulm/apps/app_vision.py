@@ -71,6 +71,8 @@ class Captioner:
         )
 
     def caption(self, image, max_tokens: int) -> tuple[str, str]:
+        """Greedy caption for an image file path within `max_tokens`. Returns the
+        caption and a timing line, or a hint to add an image when `image` is None."""
         from anulm.multimodal.vision_encoder import caption as gen
         if image is None:
             return "", "*drop an image in, or pick an example*"
@@ -82,6 +84,9 @@ class Captioner:
 
 
 def build(cap: Captioner) -> gr.Blocks:
+    """The Gradio page: image input, token budget, caption and timing, with
+    held-out examples when the Flickr8k images are on disk. It captions on click
+    and whenever the image changes."""
     with gr.Blocks(title="AnuLM — vision") as demo:
         gr.Markdown("## AnuLM — show it a picture\n"
                     "A frozen SigLIP tower, a projector trained on Flickr30k, "
@@ -108,6 +113,8 @@ def build(cap: Captioner) -> gr.Blocks:
 
 
 def main() -> None:
+    """Command line: exit with the training command if `--ckpt` does not exist, otherwise
+    load it and launch the page."""
     p = argparse.ArgumentParser(description="Caption images with AnuLM.")
     p.add_argument("--ckpt", default="ckpt_caption_f30k_e2.pt",
                    help="a checkpoint from vision_encoder.py train")

@@ -110,6 +110,9 @@ def eval_by_position(state, cfg, data, length: int, batches: int, bins: int = 4,
 
 
 def main():
+    """Command line: evaluate the checkpoint at each multiple of its training
+    length with plain RoPE and with YaRN, print the paired difference and a
+    verdict, then the loss by window quarter at the longest length."""
     p = argparse.ArgumentParser()
     p.add_argument("--ckpt", type=str, default="ckpt_105b.pt")
     p.add_argument("--data", type=str, default=str(HERE / "data" / "input.txt"))

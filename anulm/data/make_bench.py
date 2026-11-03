@@ -30,6 +30,8 @@ def normalise(s: str) -> str:
 
 
 def main():
+    """Command line: drop each document in `--raw` whose body matches any corpus
+    in CORPORA on a Devanagari-only probe window, and write the rest to `--out`."""
     p = argparse.ArgumentParser()
     p.add_argument("--raw", default="data/bench_raw.txt")
     p.add_argument("--out", default="data/bench_hindi.txt")

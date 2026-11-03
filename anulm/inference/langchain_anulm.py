@@ -61,7 +61,10 @@ class AnuLMDecide(Runnable[str, dict]):
         return r.json()["results"]
 
     def invoke(self, input: str, config: Optional[RunnableConfig] = None, **kwargs) -> dict:
+        """The decision for one message. `config` is accepted and ignored."""
         return self._post([input])[0]
 
     def batch(self, inputs: list[str], config=None, *, return_exceptions: bool = False, **kwargs) -> list[dict]:
+        """Decisions for every message in one POST, in input order. An API error
+        raises ValueError for the whole batch; `return_exceptions` is ignored."""
         return self._post(list(inputs)) if inputs else []

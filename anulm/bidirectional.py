@@ -54,6 +54,10 @@ def bidir_hidden(m: AnuLM, idx: torch.Tensor, attn: torch.Tensor | None = None) 
 
 
 def adapt(a):
+    """`bidirectional adapt`: MNTP-train a checkpoint with bidirectional
+    attention on random `--window`-token windows of data/v2, then save it
+    with ``bidirectional: True`` and the adaptation settings. Needs CUDA (it
+    uses the grouped MoE path and fused AdamW)."""
     from anulm.bpe import BPE
     torch.manual_seed(0)
     rng = np.random.default_rng(0)
@@ -102,6 +106,7 @@ def adapt(a):
 
 
 def main():
+    """Command-line entry point: parse the `adapt` subcommand and run it."""
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)

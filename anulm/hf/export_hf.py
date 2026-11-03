@@ -69,6 +69,11 @@ CORE_KEYS = {"model", "cfg", "step", "val_loss", "qa_templates", "base_ckpt"}
 
 
 def front_matter(args, cfg, ck) -> str:
+    """The YAML front matter the Hub reads from README.md, built from the
+    command-line `args`: licence, languages, the pipeline tag for `--kind`, tags,
+    datasets, base model and a model-index entry, with empty fields left out.
+    A code tokenizer adds the `code` and `python` tags; `cfg` is None for a
+    fine-tuned open encoder (ModernBERT), which gets its own tag list."""
     langs = ["hi", "en"]
     tags = ["mixture-of-experts", "moe", "hindi", "indic", "small-language-model",
             "pytorch", "sarvam-architecture"]
@@ -110,6 +115,10 @@ def tensor_groups(ck: dict) -> dict[str, dict[str, torch.Tensor]]:
 
 
 def usage_text(kind: str, repo: str, name: str) -> str:
+    """The model card's "How to load" section for a checkpoint of `kind`, with
+    `repo` (the Hub id) and `name` (the local folder) filled into the snippets.
+    A plain language model gets the transformers and repository recipes; asr,
+    caption/vqa, decide, omni and reader get their repository loader."""
     if kind == "asr":
         return ("\n\n## How to load\n\nWith the AnuLM repository. The speech encoder is Whisper-small's, "
                 "frozen; faster-whisper downloads it on first use.\n\n```bash\n"
@@ -167,6 +176,9 @@ def usage_text(kind: str, repo: str, name: str) -> str:
 
 
 def main() -> None:
+    """Command line: export `ckpt` into the folder `out` -- weights, extras,
+    tokenizer, config.json, the remote code for `--kind lm`, and README.md --
+    then list the files written."""
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("ckpt")
     p.add_argument("out")

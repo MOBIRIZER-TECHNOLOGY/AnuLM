@@ -36,6 +36,11 @@ AUTO_MAP = {
 
 
 def upgrade(folder: Path) -> list[str]:
+    """Add the transformers layer to an existing export folder: tokenizer.json and
+    tokenizer_config.json when the export has a tokenizer, the three modules
+    `trust_remote_code` runs, and the architectures, auto_map, architecture and
+    dtype keys in config.json. Other config keys and model.safetensors are left
+    as they were. Returns the names of the files written."""
     cfg_path = folder / "config.json"
     if not cfg_path.exists():
         raise SystemExit(f"{folder} has no config.json -- is it an export?")
@@ -121,6 +126,8 @@ def check(folder: Path) -> None:
 
 
 def main() -> int:
+    """Upgrade and check each folder named on the command line; with none, print the usage
+    and return 2."""
     if len(sys.argv) < 2:
         print(__doc__)
         return 2

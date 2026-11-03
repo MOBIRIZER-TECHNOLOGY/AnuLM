@@ -32,6 +32,14 @@ except ImportError:
 
 
 class AnuLMConfig(PretrainedConfig):
+    """Hugging Face config for AnuLM.
+
+    The architecture is the nested dict `config`, one entry per field of the
+    native config dataclass. The fields transformers reads directly (vocab_size,
+    hidden_size, n_layer, n_head, block_size, rope_theta, tie_word_embeddings)
+    are mirrored as flat attributes, and `attribute_map` gives the standard
+    names for the layer count, head count and context length.
+    """
     model_type = "anulm"
     # Names transformers looks for when it wants the shape of a model without
     # understanding it (device maps, pipeline parallelism, generation).
@@ -71,4 +79,6 @@ class AnuLMConfig(PretrainedConfig):
 
     @classmethod
     def from_native(cls, cfg: NativeConfig, **kwargs) -> "AnuLMConfig":
+        """Wrap a native config dataclass; extra keyword arguments go to
+        `PretrainedConfig`."""
         return cls(config=asdict(cfg), **kwargs)

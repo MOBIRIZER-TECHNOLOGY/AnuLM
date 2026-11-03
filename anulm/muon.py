@@ -100,6 +100,10 @@ class Muon(torch.optim.Optimizer):
 
     @torch.no_grad()
     def step(self, closure=None):
+        """One update: momentum (Nesterov by default), orthogonalise the update by
+        Newton-Schulz -- same-shaped ones in one batch when `batched` -- apply
+        decoupled weight decay, then step by lr times the shape factor
+        sqrt(max(1, rows / cols))."""
         loss = closure() if closure is not None else None
         for group in self.param_groups:
             lr, mom = group["lr"], group["momentum"]

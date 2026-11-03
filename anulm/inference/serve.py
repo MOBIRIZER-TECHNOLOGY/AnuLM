@@ -109,17 +109,25 @@ class Engine:
 
 
     def encode(self, s: str) -> list[int]:
+        """Ids for `s` with the checkpoint's tokenizer, or UTF-8 bytes for a byte
+        model. Never empty: an empty prompt becomes a space or a newline."""
         if self.tok:
             return self.tok.encode(s) or self.tok.encode(" ")
         return list(s.encode("utf-8")) or [10]
 
     def decode(self, ids) -> str:
+        """Text for `ids`; a byte model drops ids >= 256 (BOS, EOS, PAD)."""
         if self.tok:
             return self.tok.decode(ids)
         return bytes(i for i in ids if i < 256).decode("utf-8", errors="replace")
 
     def generate(self, prompt: str, max_tokens: int, temperature: float, top_k: int, seed: int,
                  mode: str = "continue", repetition_penalty: float = 1.0):
+        """Sample a completion of `prompt` under the lock, with `seed` set first.
+        "question" and "translate" wrap the prompt in the checkpoint's
+        template; without one they fall back to "continue", and the returned
+        `mode` says which ran. Returns {prompt, completion, tokens, seconds,
+        stopped_at_eos, mode}."""
         if mode == "translate" and self.qa_templates and "en-hi" in self.qa_templates and not self.coder:
             prompt = self.qa_templates[translation_lang(prompt)].format(q=" ".join(prompt.split()))
         elif mode == "question" and self.qa_templates:
@@ -152,6 +160,9 @@ class Engine:
 
 
 def make_handler(engine: Engine):
+    """The request handler class bound to `engine`: GET / and /info, POST
+    /generate (max_tokens clamped to 1..400). Errors come back as JSON with
+    a status code instead of killing the server."""
     class Handler(BaseHTTPRequestHandler):
         def _send(self, code: int, body: bytes, ctype: str):
             self.send_response(code)
@@ -201,6 +212,8 @@ def make_handler(engine: Engine):
 
 
 def main():
+    """Command-line entry point: load `--ckpt` on `--device` and serve it on
+    `--host`:`--port` until Ctrl+C."""
     p = argparse.ArgumentParser()
     p.add_argument("--ckpt", default="ckpt_hindi_mixed18k.pt")
     p.add_argument("--port", type=int, default=8000)

@@ -62,10 +62,14 @@ _PUNCT = re.compile(r"[\"'()\[\]“”‘’,;:।.!?\-]")
 
 
 def tokens(s: str) -> list[str]:
+    """Whitespace tokens of `s` after quotes, brackets and punctuation (danda included)
+    become spaces."""
     return _PUNCT.sub(" ", s).split()
 
 
 def f1(pred: str, gold: str) -> float:
+    """SQuAD-style token F1 between a predicted and a gold answer; 0.0 if either has no
+    tokens."""
     p, g = tokens(pred), tokens(gold)
     if not p or not g:
         return 0.0
@@ -78,6 +82,12 @@ def f1(pred: str, gold: str) -> float:
 
 @torch.no_grad()
 def score(ckpt: str, items: list[dict], device: str, n_gen: int, seed: int = 0) -> dict:
+    """Load `ckpt` and score it on held-out QA `items` (question, answer, title).
+
+    Returns MC accuracy over every item, mean F1 and the subject-mention rate
+    over greedy decodes of the first `n_gen`, up to six (question, decoded,
+    gold) samples, and the seconds taken. `seed` fixes the distractor draw.
+    """
     ck = load_checkpoint(ckpt, "cpu")
     cfg = ck["cfg"]
     if device.startswith("cuda"):
@@ -137,6 +147,8 @@ def score(ckpt: str, items: list[dict], device: str, n_gen: int, seed: int = 0) 
 
 
 def main():
+    """Command line: score each checkpoint on the first `--limit` held-out questions and
+    print the table and sample answers."""
     p = argparse.ArgumentParser()
     p.add_argument("ckpts", nargs="+")
     p.add_argument("--heldout", default="data/qa_hindi_heldout.jsonl")

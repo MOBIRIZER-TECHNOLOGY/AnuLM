@@ -41,6 +41,10 @@ _EMPTY_PARENS = re.compile(r"\(\s*[,;\s]*\)")
 
 
 def lead_paragraph(body: str, title: str) -> str | None:
+    """The first paragraph of `body` with at least 80 characters that ends on . ! or ?,
+    cleaned of empty parentheses and space before punctuation. When it starts in
+    lower case (the scrubber removed the bold title), `title` is put back in
+    front. None if no paragraph qualifies."""
     for para in body.split("\n\n"):
         p = _EMPTY_PARENS.sub("", para.strip().replace("\n", " "))
         p = re.sub(r"\s{2,}", " ", _SPACE_PUNCT.sub(r"\1", p))
@@ -53,6 +57,10 @@ def lead_paragraph(body: str, title: str) -> str | None:
 
 
 def answer_from(lead: str, max_chars: int) -> str | None:
+    """The answer for a lead: its first sentence, plus the second when the first is
+    under 40 characters or both fit in `max_chars`. None if the result is over
+    `max_chars` or under 40 characters, or the first sentence does not start
+    with a letter or digit."""
     sents = [s.strip() for s in _SENTENCE_END.split(lead) if s.strip()]
     if not sents or not sents[0][0].isalnum():
         return None
@@ -69,6 +77,8 @@ def answer_from(lead: str, max_chars: int) -> str | None:
 
 
 def main():
+    """Command line: one QA pair per Wikipedia article in `--data` (URL-titled C4
+    pages skipped), shuffled and split into train and held-out JSON lines."""
     p = argparse.ArgumentParser()
     p.add_argument("--data", default="data/english.txt")
     p.add_argument("--out", default="data/qa_english.jsonl")

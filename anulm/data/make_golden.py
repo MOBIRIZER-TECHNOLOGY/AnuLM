@@ -66,10 +66,12 @@ MARATHI = re.compile(r"(?<!\S)(आणि|आहे|आहेत|होते|म
 
 
 def clean(word: str) -> str:
+    """`word` with leading and trailing quotes, brackets and punctuation removed."""
     return STRIP_PUNCT.sub("", word)
 
 
 def prose_fraction(doc: str) -> float:
+    """Share of the document's non-empty lines that end on a sentence mark; 0.0 if none."""
     lines = [l.strip() for l in doc.split("\n") if l.strip()]
     if not lines:
         return 0.0
@@ -91,12 +93,23 @@ def sentence_line(doc: str, s: int, e: int) -> str | None:
 
 
 def is_content_word(w: str) -> bool:
+    """Whether `w` may be blanked: all Devanagari, 3-14 characters, not a stopword, no
+    Devanagari digit."""
     return (DEVANAGARI_WORD.match(w) is not None and 3 <= len(w) <= 14
             and w not in STOPWORDS and not any("०" <= ch <= "९" for ch in w))
 
 
 def build(text: str, source: str, per_type: int, context_words: int, min_words: int,
           rng: random.Random) -> list[dict]:
+    """Cloze items from one benchmark file: up to `per_type` in_context and
+    `per_type` novel, at most one per document.
+
+    Each item carries the last `context_words` words before the blank as its
+    prefix, the gold word, four shuffled choices (the gold word and three
+    distractors of similar length and frequency) and the gold one's index.
+    Documents under `min_words` words, list-shaped ones and ones with Marathi
+    are skipped.
+    """
     docs = [d for d in text.split(DOC_SEP) if d.strip()]
     rng.shuffle(docs)
 
@@ -171,6 +184,7 @@ def build(text: str, source: str, per_type: int, context_words: int, min_words: 
 
 
 def main():
+    """Command line: build both sources' items and write them to `--out` as JSON lines."""
     p = argparse.ArgumentParser()
     p.add_argument("--out", default="golden/golden_hindi.jsonl")
     p.add_argument("--per-type", type=int, default=150,

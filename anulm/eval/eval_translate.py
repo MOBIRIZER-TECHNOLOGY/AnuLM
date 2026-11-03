@@ -64,6 +64,12 @@ def chrf(hyps: list[str], refs: list[str], n: int = 6, beta: float = 2.0) -> flo
 
 @torch.no_grad()
 def score(ckpt: str, items: list[dict], device: str, max_new: int, show: int) -> dict:
+    """Load `ckpt` and greedy-translate every item (rows with `lang` en-hi or hi-en),
+    keeping the first line of each output.
+
+    Returns corpus chrF per direction under its `lang`, chrF++ per direction under
+    "chrf++" when sacrebleu is installed, and up to `show` samples.
+    """
     ck = load_checkpoint(ckpt, "cpu")
     cfg = ck["cfg"]
     if device.startswith("cuda"):
@@ -114,6 +120,8 @@ def chrf_pp(out: dict) -> dict | None:
 
 
 def main():
+    """Command line: score each checkpoint on the FLORES file (`--limit` sentences per
+    direction) and print chrF, chrF++ when available, and samples."""
     p = argparse.ArgumentParser()
     p.add_argument("ckpts", nargs="+")
     p.add_argument("--data", default="data/flores_devtest.jsonl")

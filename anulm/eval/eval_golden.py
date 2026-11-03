@@ -46,9 +46,11 @@ class Codec:
             self.tok = BPE.load(cfg.tokenizer_path)
 
     def encode(self, s: str) -> list[int]:
+        """Text to ids: BPE ids, or the UTF-8 bytes for a byte model."""
         return self.tok.encode(s) if self.tok else list(s.encode("utf-8"))
 
     def decode(self, ids) -> str:
+        """Ids to text. A byte model drops ids of 256 and above and replaces invalid UTF-8."""
         if self.tok:
             return self.tok.decode(ids)
         return bytes(i for i in ids if i < 256).decode("utf-8", errors="replace")
@@ -56,6 +58,13 @@ class Codec:
 
 @torch.no_grad()
 def score(ckpt: str, items: list[dict], device: str, max_gen: int = 12) -> dict:
+    """Load `ckpt` and score it on the golden `items`.
+
+    Returns the seconds taken and, under `cells`, EM and MC accuracy and the item
+    count for "all", each source, each type and each source/type pair.
+    `max_gen` is the greedy decode budget in tokens, multiplied by 4 for a byte
+    model.
+    """
     ck = load_checkpoint(ckpt, "cpu")
     cfg = ck["cfg"]
     if device.startswith("cuda"):
@@ -111,6 +120,8 @@ def score(ckpt: str, items: list[dict], device: str, max_gen: int = 12) -> dict:
 
 
 def main():
+    """Command line: score each checkpoint on the golden set and print EM% and MC% per
+    source and item type."""
     p = argparse.ArgumentParser()
     p.add_argument("ckpts", nargs="+")
     p.add_argument("--golden", default="golden/golden_hindi.jsonl")

@@ -11,6 +11,8 @@ from pathlib import Path
 
 
 class HFTokenizer:
+    """A decoder's tokenizer.json (Qwen-style); `eos_id` is the id of
+    `eos_token`, and asserted to exist."""
     def __init__(self, path: str | Path, eos_token: str = "<|endoftext|>"):
         from tokenizers import Tokenizer
         self.tk = Tokenizer.from_file(str(path))
@@ -18,9 +20,11 @@ class HFTokenizer:
         assert self.eos_id is not None, f"{eos_token} not in {path}"
 
     def encode(self, text: str) -> list[int]:
+        """Ids for `text`, without the tokenizer's added special tokens."""
         return self.tk.encode(text, add_special_tokens=False).ids
 
     def decode(self, ids: list[int]) -> str:
+        """Text for `ids`; special tokens are kept in the output."""
         return self.tk.decode(ids, skip_special_tokens=False)
 
 
@@ -36,9 +40,11 @@ class EncoderTokenizer:
         assert self.eos_id is not None and self.pad_id is not None, f"no [CLS]/[PAD] in {path}"
 
     def encode(self, text: str) -> list[int]:
+        """Ids for `text`, without the [CLS]/[SEP] the tokenizer would add."""
         return self.tk.encode(text, add_special_tokens=False).ids
 
     def decode(self, ids: list[int]) -> str:
+        """Text for `ids`; special tokens are kept in the output."""
         return self.tk.decode(ids, skip_special_tokens=False)
 
 

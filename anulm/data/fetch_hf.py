@@ -22,6 +22,7 @@ UA = "anulm-corpus-builder/0.1 (educational; local LLM training)"
 
 
 def listing(repo: str) -> list[str]:
+    """Every file path in the dataset repo, from the Hub API. Exits if the repo is gated."""
     req = urllib.request.Request(f"https://huggingface.co/api/datasets/{repo}", headers={"User-Agent": UA})
     d = json.load(urllib.request.urlopen(req, timeout=60))
     if d.get("gated"):
@@ -30,6 +31,8 @@ def listing(repo: str) -> list[str]:
 
 
 def download(repo: str, name: str, dest: Path) -> int:
+    """Stream one file of the repo to `dest` through a .part file. Returns the bytes
+    downloaded, or 0 if `dest` already has the size the server reports."""
     url = f"https://huggingface.co/datasets/{repo}/resolve/main/{name}"
     req = urllib.request.Request(url, headers={"User-Agent": UA})
     with urllib.request.urlopen(req, timeout=120) as resp:
@@ -54,6 +57,8 @@ def download(repo: str, name: str, dest: Path) -> int:
 
 
 def main():
+    """Command line: download every file matching a `--prefix`, except .md and
+    .gitattributes files, into `--out`/<owner>__<name>/."""
     p = argparse.ArgumentParser()
     p.add_argument("repo")
     p.add_argument("--prefix", nargs="+", default=[""])

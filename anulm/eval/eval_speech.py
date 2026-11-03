@@ -131,6 +131,13 @@ class SpeechModel:
 
 def eval_tts(ckpt: str, texts: list[str], judge: str = "small",
              keep: str | None = None, temperature: float = 0.7) -> dict:
+    """Speak each of `texts` with the checkpoint, decode with SNAC and transcribe with
+    Whisper (`judge` is its size).
+
+    Returns the corpus WER plus diagnostics: clips with no audio, stray non-audio
+    tokens, codes out of slot, inaudible clips (rms below 0.005) and the mean
+    rms. `keep` is a folder to write the generated wavs to.
+    """
     from anulm.inference.voice import ASR
     sm = SpeechModel(ckpt)
     codec = SnacCodec()
@@ -175,6 +182,8 @@ def eval_tts(ckpt: str, texts: list[str], judge: str = "small",
 
 
 def eval_asr(ckpt: str, prefix: str, limit: int | None = None) -> dict:
+    """Transcribe the first `limit` encoded clips under `prefix` and return the corpus WER
+    against their transcripts."""
     from anulm.multimodal.speech_data import load_clips
     sm = SpeechModel(ckpt)
     rows, blob = load_clips(prefix)
@@ -212,6 +221,8 @@ def eval_judge_floor(prefix: str, judge: str = "small", limit: int = 50) -> dict
 
 
 def main() -> None:
+    """Command line: `tts`, `asr` or `floor` (the judge's WER on reference audio), each
+    printing one summary."""
     p = argparse.ArgumentParser(description="Word error rate for AnuLM's speech modes.")
     sub = p.add_subparsers(dest="cmd", required=True)
 

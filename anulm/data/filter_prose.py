@@ -30,6 +30,9 @@ SENTENCE_END = re.compile(r"[।.!?]['\")\]]*\s*$")
 
 
 def filter_doc(doc: str, min_line_chars: int, min_sentence_frac: float, min_chars: int):
+    """Both passes on one document (title, blank line, body). Returns the title and
+    the kept lines, or None if no line is left or the document fails the
+    document-level test."""
     title, _, body = doc.partition("\n\n")
     kept = []
     for line in body.split("\n"):
@@ -51,6 +54,7 @@ def filter_doc(doc: str, min_line_chars: int, min_sentence_frac: float, min_char
 
 
 def main():
+    """Command line: filter `--data` into `--out` and print what was kept."""
     p = argparse.ArgumentParser()
     p.add_argument("--data", required=True)
     p.add_argument("--out", required=True)

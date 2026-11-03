@@ -74,6 +74,8 @@ def load_split(name: str, task: str = "banking77") -> list[tuple[str, str]]:
 
 
 def labels(task: str = "banking77") -> list[str]:
+    """The task's label names: BANKING77's categories.json in its own order;
+    for MASSIVE and india-banking, the sorted labels seen in train."""
     if task.startswith("massive-") or task == "india-banking":
         return sorted({l for _, l in load_split("train", task)})
     return json.load(open(DATA / "categories.json"))
@@ -174,12 +176,16 @@ class Decider(nn.Module):
         return hook
 
     def train(self, mode: bool = True):
+        """nn.Module.train, except that a frozen backbone (mode head or lora) is
+        always kept in eval mode, so its router neither counts load nor drifts."""
         super().train(mode)
         if self.mode != "full":
             self.model.eval()                  # frozen: no router statistics, no bias updates
         return self
 
     def hidden(self, idx):
+        """Final hidden states (B, S, D) for `idx`, with the LoRA hooks switched on
+        for this call only. In head mode it runs without gradient."""
         if self.mode == "head":
             with torch.no_grad():
                 return self._hidden(idx)
@@ -210,10 +216,15 @@ class Decider(nn.Module):
         return m.norm(x)
 
     def balance(self):
+        """After an optimizer step: update the MoE expert biases, but only when
+        the backbone itself is training (mode full)."""
         if self.mode == "full" and hasattr(self.model, "update_expert_biases"):
             self.model.update_expert_biases()
 
     def save(self, path, **extra):
+        """torch.save the head, mode, any adapters and the backbone's weights
+        (AnuLM state dict and cfg, or the open encoder's path and state), plus
+        `extra` keys such as temperature and labels. `load` reads it back."""
         state = {"decide_head": self.head.state_dict(), "kind": self.kind, "mode": self.mode, **extra}
         if self.lora is not None:
             state.update(lora=self.lora.state_dict(), lora_rank=self.lora_rank,
@@ -246,6 +257,8 @@ class LoRA(nn.Module):
         self.scale = alpha / r
 
     def forward(self, x):
+        """Low-rank update B(A(x)) * scale, to be added to the wrapped linear's
+        output."""
         return self.B(self.A(x)) * self.scale
 
 
@@ -266,12 +279,18 @@ class LoRAQV(nn.Module):
         self.scale, self.kv = alpha / r, kv
 
     def forward(self, x):
+        """Low-rank update shaped like the fused [Q | K | V] output, zeros in K's
+        slice."""
         h = self.A(x)
         k = h.new_zeros(*h.shape[:-1], self.kv)
         return torch.cat([self.Bq(h), k, self.Bv(h)], -1) * self.scale
 
 
 def batchify(examples, tok, pad, with_mask=False):
+    """Pad encoded examples `(ids, positions, gold index, options)` into tensors:
+    x (B, L) right-padded with `pad`, pos (B, K), y (B,), and with
+    `with_mask` a (B, K) mask of real options for batches whose option
+    counts differ. `tok` is unused."""
     L = max(len(e[0]) for e in examples)
     K = max(len(e[1]) for e in examples)
     x = torch.full((len(examples), L), pad, dtype=torch.long)
@@ -286,6 +305,9 @@ def batchify(examples, tok, pad, with_mask=False):
 
 
 def make_examples(rows, tok, labs, rng=None):
+    """Encode (text, label) rows against the option list `labs` ->
+    (ids, positions, gold index, options). With `rng`, each row gets its own
+    shuffled option order; without it, `labs` order (as at test)."""
     out = []
     for text, cat in rows:
         opts = labs[:]
@@ -351,6 +373,9 @@ def fit_temperature(logits: torch.Tensor, y: torch.Tensor) -> float:
 
 
 def metrics(probs: torch.Tensor, y: torch.Tensor, bins: int = 15) -> dict:
+    """Accuracy, ECE over `bins` equal-width confidence bins, Brier score,
+    mean confidence, and coverage/accuracy when answering only at
+    confidence >= 0.5, 0.7 and 0.9. `probs` (N, K), `y` (N,) gold indices."""
     conf, pred = probs.max(1)
     correct = (pred == y).float()
     ece = 0.0
@@ -437,6 +462,10 @@ def sample_options(labels, gold, rng, k_min=5, k_max=77):
 
 
 def train_general(a):
+    """`decide train-general`: fine-tune on the five non-banking label sets of
+    `general_tasks`, each example with a random subset of its labels as
+    options, so BANKING77 can later be a zero-shot test. Saves on the best
+    held-out NLL, with a temperature fitted on that held-out set."""
     torch.manual_seed(0)
     rng = random.Random(0)
     d, tok, ck = load(a.ckpt, a.device)
@@ -512,6 +541,9 @@ def train_general(a):
 
 # --------------------------------------------------------------------- train / eval / ask
 def train(a):
+    """`decide train`: fine-tune a Decider on one task (`--task`) in mode
+    full, head or lora, shuffling the options on every example. Saves on
+    the best validation accuracy, with a temperature fitted on validation."""
     torch.manual_seed(0)
     rng = random.Random(0)
     d, tok, ck = load(a.ckpt, a.device)
@@ -583,6 +615,8 @@ def train(a):
 
 
 def evaluate(a):
+    """`decide eval`: accuracy, ECE, Brier and threshold coverage on the test
+    split, raw and at the saved temperature, then single-query latency."""
     d, tok, ck = load(a.ckpt, a.device)
     task = ck.get("task", "banking77")
     labs = ck.get("labels") or labels(task)
@@ -664,6 +698,8 @@ class Decide:
 
 
 def main():
+    """Command-line entry point: the train, train-general, eval and ask
+    subcommands."""
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)

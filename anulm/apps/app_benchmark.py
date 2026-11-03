@@ -29,12 +29,15 @@ DATA = {"decide_banking": "BANKING77 test", "decide_banking_modernbert": "BANKIN
 
 
 def ms(v) -> str:
+    """A duration in milliseconds as text (ms under a second, s above); a dash for None."""
     if v is None:
         return "—"
     return f"{v:,.0f} ms" if v < 1000 else f"{v / 1000:,.1f} s"
 
 
 def load() -> tuple[dict, dict[str, list[dict]]]:
+    """The recording: summary.json, and each suite's JSON lines of requests keyed
+    by suite name. Two empty dicts if there is no recording."""
     if not (BENCH / "summary.json").exists():
         return {}, {}
     summary = json.loads((BENCH / "summary.json").read_text(encoding="utf-8"))
@@ -47,6 +50,8 @@ def load() -> tuple[dict, dict[str, list[dict]]]:
 
 
 def score_of(s: dict) -> str:
+    """A suite's headline score as text: WER, accuracy, tokens/s or real-time factor,
+    whichever its summary has."""
     if "wer" in s:
         return f"WER {s['wer']:.1%}"
     if "accuracy" in s:
@@ -59,6 +64,8 @@ def score_of(s: dict) -> str:
 
 
 def summary_table(summary: dict) -> list[list]:
+    """One row per recorded suite, in ORDER: test, data, requests, score, median,
+    95th percentile, first-request time and errors."""
     out = []
     for name in ORDER:
         s = summary.get("suites", {}).get(name)
@@ -101,6 +108,8 @@ def latency_html(summary: dict) -> str:
 
 
 def row_cells(name: str, i: int, r: dict) -> list:
+    """The table row for request `i` of suite `name`: number, input, expected, model
+    output, result and time."""
     q = r["request"]
     if name.startswith("decide"):
         inp = q["input"]

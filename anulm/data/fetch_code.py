@@ -32,6 +32,10 @@ _BLANKS = re.compile(r"\n{3,}")
 
 
 def looks_like_source(text: str, min_bytes: int, max_bytes: int) -> bool:
+    """Whether a file reads as hand-written Python: `min_bytes` to `max_bytes` of
+    UTF-8, no NUL, no line over 400 characters, at most 120 bytes per line on
+    average, at least 90% ASCII, and at least one `def `, `class ` or
+    `import `."""
     n = len(text.encode("utf-8"))
     if n < min_bytes or n > max_bytes or "\x00" in text:
         return False
@@ -48,6 +52,8 @@ def looks_like_source(text: str, min_bytes: int, max_bytes: int) -> bool:
 
 
 def main():
+    """Command line: stream the `--shards`, keep de-duplicated .py files that pass the
+    filter until `--mb` of text, and write them to `--out`."""
     p = argparse.ArgumentParser()
     p.add_argument("--mb", type=float, default=250.0)
     p.add_argument("--out", default="data/python.txt")

@@ -27,6 +27,8 @@ from anulm.bpe import DOC_SEP, iter_documents
 
 
 def main():
+    """Command line: stream the sources into `--out` as described above, with the
+    per-source held-out bench files and the optional tokenizer sample."""
     p = argparse.ArgumentParser()
     p.add_argument("--source", nargs=3, action="append", metavar=("NAME", "PATH", "MB"), required=True)
     p.add_argument("--out", required=True)
