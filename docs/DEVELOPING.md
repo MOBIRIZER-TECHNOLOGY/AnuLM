@@ -5,7 +5,7 @@
 ```bash
 python -m anulm quickstart                   # what this machine can run, and how to fix what it cannot
 pip install -r requirements.txt        # torch, safetensors; pyarrow for the parquet converters
-python -m tests.test_model                   # 76 tests, under a minute on CPU — run this first
+python -m tests.test_model                   # 80 tests, under a minute on CPU — run this first
 ```
 
 Everything runs from the repository root (this file lives in `docs/`, the

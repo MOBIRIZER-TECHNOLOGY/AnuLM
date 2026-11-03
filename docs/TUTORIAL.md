@@ -54,7 +54,7 @@ experiments/<script>.sh`) or from a Git Bash terminal.
 
 ```bash
 python -m anulm quickstart        # checks Python, torch, CUDA, the optional packages and the tokenizers
-python -m tests.test_model        # 76 tests: routing math, attention, tokenizer, data loaders, loss masks
+python -m tests.test_model        # 80 tests: routing math, attention, tokenizer, data loaders, loss masks
 python -m anulm model             # builds both reference presets, forward + backward, prints parameter tables
 ```
 

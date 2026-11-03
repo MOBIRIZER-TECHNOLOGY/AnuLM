@@ -9,7 +9,7 @@ known issues still open. Everything here can be re-run from a fresh clone.
 From the repository root (or after `pip install -e .`, from anywhere):
 
 ```bash
-python -m tests.test_model                                                   # 76 tests, under a minute on CPU
+python -m tests.test_model                                                   # 80 tests, under a minute on CPU
 python -m unittest tests.test_training_pipeline tests.test_multimodal_contracts tests.test_release_fixes   # 79 tests, seconds
 python -m unittest discover -s tests -t . -p "test_quality_*.py"               # 63 tests, seconds
 python -m tools.smoke                                                        # 11 end-to-end steps, ~65-80 s on CPU
@@ -41,7 +41,7 @@ Windows 11, Python 3.14.7, torch 2.11 (CUDA build, run on CPU), transformers 5.1
 
 | check | result |
 | --- | --- |
-| `tests.test_model` | 76 passed, 0 failed (also under `python -m unittest tests.test_model`) |
+| `tests.test_model` | 80 passed, 0 failed (also under `python -m unittest tests.test_model`) |
 | `tests.test_training_pipeline`, `tests.test_multimodal_contracts`, `tests.test_release_fixes` | 79 passed, 1 skipped (the installed-command check, because another copy of AnuLM is installed on this machine) |
 | `tests.test_quality_*` (layout, loading, serving) | 63 passed |
 | `tools.smoke` | 11 of 11 steps passed |
@@ -94,6 +94,18 @@ Found while documenting and reviewing; none is caused by the restructure.
   so a fresh clone's Omni demo has no model until one is trained or published.
 - A local SigLIP folder path is saved into checkpoints as `tower`, so such a
   checkpoint's image tab only works on a machine with the same folder.
+
+## Tests checked by mutation (2026-11-03)
+
+21 single, plausible bugs were planted in `anulm/model.py` and `anulm/lora.py`,
+one at a time, and `tests.test_model` was run against each. 8 of the 21 passed
+unnoticed: RMSNorm's epsilon outside the square root, SwiGLU's gate and up
+weights swapped, GQA heads tiled instead of interleaved, embeddings initialised
+50 times too large, the router gate not run in fp32, `tie_word_embeddings`
+ignored, the LoRA scale set to alpha instead of alpha/r, and `router_state_dict`
+returning zeros. Four tests were strengthened and four added (76 -> 80); now
+every one of the 21 fails at least one test, and each new or changed test
+passes on the real code. No library bug was found.
 
 ## Fixed in the code-quality pass (2026-11-03)
 

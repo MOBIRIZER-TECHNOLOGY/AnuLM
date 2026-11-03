@@ -249,6 +249,85 @@ def router_weights_come_from_unbiased_scores():
 
 
 @test
+def rmsnorm_and_swiglu_match_their_formulas():
+    """The two building blocks against their definitions, with weights a
+    trained checkpoint would have (not the init's all-ones gain).
+
+    RMSNorm: x / sqrt(mean(x^2) + eps) * g -- eps INSIDE the root, which only
+    shows on small activations, and keeps an all-zero row at zero instead of
+    0 * inf = NaN. SwiGLU: down(silu(gate(x)) * up(x)). Swapping which
+    projection goes through silu trains just as well from scratch, so no
+    loss curve sees it, but every imported or exported checkpoint then runs
+    a different function.
+    """
+    from anulm.model import RMSNorm, SwiGLU
+    torch.manual_seed(0)
+    norm = RMSNorm(16, eps=1e-6)
+    with torch.no_grad():
+        norm.weight.copy_(torch.randn(16))
+    x = torch.randn(4, 16) * 1e-3                   # mean(x^2) ~ eps: eps matters
+    x[0] = 0.0
+    with torch.no_grad():
+        got = norm(x)
+    want = x / torch.sqrt(x.pow(2).mean(-1, keepdim=True) + 1e-6) * norm.weight
+    assert torch.isfinite(got).all(), "RMSNorm of an all-zero row is not finite"
+    assert torch.allclose(got, want, rtol=1e-5, atol=1e-7), \
+        f"RMSNorm differs from its formula by {(got - want).abs().max().item():.2e}"
+
+    mlp = SwiGLU(16, 24)
+    x = torch.randn(5, 16)
+    with torch.no_grad():
+        got = mlp(x)
+        want = F.linear(F.silu(F.linear(x, mlp.gate_proj.weight)) * F.linear(x, mlp.up_proj.weight),
+                        mlp.down_proj.weight)
+    assert torch.allclose(got, want, atol=1e-6), "SwiGLU is not down(silu(gate(x)) * up(x))"
+
+
+@test
+def tied_embeddings_share_one_table():
+    """tie_word_embeddings=True must make the LM head the embedding table --
+    one tensor, so an update to either is an update to both -- and False must
+    keep two."""
+    torch.manual_seed(0)
+    tied = AnuLM(tiny(tie_word_embeddings=True))
+    assert tied.lm_head.weight is tied.embed_tokens.weight, "tie_word_embeddings=True left two tables"
+    n_tied = sum(p.numel() for p in tied.parameters())
+    untied = AnuLM(tiny(tie_word_embeddings=False))
+    assert untied.lm_head.weight is not untied.embed_tokens.weight
+    n_untied = sum(p.numel() for p in untied.parameters())
+    assert n_untied - n_tied == 64 * 32, "tying must save exactly one V x D table"
+
+
+@test
+def router_choices_survive_autocast():
+    """Under bf16 autocast the router must pick exactly the experts it picks
+    in fp32 for the same input, with the same combine weights.
+
+    Router.forward turns autocast off and runs the whole gate in fp32 on
+    purpose: autocast re-casts F.linear to bf16 whatever dtype it is handed,
+    and bf16 rounding of the logits flips near-tied top-k choices (3.2% of
+    expert sets on a real checkpoint). What it guarantees is agreement for
+    the same input tensor -- it cannot undo rounding already done upstream, so
+    a bf16 activation is compared with its own value upcast to fp32, not with
+    the fp32 activation it was rounded from.
+    """
+    torch.manual_seed(0)
+    cfg = tiny(num_experts=8, num_experts_per_tok=2)
+    r = Router(cfg).eval()
+    x = torch.randn(2048, cfg.hidden_size)
+    for inp in (x, x.bfloat16()):
+        with torch.no_grad():
+            idx_ref, w_ref, _ = r(inp.float())
+            with torch.autocast("cpu", dtype=torch.bfloat16):
+                idx_ac, w_ac, _ = r(inp)
+        flips = (idx_ref != idx_ac).any(-1).sum().item()
+        assert flips == 0, f"{inp.dtype}: {flips} of {len(x)} tokens changed experts under autocast"
+        # Weights come back in the input's dtype: exact for fp32, one rounding for bf16.
+        assert torch.equal(w_ref.to(w_ac.dtype), w_ac), \
+            f"{inp.dtype}: combine weights moved under autocast"
+
+
+@test
 def bias_update_moves_in_the_right_direction():
     """The exact contract: overloaded experts get pushed down, starved ones up.
 
@@ -347,6 +426,14 @@ def all_parameters_receive_gradients():
 
 @test
 def initial_loss_is_ln_vocab():
+    """Init loss sits at ln(V), and the init scales are the configured ones.
+
+    The loss alone is a weak check: the final RMSNorm divides out the
+    embedding scale, so embeddings at std 1.0 (50x too large) still start
+    within 0.03 of ln(V). Measured on this config the real init is within
+    0.028 (gqa) and 0.009 (mla); 0.1 leaves room for seeds. The scales the
+    loss cannot see are asserted directly.
+    """
     for attn in ("gqa", "mla"):
         torch.manual_seed(0)
         cfg = tiny(attn=attn)
@@ -355,8 +442,18 @@ def initial_loss_is_ln_vocab():
         with torch.no_grad():
             _, loss = m(x, x)
         expected = math.log(cfg.vocab_size)
-        assert abs(loss.item() - expected) < 0.35, \
+        assert abs(loss.item() - expected) < 0.1, \
             f"{attn}: init loss {loss.item():.3f}, expected ~{expected:.3f} -- init is off"
+        std = cfg.initializer_range
+        resid = std / math.sqrt(2 * cfg.n_layer)
+        for name, p in m.named_parameters():
+            if p.dim() < 2 or ".router." in name:   # norms, and the kaiming router
+                continue
+            want = resid if name.endswith(("o_proj.weight", "dense.weight",
+                                           "down_proj.weight")) else std
+            got = p.std().item()
+            assert abs(got - want) < 0.15 * want, \
+                f"{attn}: {name} initialised at std {got:.4f}, expected {want:.4f}"
 
 
 @test
@@ -677,13 +774,49 @@ def sliding_window_limits_reach():
 
 @test
 def sliding_window_agrees_with_cache():
+    """The window must be exactly `window` keys wide on the cached path too.
+
+    Generation alone cannot see an off-by-one window: cached and uncached
+    decoding share _attn_mask, so a mask one key too wide (or narrow) agrees
+    with itself. So the mask is checked against its definition -- query p sees
+    keys p-W+1..p -- for a multi-token step against a cache, and a cached key
+    exactly W back is perturbed (must not matter) next to one W-1 back (must).
+    """
+    from anulm.model import _attn_mask
+    W = 5
+    for S, start in ((1, 9), (3, 8), (12, 0)):
+        T = start + S
+        got = _attn_mask(S, T, start, W, "cpu")
+        want = torch.tensor([[p - W < k <= p for k in range(T)]
+                             for p in range(start, start + S)])
+        assert torch.equal(got, want), f"S={S} start={start}: window mask is not {W} keys wide"
+
     torch.manual_seed(0)
-    cfg = tiny(attn="gqa", sliding_window=5, max_window_layers=3, block_size=32)
-    m = AnuLM(cfg).eval()
-    start = torch.randint(0, 64, (1, 3))
-    a = m.generate(start.clone(), 20, top_k=1, use_cache=False)
-    b = m.generate(start.clone(), 20, top_k=1, use_cache=True)
-    assert torch.equal(a, b), "windowed attention diverges between cached and uncached decoding"
+    for attn in ("gqa", "mla"):
+        cfg = tiny(attn=attn, sliding_window=W, max_window_layers=3, block_size=32)
+        m = AnuLM(cfg).eval()
+        a = m.layers[0].attn
+        x = torch.randn(1, 11, cfg.hidden_size)
+        cos, sin = m.rotary(11, x.device, x.dtype)
+
+        def last(inp):                 # prefill 8 into the cache, then step 3
+            cache = {}
+            a(inp[:, :8], cos[:8], sin[:8], cache=cache, window=W)
+            return a(inp[:, 8:], cos[8:], sin[8:], cache=cache, start=8, window=W)[0, 0]
+
+        with torch.no_grad():
+            base = last(x)
+            far = x.clone(); far[0, 8 - W] += 3.0        # query 8, exactly W back
+            near = x.clone(); near[0, 8 - W + 1] += 3.0  # W-1 back
+            d_far = (last(far) - base).abs().max().item()
+            d_near = (last(near) - base).abs().max().item()
+        assert d_far == 0.0, f"{attn}: a cached key {W} back moved the output by {d_far:.2e}"
+        assert d_near > 1e-6, f"{attn}: a cached key {W - 1} back had no effect"
+
+        start_ids = torch.randint(0, 64, (1, 3))
+        g1 = m.generate(start_ids.clone(), 20, top_k=1, use_cache=False)
+        g2 = m.generate(start_ids.clone(), 20, top_k=1, use_cache=True)
+        assert torch.equal(g1, g2), f"{attn}: windowed decoding diverges between cached and uncached"
 
 
 # =============================================================================
@@ -1045,7 +1178,9 @@ def lora_starts_as_the_base_model_and_merges_back_exactly():
     from anulm.lora import (apply_lora, lora_parameters, lora_state_dict, load_lora,
                       merge_lora, router_state_dict)
 
-    cfg = tiny()
+    # One balancer step at the default 1e-3 re-routes nothing here; 0.1 stands
+    # in for the drift of a whole fine-tune, so the bias path is exercised.
+    cfg = tiny(bias_update_rate=0.1)
     torch.manual_seed(0)
     base = AnuLM(cfg).eval()
     base_sd = {k: v.clone() for k, v in base.state_dict().items()}
@@ -1069,16 +1204,21 @@ def lora_starts_as_the_base_model_and_merges_back_exactly():
     assert trainable and all("lora_" in name for name in trainable), \
         f"something other than the adapters is trainable: {sorted(trainable)[:3]}"
 
-    # One real step, so the adapters stop being zero.
+    # One real step, so the adapters stop being zero -- and the balancer's
+    # update after it, as the training loop does, so the router bias drifts.
     opt = torch.optim.AdamW(lora_parameters(model), lr=1e-2)
     model.train()
     _, loss = model(x, x)
     loss.backward()
     opt.step()
+    model.update_expert_biases()
     model.eval()
+    drifted = [n for n, b in model.named_buffers()
+               if n.endswith("expert_bias") and not torch.equal(b, base_sd[n])]
+    assert drifted, "update_expert_biases() did not move any router bias"
     with torch.no_grad():
-        adapted, _ = model(x)
-    assert not torch.equal(adapted, want), "after a step the adapters must do something"
+        adapted, _ = model(x, x)          # every position, so a re-route shows
+    assert not torch.equal(adapted[:, -1:], want), "after a step the adapters must do something"
 
     # Save the adapter, rebuild from a pristine base, and land in the same place.
     ad, router = lora_state_dict(model), router_state_dict(model)
@@ -1096,23 +1236,48 @@ def lora_starts_as_the_base_model_and_merges_back_exactly():
     merge_lora(rebuilt)
     assert not any("lora" in n for n, _ in rebuilt.named_parameters()), \
         "a merged model must be a plain AnuLM again"
+    for n in drifted:
+        assert torch.equal(rebuilt.state_dict()[n], model.state_dict()[n]), \
+            f"{n}: the merged model did not get the trained router bias back"
     with torch.no_grad():
-        merged_out, _ = rebuilt(x)
+        merged_out, _ = rebuilt(x, x)
     d = (adapted - merged_out).abs().max().item()
     assert d < 1e-4, f"merging changed the model by {d}"
 
     # And without the router bias it does NOT come back the same, which is
-    # why the adapter carries it.
+    # why the adapter carries it: the base's bias routes some token elsewhere.
     naive = AnuLM(cfg).eval()
     naive.load_state_dict(base_sd)
     apply_lora(naive, r=4, alpha=8.0)
     load_lora(naive, ad)
     merge_lora(naive)
-    trained_bias = router[sorted(router)[0]]
-    base_bias = base_sd[sorted(router)[0]]
-    if not torch.equal(trained_bias, base_bias):
-        assert not torch.equal(naive.state_dict()[sorted(router)[0]], trained_bias), \
-            "the test is not exercising the router drift it claims to"
+    with torch.no_grad():
+        naive_out, _ = naive(x, x)
+    d_naive = (adapted - naive_out).abs().max().item()
+    assert d_naive > 1e-3, \
+        f"dropping the trained router bias changed nothing ({d_naive:.1e}): no drift exercised"
+
+
+@test
+def lora_scale_is_alpha_over_r():
+    """A trained adapter adds (alpha / r) * B @ A -- in the forward pass and
+    in the merged weight alike. The usual LoRA test cannot see the scale: B
+    starts at zero, and if forward and merge share one wrong scale they still
+    agree with each other. So B is set by hand and checked against the formula."""
+    from anulm.lora import LoRALinear
+    torch.manual_seed(0)
+    base = torch.nn.Linear(12, 10, bias=False)
+    lin = LoRALinear(base, r=4, alpha=8.0)
+    with torch.no_grad():
+        lin.lora_b.copy_(torch.randn(10, 4))
+    x = torch.randn(3, 12)
+    delta = (8.0 / 4) * lin.lora_b @ lin.lora_a
+    with torch.no_grad():
+        got = lin(x)
+    want = x @ (base.weight + delta).t()
+    assert torch.allclose(got, want, atol=1e-5), "LoRA forward is not W + (alpha/r) B A"
+    assert torch.allclose(lin.merged_weight(), base.weight + delta, atol=1e-6), \
+        "merged weight is not W + (alpha/r) B A"
 
 
 @test
@@ -1601,26 +1766,34 @@ def cached_embeds_decoding_matches_prefix_replay():
 @test
 def native_gqa_matches_repeat_interleave():
     """NATIVE_GQA hands the Hkv heads to SDPA's enable_gqa instead of copying
-    them; outputs must agree on the full-sequence, cached and windowed paths."""
+    them; outputs must agree on the full-sequence, cached and windowed paths.
+
+    With several KV heads, so the pairing is tested: query head h belongs to
+    KV head h // n_rep (repeat_interleave). Tiling the heads (repeat) instead
+    pairs h with h % n_kv -- invisible with one KV head, wrong with two or more.
+    """
     from anulm import model as M
-    torch.manual_seed(2)
-    m = AnuLM(tiny(n_kv_head=1, sliding_window=4, max_window_layers=1)).eval()
-    x = torch.randint(0, 64, (2, 12))
     saved = M.NATIVE_GQA
     try:
-        outs = []
-        for native in (False, True):
-            M.NATIVE_GQA = native
-            with torch.no_grad():
-                full, _ = m(x, x)
-                cache = m.new_cache()
-                m(x[:, :8], cache=cache)
-                step, _ = m(x[:, 8:], cache=cache, start=8)
-            outs.append((full, step))
+        for n_head, n_kv in ((4, 2), (6, 2), (6, 3), (4, 1)):
+            torch.manual_seed(2)
+            m = AnuLM(tiny(n_head=n_head, n_kv_head=n_kv, head_dim=8,
+                           sliding_window=4, max_window_layers=1)).eval()
+            x = torch.randint(0, 64, (2, 12))
+            outs = []
+            for native in (False, True):
+                M.NATIVE_GQA = native
+                with torch.no_grad():
+                    full, _ = m(x, x)
+                    cache = m.new_cache()
+                    m(x[:, :8], cache=cache)
+                    step, _ = m(x[:, 8:], cache=cache, start=8)
+                outs.append((full, step))
+            tag = f"{n_head}q/{n_kv}kv"
+            assert torch.allclose(outs[0][0], outs[1][0], atol=1e-5), f"{tag}: full-sequence logits differ"
+            assert torch.allclose(outs[0][1], outs[1][1], atol=1e-5), f"{tag}: cached-step logits differ"
     finally:
         M.NATIVE_GQA = saved
-    assert torch.allclose(outs[0][0], outs[1][0], atol=1e-5), "full-sequence logits differ"
-    assert torch.allclose(outs[0][1], outs[1][1], atol=1e-5), "cached-step logits differ"
 
 
 @test
@@ -2263,7 +2436,7 @@ def main():
             print("        " + "\n        ".join(
                 traceback.format_exception_only(type(e), e)).rstrip())
     # With nothing skipped this is the line the docs and the course quote
-    # ("76 passed, 0 failed, 76 total"), so it keeps that exact shape.
+    # ("80 passed, 0 failed, 80 total"), so it keeps that exact shape.
     if skipped:
         print(f"\n{len(passed)} passed, {len(skipped)} skipped, {len(failed)} failed, {len(TESTS)} total")
     else:
@@ -2273,7 +2446,7 @@ def main():
 
 class ModelTests(unittest.TestCase):
     """Every @test above as a unittest method, so `python -m unittest
-    tests.test_model`, `unittest discover` and pytest run the same 76 tests
+    tests.test_model`, `unittest discover` and pytest run the same 80 tests
     main() does. Methods are generated rather than written out so the two
     lists cannot drift apart."""
 
