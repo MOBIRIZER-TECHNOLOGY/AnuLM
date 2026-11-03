@@ -563,6 +563,48 @@ def to_pdf(html_path: Path) -> Path:
     raise SystemExit("no Chrome or Edge found to print the PDF")
 
 
+def add_bookmarks(pdf: Path) -> int:
+    """Give the printed PDF an outline: one bookmark per chapter and appendix,
+    with its numbered sections beneath. Chrome prints none, and 500 pages with
+    no bookmarks are hard to use. A heading is placed on the first page, at or
+    after the previous heading's, whose text holds it as a line of its own."""
+    import pymupdf
+    doc = pymupdf.open(pdf)
+    pages = []
+    for i in range(doc.page_count):
+        ls = [" ".join(l.split()) for l in doc[i].get_text().splitlines()]
+        def join(*parts):                   # "multi-" + "head" wraps at the hyphen, without a space
+            out = parts[0]
+            for p in parts[1:]:
+                out += p if out.endswith("-") else " " + p
+            return out
+        pages.append(set(ls) | {join(a, b) for a, b in zip(ls, ls[1:])}     # a long title wraps
+                     | {join(a, b, c) for a, b, c in zip(ls, ls[1:], ls[2:])})
+    # Skip the cover, front matter and contents: start at the page that opens Chapter 1.
+    start = next((i for i, ls in enumerate(pages) if i > 3 and "1 What this book builds" in ls), 0)
+    files = sorted(CHAPTERS.glob("[0-9][0-9]-*.md")) + sorted(CHAPTERS.glob("A[0-9]-*.md"))
+    toc, at = [], start
+    for f in files:
+        fenced = False
+        for line in f.read_text(encoding="utf-8").splitlines():
+            if line.startswith("```"):
+                fenced = not fenced                 # a "# comment" in a code block is not a heading
+                continue
+            m = None if fenced else re.match(r"^(#{1,2})\s+(\S+)\s+(.+?)\s*$", line)
+            if not m:
+                continue
+            level, num, title = len(m.group(1)), m.group(2), re.sub(r"[`*]", "", m.group(3)).strip()
+            heading = f"{num} {' '.join(title.split())}"          # how Chrome lays it out: "1 What this book builds"
+            for i in range(at, doc.page_count):
+                if heading in pages[i]:
+                    toc.append([level, f"{num}  {title}", i + 1])
+                    at = i
+                    break
+    doc.set_toc(toc)
+    doc.saveIncr()
+    return len(toc)
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
@@ -571,5 +613,6 @@ if __name__ == "__main__":
     print(f"wrote {p} ({p.stat().st_size / 1024:.0f} KB)")
     if printing:
         pdf = to_pdf(p)
+        n_marks = add_bookmarks(pdf)
         import pymupdf
-        print(f"wrote {pdf}: {pymupdf.open(pdf).page_count} pages at 7 × 9.25 in")
+        print(f"wrote {pdf}: {pymupdf.open(pdf).page_count} pages at 7 × 9.25 in, {n_marks} bookmarks")

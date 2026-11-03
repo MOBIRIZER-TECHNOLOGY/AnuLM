@@ -177,7 +177,9 @@ are 0.027 for `tiny()` and 0.184 for the simulated head, inside the test's
 
 ```
 released config at random init (seed 0, 4 x 256 random ids): loss 10.621, logit std 0.640, ln V 10.397
-``` The bump grows with the
+```
+
+The bump grows with the
 square of the initial spread: at `initializer_range` 0.05 the released head
 would start 1.28 above ln V (*illustrative*, printed by the example).
 
