@@ -2,7 +2,7 @@
 title: "32 · Classification heads and calibration"
 part: "VII · After pre-training"
 accent: plum
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 32  Classification heads and calibration
@@ -18,24 +18,30 @@ right about nine times in ten. You need the softmax and temperature (Chapter
 
 ## 32.1  One prompt, every option
 
-> **In the repo** · `anulm/tasks/decide.py` · `encode` · lines 90–99 · @084cbdd
+> **In the repo** · `anulm/tasks/decide.py` · `encode` · lines 89–101 · @fdbb09a
 
 ```python
 def encode(tok, text: str, options: list[str], max_len: int = 1024):
     """-> (ids, positions) where positions[k] is the index of the last token of
-    option k's name. Pieces are encoded separately so the positions are exact."""
+    option k's name. Pieces are encoded separately so the positions are exact.
+    Raises ValueError past `max_len` (the backbone's block_size): the message
+    and options come from API callers, so this is input validation."""
     ids = [tok.eos_id] + tok.encode(f"Message: {text.strip()}\nWhich of these does it ask for?\nOptions:")
     pos = []
     for o in options:
         ids += tok.encode(f"\n- {readable(o)}")
         pos.append(len(ids) - 1)
-    assert len(ids) <= max_len, f"{len(ids)} tokens; too many options for the context"
+    if len(ids) > max_len:
+        raise ValueError(f"{len(ids)} tokens; too many options for the context")
     return ids, pos
 ```
 
 A start token, the message and a question, then one line per option, made
-readable (`card_arrival` → `card arrival`, line 84). Each option is encoded on
-its own, so `len(ids) - 1` is exactly its last token's position. The book
+readable (`card_arrival` → `card arrival`, line 83). Each option is encoded on
+its own, so `len(ids) - 1` is exactly its last token's position. A prompt
+longer than `max_len` raises `ValueError`, not an `assert`, so `python -O`
+cannot remove the check; `Decide.__call__` passes the backbone's own
+`block_size` (line 696). The book
 example (`book/code-examples/ch32_decide_calibration.py`, **Book example, not
 repository code**) prints it:
 
@@ -57,7 +63,7 @@ repository code**) prints it:
 
 ## 32.2  The head
 
-> **In the repo** · `anulm/tasks/decide.py` · `Decider.forward` · lines 238–244 · @084cbdd
+> **In the repo** · `anulm/tasks/decide.py` · `Decider.forward` · lines 240–246 · @fdbb09a
 
 ```python
     def forward(self, idx, pos, mask=None):
@@ -71,12 +77,12 @@ repository code**) prints it:
 
 Shapes, in order: `hidden` gives (B, S, D); the expanded positions are a
 (B, K, D) index, and `gather` picks K hidden vectors per row; `head`,
-`nn.Linear(D, 1)` (line 118), leaves (B, K) logits. Padded option slots get
+`nn.Linear(D, 1)` (line 120), leaves (B, K) logits. Padded option slots get
 −∞, so their probability is 0. Training is cross-entropy over the K logits
-(line 594), with options shuffled on every example (`make_examples`, line
-288), so the head learns names, not slots. Rows are padded on the right:
+(line 596), with options shuffled on every example (`make_examples`, line
+309), so the head learns names, not slots. Rows are padded on the right:
 
-> **In the repo** · `anulm/tasks/decide.py` · `batchify` · lines 289–304 · @084cbdd
+> **In the repo** · `anulm/tasks/decide.py` · `batchify` · lines 291–306 · @fdbb09a
 
 ```python
 def batchify(examples, tok, pad, with_mask=False):
@@ -95,7 +101,7 @@ def batchify(examples, tok, pad, with_mask=False):
 
 The causal backbone is `AnuLM.forward` without the head and the loss:
 
-> **In the repo** · `anulm/tasks/decide.py` · `Decider._hidden` · lines 198–216 · @084cbdd
+> **In the repo** · `anulm/tasks/decide.py` · `Decider._hidden` · lines 200–218 · @fdbb09a
 
 ```python
     def _hidden(self, idx):
@@ -154,7 +160,7 @@ rounding: under the causal mask an option never sees the options after it.
 LLM2Vec's three steps, bidirectional attention and masked next-token
 prediction, and not its third, unsupervised contrastive learning [R35].
 
-> **In the repo** · `anulm/bidirectional.py` · `bidir_hidden` · lines 40–53 · @084cbdd
+> **In the repo** · `anulm/bidirectional.py` · `bidir_hidden` · lines 40–53 · @fdbb09a
 
 ```python
 def bidir_hidden(m: AnuLM, idx: torch.Tensor, attn: torch.Tensor | None = None) -> torch.Tensor:
@@ -176,7 +182,7 @@ def bidir_hidden(m: AnuLM, idx: torch.Tensor, attn: torch.Tensor | None = None) 
 `key`, (B, 1, 1, S), broadcasts over heads and queries: every query may see
 every real key. `anulm/model.py` uses it in place of the causal mask:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 472–474 · @084cbdd
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 479–481 · @fdbb09a
 
 ```python
         # bidir_mask (B, 1, 1, T), True = a real token: BIDIRECTIONAL attention
@@ -201,7 +207,7 @@ is right 80% of the time. Modern neural networks are often poorly
 calibrated, and dividing the logits by one fitted temperature τ is an
 effective fix [R34]:
 
-> **In the repo** · `anulm/tasks/decide.py` · `fit_temperature` · lines 366–372 · @084cbdd
+> **In the repo** · `anulm/tasks/decide.py` · `fit_temperature` · lines 368–374 · @fdbb09a
 
 ```python
 def fit_temperature(logits: torch.Tensor, y: torch.Tensor) -> float:
@@ -215,14 +221,14 @@ def fit_temperature(logits: torch.Tensor, y: torch.Tensor) -> float:
 
 A grid over τ from 0.30 to 5.00 in steps of 0.05, keeping the lowest held-out
 negative log-likelihood. Dividing by τ > 0 never reorders a row, so only the
-confidence changes. `train` fits τ when it saves (line 609); `Decide.__call__`
-applies it (line 690).
+confidence changes. `train` fits τ when it saves (line 611); `Decide.__call__`
+applies it (line 697).
 
 `IN THE REPO`
 
 ## 32.5  Three numbers for a calibrated classifier
 
-> **In the repo** · `anulm/tasks/decide.py` · `metrics` · lines 375–395 · @084cbdd
+> **In the repo** · `anulm/tasks/decide.py` · `metrics` · lines 377–397 · @fdbb09a
 
 ```python
 def metrics(probs: torch.Tensor, y: torch.Tensor, bins: int = 15) -> dict:
@@ -315,9 +321,39 @@ English encoder on Hindi intents.
 
 `MEASURED`
 
+> **Details.** Serving. `/v1/decide` (Chapter 38) calls `Decide.__call__` and
+> turns a `ValueError` (too many options for the context, or the case below)
+> into a 400. With the one joint Omni model loaded (Chapter 37), the call goes
+> instead to `omni.Intent`, which has the same signature but no trained head:
+> it scores each label by the model's own mean log-probability of writing it
+> after an intent prompt, softmaxed over the labels (sharpened ×10, line 158;
+> no fitted temperature, so the calibration numbers above are not its own).
+> It therefore refuses options it never learned to write:
+>
+> > **In the repo** · `anulm/multimodal/omni.py` · `Intent.choices` · lines 124–139 · @fdbb09a
+>
+> ```python
+>     def choices(self, options: list[str] | None) -> list[str]:
+>         # ...
+>         if options is None:
+>             return self.labels
+>         known = set(self.labels)
+>         unknown = [o for o in options if o not in known]
+>         if unknown:
+>             raise ValueError("custom options are not supported by the joint model: it scores only "
+>                              f"its trained labels, and {unknown[:3]} are not among them. Pass a subset "
+>                              "of the trained labels, or none for all of them.")
+>         return list(dict.fromkeys(options))
+> ```
+>
+> No options means every trained label; a subset is scored with the softmax
+> renormalised over it, duplicates dropped; one unknown label is a 400.
+> `Decide`, by contrast, accepts any option list, zero-shot. Not measured
+> here: how accurate the joint model's subset scores are.
+
 ## 32.7  The proof, and common mistakes
 
-> **In the repo** · `tests/test_model.py` · `decide_scores_each_option_at_its_last_token_and_calibrates` · lines 1695–1708 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `decide_scores_each_option_at_its_last_token_and_calibrates` · lines 1712–1725 · @fdbb09a
 
 ```python
     ids, pos = D.encode(tok, "where is my card", opts)
@@ -336,7 +372,7 @@ English encoder on Hindi intents.
     assert (F.softmax(logits / t, 1).argmax(1) == logits.argmax(1)).all()
 ```
 
-`decide_scores_each_option_at_its_last_token_and_calibrates` (line 1685)
+`decide_scores_each_option_at_its_last_token_and_calibrates` (line 1702)
 pins the positions, the shape, ECE and the argmax under τ. Mistakes to avoid:
 - **Reading the score one token early**, before the option's name is read.
 - **Options in a fixed order in training**: the head learns slots.
@@ -398,12 +434,14 @@ used only for the claim in its register row:
 | [R34] | networks are often poorly calibrated; temperature scaling; expected calibration error | CHECKED |
 | [R35] | LLM2Vec: bidirectional attention and masked next-token prediction | CHECKED |
 
-Repository evidence, all at @084cbdd:
-- `anulm/tasks/decide.py`: `readable` 84, `encode` 90–99, `Decider` 103–244 (`head` 118,
-  `_hidden` 198–216, `forward` 238–244), `LoRA` 247–262, `batchify` 289,
-  `make_examples` 307, `fit_temperature` 366–372, `metrics` 375–395, `train`
-  543–614 (loss 594, temperature 609), `Decide.__call__` 687–697.
+Repository evidence, all at @fdbb09a:
+- `anulm/tasks/decide.py`: `readable` 83, `encode` 89–101, `Decider` 105–246 (`head` 120,
+  `_hidden` 200–218, `forward` 240–246), `LoRA` 249–264, `batchify` 291,
+  `make_examples` 309, `fit_temperature` 368–374, `metrics` 377–397, `train`
+  545–616 (loss 596, temperature 611), `Decide.__call__` 691–704.
 - `anulm/bidirectional.py`: `bidir_hidden` 40–53, `adapt` 56–105.
-- `anulm/model.py`: `GQAttention.forward` 472–474.
-- `tests/test_model.py`: `decide_scores_each_option_at_its_last_token_and_calibrates` 1685.
+- `anulm/multimodal/omni.py`: `Intent.choices` 124–139, `Intent.__call__` 141–164.
+- `tests/test_quality_loading.py`: `test_decide_prompt_too_long` 241.
+- `anulm/model.py`: `GQAttention.forward` 479–481.
+- `tests/test_model.py`: `decide_scores_each_option_at_its_last_token_and_calibrates` 1702.
 - `docs/RESULTS.md` §34, §36, §37, §38.

@@ -2,7 +2,7 @@
 title: "41 · Capstone: train it, open it, change it"
 part: "X · Capstone"
 accent: teal
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 41  Capstone: train it, open it, change it
@@ -47,22 +47,22 @@ python -m anulm train --preset 30b --steps 1000 --device cpu --out ckpt_capstone
 With no `--data`, `anulm/training/train.py` reads `data/input.txt`, downloading
 tinyshakespeare (1.1 MB) the first time. Pass `--steps 1000`, because the
 default is 2,000 although `docs/TUTORIAL.md` says 1,000. Pass `--device cpu`,
-because the default is `cuda` whenever a GPU is visible (lines 579–580), and
+because the default is `cuda` whenever a GPU is visible (lines 575–576), and
 then `anulm/training/train.py` runs under bf16 autocast. A GPU run should land within 41.2's
 tolerance, but the book's numbers come from the CPU.
 
 For a one-minute check first, run the first 50 steps, as the repository's CI
-does (`.github/workflows/tests.yml` line 84):
+does (`.github/workflows/tests.yml` line 132):
 
 ```bash
 python -m anulm train --preset 30b --steps 50 --eval-every 25 --device cpu --out ckpt_check.pt
 ```
 
 These are exactly the first 50 steps of the 1,000-step run. The warmup lasts
-100 steps (`--warmup`, line 558), and inside it the learning rate does not
+100 steps (`--warmup`, line 554), and inside it the learning rate does not
 depend on `--steps`:
 
-> **In the repo** · `anulm/training/train.py` · `lr_at` · lines 379–385 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `lr_at` · lines 375–381 · @fdbb09a
 
 ```python
 def lr_at(step: int, args, start_step: int = 0) -> float:
@@ -74,7 +74,7 @@ def lr_at(step: int, args, start_step: int = 0) -> float:
 
 `--preset 30b` picks a configuration, and `--cfg` can override any field of it:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 715–733 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `main` · lines 712–731 · @fdbb09a
 
 ```python
     builder = {"30b": AnuLMConfig.nano_30b,
@@ -84,7 +84,8 @@ def lr_at(step: int, args, start_step: int = 0) -> float:
     for kv in args.cfg:
         key, _, val = kv.partition("=")
         field = AnuLMConfig.__dataclass_fields__.get(key)
-        assert field is not None and _, f"--cfg: unknown field {kv!r}"
+        if field is None or not _:
+            p.error(f"--cfg: unknown field {kv!r}")
         cast = {"int": int, "float": float, "bool": lambda s: s.lower() in ("1", "true", "yes"),
                 "str": str}.get(str(field.type).replace("Optional[", "").rstrip("]"), str)
         overrides[key] = None if val.lower() == "none" else cast(val)
@@ -98,12 +99,14 @@ def lr_at(step: int, args, start_step: int = 0) -> float:
     kw.update(overrides)                      # --cfg wins over the named flags
 ```
 
-- **Lines 715–717** map the preset name to an `AnuLMConfig` static method
+- **Lines 712–714** map the preset name to an `AnuLMConfig` static method
   (Appendix B lists every field).
-- **Lines 719–725** parse each `KEY=VALUE`. A misspelt field fails the
-  `assert`; the field's declared type picks the cast, so
+- **Lines 716–723** parse each `KEY=VALUE`. A misspelt field makes
+  `p.error` print the usage and exit with status 2 (a real error, which
+  `python -O` cannot strip as it would an `assert`); the field's declared
+  type picks the cast, so
   `--cfg n_kv_head=1 sliding_window=None` gives an int and a `None`.
-- **Lines 728–733** add the command-line flags and the data's vocabulary
+- **Lines 726–731** add the command-line flags and the data's vocabulary
   (259 for bytes), then let `--cfg` override them all.
 
 Before training you can check two things: the parameter count, which
@@ -137,7 +140,7 @@ def first_loss() -> None:
     val, sem = T.evaluate(model, val_data, args)
 ```
 
-The keyword arguments are those of lines 728–732 for this command. The sampler
+The keyword arguments are those of lines 726–730 for this command. The sampler
 has its own random generator, so it leaves the weights' seed untouched, and its
 first draw is the batch `anulm/training/train.py` trains on at step 0.
 
@@ -154,7 +157,7 @@ prints Exercise 1's answer. Your run's first log line should read
 `step     0 | loss 5.6203`. Both losses sit near ln 259; the validation loss is
 0.0521 above it, inside the 0.35 that `initial_loss_is_ln_vocab` allows:
 
-> **In the repo** · `tests/test_model.py` · `initial_loss_is_ln_vocab` · lines 338–348 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `initial_loss_is_ln_vocab` · lines 349–359 · @fdbb09a
 
 ```python
 def initial_loss_is_ln_vocab():
@@ -181,7 +184,7 @@ confidently wrong before it starts (Chapter 3).
 Each step of the loop runs one batch forward and backward, then updates the
 weights:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 852–875 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `main` · lines 855–878 · @fdbb09a
 
 ```python
         opt.zero_grad(set_to_none=True)
@@ -207,20 +210,20 @@ weights:
         imbalance = raw_model.update_expert_biases()
 ```
 
-- **Lines 854–857:** `--grad-accum` micro-batches (1 by default) of 16 window
+- **Lines 857–860:** `--grad-accum` micro-batches (1 by default) of 16 window
   starts, drawn without replacement (Chapter 21). `make_batch` cuts (16, 256)
   inputs `x` and, shifted by one, targets `y`.
-- **Lines 858–859:** the forward pass, under an autocast that is disabled on a
+- **Lines 861–862:** the forward pass, under an autocast that is disabled on a
   CPU, so everything stays fp32 (Chapter 23).
-- **Line 865:** the backward pass, divided so that accumulated gradients equal
+- **Line 868:** the backward pass, divided so that accumulated gradients equal
   one large batch's (`gradient_accumulation_equals_large_batch`). The elided
   lines add an optional bigram-teacher term, off by default.
-- **Lines 871–875:** clip the gradient norm to 1.0, step AdamW (Chapter 7), and
+- **Lines 874–878:** clip the gradient norm to 1.0, step AdamW (Chapter 7), and
   move the router biases by the sign rule, outside the loss (Chapter 18).
 
 Every 250 steps, and at the last step, the loop evaluates and saves:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 888–905 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `main` · lines 891–908 · @fdbb09a
 
 ```python
         if (step + 1) % args.eval_every == 0 or step == end - 1:
@@ -244,7 +247,7 @@ Every 250 steps, and at the last step, the loop evaluates and saves:
 
 `--out` gets the weights only when the validation loss improves. The resume
 point `<out>.last` gets them at every evaluation, with the AdamW moments and the
-sampler's position, which `--resume` needs (Chapter 25). Line 903 converts nats
+sampler's position, which `--resume` needs (Chapter 25). Line 906 converts nats
 to bits per byte; for byte data `bytes_per_token` is 1.0.
 
 The repository's `README.md` records this run from an older `anulm/training/train.py`. That
@@ -362,7 +365,7 @@ the full output for three models.
 
 `generate` turns logits into a token here:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1149–1157 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1161–1169 · @fdbb09a
 
 ```python
             if temperature <= 0:
@@ -381,7 +384,7 @@ random draw. Any other temperature divides the logits, and the rest of the
 `else` branch samples. `top_k` keeps a fixed number of tokens. Nucleus sampling, top-p, keeps a fixed
 share of the probability, however many tokens that takes [R31]. Chapter 28
 filters the logits before the softmax. This version works on the
-probabilities after line 1156, so that renormalising is a step of its own, one
+probabilities after line 1168, so that renormalising is a step of its own, one
 you can get wrong and must test. From `code-examples/ch41_top_p.py` (**Book
 example, not repository code**):
 
@@ -590,7 +593,7 @@ only the plumbing, since `top_p` returns at its first line; at p = 1 − 10⁻�
 filter runs in full and must change nothing; at p = 1e-9 it must be greedy,
 the repository's own pattern:
 
-> **In the repo** · `tests/test_model.py` · `generation_is_deterministic_at_top_k_1` · lines 387–395 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `generation_is_deterministic_at_top_k_1` · lines 398–406 · @fdbb09a
 
 ```python
 def generation_is_deterministic_at_top_k_1():
@@ -615,28 +618,37 @@ functions in `tests/test_model.py`.
 `tests/test_model.py` needs no framework: `@test` appends each function to a list,
 and `main` runs it:
 
-> **In the repo** · `tests/test_model.py` · `main` · lines 2213–2226 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `main` · lines 2250–2271 · @fdbb09a
 
 ```python
 def main():
-    passed, failed = [], []
+    passed, skipped, failed = [], [], []
     for fn in TESTS:
         try:
             fn()
             passed.append(fn.__name__)
             print(f"  PASS  {fn.__name__}")
+        except unittest.SkipTest as e:        # before Exception: SkipTest is one
+            skipped.append((fn.__name__, e))
+            print(f"  SKIP  {fn.__name__}  ({e})")
         except Exception as e:
             failed.append((fn.__name__, e))
             print(f"  FAIL  {fn.__name__}")
             print("        " + "\n        ".join(
                 traceback.format_exception_only(type(e), e)).rstrip())
-    print(f"\n{len(passed)} passed, {len(failed)} failed, {len(TESTS)} total")
+    # With nothing skipped this is the line the docs and the course quote
+    # ("76 passed, 0 failed, 76 total"), so it keeps that exact shape.
+    if skipped:
+        print(f"\n{len(passed)} passed, {len(skipped)} skipped, {len(failed)} failed, {len(TESTS)} total")
+    else:
+        print(f"\n{len(passed)} passed, {len(failed)} failed, {len(TESTS)} total")
     return 1 if failed else 0
 ```
 
-A failure is caught, printed and counted, and the run goes on. The return
-value is the exit status (line 2230), so CI stops on any failure. On a clean
-export of the pin:
+A failure is caught, printed and counted, and the run goes on. A test that
+cannot run raises `unittest.SkipTest`, prints SKIP and is counted apart
+(Chapter 26.10). The return value is the exit status (line 2296), so CI
+stops on any failure. At the pin:
 
 ```
   PASS  causal_mask_does_not_leak_future
@@ -646,22 +658,33 @@ export of the pin:
 76 passed, 0 failed, 76 total
 ```
 
-*verified*: 41 s here, run as `python -m tests.test_model` with
-`CUDA_VISIBLE_DEVICES=""` (Python 3.14.7, torch 2.11.0, CPU);
-`book/measurements/part_x_tests.json`. `README.md` and `docs/TUTORIAL.md` give
-the same count, 76. Tests that need an optional package return early and pass
-without it. Eight say `(skipped: ...)`; four say nothing: the grouped-MoE tests
-without `F.grouped_mm` (lines 688, 709, 727), and the demo-page test without
-`safetensors` (888–891). Here none returned early. Appendix C lists all 76,
-and C.5 what they miss.
+*verified*: 46 s here, run as `python -m tests.test_model` with
+`CUDA_VISIBLE_DEVICES=-1` (Python 3.14.7, torch 2.11.0, CPU);
+`book/measurements/part_x_tests.json`. `README.md` (line 115) gives the same
+count, 76, and "under a minute". A test that needs an optional package
+(`gradio`, `safetensors`, `transformers`, `tokenizers`, the API's or apps'
+dependencies) or `F.grouped_mm` raises `unittest.SkipTest` without it, and the
+last line then reads "N passed, M skipped, F failed, T total". Here nothing
+skipped. The same 76 also run as `python -m unittest tests.test_model`.
+Appendix C lists all 76, and C.5 what they miss.
+
+A second suite, `tests/test_quality_*.py`, holds 63 regression tests for
+safe loading, serving and the repository's layout. It uses `unittest`
+directly:
+
+```bash
+python -m unittest discover -s tests -p "test_quality_*.py" -t .
+```
+
+*verified*: "Ran 63 tests in 4.725s", OK, on the same CPU.
 
 **Beside the released model.** This needs two files that are not in git:
 
 - **`ckpt_base_v2.pt`**, the released run's own checkpoint. The Hugging Face
   repository `toonist/AnuLM-Base-v2-400M` (front matter) holds an export
   instead, with its large tensors in bf16, the default `--weights-dtype mixed`
-  (`anulm/hf/export_hf.py` lines 322–332; `--weights-dtype float32`, lines
-  230–232, keeps every weight as trained);
+  (`anulm/hf/export_hf.py` lines 328–339; `--weights-dtype float32`, lines
+  231–233, keeps every weight as trained);
   `--ckpt <folder>` accepts it. This machine's local export gives a median of
   507 at p = 0.9 below, not 501. The Hub copy itself was not compared.
 - **`data/v2/val.u16`**, the held-out split, which `experiments/build_v2.py`
@@ -690,10 +713,10 @@ comparable.
 The same script counts the nucleus top-p would keep at every position of 8
 windows of 512 tokens from `data/v2/val.u16` (seed 0), printing statistics
 only. It runs in true fp32, which the checkpoint's own `moe_impl`, `grouped`,
-does not: it casts the experts' inputs, and their stacked weights (line 749),
+does not: it casts the experts' inputs, and their stacked weights (line 756),
 to bf16 even without autocast.
 
-> **In the repo** · `anulm/model.py` · `MoE._route_grouped` · lines 777–780 · @084cbdd
+> **In the repo** · `anulm/model.py` · `MoE._route_grouped` · lines 784–787 · @fdbb09a
 
 ```python
         xs = x_flat[order // k].to(torch.bfloat16)                          # (N*k, D) expert-sorted
@@ -805,9 +828,10 @@ extensions, on the released model:
   token's probability, runs fine on too small a set, and is right where a
   cumulative sum equals p. *Catch it:* hand-worked sets, at a p below the top
   probability and one between two cumulative sums.
-- **Reading 76 as "everything was checked".** Four optional tests pass
-  silently (41.5). *Catch it:* check that `F.grouped_mm` exists and
-  `safetensors` imports.
+- **Reading "76 passed" without the rest of the line.** A test that cannot
+  run is counted as skipped, not passed (41.5). *Catch it:* read the summary
+  for "skipped", and the SKIP lines for why; install the missing package and
+  run again.
 
 `IN THE REPO`
 
@@ -860,7 +884,7 @@ toy.
   renormalises; it slots in after the softmax in `generate`.
 - A test earns trust when a known-wrong version fails it: here the off-by-one
   filter fails all three tests, and the missing renormalisation fails one.
-- The suite runs 76 tests in 41 s on a CPU; the released model needs 501 tokens
+- The suite runs 76 tests in 46 s on a CPU; the released model needs 501 tokens
   to reach 0.9 of the mass at the median position, so no fixed top-k fits.
 
 > **In one breath.** Train the 17M preset and watch its loss fall from ln 259;
@@ -879,23 +903,26 @@ used only for the claim in its register row:
 | [R40] | DPO: a preference loss against a reference policy, without a reward model | CHECKED |
 | [R46] | PagedAttention: the KV cache in blocks of a fixed number of tokens | CHECKED |
 
-Repository evidence, all at @084cbdd:
-- `anulm/training/train.py`: `main` 540–921 (preset builder 715–725, keyword arguments
-  728–733, the step 852–875, evaluation and saves 888–905), `load_bytes` 62–98,
-  `WindowSampler` 104–160, `lr_at` 379–404, `evaluate` 481–537; defaults:
-  `--steps` 2000 (line 552), `--warmup` 100 (558), `--device` (579–580).
-- `.github/workflows/tests.yml` line 84: the CI's 50-step run.
-- `anulm/model.py`: `AnuLM.generate` 1104–1168 (greedy and sampling 1149–1157),
-  `AnuLM.num_params` 1092–1101, `MoE._route_grouped` 759–783 (bf16 casts at
-  749 and 777).
-- `tests/test_model.py`: `initial_loss_is_ln_vocab` 338,
-  `generation_is_deterministic_at_top_k_1` 387, `param_count_matches_analysis`
-  399, `gradient_accumulation_equals_large_batch` 437,
-  `incremental_forward_matches_full_forward` 550,
-  `cached_generation_matches_uncached` 593, `main` 2213–2226; silent early
-  returns at 688, 709, 727 and 888–891; 76 tests.
-- `anulm/hf/export_hf.py`: `--weights-dtype` 230–232; `to_bf16` 51–60; the
-  float32 config and its comment 322–332: by default big tensors are stored in
+Repository evidence, all at @fdbb09a:
+- `anulm/training/train.py`: `main` 536–924 (preset builder 712–723, keyword arguments
+  726–731, the step 855–878, evaluation and saves 891–908), `load_bytes` 62–98,
+  `WindowSampler` 104–160, `lr_at` 375–400, `evaluate` 477–533; defaults:
+  `--steps` 2000 (line 548), `--warmup` 100 (554), `--device` (575–576).
+- `.github/workflows/tests.yml` line 132: the CI's 50-step run.
+- `anulm/model.py`: `AnuLM.generate` 1116–1180 (greedy and sampling 1161–1169),
+  `AnuLM.num_params` 1104–1113, `MoE._route_grouped` 766–790 (bf16 casts at
+  756 and 784).
+- `tests/test_model.py`: `initial_loss_is_ln_vocab` 349,
+  `generation_is_deterministic_at_top_k_1` 398, `param_count_matches_analysis`
+  410, `gradient_accumulation_equals_large_batch` 448,
+  `incremental_forward_matches_full_forward` 561,
+  `cached_generation_matches_uncached` 604, `main` 2250–2271; skips raise
+  `unittest.SkipTest` at 699, 720, 738, 864, 901, 940, 1134, 1138, 1186,
+  1299, 1358, 1977 and 2028; `sys.exit(main())` 2296; 76 tests.
+- `tests/test_quality_layout.py`, `tests/test_quality_loading.py`,
+  `tests/test_quality_serving.py`: 63 `unittest` tests (18, 19 and 26).
+- `anulm/hf/export_hf.py`: `--weights-dtype` 231–233; `to_bf16` 52–61; the
+  float32 config and its comment 328–339: by default big tensors are stored in
   bf16, small ones in fp32.
 - `experiments/build_v2.py` and `docs/DATASETS.md`: the held-out split.
 - Documentation: `README.md` "Status: trained and verified" and "Results";

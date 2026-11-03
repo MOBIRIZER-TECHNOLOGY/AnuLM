@@ -115,7 +115,7 @@ def why_not_drop_the_oldest(m, seq):
     m(ctx, cache=cache, start=0)
     for c in cache:                                   # the shortcut: forget the oldest
         c["k"], c["v"] = c["k"][:, :, 1:], c["v"][:, :, 1:]
-    m.cfg.block_size = bs + 1                         # let position 8 past the assert
+    m.cfg.block_size = bs + 1                         # let position 8 past the check
     try:
         dropped, _ = m(nxt, cache=cache, start=bs)
     finally:
@@ -131,7 +131,7 @@ def drop_oldest_generate(m, idx, n):
     """Greedy decoding with the shortcut: keep the cache at block_size - 1 entries
     before each step, positions growing past block_size (rotary tables grow)."""
     bs, cache = m.cfg.block_size, m.new_cache()
-    m.cfg.block_size = 10 ** 4                        # let positions pass the assert
+    m.cfg.block_size = 10 ** 4                        # let positions pass the check
     try:
         logits, _ = m(idx, cache=cache, start=0)
         pos = idx.shape[1]
@@ -189,7 +189,7 @@ def bytes_per_token():
 
 
 def positions_processed(prompt, new, bs, cached):
-    """Token positions run, summed over generate's calls (its lines 1083-1090)."""
+    """Token positions run, summed over generate's calls (its lines 1144-1151)."""
     total, length, start = 0, prompt, None
     for _ in range(new):
         if not cached:

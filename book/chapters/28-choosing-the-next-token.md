@@ -2,7 +2,7 @@
 title: "28 · Choosing the next token"
 part: "VI · Generation"
 accent: teal
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 28  Choosing the next token
@@ -16,7 +16,7 @@ the repository does not have, closes it as a tested patch.
 
 ## 28.1  The order of operations
 
-> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1140–1157 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1152–1169 · @fdbb09a
 
 ```python
             logits = logits[:, -1, :].float()
@@ -58,7 +58,7 @@ In order, on a (B, V) tensor:
 the sampling branch divides, filters, normalises and draws; at T ≤ 0 an argmax
 replaces all four. Top-p, dashed, is not in the repository. *verified*: the
 script that draws it asserts this order against `generate`'s source at
-@084cbdd and reads the line range from it.
+@fdbb09a and reads the line range from it.
 
 The book's script watches these lines run: a subclass returns fixed logits,
 the repository's `generate` samples, and a spy records what
@@ -84,7 +84,7 @@ def probs_from_generate(z, prompt, cls=FixedLogits, **kw):
     or, if it made no draw (temperature <= 0), the one-hot of the id it chose."""
     seen, orig = [], torch.multinomial
 
-    def spy(p, num_samples):                         # generate calls this, line 1157
+    def spy(p, num_samples):                         # generate calls this, line 1169
         seen.append(p.clone())
         return orig(p, num_samples)
 
@@ -93,13 +93,13 @@ def probs_from_generate(z, prompt, cls=FixedLogits, **kw):
         out = cls(z).generate(torch.tensor([prompt]), 1, **kw)
     finally:
         torch.multinomial = orig
-    if not seen:                                     # the argmax branch, lines 1149-1150
+    if not seen:                                     # the argmax branch, lines 1161-1162
         return torch.nn.functional.one_hot(out[0, -1], z.numel()).float()
     return seen[0][0]
 
 
 def book_probs(z, seen_ids, temperature=1.0, top_k=None, penalty=1.0):
-    """generate's lines 1145-1156, one row at a time, as Chapter 28 states them."""
+    """generate's lines 1157-1168, one row at a time, as Chapter 28 states them."""
     z = z.clone().float()
     for i in set(seen_ids) if penalty != 1.0 else ():
         z[i] = z[i] / penalty if z[i] > 0 else z[i] * penalty   # generate's sign rule
@@ -133,7 +133,7 @@ the id `generate` chose without calling it. Dividing by T below 1 widens the
 gaps between logits and sharpens the distribution; above 1 flattens it
 (Chapter 5). As T → 0 all the mass goes to the largest logit, except where two
 logits tie, so a small positive T is greedy except at ties, and so is
-`top_k=1` (28.3), which `generation_is_deterministic_at_top_k_1` (line 387)
+`top_k=1` (28.3), which `generation_is_deterministic_at_top_k_1` (line 398)
 checks. T ≤ 0 does not take that limit numerically: it calls `argmax`, which
 returns the first of tied ids and never touches the random generator:
 
@@ -147,7 +147,7 @@ On logits [1, 1, 1, 0] it picks id 0, whatever the seed;
 Until November 2026 `generate` floored T at 10⁻⁵ and still sampled, so on a
 tie "greedy" output changed with the seed.
 
-`anulm/inference/serve.py` (line 153) and `anulm/inference/api.py` (line 399)
+`anulm/inference/serve.py` (line 158) and `anulm/inference/api.py` (line 446)
 pass the temperature through unclamped, so a request's 0 is exact greedy
 (`test_temperature_zero_reaches_the_model_unclamped`, the same file, line 112).
 Ties matter for the sampled paths: on the released model under bf16
@@ -201,9 +201,9 @@ time; temperature 0.8 with penalty 1.3, 12.4%. The serving defaults
 
 | caller | temperature | top-k | penalty | lines |
 |---|---|---|---|---|
-| `anulm/inference/api.py` chat | 0.3 | 40 | 1.15 | 559–561 |
-| `anulm/inference/api.py` completions | 0.7 | 40 | 1.0 | 597–598 |
-| `anulm/inference/serve.py` HTTP | 0.8 | 50 | 1.0 | 210–214 |
+| `anulm/inference/api.py` chat | 0.3 | 40 | 1.15 | 611–613 |
+| `anulm/inference/api.py` completions | 0.7 | 40 | 1.0 | 649–650 |
+| `anulm/inference/serve.py` HTTP | 0.8 | 50 | 1.0 | 224–229 |
 | `anulm/inference/sample.py` | 0.8 | 50 | none | 34–35 |
 
 `IN THE REPO` · `MEASURED`
@@ -213,7 +213,7 @@ time; temperature 0.8 with penalty 1.3, 12.4%. The serving defaults
 Speech and images decode through `decode_from_embeds`, which is greedy and
 blocks repeated n-grams:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.decode_from_embeds` · lines 1025–1042 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.decode_from_embeds` · lines 1037–1054 · @fdbb09a
 
 ```python
         for _ in range(max_tokens):
@@ -251,7 +251,7 @@ no_repeat_ngram = 3: [0, 0, 0, 1, 0, 0, 2, 0]
 
 *verified*: `ch28_sampling.py`. `generate` stops on one id for a whole batch:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1158–1167 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1170–1179 · @fdbb09a
 
 ```python
             if eos_id is not None:
@@ -268,7 +268,7 @@ no_repeat_ngram = 3: [0, 0, 0, 1, 0, 0, 2, 0]
 
 A finished row keeps receiving `eos_id`, so `idx` stays (B, t + 1). The loop
 ends when every row is done, or when `on_token`, `anulm/inference/api.py`'s streaming callback
-(Chapter 38), returns True. `generation_stops_at_eos` (line 609) checks it.
+(Chapter 38), returns True. `generation_stops_at_eos` (line 620) checks it.
 
 `IN THE REPO`
 
@@ -279,7 +279,7 @@ probabilities reach p, then renormalises [R31]; the set grows where the model
 is unsure, which a fixed k cannot do. `anulm/inference/api.py` accepts the argument and drops
 it:
 
-> **In the repo** · `anulm/inference/api.py` · `ChatRequest` · lines 192–195 · @084cbdd
+> **In the repo** · `anulm/inference/api.py` · `ChatRequest` · lines 218–221 · @fdbb09a
 
 ```python
     temperature: Optional[float] = Field(None, ge=0, le=2, description="Default 0.3. 0 = greedy.")
@@ -288,8 +288,8 @@ it:
     repetition_penalty: Optional[float] = Field(None, description="AnuLM extension. Default 1.15.")
 ```
 
-`Generation` (`anulm/inference/api.py` line 343) takes no `top_p`, and its call to `generate`
-(lines 399–401) passes none. On the released model at T = 1, the nucleus for
+`Generation` (`anulm/inference/api.py` line 389) takes no `top_p`, and its call to `generate`
+(lines 446–448) passes none. On the released model at T = 1, the nucleus for
 p = 0.9 holds 1 token at the tenth percentile, a median 341, and about 7,650
 at the ninetieth; it fits inside 40 tokens at only 39.4% of positions.
 *measured* in bf16 autocast, as served, on a sample of 8,192 positions from 16
@@ -464,14 +464,14 @@ used only for the claim in its register row:
 | [R30] | penalised sampling: discounting the scores of tokens already generated | CHECKED |
 | [R31] | nucleus (top-p) sampling | CHECKED |
 
-Repository evidence, all at @084cbdd:
-- `anulm/model.py`: `AnuLM.decode_from_embeds` 1003–1050 (excerpt 1025–1042),
-  `AnuLM.generate` 1140–1167.
-- `anulm/inference/api.py`: `ChatRequest` 192–195, `Generation` 343 and 399–401, chat defaults
-  559–561, completion defaults 597–598.
-- `anulm/inference/serve.py`: the `generate` call 153–155 (no clamp), HTTP defaults 210–214. `anulm/inference/sample.py`: 34–35.
-- `tests/test_model.py`: `generation_is_deterministic_at_top_k_1` 387,
-  `generation_stops_at_eos` 609. `tests/test_release_fixes.py`:
+Repository evidence, all at @fdbb09a:
+- `anulm/model.py`: `AnuLM.decode_from_embeds` 1015–1062 (excerpt 1037–1054),
+  `AnuLM.generate` 1152–1179.
+- `anulm/inference/api.py`: `ChatRequest` 218–221, `Generation` 389 and 446–448, chat defaults
+  611–613, completion defaults 649–650.
+- `anulm/inference/serve.py`: the `generate` call 158–160 (no clamp), HTTP defaults 224–229. `anulm/inference/sample.py`: 34–35.
+- `tests/test_model.py`: `generation_is_deterministic_at_top_k_1` 398,
+  `generation_stops_at_eos` 620. `tests/test_release_fixes.py`:
   `test_temperature_zero_reaches_the_model_unclamped` 112,
   `test_temperature_zero_breaks_ties_deterministically` 136.
 - `docs/RESULTS.md` §30.

@@ -21,6 +21,11 @@ reads every logged training loss for Figure 25.3.
 Part 2 simulates a kill in the middle of a checkpoint write: torch.save is
 replaced by a writer that stops halfway, once for a plain in-place save and
 once inside train.atomic_save.
+
+Part 3 is the other kind of bad resume point: readable, but holding a Python
+object the weights-only loader refuses (here an argparse.Namespace). train.py
+must stop with UnsafeCheckpointError rather than fall back, and resume only
+when ANULM_TRUST_PICKLE=1 says the file is trusted.
 """
 
 from __future__ import annotations
@@ -37,6 +42,7 @@ import torch
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
+from anulm.model import safe_load  # noqa: E402
 from anulm.training import train as T  # noqa: E402  the repository's train.py, unchanged
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -48,10 +54,15 @@ CMD = ["--preset", "30b", "--steps", "60", "--batch-size", "8", "--block-size", 
        "--lr", "1e-3", "--device", "cpu"]
 
 
+def run(folder: Path, *extra: str, env: dict | None = None) -> subprocess.CompletedProcess:
+    return subprocess.run([sys.executable, "-m", "anulm.training.train", *CMD,
+                           "--data", str(folder.parent / "corpus.txt"), "--out", str(folder / "ckpt.pt"), *extra],
+                          cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                          env={**os.environ, "PYTHONPATH": str(ROOT), **(env or {})})
+
+
 def train(folder: Path, *extra: str) -> str:
-    r = subprocess.run([sys.executable, str(ROOT / "train.py"), *CMD, "--data", str(folder.parent / "corpus.txt"),
-                        "--out", str(folder / "ckpt.pt"), *extra],
-                       cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    r = run(folder, *extra)
     assert r.returncode == 0, r.stderr[-2000:]
     return r.stdout
 
@@ -92,9 +103,9 @@ def part1(tmp: Path) -> dict:
     for line in log_c2.splitlines():
         if line.startswith("WARNING"):
             print("  C> " + short(line))
-    a = torch.load(A / "ckpt.pt.last", weights_only=False)
-    b = torch.load(B / "ckpt.pt.last", weights_only=False)
-    c = torch.load(C / "ckpt.pt.last", weights_only=False)
+    a = safe_load(A / "ckpt.pt.last")
+    b = safe_load(B / "ckpt.pt.last")
+    c = safe_load(C / "ckpt.pt.last")
     for k in ("model", "opt", "sampler", "step", "best_val"):
         print(f"  A and B agree on {k:8s}: {same(a[k], b[k])}")
     print(f"  C, after the fallback, agrees with A on model: {same(a['model'], c['model'])}")
@@ -133,7 +144,7 @@ def part2(tmp: Path) -> dict:
         finally:
             torch.save = real_save
         try:
-            w = torch.load(path, weights_only=False)["w"]
+            w = torch.load(path, weights_only=True)["w"]
             result = f"loads; holds the {'old' if w.sum() == 0 else 'new'} checkpoint"
         except Exception as e:
             result = f"{type(e).__name__}: {str(e).splitlines()[0][:60]}"
@@ -142,11 +153,37 @@ def part2(tmp: Path) -> dict:
     return out
 
 
+def part3(tmp: Path) -> dict:
+    import argparse
+    D = tmp / "D"
+    D.mkdir()
+    train(D, "--stop-at", "30")
+    last = D / "ckpt.pt.last"
+    ck = safe_load(last)                                     # the real resume point loads safely
+    ck["args"] = argparse.Namespace(lr=1e-3)                  # a Python object outside the allow-list
+    torch.save(ck, last)
+
+    print("\nPart 3. a readable resume point that holds a Python object")
+    refused = run(D, "--resume")
+    err = [l for l in refused.stderr.splitlines() if "UnsafeCheckpointError" in l]
+    print(f"  --resume                      -> exit {refused.returncode}, "
+          f"fell back: {'falling back' in refused.stdout}")
+    print("    " + err[-1].replace(str(tmp), "<tmp>")[:150] + " ...")
+    trusted = run(D, "--resume", env={"ANULM_TRUST_PICKLE": "1"})
+    resumed = [l for l in trusted.stdout.splitlines() if l.startswith("resuming")]
+    print(f"  --resume, ANULM_TRUST_PICKLE=1 -> exit {trusted.returncode}, "
+          f"{resumed[0].split(' (')[0].replace(str(tmp), '<tmp>') if resumed else 'did not resume'}")
+    assert refused.returncode != 0 and err and "falling back" not in refused.stdout
+    assert trusted.returncode == 0 and resumed
+    return {"refused_exit": refused.returncode, "trusted_exit": trusted.returncode}
+
+
 def main():
     with tempfile.TemporaryDirectory() as d:
         r1 = part1(Path(d))
         r2 = part2(Path(d))
-    OUT.write_text(json.dumps({"part1": r1, "part2": r2}, indent=1), encoding="utf-8")
+        r3 = part3(Path(d))
+    OUT.write_text(json.dumps({"part1": r1, "part2": r2, "part3": r3}, indent=1), encoding="utf-8")
     print(f"\nwrote {OUT}")
 
 

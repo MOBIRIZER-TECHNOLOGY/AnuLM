@@ -2,7 +2,7 @@
 title: "12 · Causal masking"
 part: "IV · Inside the transformer"
 accent: gold
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 12  Causal masking
@@ -68,13 +68,16 @@ Zeroed afterwards, *The* keeps 0.401 of its attention; the rest went to keys
 it may not see. And a row with *no* allowed key is 0/0. A causal row always
 keeps its own key; the configuration refuses a window of 0, which would not:
 
-> **In the repo** · `anulm/model.py` · `AnuLMConfig.__post_init__` · lines 132–134 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLMConfig.__post_init__` · lines 138–140 · @fdbb09a
 
 ```python
         if self.sliding_window is not None:
-            assert self.sliding_window >= 1 and self.max_window_layers >= 1, (
-                "sliding_window needs max_window_layers >= 1 to apply to any layer")
+            check(self.sliding_window >= 1 and self.max_window_layers >= 1,
+                  "sliding_window needs max_window_layers >= 1 to apply to any layer")
 ```
+
+`check` raises `ValueError` (lines 129–131), so the refusal survives
+`python -O`, which strips asserts.
 
 `IN THE REPO`
 
@@ -82,7 +85,7 @@ keeps its own key; the configuration refuses a window of 0, which would not:
 
 Every attention layer gets its mask from one function:
 
-> **In the repo** · `anulm/model.py` · `_attn_mask` · lines 358–374 · @084cbdd
+> **In the repo** · `anulm/model.py` · `_attn_mask` · lines 365–381 · @fdbb09a
 
 ```python
 def _attn_mask(S: int, T: int, start: int, window: Optional[int], device):
@@ -140,7 +143,7 @@ windowed layer: one query, but the window hides the oldest key.
 `GQAttention.forward` calls it after appending to the cache, so T counts
 cached and new keys:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 470–475 · @084cbdd
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 477–482 · @fdbb09a
 
 ```python
         T = k.shape[2]
@@ -152,7 +155,7 @@ cached and new keys:
 ```
 
 `k` is (B, H<sub>kv</sub>, T, D<sub>h</sub>). `bidir_mask` serves
-`anulm/bidirectional.py` alone (Chapter 32); MLA makes the same call (line 568).
+`anulm/bidirectional.py` alone (Chapter 32); MLA makes the same call (line 575).
 With S > 1 *and* a non-empty cache, `is_causal` is wrong. On the toy, the
 cache holds *The* and one call brings *dog* and *bit*:
 
@@ -184,7 +187,7 @@ second built the wrong way. *verified*: drawn from `_attn_mask`'s output.
 
 `anulm/model.py`'s own `generate` never makes this call:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1132–1139 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1144–1151 · @fdbb09a
 
 ```python
         for _ in range(max_new_tokens):
@@ -198,10 +201,10 @@ second built the wrong way. *verified*: drawn from `_attn_mask`'s output.
 ```
 
 The prompt goes in at `start = 0` (and again whenever the context fills and
-the cache is rebuilt); after it, `pending` is one sampled token (line 1161).
+the cache is rebuilt); after it, `pending` is one sampled token (line 1173).
 The `transformers` wrapper passes every id its cache has not seen:
 
-> **In the repo** · `anulm/hf/modeling_anulm.py` · `AnuLMForCausalLM.prepare_inputs_for_generation` · lines 274–282 · @084cbdd
+> **In the repo** · `anulm/hf/modeling_anulm.py` · `AnuLMForCausalLM.prepare_inputs_for_generation` · lines 274–282 · @fdbb09a
 
 ```python
     def prepare_inputs_for_generation(self, input_ids, past_key_values=None,
@@ -222,7 +225,7 @@ for example, makes the offset call (Chapter 39).
 
 Each block decides its window once, when it is built:
 
-> **In the repo** · `anulm/model.py` · `Block.__init__` · lines 805–807 · @084cbdd
+> **In the repo** · `anulm/model.py` · `Block.__init__` · lines 812–814 · @fdbb09a
 
 ```python
         # Sliding window on the first max_window_layers layers, full attention
@@ -259,7 +262,7 @@ reduction available", a saving no code at the pin realises. Its quality is
 on 32 held-out windows of 1,024 tokens (`data/v2/val.u16`, seed 0) as
 trained, with every `window` set to `None`, and with an all-`True` mask. It
 runs in fp32 without autocast, except the experts (Chapters 17–18), which the
-released configuration computes in bf16 (`anulm/model.py` lines 749 and 777).
+released configuration computes in bf16 (`anulm/model.py` lines 756 and 784).
 
 ![Figure 12.2 · What the masks are worth to the trained model](../figures/fig12-2-mask-loss.svg)
 
@@ -287,7 +290,7 @@ split at position 256. *measured*, on a sample of 32,738 graded tokens;
 
 The test named for the mask:
 
-> **In the repo** · `tests/test_model.py` · `causal_mask_does_not_leak_future` · lines 46–63 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `causal_mask_does_not_leak_future` · lines 57–74 · @fdbb09a
 
 ```python
 def causal_mask_does_not_leak_future():
@@ -314,7 +317,7 @@ It rewrites positions 8–15; logits at 0–7 must not move. But with `start = 0
 and no window, `_attn_mask` returns `None` and only PyTorch's mask runs. The
 offset case has its own test:
 
-> **In the repo** · `tests/test_model.py` · `incremental_forward_matches_full_forward` · lines 550–567 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `incremental_forward_matches_full_forward` · lines 561–578 · @fdbb09a
 
 ```python
 def incremental_forward_matches_full_forward():
@@ -340,7 +343,7 @@ def incremental_forward_matches_full_forward():
 The pieces are a prefill, one token, and two chunks against a filled cache,
 every branch but the window's. The window has its own:
 
-> **In the repo** · `tests/test_model.py` · `sliding_window_limits_reach` · lines 642–664 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `sliding_window_limits_reach` · lines 653–675 · @fdbb09a
 
 ```python
 def sliding_window_limits_reach():
@@ -372,7 +375,7 @@ A change exactly W back from query 11 must have no effect, W − 1 back must:
 the boundary pair catches an off-by-one. A fourth test decodes greedily with
 and without the cache, on windowed layers:
 
-> **In the repo** · `tests/test_model.py` · `sliding_window_agrees_with_cache` · lines 668–675 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `sliding_window_agrees_with_cache` · lines 679–686 · @fdbb09a
 
 ```python
 def sliding_window_agrees_with_cache():
@@ -505,12 +508,12 @@ used only for the claim in its register row:
 |---|---|---|
 | [R50] | PyTorch's `scaled_dot_product_attention`: `True` in a boolean mask means take part | CHECKED |
 
-Repository evidence, all at @084cbdd:
-- `anulm/model.py`: `AnuLMConfig.__post_init__` 132–134, `_attn_mask` 358–374,
-  `GQAttention.forward` 470–475, `MLAttention.forward` 568, `Block.__init__`
-  805–807, `AnuLM.generate` 1132–1139 and 1161.
+Repository evidence, all at @fdbb09a:
+- `anulm/model.py`: `AnuLMConfig.__post_init__` 138–140, `_attn_mask` 365–381,
+  `GQAttention.forward` 477–482, `MLAttention.forward` 575, `Block.__init__`
+  812–814, `AnuLM.generate` 1144–1151 and 1173.
 - `anulm/hf/modeling_anulm.py`: `AnuLMForCausalLM.prepare_inputs_for_generation` 274–282.
-- `tests/test_model.py`: tests at lines 46, 550, 642 and 668.
+- `tests/test_model.py`: tests at lines 57, 561, 653 and 679.
 - `docs/RESULTS.md` §10 and §15; `book/measurements/part_iv_a_masks.json`.
 
 Book examples: `code-examples/ch12_masks.py`, `code-examples/ch12_measure_masks.py`.

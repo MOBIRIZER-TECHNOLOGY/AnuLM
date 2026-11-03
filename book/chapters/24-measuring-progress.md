@@ -2,7 +2,7 @@
 title: "24 · Measuring progress honestly"
 part: "V · Training"
 accent: teal
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 24  Measuring progress honestly
@@ -25,7 +25,7 @@ bare "§n" is a section of `docs/RESULTS.md`.
 ## 24.1  A val loss is an estimate
 
 Every window has its own loss, and the number you want is the mean over every
-window of the split. `main` makes the split (lines 693–699): the build's
+window of the split. `main` makes the split (lines 689–695): the build's
 held-out file, every tenth chunk with `--val-interleave`, or the last 10%. The
 released model's holds 113,221,976 tokens. The log prints a sample mean over a
 few windows, whose standard error is s/√n for n values with spread s.
@@ -34,7 +34,7 @@ few windows, whose standard error is s/√n for n values with spread s.
 
 ## 24.2  The same windows every time
 
-> **In the repo** · `anulm/training/train.py` · `eval_windows` · lines 342–352 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `eval_windows` · lines 338–348 · @fdbb09a
 
 ```python
 def eval_windows(data: torch.Tensor, batch_size: int, block_size: int, iters: int, seed: int = 0):
@@ -54,7 +54,7 @@ Every val loss logged before `--eval-windows` existed was read through this
 function (§26; the docstring's "every val loss" is older than the strided runs
 of §32 and §39), so a test freezes the indices it returns:
 
-> **In the repo** · `tests/test_model.py` · `eval_windows_are_frozen_and_strided_windows_cover_the_split` · lines 985–989 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `eval_windows_are_frozen_and_strided_windows_cover_the_split` · lines 994–998 · @fdbb09a
 
 ```python
     data = torch.arange(100_000)
@@ -71,7 +71,7 @@ silently restate every recorded number, and this fails first.
 
 ## 24.3  The error bar `evaluate()` prints
 
-> **In the repo** · `anulm/training/train.py` · `evaluate` · lines 481–537 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `evaluate` · lines 477–533 · @fdbb09a
 
 ```python
 @torch.no_grad()
@@ -206,7 +206,7 @@ per source, and predicts the set's mean from the per-source means of 24.6:
 does not track the mean; the spread comes from how hard individual windows
 are. `--eval-windows K` replaces random starts with K evenly spaced ones:
 
-> **In the repo** · `anulm/training/train.py` · `strided_windows` · lines 355–376 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `strided_windows` · lines 351–372 · @fdbb09a
 
 ```python
 def strided_windows(data: torch.Tensor, batch_size: int, block_size: int, n: int):
@@ -225,7 +225,7 @@ def strided_windows(data: torch.Tensor, batch_size: int, block_size: int, n: int
 K cells and `idx`, shape (K,), takes each midpoint, with no seed. Batches are sliced
 afterwards, so unlike the random set it ignores `--batch-size`. The test:
 
-> **In the repo** · `tests/test_model.py` · `eval_windows_are_frozen_and_strided_windows_cover_the_split` · lines 991–997 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `eval_windows_are_frozen_and_strided_windows_cover_the_split` · lines 1000–1006 · @fdbb09a
 
 ```python
     flat = lambda bs: [int(i) for b in bs for i in b]
@@ -288,7 +288,7 @@ Score both on the same windows and take the error of the *differences*:
 *verified*: the windows' shared difficulty cancels. Two runs on
 different windows are not paired, so each checkpoint records its windows:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 784–788 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `main` · lines 782–786 · @fdbb09a
 
 ```python
     eval_spec = ({"mode": "strided", "windows": args.eval_windows,
@@ -300,7 +300,7 @@ different windows are not paired, so each checkpoint records its windows:
 
 Every evaluation argument is named, `batch_size` included for the random set.
 The split is not: `--data` and `--val-interleave` change `val_data`
-(lines 693–699), and `eval_spec` records neither. Adding the split method and
+(lines 689–695), and `eval_spec` records neither. Adding the split method and
 `len(val_data)` would close that gap; nothing does it now. The released
 checkpoint holds `strided`, 400, 1,024; Chapter 25's resume path compares two
 of these.
@@ -312,7 +312,7 @@ of these.
 On the same Hindi, bytes scored 0.5975 nats per token and a 16k BPE 4.6795,
 yet the BPE model was better: 0.700 bits per byte against 0.862 (§7).
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 903–905 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `main` · lines 906–908 · @fdbb09a
 
 ```python
             bpb = val / math.log(2) / args.bytes_per_token
@@ -337,7 +337,7 @@ ratio averages sources that differ:
 mix and 0.756 moves with no change in the model. Comparing models also needs
 shared text; `anulm/eval/eval_bench.py` scores one file, each model with its tokenizer:
 
-> **In the repo** · `anulm/eval/eval_bench.py` · `score` · lines 55–71 · @084cbdd
+> **In the repo** · `anulm/eval/eval_bench.py` · `score` · lines 55–71 · @fdbb09a
 
 ```python
     bs = cfg.block_size
@@ -374,7 +374,7 @@ passage before a content word and add three distractors. `anulm/eval/eval_golden
 scores every item twice, by exact match of a greedily decoded next word and by
 multiple choice; the multiple-choice part:
 
-> **In the repo** · `anulm/eval/eval_golden.py` · `score` · lines 86–103 · @084cbdd
+> **In the repo** · `anulm/eval/eval_golden.py` · `score` · lines 85–102 · @fdbb09a
 
 ```python
         # --- multiple choice: one batch, the 4 choices right-padded ------
@@ -473,15 +473,15 @@ take the standard error of the per-batch differences (24.5).
 This chapter cites no external sources. Quality claims are measured here or in
 `docs/RESULTS.md` §7, §9, §19, §25, §26 and §28.
 
-Repository evidence, all at @084cbdd:
-- `anulm/training/train.py`: `eval_windows` 342–352, `strided_windows` 355–376, `evaluate`
-  481–537, `main` 784–788 (`eval_spec`) and 903–905 (bits per byte).
+Repository evidence, all at @fdbb09a:
+- `anulm/training/train.py`: `eval_windows` 338–348, `strided_windows` 351–372, `evaluate`
+  477–533, `main` 782–786 (`eval_spec`) and 906–908 (bits per byte).
 - `tests/test_model.py`: `eval_windows_are_frozen_and_strided_windows_cover_the_split`
-  971–1017, `golden_items_are_well_formed_and_the_scorer_runs` 1448–1490.
-- `anulm/eval/eval_bench.py` `score` 31–80; `anulm/eval/eval_golden.py` `score` 59–119;
-  `anulm/eval/eval_code.py` `score` 221–273 (`--mode`); `experiments/build_v2.py` (the
+  980–1026, `golden_items_are_well_formed_and_the_scorer_runs` 1465–1507.
+- `anulm/eval/eval_bench.py` `score` 32–80; `anulm/eval/eval_golden.py` `score` 59–118;
+  `anulm/eval/eval_code.py` `score` 220–272 (`--mode`); `experiments/build_v2.py` (the
   ordered split).
-- `anulm/training/train.py` `main` 693–699 (the split).
+- `anulm/training/train.py` `main` 689–695 (the split).
 - Measurements: `book/measurements/part_v_b_val_noise.json` from
   `code-examples/ch24_measure_val_noise.py --save`; book example
   `code-examples/ch24_error_bars.py`.

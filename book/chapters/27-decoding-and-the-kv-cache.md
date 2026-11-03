@@ -2,7 +2,7 @@
 title: "27 · Autoregressive decoding and the KV cache"
 part: "VI · Generation"
 accent: teal
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 27  Autoregressive decoding and the KV cache
@@ -36,7 +36,7 @@ The symbols are Part IV's (Chapter 20, 20.1), with T = `start` + S: the
 
 ## 27.1  The loop, and its cost without a cache
 
-> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1128–1139 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1140–1151 · @fdbb09a
 
 ```python
         B = idx.shape[0]
@@ -60,11 +60,11 @@ The symbols are Part IV's (Chapter 20, 20.1), with T = `start` + S: the
 - **Cached:** on the first step, or when `pending` would not fit, start a fresh
   cache from the last `bs` tokens; then run only `pending` and advance `start`.
 
-Lines 1140–1148 take the last position's logits and edit them, and the
-elided lines 1152–1155 apply temperature and `top_k` (Chapter 28); the end of
+Lines 1152–1160 take the last position's logits and edit them, and the
+elided lines 1164–1167 apply temperature and `top_k` (Chapter 28); the end of
 the loop body picks a token and sets up the next step:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1149–1161 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1161–1173 · @fdbb09a
 
 ```python
             if temperature <= 0:
@@ -88,7 +88,7 @@ script counts both with the loop's rule:
 
 ```python
 def positions_processed(prompt, new, bs, cached):
-    """Token positions run, summed over generate's calls (its lines 1132–1139)."""
+    """Token positions run, summed over generate's calls (its lines 1144–1151)."""
     total, length, start = 0, prompt, None
     for _ in range(new):
         if not cached:
@@ -116,7 +116,7 @@ repository code**), checked against `generate`'s real calls. The last row is
 
 ## 27.2  What the cache holds, and why queries are not in it
 
-> **In the repo** · `anulm/model.py` · `AnuLM.new_cache` · lines 861–863 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.new_cache` · lines 873–875 · @fdbb09a
 
 ```python
     def new_cache(self) -> list[dict]:
@@ -124,7 +124,7 @@ repository code**), checked against `generate`'s real calls. The last row is
         return [dict() for _ in self.layers]
 ```
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 463–470 · @084cbdd
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 470–477 · @fdbb09a
 
 ```python
         if cache is not None:
@@ -182,15 +182,15 @@ last position, cached vs full forward: max |difference| 4.5e-08
 The **prefill** has S = prompt length and `start` = 0; each **decode step** has
 S = 1 and `start` = tokens cached. The rotation needs `start`:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 885–887 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 897–899 · @fdbb09a
 
 ```python
-        assert start + S <= self.cfg.block_size, \
-            f"positions up to {start + S} exceed block_size {self.cfg.block_size}"
+        if start + S > self.cfg.block_size:      # an error, not an assert: python -O strips those
+            raise ValueError(f"positions up to {start + S} exceed block_size {self.cfg.block_size}")
         cos, sin = self.rotary(S, x.device, x.dtype, start=start)
 ```
 
-> **In the repo** · `anulm/model.py` · `Rotary.forward` · lines 332–336 · @084cbdd
+> **In the repo** · `anulm/model.py` · `Rotary.forward` · lines 339–343 · @fdbb09a
 
 ```python
     def forward(self, seq_len: int, device, dtype, start: int = 0):
@@ -200,11 +200,12 @@ S = 1 and `start` = tokens cached. The rotation needs `start`:
         return self.cos_cached[start:start + seq_len], self.sin_cached[start:start + seq_len]
 ```
 
-The assertion refuses positions past `block_size`. `Rotary.forward` returns
+A call past `block_size` raises `ValueError`, a real check rather than an
+assert, so `python -O` keeps it. `Rotary.forward` returns
 the rows for positions `start` … `start` + S − 1, each (S, D<sub>h</sub>)
 (Chapter 14). Without `start`, a new token would be rotated as position 0 and
 scored at the wrong distances. `rotary_cache_tracks_dtype_and_positions`
-(line 625) checks that rows asked for with `start=12` equal rows 12–15 of the
+(line 636) checks that rows asked for with `start=12` equal rows 12–15 of the
 full table.
 
 `IN THE REPO`
@@ -215,7 +216,7 @@ A decode step's single query may see every cached key, and a prefill's queries
 and keys line up, so neither needs an explicit mask. A chunk of several tokens
 against a non-empty cache does:
 
-> **In the repo** · `anulm/model.py` · `_attn_mask` · lines 358–374 · @084cbdd
+> **In the repo** · `anulm/model.py` · `_attn_mask` · lines 365–381 · @fdbb09a
 
 ```python
 def _attn_mask(S: int, T: int, start: int, window: Optional[int], device):
@@ -230,7 +231,7 @@ def _attn_mask(S: int, T: int, start: int, window: Optional[int], device):
     return mask
 ```
 
-> **In the repo** · `anulm/model.py` · `_sdpa` · lines 407–411 · @084cbdd
+> **In the repo** · `anulm/model.py` · `_sdpa` · lines 414–418 · @fdbb09a
 
 ```python
 def _sdpa(q, k, v, mask, S, scale, dropout_p):
@@ -318,7 +319,7 @@ feeds the next token `nxt` at position 8:
 ```python
     for c in cache:                                   # the shortcut: forget the oldest
         c["k"], c["v"] = c["k"][:, :, 1:], c["v"][:, :, 1:]
-    m.cfg.block_size = bs + 1                         # let position 8 past the assert
+    m.cfg.block_size = bs + 1                         # let position 8 past the check
     try:
         dropped, _ = m(nxt, cache=cache, start=bs)
     finally:
@@ -337,8 +338,8 @@ rounding, so the repository rebuilds: past `block_size`, each step is a full
 forward of `bs` tokens.
 
 > **Details.** The served chat path never reaches the slide: `Generation`
-> (`anulm/inference/api.py` line 343) keeps at most `block_size − 1` prompt tokens and caps
-> `max_tokens` at `block_size` minus the prompt length (lines 351–352).
+> (`anulm/inference/api.py` line 389) keeps at most `block_size − 1` prompt tokens and caps
+> `max_tokens` at `block_size` minus the prompt length (lines 398–399).
 
 ![Figure 27.2 · Prefill, decode and the slide](../figures/fig27-2-cache-timeline.svg)
 
@@ -390,7 +391,7 @@ the same tokens, on held-out windows:
 Each of 8 windows gets a 512-token prefill and 15 decode steps, 16 compared
 positions, 128 in all. For fp32 the script switches the experts to the `sparse`
 path, because the checkpoint's `moe_impl = "grouped"` casts them to bf16 even
-without autocast (`anulm/model.py` lines 749 and 777). In fp32 the largest logit
+without autocast (`anulm/model.py` lines 756 and 784). In fp32 the largest logit
 difference is 5.1·10⁻⁵ and the top token agrees at all 128. Under bf16
 autocast, as served, it is 1.09, and the top token differs at 3.
 
@@ -398,7 +399,7 @@ Greedy decoding needs care, because `top_k=1` keeps every logit tied with the
 first and draws with `torch.multinomial` (Chapter 28, 28.3). The script
 decodes 64 tokens after each of 8 held-out 256-token prompts, three ways. It
 was written before `generate` had an exact greedy branch, so for the third
-way it swaps `torch.multinomial` for an argmax; at @084cbdd,
+way it swaps `torch.multinomial` for an argmax; at @fdbb09a,
 `temperature=0` reaches the same argmax without the patch:
 
 ```python
@@ -458,7 +459,7 @@ mostly idle and the time goes to launching each layer's kernels.
 
 ## 27.7  The proof
 
-> **In the repo** · `tests/test_model.py` · `incremental_forward_matches_full_forward` · lines 550–567 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `incremental_forward_matches_full_forward` · lines 561–578 · @fdbb09a
 
 ```python
 def incremental_forward_matches_full_forward():
@@ -484,12 +485,12 @@ and two chunks against a non-empty cache: the case `is_causal` gets wrong.
 Passing targets makes the full forward return all 20 positions, (2, 20, 64),
 so each piece's last logits are compared at the same position, to 10⁻⁴. A
 forgotten `start` fails it too. `cached_generation_matches_uncached`
-(line 593) decodes 30 greedy tokens past a `block_size` of 24, for GQA and
+(line 604) decodes 30 greedy tokens past a `block_size` of 24, for GQA and
 MLA. Against the drop-the-oldest shortcut of 27.5 it is weaker than it looks:
 at its seed 0 the GQA half, the released architecture, gives the same tokens,
 and only the MLA half fails. Over 20 seeds the comparison catches the shortcut
 12 times in 20 for GQA and 20 in 20 for MLA (*verified*, `ch27_kv_cache.py`).
-`cache_holds_what_it_should` (line 571) catches a cache of H copies. All run in
+`cache_holds_what_it_should` (line 582) catches a cache of H copies. All run in
 fp32; under bf16 they would need a tolerance (27.6).
 
 > **Build it.** The lab book's Chapter 6, §6.5 (`course/ch06-attention`), adds
@@ -549,16 +550,16 @@ used only for the claim in its register row:
 KV caching has no single originating paper (`RESEARCH_REFERENCES.md` §5); this
 chapter describes it from the code and tests only.
 
-Repository evidence, all at @084cbdd:
+Repository evidence, all at @fdbb09a:
 - `anulm/model.py`:
-  - `Rotary.forward` 332–336, `_attn_mask` 358–374, `_sdpa` 407–411;
-  - `GQAttention.forward` 463–470, `MLAttention.forward` 548–557;
-  - `AnuLM.new_cache` 861–863, `AnuLM.forward` 885–887,
-    `AnuLM.generate` 1128–1161.
-- `anulm/inference/api.py`: `Generation` 343, lines 351–352.
-- `tests/test_model.py`: `incremental_forward_matches_full_forward` 550,
-  `cache_holds_what_it_should` 571, `cached_generation_matches_uncached` 593,
-  `rotary_cache_tracks_dtype_and_positions` 625.
+  - `Rotary.forward` 339–343, `_attn_mask` 365–381, `_sdpa` 414–418;
+  - `GQAttention.forward` 470–477, `MLAttention.forward` 555–564;
+  - `AnuLM.new_cache` 873–875, `AnuLM.forward` 897–899,
+    `AnuLM.generate` 1140–1173.
+- `anulm/inference/api.py`: `Generation` 389, lines 398–399.
+- `tests/test_model.py`: `incremental_forward_matches_full_forward` 561,
+  `cache_holds_what_it_should` 582, `cached_generation_matches_uncached` 604,
+  `rotary_cache_tracks_dtype_and_positions` 636.
 - Book examples: `code-examples/ch27_kv_cache.py` (CPU, `tiny()`);
   `code-examples/ch27_measure_cache.py` on `ckpt_base_v2.pt` and
   `data/v2/val.u16`, output in `book/measurements/part_vi_ch27_cache.json`.

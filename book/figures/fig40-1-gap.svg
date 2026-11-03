@@ -3,7 +3,7 @@
 <desc id="d">Seven rows. Requests: one lock against continuous batching. KV cache: a dict per layer grown by concatenation against paged blocks. Weights: fp32 with bf16 autocast against int8 or int4. Decoding: one token per forward against speculative decoding. Attention: PyTorch SDPA against own kernels. Training: one GPU against data, tensor and pipeline parallelism with ZeRO. Operations: an optional key against rate limits, metrics and filters.</desc>
 <defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
 <text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">The repository against a serving stack</text>
-<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">solid: at @773b6a8 · dashed: EXTENSION, not in the repository</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">solid: at @fdbb09a · dashed: EXTENSION, not in the repository</text>
 <text x="150.0" y="76.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">in the repository</text>
 <text x="470.0" y="76.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">a large serving stack adds</text>
 <text x="20.0" y="110.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">requests</text>
@@ -43,9 +43,9 @@
 <rect x="460.0" y="288.0" width="280.0" height="32.0" rx="6" fill="#FFFFFF" class="f-paper" stroke="#5E6E72" stroke-width="1.2" stroke-dasharray="5 4"><title>EXTENSION: data / tensor / pipeline, ZeRO</title></rect>
 <text x="472.0" y="309.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">data / tensor / pipeline, ZeRO</text>
 <text x="20.0" y="350.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">operations</text>
-<rect x="140.0" y="328.0" width="290.0" height="32.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#0E9488" stroke-width="1.5"><title>optional bearer key</title></rect>
-<text x="152.0" y="349.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">optional bearer key</text>
+<rect x="140.0" y="328.0" width="290.0" height="32.0" rx="6" fill="#F0F2F1" class="f-card" stroke="#0E9488" stroke-width="1.5"><title>shared key, upload caps, error ids</title></rect>
+<text x="152.0" y="349.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">shared key, upload caps, error ids</text>
 <line x1="432.0" y1="344.0" x2="456.0" y2="344.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5" marker-end="url(#arrow)" stroke-dasharray="4 3"/>
-<rect x="460.0" y="328.0" width="280.0" height="32.0" rx="6" fill="#FFFFFF" class="f-paper" stroke="#5E6E72" stroke-width="1.2" stroke-dasharray="5 4"><title>EXTENSION: rate limits, metrics, filters</title></rect>
-<text x="472.0" y="349.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">rate limits, metrics, filters</text>
+<rect x="460.0" y="328.0" width="280.0" height="32.0" rx="6" fill="#FFFFFF" class="f-paper" stroke="#5E6E72" stroke-width="1.2" stroke-dasharray="5 4"><title>EXTENSION: per-user auth, rate limits, metrics</title></rect>
+<text x="472.0" y="349.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">per-user auth, rate limits, metrics</text>
 </svg>

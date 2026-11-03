@@ -1,11 +1,11 @@
 # Source verification
 
-Written by `book/tools/verify_source_map.py` against `@084cbdd`.
+Written by `book/tools/verify_source_map.py` against `@fdbb09a`.
 
 Source-map rows checked: 94. Matching their line range (±1): **92**. Not matching: **2**.
 Test-map entries: 61. At the `def` line given: **61**. Not: **0**.
 
-Rows whose range deliberately starts with leading comments or constants (accepted): Native-GQA switch (+3), GQA attention (+5), MoE layer (+6), Model (+6), Weight init (+6), Vocabulary and ranks, EOS above the merges (+3), Persistence (+7), Vocabulary growth (+28,672 audio, +5 control) (+9).
+Rows whose range deliberately starts with leading comments or constants (accepted): Vocabulary and ranks, EOS above the merges (+3), Persistence (+7).
 
 ## Rows that don't match
 
@@ -18,7 +18,7 @@ Rows whose range deliberately starts with leading comments or constants (accepte
 
 - none
 
-Test functions defined in `tests/test_model.py` at the pin: 79.
+Test functions defined in `tests/test_model.py` at the pin: 80.
 
 ## Drift between the pin and the working tree
 
@@ -26,12 +26,12 @@ Test functions defined in `tests/test_model.py` at the pin: 79.
 
 ## Claims recomputed from the code and the released checkpoint
 
-`book/tools/verify_claims.py`, against `@084cbdd` and `ckpt_base_v2.pt`.
+`book/tools/verify_claims.py`, against `@fdbb09a` and `ckpt_base_v2.pt`.
 
 | Claim | Holds | Evidence |
 |---|---|---|
-| anulm/model.py has 1,276 lines | yes | 1276 lines at @084cbdd |
-| tests/test_model.py has 76 tests | yes | 76 functions carry a test decorator (test) at @084cbdd |
+| anulm/model.py has 1,364 lines | yes | 1364 lines at @fdbb09a |
+| tests/test_model.py has 76 tests | yes | 76 functions carry a test decorator (test) at @fdbb09a |
 | released model: 397.7M parameters | yes | num_params() total 397,659,648; state dict 397,659,648 |
 | about 173M active per token | yes | num_params() active 173,526,528 |
 | 32k vocabulary | yes | vocab_size 32,768 |
@@ -46,9 +46,9 @@ Test functions defined in `tests/test_model.py` at the pin: 79.
 | experts 269.0M | yes | 268,959,744 (moe_intermediate_size 192) |
 | untied head | yes | tie_word_embeddings False |
 | nano_30b is the 17M preset | yes | total 17,440,384, active 6,602,368 |
-| router in fp32 because bf16 flipped 3.2% of choices (Router, line 611) | yes | # routed in bf16 (3.2% of expert sets differed from fp32 on a real |
+| router in fp32 because bf16 flipped 3.2% of choices (Router, line 618) | yes | # routed in bf16 (3.2% of expert sets differed from fp32 on a real |
 | atomic save exists because a kill at step 265,000 destroyed a checkpoint (anulm/training/train.py 32–46) | yes | 265,000 of the coder run on 2026-09-12 and cost the optimizer state. |
-| anulm/inference/api.py accepts top_p and ignores it | yes | top_p on lines [193, 212]; check that none reaches generate() |
+| anulm/inference/api.py accepts top_p and ignores it | yes | top_p on lines [219, 238]; check that none reaches generate() |
 | dropout wired in but 0.0 by default | yes | dropout: float = 0.0 |
 | the book's own code examples (planned for Stage 4) | yes | 6 planned; not written yet: arithmetic_400m.py, by_hand.py, history_positions.py, layernorm_vs_rmsnorm.py, top_p_patch.py |
 | every file BOOK_PLAN.md names exists (repo at the pin, or book/) | yes | 40 named; missing: none |

@@ -2,7 +2,7 @@
 title: "23 · Precision, memory and speed"
 part: "V · Training"
 accent: teal
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 23  Precision, memory and speed
@@ -59,7 +59,7 @@ trains in bf16 and has no loss scaler and no fp16 path. `NOT IN THE REPO`
 
 ## 23.2  Autocast: 16-bit where it is safe
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 649–654 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `main` · lines 645–650 · @fdbb09a
 
 ```python
     torch.manual_seed(args.seed)
@@ -128,7 +128,7 @@ a GPU trace. `IMPLEMENTATION-DEPENDENT`
 The embedding is a lookup of fp32 rows. The norm computes in fp32 and
 multiplies by an fp32 gain, so even a bf16 input comes out fp32:
 
-> **In the repo** · `anulm/model.py` · `RMSNorm.forward` · lines 227–232 · @084cbdd
+> **In the repo** · `anulm/model.py` · `RMSNorm.forward` · lines 234–239 · @fdbb09a
 
 ```python
     def forward(self, x):
@@ -139,10 +139,10 @@ multiplies by an fp32 gain, so even a bf16 input comes out fp32:
 ```
 
 The product with the fp32 `weight` promotes the result to fp32, and the loss
-casts the logits with `.float()` (`anulm/model.py` line 912). The stream stays fp32
+casts the logits with `.float()` (`anulm/model.py` line 924). The stream stays fp32
 between the bf16 matrix multiplies. One exception is not autocast's doing: the
 `grouped` expert path casts its inputs and stacked weights to bf16 itself
-(`anulm/model.py` lines 749 and 777), with or without autocast (Chapter 18).
+(`anulm/model.py` lines 756 and 784), with or without autocast (Chapter 18).
 
 `IN THE REPO`
 
@@ -151,7 +151,7 @@ between the bf16 matrix multiplies. One exception is not autocast's doing: the
 Choosing experts is discrete: `topk` picks 4 of 24, and a rounding error can
 swap the fourth and fifth. So the gate runs with autocast off:
 
-> **In the repo** · `anulm/model.py` · `Router.forward` · lines 608–615 · @084cbdd
+> **In the repo** · `anulm/model.py` · `Router.forward` · lines 615–622 · @fdbb09a
 
 ```python
         # fp32 router: top-k is discrete, and bf16 rounding would flip choices.
@@ -253,7 +253,7 @@ Backpropagation needs each layer's intermediate tensors. Gradient checkpointing
 stores only each layer's input and recomputes the rest during the backward
 pass, one extra forward for a fraction of the memory [R25]:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 889–897 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 901–909 · @fdbb09a
 
 ```python
         for i, layer in enumerate(self.layers):
@@ -267,7 +267,7 @@ pass, one extra forward for a fraction of the memory [R25]:
                 x, aux = layer(x, cos, sin, cache[i] if cache is not None else None, start)
 ```
 
-`--grad-ckpt` calls `enable_gradient_checkpointing` (line 1052), which sets
+`--grad-ckpt` calls `enable_gradient_checkpointing` (line 1064), which sets
 `self.grad_ckpt`. Each layer is one segment, so stored inputs grow linearly
 with depth; [R25]'s √n scheme stores fewer. The book example counts the bytes
 autograd keeps:
@@ -309,7 +309,7 @@ What is left after checkpointing is mostly the output end: (B·S, V) logits in
 bf16, their fp32 copy, and the gradients of both. `--ce-chunk` computes the head
 and the loss a slice of rows at a time:
 
-> **In the repo** · `anulm/model.py` · `AnuLM._chunked_loss` · lines 930–944 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM._chunked_loss` · lines 942–956 · @fdbb09a
 
 ```python
         self.ce_chunk = rows
@@ -337,12 +337,12 @@ and the loss a slice of rows at a time:
   equals `F.cross_entropy`'s mean with `ignore_index=-1`, up to summation order.
 
 Only one chunk's logits exist at a time. With `ce_chunk` set, the forward in
-training mode returns `None` for the logits (`anulm/model.py` line 907, Chapter 20),
-so `--bigram-teacher`, which needs them, refuses `--ce-chunk` (`anulm/training/train.py` line
-705). On the released model the chunked loss alone took 0.92 GiB off the peak,
+training mode returns `None` for the logits (`anulm/model.py` line 919, Chapter 20),
+so `--bigram-teacher`, which needs them, refuses `--ce-chunk` with a usage error (`anulm/training/train.py` lines
+701–702). On the released model the chunked loss alone took 0.92 GiB off the peak,
 a little more than the logits and their fp32 copy (0.75 GiB); both figures are
 printed by the scripts above. The test `chunked_loss_matches_the_full_loss_and_its_gradients` (line
-1531) holds it to the plain loss and gradients, with ignored targets and a short
+1548) holds it to the plain loss and gradients, with ignored targets and a short
 last chunk.
 
 `IN THE REPO` · `MEASURED`
@@ -354,7 +354,7 @@ failing. In `docs/RESULTS.md` §6, on an 8 GB card, a 443M model without
 checkpointing "works" at 31,573 ms per step; with checkpointing it ran at 2,716
 and still spilled. Two pieces of code answer it:
 
-> **In the repo** · `anulm/training/train.py` · `warn_if_spilling` · lines 231–238 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `warn_if_spilling` · lines 227–234 · @fdbb09a
 
 ```python
     total = torch.cuda.get_device_properties(device).total_memory
@@ -367,7 +367,7 @@ and still spilled. Two pieces of code answer it:
     return False
 ```
 
-> **In the repo** · `anulm/model.py` · `fit_memory` · lines 1268–1276 · @084cbdd
+> **In the repo** · `anulm/model.py` · `fit_memory` · lines 1356–1364 · @fdbb09a
 
 ```python
     n = sum(p.numel() for p in model.parameters())
@@ -382,14 +382,14 @@ and still spilled. Two pieces of code answer it:
 ```
 
 `warn_if_spilling` runs once per invocation, after its first step (`anulm/training/train.py`
-line 877), and compares what this process's allocator reserved with 92% of the
+line 880), and compares what this process's allocator reserved with 92% of the
 card's total memory. It does not see memory other processes hold.
 
 `fit_memory` sets each switch by its own threshold: checkpointing above 500M
 parameters, the chunked loss above 100,000 vocabulary entries (defaults, line
-1257). The released model is below both. `anulm/training/train.py` never calls it: the
-callers at @084cbdd are `anulm/multimodal/omni_train.py` (line 194), `anulm/tasks/decide.py` (473, 551),
-`anulm/multimodal/speech_encoder.py` (232) and `anulm/multimodal/vision_encoder.py` (457). The pretraining loop
+1345). The released model is below both. `anulm/training/train.py` never calls it: the
+callers at @fdbb09a are `anulm/multimodal/omni_train.py` (line 194), `anulm/tasks/decide.py` (475, 553),
+`anulm/multimodal/speech_encoder.py` (231) and `anulm/multimodal/vision_encoder.py` (456). The pretraining loop
 has only the warning, and the `--grad-ckpt` and `--ce-chunk` flags.
 
 A measured caveat: after the first step the plain configuration had reserved
@@ -411,7 +411,7 @@ Under `torch.compile` [R52] the model is captured as graphs of operations; a
 `sparse` gave 9 graphs and 8 breaks, `dense` 1 and 0 (`docs/RESULTS.md` §4).
 Two tests hold both directions:
 
-> **In the repo** · `tests/test_model.py` · `dense_moe_compiles_without_graph_breaks` · lines 480–492 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `dense_moe_compiles_without_graph_breaks` · lines 491–503 · @fdbb09a
 
 ```python
 def dense_moe_compiles_without_graph_breaks():
@@ -428,13 +428,13 @@ def dense_moe_compiles_without_graph_breaks():
     assert exp.graph_count == 1, f"expected 1 graph, got {exp.graph_count}"
 ```
 
-Its twin, `sparse_moe_breaks_the_graph_as_documented` (line 495), fails if a
+Its twin, `sparse_moe_breaks_the_graph_as_documented` (line 506), fails if a
 future PyTorch stops breaking on `nonzero`. The released run chose a third
 path, `grouped`: one `F.grouped_mm` [R53] per projection, bf16, static shapes,
 uncompiled. Attention needs no flag: `_sdpa` calls PyTorch's
 `scaled_dot_product_attention`, which picks among FlashAttention-2 and other
 kernels by itself [R50]. What it can pick depends on the build and the mask.
-Layers 0–9 pass an explicit window mask (`anulm/model.py` lines 372–373). On this
+Layers 0–9 pass an explicit window mask (`anulm/model.py` lines 379–380). On this
 machine's PyTorch the flash kernel is not compiled in at all, and the
 memory-efficient and cuDNN kernels accept both an explicit mask and
 `is_causal`. The report forces each kernel in turn:
@@ -513,17 +513,17 @@ B·S·259 numbers, tiny beside the activations; chunking only adds recomputation
 | [R52] | the `torch.compile` API | CHECKED |
 | [R53] | `F.grouped_mm`, the grouped GEMM | CHECKED |
 
-Repository evidence, all at @084cbdd:
-- `anulm/training/train.py`: `warn_if_spilling` 223–238, `main` 649–654, 705, 877.
-- `fit_memory` callers: `anulm/multimodal/omni_train.py` 194, `anulm/tasks/decide.py` 473 and 551,
-  `anulm/multimodal/speech_encoder.py` 232, `anulm/multimodal/vision_encoder.py` 457.
-- `anulm/model.py`: `RMSNorm.forward` 227–232, `Router.forward` 604–615,
-  `_attn_mask` 372–373, `MoE._stacked_weights` 749, `MoE._route_grouped` 777,
-  `AnuLM.forward` 889–897, 907 and 912, `enable_chunked_loss` 918–930,
-  `_chunked_loss` 932–941, `_ce_sum` 943–944,
-  `enable_gradient_checkpointing` 1052–1056, `fit_memory` 1257–1276.
-- `tests/test_model.py`: `dense_moe_compiles_without_graph_breaks` 480,
-  `sparse_moe_breaks_the_graph_as_documented` 495,
-  `chunked_loss_matches_the_full_loss_and_its_gradients` 1531.
+Repository evidence, all at @fdbb09a:
+- `anulm/training/train.py`: `warn_if_spilling` 219–234, `main` 645–650, 701–702, 880.
+- `fit_memory` callers: `anulm/multimodal/omni_train.py` 194, `anulm/tasks/decide.py` 475 and 553,
+  `anulm/multimodal/speech_encoder.py` 231, `anulm/multimodal/vision_encoder.py` 456.
+- `anulm/model.py`: `RMSNorm.forward` 234–239, `Router.forward` 611–622,
+  `_attn_mask` 379–380, `MoE._stacked_weights` 756, `MoE._route_grouped` 784,
+  `AnuLM.forward` 901–909, 919 and 924, `enable_chunked_loss` 930–942,
+  `_chunked_loss` 944–953, `_ce_sum` 955–956,
+  `enable_gradient_checkpointing` 1064–1068, `fit_memory` 1345–1364.
+- `tests/test_model.py`: `dense_moe_compiles_without_graph_breaks` 491,
+  `sparse_moe_breaks_the_graph_as_documented` 506,
+  `chunked_loss_matches_the_full_loss_and_its_gradients` 1548.
 - Measurements: `book/measurements/part_v_a_memory.json`
   (`code-examples/ch23_measure.py`); `docs/RESULTS.md` §4, §6, §32.

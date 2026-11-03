@@ -2,7 +2,7 @@
 title: "38 · Serving: engine, API and streaming"
 part: "IX · To production"
 accent: teal
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 38  Serving: engine, API and streaming
@@ -13,8 +13,8 @@ protocol, so existing clients work unchanged, and it streams the chat model's
 replies token by token. Both are thin: they load the model once, hold one lock around the
 device, and call Chapter 27's `generate`. This chapter reads both, and shows
 what streaming has to get right that a batch evaluation never sees: half a
-character, half a stop sequence, and a client that hangs up. It ends with the
-end of a streamed reply, where the code once lost text.
+character, half a stop sequence, and a client that hangs up. It ends with
+what guards the door: the API key, the upload caps and the error ids.
 
 Prerequisites: generation and the KV cache (Chapters 27–28), the grown
 vocabulary (Chapter 35).
@@ -34,7 +34,7 @@ vocabulary (Chapter 35).
 
 ## 38.1  The engine: load once, hold one lock
 
-> **In the repo** · `anulm/inference/serve.py` · `Engine.__init__` · lines 53–63 · @084cbdd
+> **In the repo** · `anulm/inference/serve.py` · `Engine.__init__` · lines 58–68 · @fdbb09a
 
 ```python
     def __init__(self, ckpt: str, device: str):
@@ -56,7 +56,7 @@ checkpoint: the grouped matrix multiply on a GPU, the portable sparse path on
 a CPU (Chapter 18). `text_vocab` keeps a grown model writing text
 (Chapter 35). The constructor ends:
 
-> **In the repo** · `anulm/inference/serve.py` · `Engine.__init__` · lines 105–107 · @084cbdd
+> **In the repo** · `anulm/inference/serve.py` · `Engine.__init__` · lines 110–112 · @fdbb09a
 
 ```python
         self.lock = threading.Lock()
@@ -71,7 +71,7 @@ request does not pay for CUDA initialisation.
 
 ## 38.2  One request
 
-> **In the repo** · `anulm/inference/serve.py` · `Engine.generate` · lines 147–161 · @084cbdd
+> **In the repo** · `anulm/inference/serve.py` · `Engine.generate` · lines 152–166 · @fdbb09a
 
 ```python
         ids = self.encode(prompt)[-(self.cfg.block_size - 1):]
@@ -106,14 +106,14 @@ In order:
    (Chapter 27). `top_k=0` becomes `None`, no top-k filter.
 6. **Decode up to EOS.** Only the ids before EOS are decoded.
 
-Before line 147, the prompt is wrapped in the template the checkpoint was
-tuned with, when the mode asks for one (lines 141–146).
+Before line 152, the prompt is wrapped in the template the checkpoint was
+tuned with, when the mode asks for one (lines 146–151).
 
 `IN THE REPO`
 
 ## 38.3  The standard-library server
 
-> **In the repo** · `anulm/inference/serve.py` · `make_handler` · lines 198–218 · @084cbdd
+> **In the repo** · `anulm/inference/serve.py` · `make_handler` · lines 203–240 · @fdbb09a
 
 ```python
         def do_POST(self):
@@ -121,27 +121,53 @@ tuned with, when the mode asks for one (lines 141–146).
                 return self._json({"error": "not found"}, 404)
             try:
                 n = int(self.headers.get("Content-Length", 0))
+            except ValueError:
+                return self._json({"error": "bad Content-Length"}, 400)
+            # n comes straight from the client: without a cap one request could
+            # ask the server to allocate and wait for gigabytes.
+            if n < 0 or n > MAX_BODY_BYTES:
+                return self._json({"error": f"request body must be at most {MAX_BODY_BYTES} bytes"}, 413)
+            try:
                 req = json.loads(self.rfile.read(n).decode("utf-8") or "{}")
-                prompt = str(req.get("prompt", "")).strip()
-                if not prompt:
-                    return self._json({"error": "empty prompt"}, 400)
-                res = engine.generate(
-                    prompt,
-                    max_tokens=max(1, min(int(req.get("max_tokens", 150)), 400)),
-                    temperature=float(req.get("temperature", 0.8)),
-                    top_k=int(req.get("top_k", 50)),
-                    seed=int(req.get("seed", 1337)),
-                    mode=req.get("mode") if req.get("mode") in ("question", "translate") else "continue",
-                    repetition_penalty=float(req.get("repetition_penalty", 1.0)),
-                )
-                self._json(res)
-            except Exception as e:                       # report, don't die
-                self._json({"error": f"{type(e).__name__}: {e}"}, 500)
+            except (UnicodeDecodeError, ValueError):
+                return self._json({"error": "the body must be UTF-8 JSON"}, 400)
+            # ...
+            try:                                         # a client's mistake is a 400, not a 500
+                kw = dict(max_tokens=max(1, min(int(req.get("max_tokens", 150)), 400)),
+                          temperature=float(req.get("temperature", 0.8)),
+                          top_k=int(req.get("top_k", 50)),
+                          seed=int(req.get("seed", 1337)),
+                          mode=req.get("mode") if req.get("mode") in ("question", "translate") else "continue",
+                          repetition_penalty=float(req.get("repetition_penalty", 1.0)))
+            except (TypeError, ValueError):
+                return self._json({"error": "max_tokens, temperature, top_k, seed and repetition_penalty "
+                                            "must be numbers"}, 400)
+            try:
+                self._json(engine.generate(prompt, **kw))
+            except Exception:                            # report, don't die
+                # The details (exception text, file paths) go to the server log
+                # only; the client gets an id to quote, which finds them there.
+                eid = uuid.uuid4().hex[:12]
+                print(f"error {eid} on POST /generate:\n{traceback.format_exc()}", file=sys.stderr, flush=True)
+                self._json({"error": f"internal error (id {eid}); the server log has the details"}, 500)
 ```
 
-The handler reads a JSON body, clamps `max_tokens` to 1–400, fills defaults,
-and turns any exception into a 500 reply instead of a dead server. `main`
-serves it with `ThreadingHTTPServer` (line 242): one thread per connection.
+In order:
+
+1. **Cap the body.** `Content-Length` is the client's own claim. Above
+   `MAX_BODY_BYTES`, 1 MB (line 47), the reply is 413 before a byte is read.
+2. **Parse.** A body that is not UTF-8 JSON is a 400. The elided lines
+   (218–222) also refuse a body that is not a JSON object, and an empty prompt.
+3. **Read the numbers.** `max_tokens` is clamped to 1–400 and defaults are
+   filled. A value that is not a number is the client's mistake, so it gets a
+   400, not a 500.
+4. **Generate, and fail quietly.** Any exception from the engine becomes a 500
+   reply instead of a dead server. The reply carries only a 12-character id;
+   the traceback goes to the server's log under the same id. An exception's
+   text can hold file paths and checkpoint names, which a client should not
+   see.
+
+`main` serves the handler with `ThreadingHTTPServer` (line 264): one thread per connection.
 The threads overlap on parsing and sending, but every generation waits for the
 engine's lock, so the device runs one request at a time.
 
@@ -151,7 +177,7 @@ engine's lock, so the device runs one request at a time.
 
 `anulm/inference/api.py` uses FastAPI and accepts OpenAI's request shapes:
 
-> **In the repo** · `anulm/inference/api.py` · `ChatRequest` · lines 192–198 · @084cbdd
+> **In the repo** · `anulm/inference/api.py` · `ChatRequest` · lines 218–224 · @fdbb09a
 
 ```python
     temperature: Optional[float] = Field(None, ge=0, le=2, description="Default 0.3. 0 = greedy.")
@@ -167,7 +193,7 @@ engine's lock, so the device runs one request at a time.
 used: nucleus sampling [R31] is `NOT IN THE REPO` (Chapter 28). `top_k` and
 `repetition_penalty` are additions. The handler is single-turn:
 
-> **In the repo** · `anulm/inference/api.py` · `chat_completions` · lines 518–523 · @084cbdd
+> **In the repo** · `anulm/inference/api.py` · `chat_completions` · lines 570–575 · @fdbb09a
 
 ```python
     users = [m for m in req.messages if m.role == "user"]
@@ -183,14 +209,16 @@ dropped, because the chat model was tuned on single questions. An image part
 routes the request to the vision model. All device work shares one lock,
 declared once for the whole server:
 
-> **In the repo** · `anulm/inference/api.py` · `GPU` · lines 264–265 · @084cbdd
+> **In the repo** · `anulm/inference/api.py` · `GPU` · lines 295–296 · @fdbb09a
 
 ```python
 models: A.Models | None = None
 GPU = threading.Lock()                # one request on the device at a time
 ```
 
-The book example confirms the first point, and the lock in 38.6:
+The lock also covers the first load of each model: `Generation.__init__` asks
+for the chat engine under it (lines 396–397), so two first requests cannot
+load the model twice. The book example confirms the first point, and the lock in 38.6:
 
 ```
 5. ChatRequest(top_p=0.1).top_p = 0.1; Generation takes ['prompt', 'max_tokens', 'temperature', 'top_k', 'repetition_penalty', 'seed', 'stops']
@@ -203,9 +231,9 @@ The book example confirms the first point, and the lock in 38.6:
 ## 38.5  Streaming: release only what is safe to show
 
 `generate` takes an `on_token` callback, called with each new (B, 1) token;
-returning True stops (lines 1162–1163). `Generation.run` passes one:
+returning True stops (lines 1174–1175). `Generation.run` passes one:
 
-> **In the repo** · `anulm/inference/api.py` · `Generation.run` · lines 383–401 · @084cbdd
+> **In the repo** · `anulm/inference/api.py` · `Generation.run` · lines 430–448 · @fdbb09a
 
 ```python
         def on_token(nxt):
@@ -233,7 +261,7 @@ For each token: EOS ends the reply without being shown; anything else is
 appended, and `_release` decides how much new text may go out. Generation stops
 on a stop sequence or a cancellation. The release rule:
 
-> **In the repo** · `anulm/inference/api.py` · `Generation._release` · lines 360–376 · @084cbdd
+> **In the repo** · `anulm/inference/api.py` · `Generation._release` · lines 407–423 · @fdbb09a
 
 ```python
     def _release(self, final: bool) -> str:
@@ -271,7 +299,7 @@ Step by step:
 
 For a byte-level model the decoder is one call into the standard library:
 
-> **In the repo** · `anulm/bpe.py` · `complete_utf8` · lines 51–61 · @084cbdd
+> **In the repo** · `anulm/bpe.py` · `complete_utf8` · lines 51–61 · @fdbb09a
 
 ```python
 def complete_utf8(data: bytes) -> str:
@@ -283,7 +311,7 @@ def complete_utf8(data: bytes) -> str:
 An incremental decoder called with `final=False` keeps an incomplete trailing
 sequence in its buffer instead of replacing it. The engine picks the decoder:
 
-> **In the repo** · `anulm/inference/serve.py` · `Engine.decode_complete` · lines 124–132 · @084cbdd
+> **In the repo** · `anulm/inference/serve.py` · `Engine.decode_complete` · lines 129–137 · @fdbb09a
 
 ```python
     def decode_complete(self, ids) -> str:
@@ -320,7 +348,7 @@ from the stop string on is ever sent.
 
 Only `anulm-chat`, and `anulm-answer` when it falls back to the chat model,
 stream this way. `anulm-vision` and a found `anulm-answer` compute the whole
-reply first and send it as one piece (`one_shot_reply`, lines 488–505).
+reply first and send it as one piece (`one_shot_reply`, lines 540–557).
 
 ![Figure 38.1 · Releasing text safely](../figures/fig38-1-utf8-release.svg)
 
@@ -332,7 +360,7 @@ leaves only when a character is complete. *verified*: `ch38_streaming.py`.
 While the reply runs, up to `max(len(s)) − 1` characters sit in the hold. The
 end of `run` must send them, unless a stop string is what ended the reply:
 
-> **In the repo** · `anulm/inference/api.py` · `Generation.run` · lines 402–409 · @084cbdd
+> **In the repo** · `anulm/inference/api.py` · `Generation.run` · lines 449–456 · @fdbb09a
 
 ```python
         # Release the held-back tail unless a stop string ended the reply. Ending
@@ -346,7 +374,7 @@ end of `run` must send them, unless a stop string is what ended the reply:
 ```
 
 Both EOS and a stop string set `finish` to `"stop"`, what the client is told;
-only a stop string sets `matched_stop` (False from line 358). After EOS or
+only a stop string sets `matched_stop` (False from line 405). After EOS or
 `max_tokens`, the final `_release` skips the hold and the rest is emitted. It
 still uses `decode_complete`, so a `max_tokens` cut inside a character drops
 the unfinished bytes instead of ending in `�`.
@@ -366,7 +394,7 @@ One more edge: OpenAI's `stop` may be an empty string, and `"".find("")` is 0,
 which would end every reply before its first character. The request's `stop`
 goes through `stops_of` first:
 
-> **In the repo** · `anulm/inference/api.py` · `stops_of` · lines 335–340 · @084cbdd
+> **In the repo** · `anulm/inference/api.py` · `stops_of` · lines 381–386 · @fdbb09a
 
 ```python
 def stops_of(stop) -> list[str]:
@@ -399,7 +427,7 @@ fixed bytes:
    stops_of(''): []; stops_of(['', '###']): ['###']
 ```
 
-*verified*: `ch38_streaming.py`, against `anulm/inference/api.py` at @084cbdd.
+*verified*: `ch38_streaming.py`, against `anulm/inference/api.py` at @fdbb09a.
 The same run on the code at @773b6a8 streamed `'Hel'` and `'He'` for the two
 stop lists, and `['H', 'i', ' ', '�']` for the cut.
 
@@ -407,7 +435,7 @@ stop lists, and `['H', 'i', ' ', '�']` for the cut.
 
 ## 38.6  Streaming over HTTP, and hanging up
 
-> **In the repo** · `anulm/inference/api.py` · `stream_generation` · lines 428–462 · @084cbdd
+> **In the repo** · `anulm/inference/api.py` · `stream_generation` · lines 476–510 · @fdbb09a
 
 ```python
     q: queue.Queue = queue.Queue()
@@ -417,7 +445,7 @@ stop lists, and `['H', 'i', ' ', '�']` for the cut.
             gen.run(emit=lambda d: q.put(("delta", d)))
             q.put(("done", None))
         except Exception as e:                                   # pragma: no cover
-            q.put(("error", f"{type(e).__name__}: {e}"))
+            q.put(("error", internal_error_message(log_error("streaming generation", e))))
 
     async def events():
         threading.Thread(target=work, daemon=True).start()
@@ -449,7 +477,7 @@ itself; the HTTP path was not tested end to end.
 ```
 3. generate(max_new_tokens=50) with on_token returning True on the 5th token: 5 new tokens
    Generation.run, cancelled after 3 deltas: 3 tokens generated of max 40
-4. two requests sent at once: on the device 0.000-0.359 s and 0.360-0.564 s; overlap: False
+4. two requests sent at once: on the device 0.000-0.186 s and 0.186-0.321 s; overlap: False
 ```
 
 *verified*: `ch38_streaming.py` on `tiny()` and a CPU. The random model emits
@@ -461,17 +489,185 @@ in line 4 vary from run to run; that the spans never overlap does not.
 
 *Figure 38.2 · The serving path.* Many connections, one lock, one sequence on
 the device. Dashed: what `anulm/inference/api.py` does not have. *verified*: from `anulm/inference/api.py`
-and `anulm/inference/serve.py` at @084cbdd.
+and `anulm/inference/serve.py` at @fdbb09a.
 
 `IN THE REPO` · `IMPLEMENTATION-DEPENDENT` (disconnect handling)
 
-## 38.7  What this serving path is not
+## 38.7  Guarding the door
+
+The API assumes a trusted network, but it still checks who calls, how much
+they send, and what they are told when something breaks. The key check comes
+first, as a dependency of every `/v1/` route:
+
+> **In the repo** · `anulm/inference/api.py` · `check_key` · lines 173–180 · @fdbb09a
+
+```python
+def check_key(authorization: Optional[str] = Header(default=None)):
+    key = os.environ.get("ANULM_API_KEY")
+    # compare_digest takes the same time wherever the strings first differ, so
+    # response timing cannot be used to guess the key one character at a time.
+    if key and not hmac.compare_digest((authorization or "").encode("utf-8"),
+                                       f"Bearer {key}".encode("utf-8")):
+        raise APIError(401, "Missing or wrong API key: send 'Authorization: Bearer <ANULM_API_KEY>'.",
+                       "authentication_error", code="invalid_api_key")
+```
+
+With no `ANULM_API_KEY` set, every caller is let in. With one set, the
+`Authorization` header must be `Bearer` and the key, or the reply is 401. A
+plain `!=` returns as soon as two strings differ, so a guess with the right
+first character takes slightly longer to refuse than one without, and a
+patient caller could find the key one character at a time.
+`hmac.compare_digest` takes the same time wherever the strings differ. A
+missing header is compared as an empty string.
+
+When there is no key and the server listens on an address other machines can
+reach, `main` prints a warning at start-up (lines 817–819; `exposure_warning`,
+lines 183–188). It warns and does not refuse: a trusted LAN is a fair use.
+
+Every upload is read into memory and decoded, so each has a cap:
+
+> **In the repo** · `anulm/inference/api.py` · module constants · lines 195–200 · @fdbb09a
+
+```python
+MAX_AUDIO_BYTES = 25 * 1024 * 1024
+MAX_AUDIO_SECONDS = 60
+MAX_IMAGE_BYTES = 10 * 1024 * 1024
+MAX_DECIDE_INPUTS = 64               # messages per /v1/decide request
+MAX_DECIDE_OPTIONS = 256             # BANKING77 has 77; the context limits the rest anyway
+MAX_TEXT_CHARS = 8000                # one decide message or option: far past the 1,024-token context
+```
+
+1. **Audio, 25 MB.** `transcriptions` reads at most one byte more than the cap;
+   if it got that byte, the reply is 413 (lines 748–751).
+2. **Audio, 60 s.** Checked on the decoded 16 kHz samples, also a 413 (lines
+   764–767). It keeps one request from holding the device for minutes.
+3. **Images, 10 MB.** Checked on the base64 text before it is decoded: base64
+   writes 4 characters per 3 bytes, so the limit is `MAX_IMAGE_BYTES * 4 // 3`
+   plus 64 for the `data:` prefix (lines 524–527), a 413.
+4. **Decide, 64 inputs, 256 options, 8,000 characters each.** These are
+   `max_length` constraints on `DecideRequest` (lines 251–257). FastAPI checks
+   them before the handler runs and replies 422.
+
+The `serve.py` body cap of 38.3 is the same idea for the small server.
+
+When a handler raises anything other than an `APIError`, one handler answers:
+
+> **In the repo** · `anulm/inference/api.py` · `log_error`, `_any_error` · lines 305–323 · @fdbb09a
+
+```python
+def log_error(where: str, e: BaseException) -> str:
+    # ...
+    eid = uuid.uuid4().hex[:12]
+    print(f"error {eid} in {where}:\n{''.join(traceback.format_exception(type(e), e, e.__traceback__))}",
+          flush=True)
+    return eid
+
+
+def internal_error_message(eid: str) -> str:
+    return f"Internal server error (id {eid}); the server log has the details."
+
+
+@app.exception_handler(Exception)
+async def _any_error(request: Request, e: Exception):
+    eid = log_error(f"{request.method} {request.url.path}", e)
+    return JSONResponse(status_code=500, content={"error": {
+        "message": internal_error_message(eid), "type": "server_error", "param": None, "code": eid}})
+```
+
+`log_error` makes a 12-character id and prints the full traceback under it to
+the server's log. The client's 500 reply carries the id twice, in the message
+and in `code`, and never the exception's text. A user can quote the id; the
+operator searches the log for `error <id>`. A failed stream sends the same
+message (line 483, in 38.6's excerpt).
+
+`/v1/decide` picks a decider and calls it under the lock:
+
+> **In the repo** · `anulm/inference/api.py` · `decide` · lines 698–709 · @fdbb09a
+
+```python
+    t0, results = time.time(), []
+    with GPU:
+        d = decider_for(req.model)                           # a first call loads it onto the device
+        d.threshold = req.threshold                         # the decider is shared between requests
+        for s in inputs:
+            try:
+                out = d(s.strip(), req.options, top=req.top)
+            # Too many options for the context (decide.encode: an assert, now a
+            # ValueError), or options the joint model was never trained on (omni.Intent).
+            except (AssertionError, ValueError) as e:
+                raise APIError(400, str(e), param="options")
+            results.append({"input": s, **out})
+```
+
+1. **Load and set under the lock.** The decider is shared by every request,
+   so its threshold is set inside the lock, right before the calls that read
+   it. Set outside, one request's threshold could decide another's action.
+2. **Two kinds of decider.** `d` is a `decide.Decide` (Chapter 32) or, when
+   the server runs the one joint model, an `omni.Intent`, the joint model of Chapter 37 scoring each label. Both
+   take `(message, options, top=...)`.
+3. **A bad option list is a 400.** `Decide` raises `ValueError` when the
+   options do not fit the context. `Intent` scores only labels it was trained
+   on; a subset is accepted, and any other option raises `ValueError`
+   (`anulm/multimodal/omni.py` `Intent.choices`, lines 131–139).
+
+`Intent.__call__` used to take `(message, top=3)`. Line 704 passes the options
+second, so on the joint model every `/v1/decide` request failed with a
+`TypeError` and a 500.
+
+The Gradio demo, `anulm/apps/app_omni.py`, serves visitors from a thread pool
+and has one lock of its own:
+
+> **In the repo** · `anulm/apps/app_omni.py` · `Models.__init__`, `Models._get` · lines 181–189 · @fdbb09a
+
+```python
+        self.shared = threading.RLock()
+
+    def _get(self, key, make):
+        with self.shared:
+            if key not in self._m:
+                t0 = time.time()
+                self._m[key] = make()
+                print(f"loaded {key} in {time.time() - t0:.1f}s", flush=True)
+            return self._m[key]
+```
+
+`_get` loads a model the first time it is asked for, inside the lock, so two
+first requests load it once. The lock is an `RLock`, re-entrant: the thread
+that holds it may take it again. That matters because one loader calls another
+(a Decide adapter loads the chat model first) and every caller that holds the
+lock may trigger a first load. The demo's helpers `chat_text`, `hear`, `look`,
+`decide` and `answer_text` (lines 302–355) each hold it around their call: with
+the one joint model, chat, hearing, seeing and reading all run on the same
+decoder.
+
+The book example checks each guard:
+
+```
+7. the guards at the door:
+   check_key with no header, a wrong key, the right key: [401, 401, 'ok']
+   exposure_warning: 127.0.0.1 None, 0.0.0.0 with a key None, 0.0.0.0 without one: 'warning: listening on 0.0.0.0 with no ANULM_'...
+   /v1/decide with 65 inputs: 422
+   a failing /v1/completions: 500, message 'Internal server error (id <id>); the server log has the details.'
+   the server log has the id and the exception: True True; the reply has the exception: False
+   omni.Intent.choices(['lost_or_stolen_card', 'card_arrival']): ['lost_or_stolen_card', 'card_arrival']
+   omni.Intent.choices(['card_arrival', 'pizza']): ValueError
+   serve.py, a 1 MB + 1 byte body: 413; max_tokens 'many': 400; a failing generation: 500, exception text in the reply: False, in the server log: True
+```
+
+*verified*: `ch38_streaming.py` on a CPU, against the code at @fdbb09a. No
+model is loaded, so `/v1/completions` fails inside `Generation` and shows the
+500 path; `serve.py` runs on a local port with a stand-in engine that raises.
+The id differs on every run. The timing of `check_key` was not measured.
+
+`IN THE REPO`
+
+## 38.8  What this serving path is not
 
 - **No batching across requests.** The lock serialises device work, so
   throughput is one sequence's speed. `docs/RESULTS.md` §39 records the chat
   model at about 30 tokens/s end to end through the API benchmark (*measured*).
 - **No top-p, no multi-turn, no tool calls.** `top_p` and earlier turns are
-  accepted and silently ignored; `tools` is refused with a 400 (line 515).
+  accepted and silently ignored; `tools` is refused with a 400 (line 567).
 - **What it has been held to.** `docs/RESULTS.md` §30 drove `serve.Engine` with
   4,131 prompts: no errors and no empty replies, and translations within 0.3
   chrF of the evaluation script's scores (*measured*).
@@ -481,7 +677,7 @@ Chapter 40 sizes what a serving stack adds. `NOT IN THE REPO`
 > **Build it.** The lab book's Chapter 15 (`course/ch15-shipping`) takes a
 > model from checkpoint to release.
 
-## 38.8  Exercises
+## 38.9  Exercises
 
 1. A prompt is 1,500 tokens long. How many reach the released model, and how
    many new tokens can `Generation` then produce?
@@ -490,12 +686,12 @@ Chapter 40 sizes what a serving stack adds. `NOT IN THE REPO`
 3. Why does `anulm/inference/serve.py` seed inside the lock and not before it?
 
 **Answers.** 1. The last 1,023; `max_tokens` is clamped to
-1,024 − 1,023 = 1 (`anulm/inference/api.py` line 352). 2. Two, from the longest stop string;
+1,024 − 1,023 = 1 (`anulm/inference/api.py` line 399). 2. Two, from the longest stop string;
 if the reply then ends with EOS, the final release in `run` sends them.
 3. Another thread could reseed between the seeding and the generation, and
 both replies would stop being reproducible.
 
-*verified*: answers 1 and 2 from the code at @084cbdd; the EOS case by the
+*verified*: answers 1 and 2 from the code at @fdbb09a; the EOS case by the
 example's step 6.
 
 ---
@@ -509,16 +705,19 @@ example's step 6.
 - `anulm/inference/api.py` speaks OpenAI's request shapes, reads only the last user message,
   and accepts `top_p` without using it.
 - Streaming uses `generate`'s `on_token`: only complete characters
-  (`decode_complete`) before any possible stop string are sent.
-- At the end, the held-back tail is sent unless a stop string matched
-  (`matched_stop`); an empty `stop` is no stop.
+  (`decode_complete`) before any possible stop string are sent, and at the end
+  the held-back tail is sent unless a stop string matched (`matched_stop`).
+- The key is compared in constant time; uploads and `/v1/decide` have caps
+  (413, 422); a 500 reply carries an error id, and the details stay in the
+  server log.
 - There is no batching across requests: throughput is one sequence's speed.
 
 > **In one breath.** One engine loads the model once and holds one lock;
 > requests, over a standard-library server or OpenAI-shaped FastAPI routes,
 > each run alone through `generate`, whose per-token callback streams complete
 > characters, holds back what could start a stop string, and sends the held
-> tail when EOS or the token limit ends the reply.
+> tail when EOS or the token limit ends the reply. Caps, a constant-time key
+> check and error ids guard the door.
 
 ## References
 
@@ -529,15 +728,21 @@ used only for the claim in its register row:
 |---|---|---|
 | [R31] | nucleus (top-p) sampling, which the API accepts and ignores | CHECKED |
 
-Repository evidence, all at @084cbdd:
-- `anulm/inference/serve.py`: `Engine` 50–171 (`__init__` 53–107, `decode_complete` 124–132,
-  `generate` 134–171),
-  `make_handler` 174–223, `main` 226–247.
-- `anulm/inference/api.py`: `ChatRequest` 186–203, `GPU` 265, `stops_of` 335–340,
-  `Generation` 343–409 (`_release` 360–376, `run` 378–409),
-  `one_shot_reply` 488–505,
-  `stream_generation` 423–464, `chat_completions` 508–586.
-- `anulm/model.py`: `AnuLM.generate` 1103–1168 (`on_token` 1162–1163).
+Repository evidence, all at @fdbb09a:
+- `anulm/inference/serve.py`: `Engine` 55–176 (`__init__` 58–112, `decode_complete` 129–137,
+  `generate` 139–176),
+  `MAX_BODY_BYTES` 47, `make_handler` 179–245 (`do_POST` 203–240), `main` 248–269.
+- `anulm/inference/api.py`: `check_key` 173–180, `exposure_warning` 183–188, caps 195–200,
+  `DecideRequest` 249–263, `ChatRequest` 212–229, `GPU` 296, `log_error` 305–312,
+  `_any_error` 319–323, `stops_of` 381–386,
+  `Generation` 389–456 (`_release` 407–423, `run` 425–456),
+  `one_shot_reply` 540–557,
+  `save_image` 520–537, `stream_generation` 471–512, `chat_completions` 560–638,
+  `decide` 685–711, `transcriptions` 734–776, `main` 804–822.
+- `anulm/multimodal/omni.py`: `Intent.choices` 124–139, `Intent.__call__` 142.
+- `anulm/apps/app_omni.py`: `Models.__init__` 169–181, `Models._get` 183–189,
+  `chat_text` … `answer_text` 302–355.
+- `anulm/model.py`: `AnuLM.generate` 1115–1180 (`on_token` 1174–1175).
 - `anulm/bpe.py`: `complete_utf8` 51–61.
 - `docs/RESULTS.md` §30, §39.
 - Book example: `book/code-examples/ch38_streaming.py`.

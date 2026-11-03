@@ -8,15 +8,15 @@ own from-scratch code. Its visual and editorial style follows the supplied
 deck *The Illustrated Transformer in Practice*; see `STYLE.md`. Nothing
 outside `book/` is modified.
 
-**Pin.** Every line number refers to commit `084cbdd` (the `anulm/` package
+**Pin.** Every line number refers to commit `fdbb09a` (the `anulm/` package
 layout). The book was moved there from `773b6a8` on 2026-11-03 by
 `tools/repin.py`; `technical-review/repin-report.md` lists every moved
 citation, and `technical-review/repin-overrides.tsv` the decisions a person
 made. To re-pin after the code changes again:
 
 ```bash
-python book/tools/repin.py 084cbdd NEWCOMMIT            # dry run: the report only
-python book/tools/repin.py 084cbdd NEWCOMMIT --write    # then fix every "Needs a person" row
+python book/tools/repin.py fdbb09a NEWCOMMIT            # dry run: the report only
+python book/tools/repin.py fdbb09a NEWCOMMIT --write    # then fix every "Needs a person" row
 python book/tools/verify_chapters.py && python book/tools/verify_source_map.py && python book/tools/verify_claims.py
 ```
 
@@ -72,7 +72,7 @@ each other. The decision, option A, is recorded at the end of this file.
    modern open model has is here and runs on one consumer GPU.
 2. **The code explains itself.** Comments record *why* and *what broke*. Two
    examples: the router is computed in fp32 because bf16 flipped 3.2% of
-   expert choices (`anulm/model.py` lines 608–614), and atomic saves exist because
+   expert choices (`anulm/model.py` lines 615–621), and atomic saves exist because
    a kill at step 265,000 destroyed a checkpoint (`anulm/training/train.py` lines 32–46). These
    comments give the book its "failures are content" material.
 3. **Claims are testable.** 66 named tests pin the mechanisms: causal mask,
@@ -107,7 +107,7 @@ each other. The decision, option A, is recorded at the end of this file.
   copy with different line numbers. Cite only the root copy.
 - **Code is still moving.** The working tree has uncommitted edits to 8 files,
   none of them in the core four (`anulm/model.py`, `anulm/training/train.py`, `anulm/bpe.py`,
-  `anulm/inference/sample.py`). Line references are pinned to `@084cbdd` and must be
+  `anulm/inference/sample.py`). Line references are pinned to `@fdbb09a` and must be
   checked again before publication.
 - **Stale docstrings.** Some docstrings contradict the code (see the source
   map, §5). The book quotes code, not docstrings.
@@ -139,7 +139,7 @@ each other. The decision, option A, is recorded at the end of this file.
 |---|---|
 | 1 · Repository discovery | **done**: core files read in full; 25 peripheral files inventoried; 14 of 14 spot-checks matched |
 | 2 · Book blueprint | **done**: `BOOK_PLAN.md` (41 chapters in 10 parts, file and test map, 17 diagrams, capstone, writing order); `RESEARCH_REFERENCES.md` (49 references, all at *cited*) |
-| 3 · Technical validation of the blueprint | **in progress.** Research half **done** (2026-10-31): all 66 references opened at their sources (arXiv API and full texts, Crossref, the originals) and CHECKED; 3 metadata corrections (R36's volume, R37 and S05's DOIs), 6 claims narrowed, R15's unconfirmed venue dropped; PyTorch docs pinned to 2.11; Sarvam provenance traced to the upstream revisions (the local 105B modelling file predates Sarvam's 2026-09-21 routing change); three historical orders corrected in `BOOK_PLAN.md`. Audit: references verified, research-complete **no** until the Stage 5 claim review. Repository half **done** (2026-10-31): `tools/verify_source_map.py` checked all 94 source-map rows and 61 test-map entries at `@084cbdd` with Python's parser; `tools/verify_claims.py` recomputed 23 claims from the code and `ckpt_base_v2.pt` (all hold), including that every file and test the plan names exists. Fixed: two `anulm/multimodal/omni_train.py` rows that cited uncommitted code, one range 3 lines long, two rows naming a method for a class range, and a shared-expert statement (the released model has none). **Stage 3 is complete**; Stage 4 may start |
+| 3 · Technical validation of the blueprint | **in progress.** Research half **done** (2026-10-31): all 66 references opened at their sources (arXiv API and full texts, Crossref, the originals) and CHECKED; 3 metadata corrections (R36's volume, R37 and S05's DOIs), 6 claims narrowed, R15's unconfirmed venue dropped; PyTorch docs pinned to 2.11; Sarvam provenance traced to the upstream revisions (the local 105B modelling file predates Sarvam's 2026-09-21 routing change); three historical orders corrected in `BOOK_PLAN.md`. Audit: references verified, research-complete **no** until the Stage 5 claim review. Repository half **done** (2026-10-31): `tools/verify_source_map.py` checked all 94 source-map rows and 61 test-map entries at `@fdbb09a` with Python's parser; `tools/verify_claims.py` recomputed 23 claims from the code and `ckpt_base_v2.pt` (all hold), including that every file and test the plan names exists. Fixed: two `anulm/multimodal/omni_train.py` rows that cited uncommitted code, one range 3 lines long, two rows naming a method for a class range, and a shared-expert statement (the released model has none). **Stage 3 is complete**; Stage 4 may start |
 | 4 · Chapter authoring | **in progress**: 2 of 41 written (Ch 20; Ch 11, "Attention from first principles", 2026-10-31, with `code-examples/attention_by_hand.py`). Next in the writing order: Ch 12–13 |
 | 5 · Independent review | **in progress**, chapter by chapter: 2 of 2 written chapters reviewed (Ch 11, Ch 20), each by an independent technical review, then revised after a simulated target-reader review and re-checked (record: `technical-review/claims-review.md`). The trained model is now measured where a chapter explains a behaviour (`measurements/`). Styled preview: `tools/build_preview.py`, published as an artifact. **Not yet done: human reviews** by an expert and a target reader (`technical-review/REVIEWER_GUIDE.md`) |
 | 6 · Integration | pending |

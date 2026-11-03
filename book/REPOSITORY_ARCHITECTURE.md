@@ -2,7 +2,7 @@
 
 What this repository implements, traced through the code rather than read off
 the README. Every claim cites a file and symbol, and line numbers are taken at
-commit `@084cbdd` on the `course-book` branch. The working tree had
+commit `@fdbb09a` on the `course-book` branch. The working tree had
 uncommitted edits to eight files when this was written (`app_omni.py`,
 `convert_parquet.py`, `anulm/eval/eval_code.py`, `anulm/multimodal/omni_train.py` and others), but not to
 `anulm/model.py`, `anulm/training/train.py`, `anulm/bpe.py` or `anulm/inference/sample.py`. The core line numbers below are
@@ -115,20 +115,20 @@ flowchart TD
 
 | Stage | Where | Shape |
 |---|---|---|
-| Corpus → ids | `anulm/training/train.py` `load_bytes` lines 62–98 (byte mode, EOS 257 at `DOC_SEP`); `.bin` from `bpe.py cmd_encode` lines 399–453; memmap `load_memmap` lines 163–173 | 1-D id tensor |
+| Corpus → ids | `anulm/training/train.py` `load_bytes` lines 62–98 (byte mode, EOS 257 at `DOC_SEP`); `.bin` from `bpe.py cmd_encode` lines 395–449; memmap `load_memmap` lines 163–173 | 1-D id tensor |
 | Window choice | `WindowSampler` lines 104–160 | `ix` (B,) start offsets |
-| Batch | `make_batch` lines 241–254 | `x`, `y`: (B, S) int64; `y[t] = x[t+1]` |
-| Embedding | `AnuLM.forward` line 884, `_table` lines 954–972 | (B, S, D) |
-| Positions | `Rotary.forward` lines 332–336; `_build_inv_freq` 298–315 | cos, sin (S, Dh) |
-| Block | `Block.forward` lines 809–817: `x + attn(norm(x))`, then `x + mlp(norm(x))` | (B, S, D) |
-| Attention | `GQAttention.forward` lines 444–487 | q (B,H,S,Dh); k,v (B,Hkv,S,Dh) → (B,S,D) |
-| Mask | `_attn_mask` lines 358–374; `_sdpa` lines 407–411 (`is_causal`) | (S, T) bool or None |
-| FFN | `SwiGLU.forward` line 246 / `MoE.forward` lines 689–700 | (B, S, D) |
-| Router | `Router._gate` lines 617–665 | topk_idx (N,k), weights (N,k) |
-| Head + loss | `AnuLM.forward` lines 900–916 | logits (B,S,V); scalar loss |
-| Optimiser | `make_optimizer` lines 451–478 (decay on 2-D weights only); `anulm/muon.py` | — |
-| LR | `lr_at` lines 379–404 (warmup → cosine, or WSD) | — |
-| Step | `main` loop lines 847–905 | — |
+| Batch | `make_batch` lines 237–250 | `x`, `y`: (B, S) int64; `y[t] = x[t+1]` |
+| Embedding | `AnuLM.forward` line 896, `_table` lines 966–984 | (B, S, D) |
+| Positions | `Rotary.forward` lines 339–343; `_build_inv_freq` 304–322 | cos, sin (S, Dh) |
+| Block | `Block.forward` lines 816–824: `x + attn(norm(x))`, then `x + mlp(norm(x))` | (B, S, D) |
+| Attention | `GQAttention.forward` lines 451–494 | q (B,H,S,Dh); k,v (B,Hkv,S,Dh) → (B,S,D) |
+| Mask | `_attn_mask` lines 365–381; `_sdpa` lines 414–418 (`is_causal`) | (S, T) bool or None |
+| FFN | `SwiGLU.forward` line 253 / `MoE.forward` lines 696–707 | (B, S, D) |
+| Router | `Router._gate` lines 624–672 | topk_idx (N,k), weights (N,k) |
+| Head + loss | `AnuLM.forward` lines 912–928 | logits (B,S,V); scalar loss |
+| Optimiser | `make_optimizer` lines 447–474 (decay on 2-D weights only); `anulm/muon.py` | — |
+| LR | `lr_at` lines 375–400 (warmup → cosine, or WSD) | — |
+| Step | `main` loop lines 850–908 | — |
 
 ## 4. Execution path: prompt in, text out (inference)
 
@@ -143,25 +143,25 @@ flowchart LR
   S1 --> O["BPE.decode / bytes.decode"]
 ```
 
-- **KV cache.** It is a list of dicts, one per layer (`new_cache`, line 861).
+- **KV cache.** It is a list of dicts, one per layer (`new_cache`, line 873).
   GQA stores `k` and `v` for the **Hkv** heads, before they are repeated
-  across query groups (lines 463–469). MLA stores the latent `c` and the
-  shared rope key `k_pe` (lines 548–556). The cache grows with `torch.cat`,
+  across query groups (lines 470–476). MLA stores the latent `c` and the
+  shared rope key `k_pe` (lines 555–563). The cache grows with `torch.cat`,
   and there is no paging.
 - **Position continuity.** `Rotary.forward(start=...)` gives absolute
   positions. When the cache is non-empty and a step adds several tokens,
   `_attn_mask` builds the mask explicitly, because SDPA's `is_causal`
-  aligns top-left (lines 358–374).
+  aligns top-left (lines 365–381).
 - **Context overflow.** When the context is full, `generate` rebuilds the
-  cache from the last `block_size` tokens on every step (lines 1136–1139),
+  cache from the last `block_size` tokens on every step (lines 1148–1151),
   so cached and uncached decoding agree token for token. The test
   `cached_generation_matches_uncached` holds them to it.
 - **Sampling controls in the model.** Temperature, top-k, the CTRL
   repetition penalty, EOS and a streaming callback. There is **no top-p**:
-  `anulm/inference/api.py` line 193 accepts `top_p` for OpenAI compatibility and ignores it.
+  `anulm/inference/api.py` line 219 accepts `top_p` for OpenAI compatibility and ignores it.
   There is no beam search; `anulm/hf/modeling_anulm.py` lines 285–290 raise on it.
 - **Inputs that are not tokens.** `forward(embeds=...)` bypasses the
-  embedding table (lines 879–882), and `decode_from_embeds` (lines 1004–1050)
+  embedding table (lines 891–894), and `decode_from_embeds` (lines 1016–1062)
   decodes greedily after an audio or image prefix.
 
 ---
@@ -170,21 +170,21 @@ flowchart LR
 
 | Feature | Where |
 |---|---|
-| Three interchangeable MoE dispatch paths: sparse, dense, grouped-GEMM | `MoE._route_sparse` / `_route_dense` / `_route_grouped`, lines 702–783 |
-| Router computed in fp32, with autocast off | `Router.forward` lines 604–615 |
-| Aux-loss-free balancing, sequence balance loss, router z-loss | `Router._gate` lines 640–663; `AnuLM.update_expert_biases` lines 1059–1089 |
-| Gradient checkpointing | `AnuLM.forward` lines 890–895 |
-| Chunked cross-entropy, so the full logit tensor never exists | `enable_chunked_loss`, `_chunked_loss`, lines 918–944 |
-| Merge-tree reparameterisation of the token tables | `merge_tree_matrix` lines 383–404; `_compose`, `_table`, `bake_merge_tree` |
-| Scaled init of the residual output projections | `AnuLM.__init__` lines 848–851 |
-| bf16 autocast, fused AdamW, `torch.compile` probe | `anulm/training/train.py` lines 649–654, 467, 752–772 |
-| Gradient accumulation | `anulm/training/train.py` lines 854–870 |
-| Atomic checkpoints, resume with optimizer and sampler state | `atomic_save` lines 32–46; resume lines 790–837 |
-| Eval noise accounting (standard error) and strided eval windows | `evaluate` lines 481–537; `strided_windows` 355–376 |
-| Interleaved validation split | `interleaved_split` lines 206–220 |
+| Three interchangeable MoE dispatch paths: sparse, dense, grouped-GEMM | `MoE._route_sparse` / `_route_dense` / `_route_grouped`, lines 709–790 |
+| Router computed in fp32, with autocast off | `Router.forward` lines 611–622 |
+| Aux-loss-free balancing, sequence balance loss, router z-loss | `Router._gate` lines 647–670; `AnuLM.update_expert_biases` lines 1071–1101 |
+| Gradient checkpointing | `AnuLM.forward` lines 902–907 |
+| Chunked cross-entropy, so the full logit tensor never exists | `enable_chunked_loss`, `_chunked_loss`, lines 930–956 |
+| Merge-tree reparameterisation of the token tables | `merge_tree_matrix` lines 390–411; `_compose`, `_table`, `bake_merge_tree` |
+| Scaled init of the residual output projections | `AnuLM.__init__` lines 860–863 |
+| bf16 autocast, fused AdamW, `torch.compile` probe | `anulm/training/train.py` lines 645–650, 463, 750–770 |
+| Gradient accumulation | `anulm/training/train.py` lines 857–873 |
+| Atomic checkpoints, resume with optimizer and sampler state | `atomic_save` lines 32–46; resume lines 788–840 |
+| Eval noise accounting (standard error) and strided eval windows | `evaluate` lines 477–533; `strided_windows` 351–372 |
+| Interleaved validation split | `interleaved_split` lines 202–216 |
 | Muon optimiser (Newton–Schulz) | `anulm/muon.py` |
 | Bigram-teacher KL warm start | `anulm/bigram_teacher.py` |
-| A memory guard for large models | `fit_memory` lines 1257–1276 |
+| A memory guard for large models | `fit_memory` lines 1345–1364 |
 
 ## 6. Not implemented in this repository
 

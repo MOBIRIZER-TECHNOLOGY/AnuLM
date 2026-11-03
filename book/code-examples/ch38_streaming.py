@@ -20,6 +20,11 @@ attributes and `serve.Engine`'s own byte-level encode and decode. It checks:
    a stop string, a reply cut by max_tokens in the middle of a character does
    not end in U+FFFD, a real U+FFFD in the text is kept, and `stop=""` is no
    stop. (Until November 2026 the first two failed: see the chapter.)
+7. the guards at the door: the API key check, the exposure warning, a
+   `/v1/decide` request over its caps (422), a 500 that carries an error id
+   and not the exception text, the joint model refusing options it was never
+   trained on, and `serve.py`'s 1 MB body cap (413) and error id, over real
+   HTTP on this machine.
 """
 
 from __future__ import annotations
@@ -188,6 +193,88 @@ def end_of_reply() -> None:
     assert api.stops_of("") == [] and api.stops_of(["", "###"]) == ["###"]
 
 
+def guards() -> None:
+    import contextlib
+    import io
+    import json
+    import os
+    import urllib.error
+    import urllib.request
+    from http.server import ThreadingHTTPServer
+    from fastapi.testclient import TestClient
+    from anulm.multimodal import omni
+
+    print("\n7. the guards at the door:")
+    os.environ["ANULM_API_KEY"] = "s3cret"
+    results = []
+    for header in (None, "Bearer wrong", "Bearer s3cret"):
+        try:
+            api.check_key(header)
+            results.append("ok")
+        except api.APIError as e:
+            results.append(e.status)
+    print(f"   check_key with no header, a wrong key, the right key: {results}")
+    assert results == [401, 401, "ok"]
+    warned_with_key = api.exposure_warning("0.0.0.0")
+    del os.environ["ANULM_API_KEY"]
+    print(f"   exposure_warning: 127.0.0.1 {api.exposure_warning('127.0.0.1')}, "
+          f"0.0.0.0 with a key {warned_with_key}, 0.0.0.0 without one: "
+          f"{api.exposure_warning('0.0.0.0')[:44]!r}...")
+    assert warned_with_key is None and api.exposure_warning("0.0.0.0")
+
+    client = TestClient(api.app, raise_server_exceptions=False)
+    r = client.post("/v1/decide", json={"input": ["hi"] * 65})
+    print(f"   /v1/decide with 65 inputs: {r.status_code}")
+    assert r.status_code == 422
+    log = io.StringIO()
+    with contextlib.redirect_stdout(log):     # no model is loaded here, so generation fails
+        r = client.post("/v1/completions", json={"model": "anulm-chat", "prompt": "hi"})
+    err = r.json()["error"]
+    eid = err["code"]
+    print(f"   a failing /v1/completions: {r.status_code}, message "
+          f"{err['message'].replace(eid, '<id>')!r}")
+    print(f"   the server log has the id and the exception: "
+          f"{f'error {eid}' in log.getvalue()} {'AttributeError' in log.getvalue()}; "
+          f"the reply has the exception: {'AttributeError' in r.text}")
+    assert r.status_code == 500 and f"error {eid}" in log.getvalue() and "AttributeError" not in r.text
+
+    it = omni.Intent.__new__(omni.Intent)            # choices() reads only the trained labels
+    it.labels = ["card_arrival", "lost_or_stolen_card", "card_payment_fee_charged"]
+    print(f"   omni.Intent.choices(['lost_or_stolen_card', 'card_arrival']): "
+          f"{it.choices(['lost_or_stolen_card', 'card_arrival'])}")
+    try:
+        it.choices(["card_arrival", "pizza"])
+        refused = None
+    except ValueError as e:
+        refused = type(e).__name__
+    print(f"   omni.Intent.choices(['card_arrival', 'pizza']): {refused}")
+    assert refused == "ValueError"
+
+    class Failing:                                     # an engine whose generation fails
+        def generate(self, *a, **k):
+            raise RuntimeError("C:/models/secret.pt is corrupt")
+    server = ThreadingHTTPServer(("127.0.0.1", 0), serve.make_handler(Failing()))
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    url = f"http://127.0.0.1:{server.server_address[1]}/generate"
+
+    def post(body: bytes) -> tuple[int, str]:
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, data=body), timeout=10) as resp:
+                return resp.status, resp.read().decode()
+        except urllib.error.HTTPError as e:
+            return e.code, e.read().decode()
+    err_log = io.StringIO()
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(err_log):
+        big = post(b" " * ((1 << 20) + 1))
+        bad = post(json.dumps({"prompt": "hi", "max_tokens": "many"}).encode())
+        fail = post(json.dumps({"prompt": "hi"}).encode())
+    server.shutdown()
+    print(f"   serve.py, a 1 MB + 1 byte body: {big[0]}; max_tokens 'many': {bad[0]}; "
+          f"a failing generation: {fail[0]}, exception text in the reply: {'secret' in fail[1]}, "
+          f"in the server log: {'secret' in err_log.getvalue()}")
+    assert (big[0], bad[0], fail[0]) == (413, 400, 500) and "secret" not in fail[1] and "secret" in err_log.getvalue()
+
+
 if __name__ == "__main__":
     utf8_holdback()
     stop_holdback()
@@ -195,4 +282,5 @@ if __name__ == "__main__":
     lock_serialises()
     top_p_ignored()
     end_of_reply()
+    guards()
     print("\nall checks passed")

@@ -2,7 +2,7 @@
 title: "40 · The production gap"
 part: "IX · To production"
 accent: teal
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 40  The production gap
@@ -21,7 +21,7 @@ Prerequisites: the KV cache (Chapter 27), precision (Chapter 23), serving
 
 ## 40.1  What the repository has: one sequence, one growing cache
 
-> **In the repo** · `anulm/model.py` · `AnuLM.new_cache` · lines 861–863 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.new_cache` · lines 873–875 · @fdbb09a
 
 ```python
     def new_cache(self) -> list[dict]:
@@ -29,7 +29,7 @@ Prerequisites: the KV cache (Chapter 27), precision (Chapter 23), serving
         return [dict() for _ in self.layers]
 ```
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 463–469 · @084cbdd
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 470–476 · @fdbb09a
 
 ```python
         if cache is not None:
@@ -45,7 +45,7 @@ Prerequisites: the KV cache (Chapter 27), precision (Chapter 23), serving
 step, in every layer. When the context is full, `generate` throws the cache
 away and rebuilds it from the last `block_size` tokens:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1132–1139 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1144–1151 · @fdbb09a
 
 ```python
         for _ in range(max_new_tokens):
@@ -92,7 +92,7 @@ units of the same bytes. The copying's effect on speed is *not measured here*.
 
 Every request then runs alone, under the API's single lock:
 
-> **In the repo** · `anulm/inference/api.py` · `Generation.run` · lines 394–401 · @084cbdd
+> **In the repo** · `anulm/inference/api.py` · `Generation.run` · lines 441–448 · @fdbb09a
 
 ```python
         with GPU:
@@ -139,7 +139,7 @@ Concurrency is *not measured here*; in the code, the lock caps it at one.
 ![Figure 40.1 · The repository against a serving stack](../figures/fig40-1-gap.svg)
 
 *Figure 40.1 · The repository against a serving stack.* Dashed boxes are
-`EXTENSION`s. *verified*: from `anulm/model.py`, `anulm/inference/serve.py` and `anulm/inference/api.py` at @084cbdd.
+`EXTENSION`s. *verified*: from `anulm/model.py`, `anulm/inference/serve.py` and `anulm/inference/api.py` at @fdbb09a.
 
 `NOT IN THE REPO` · `EXTENSION`
 
@@ -171,7 +171,7 @@ The serving engine picks the grouped expert path on CUDA (Chapter 38), and that
 path keeps a second, bf16 copy of every expert's matrices beside the fp32
 weights:
 
-> **In the repo** · `anulm/model.py` · `MoE._stacked_weights` · lines 745–752 · @084cbdd
+> **In the repo** · `anulm/model.py` · `MoE._stacked_weights` · lines 752–759 · @fdbb09a
 
 ```python
         key = sum(p._version for e in self.experts for p in e.parameters())
@@ -205,7 +205,7 @@ bf16 rounding erases their differences, changing about half the expert
 choices for 0.003 nats; centring them first made it free. The only quantised
 component here is borrowed:
 
-> **In the repo** · `anulm/multimodal/audio_codec.py` · `WhisperEncoder.__init__` · lines 227–231 · @084cbdd
+> **In the repo** · `anulm/multimodal/audio_codec.py` · `WhisperEncoder.__init__` · lines 227–231 · @fdbb09a
 
 ```python
         if compute_type is None:
@@ -258,7 +258,7 @@ geometric sum 1 + α + … + α<sup>γ</sup>:
 
 ## 40.5  Attention kernels
 
-> **In the repo** · `anulm/model.py` · `_sdpa` · lines 407–411 · @084cbdd
+> **In the repo** · `anulm/model.py` · `_sdpa` · lines 414–418 · @fdbb09a
 
 ```python
 def _sdpa(q, k, v, mask, S, scale, dropout_p):
@@ -292,7 +292,7 @@ repository neither chooses nor writes one.
 
 `anulm/training/train.py` builds one optimizer for one device:
 
-> **In the repo** · `anulm/training/train.py` · `make_optimizer` · lines 467–475 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `make_optimizer` · lines 463–471 · @fdbb09a
 
 ```python
     fused = args.device.startswith("cuda") and "fused" in torch.optim.AdamW.__init__.__code__.co_varnames
@@ -338,22 +338,83 @@ parallelism gives each GPU a contiguous run of layers; both are absent too.
 
 ## 40.7  Monitoring, safety and prompt injection
 
-`anulm/inference/api.py` has one access control:
+`anulm/inference/api.py` has one access control, a shared key:
 
-> **In the repo** · `anulm/inference/api.py` · `check_key` · lines 170–174 · @084cbdd
+> **In the repo** · `anulm/inference/api.py` · `check_key` · lines 173–180 · @fdbb09a
 
 ```python
 def check_key(authorization: Optional[str] = Header(default=None)):
     key = os.environ.get("ANULM_API_KEY")
-    if key and authorization != f"Bearer {key}":
+    # compare_digest takes the same time wherever the strings first differ, so
+    # response timing cannot be used to guess the key one character at a time.
+    if key and not hmac.compare_digest((authorization or "").encode("utf-8"),
+                                       f"Bearer {key}".encode("utf-8")):
         raise APIError(401, "Missing or wrong API key: send 'Authorization: Bearer <ANULM_API_KEY>'.",
                        "authentication_error", code="invalid_api_key")
 ```
 
-Unset, there is no check. There are no rate limits, metrics or content
-filters, and nothing separates instructions from data:
+With `ANULM_API_KEY` unset there is no check at all. Set, every caller sends
+the same key; `hmac.compare_digest` compares in time that does not depend on
+where the strings first differ. Started on an address other machines can reach
+with no key set, `main` prints a warning (`exposure_warning`, lines 183–188)
+and serves anyway: a trusted LAN is a fair use.
 
-> **In the repo** · `anulm/multimodal/omni.py` · `Reader.ask` · lines 106–110 · @084cbdd
+Two more gaps are closed at this pin. Every upload has a cap, so one request
+cannot fill memory or hold the device for minutes:
+
+> **In the repo** · `anulm/inference/api.py` · limits · lines 195–200 · @fdbb09a
+
+```python
+MAX_AUDIO_BYTES = 25 * 1024 * 1024
+MAX_AUDIO_SECONDS = 60
+MAX_IMAGE_BYTES = 10 * 1024 * 1024
+MAX_DECIDE_INPUTS = 64               # messages per /v1/decide request
+MAX_DECIDE_OPTIONS = 256             # BANKING77 has 77; the context limits the rest anyway
+MAX_TEXT_CHARS = 8000                # one decide message or option: far past the 1,024-token context
+```
+
+Oversized audio or images are refused with 413; the `/v1/decide` limits sit
+in the request model, so its validation answers 422. `anulm/inference/serve.py`
+caps a request body at 1 MB (`MAX_BODY_BYTES`, line 47). And an unexpected
+exception no longer reaches the client as text:
+
+> **In the repo** · `anulm/inference/api.py` · `log_error`, `_any_error` · lines 305–323 · @fdbb09a
+
+```python
+def log_error(where: str, e: BaseException) -> str:
+    # ...
+    eid = uuid.uuid4().hex[:12]
+    print(f"error {eid} in {where}:\n{''.join(traceback.format_exception(type(e), e, e.__traceback__))}",
+          flush=True)
+    return eid
+# ...
+@app.exception_handler(Exception)
+async def _any_error(request: Request, e: Exception):
+    eid = log_error(f"{request.method} {request.url.path}", e)
+    return JSONResponse(status_code=500, content={"error": {
+        "message": internal_error_message(eid), "type": "server_error", "param": None, "code": eid}})
+```
+
+The traceback goes to the server's log under a random 12-character id; the
+client gets a 500 that carries only that id, so file paths and checkpoint
+names stay on the server, and an operator can still find the failure. The
+Gradio app shares one decoder between chat, decisions, hearing and reading;
+`app_omni.Models` now takes one re-entrant lock around loading and every call
+on it (`anulm/apps/app_omni.py` line 181), so two visitors no longer
+interleave on one module or load the model twice.
+
+What is still missing:
+
+- **Per-user authentication.** One shared key, no users, no scopes, nothing to
+  revoke for one caller.
+- **Rate limiting.** A key holder can send requests as fast as the lock lets
+  them run.
+- **Concurrency.** One lock per process (`GPU`, line 296; the shared lock in
+  `app_omni`), so requests queue one behind another (40.1, 40.2).
+- **Metrics and content filters.** The log holds errors only.
+- **Separating instructions from data:**
+
+> **In the repo** · `anulm/multimodal/omni.py` · `Reader.ask` · lines 106–110 · @fdbb09a
 
 ```python
         body = "\n\n".join(f"[{i + 1}] {' '.join(h['text'].split()[:120])}" for i, h in enumerate(hits))
@@ -367,7 +428,7 @@ Retrieved passages enter the prompt with the same standing as the question,
 so a passage holding instructions can steer the reply: prompt injection. Its
 effect here is *not measured*.
 
-`IN THE REPO` (the key check) · `NOT IN THE REPO` (everything else)
+`IN THE REPO` (the key check, the warning, the caps, error ids, the lock) · `NOT IN THE REPO` (per-user auth, rate limits, metrics, filters)
 
 > **Build it.** The lab book's Chapter 20 (`course/ch20-many-gpus`) builds
 > data parallelism, and its Chapter 10 NF4 quantisation, both as course code.
@@ -404,13 +465,15 @@ only perturbs the scores slightly. 3. 2.44.
 - Speculative decoding is absent; the repository writes no attention kernel,
   though PyTorch's SDPA picks a fused one by itself on this machine.
 - Training is single-GPU: AdamW's state is 6.36 GB in fp32, which ZeRO-style
-  partitioning would divide across GPUs.
+  partitioning would divide across GPUs. The API has a shared key compared in
+  constant time, an exposure warning, upload caps and error ids, but no
+  per-user authentication, rate limits or metrics.
 
 > **In one breath.** AnuLM serves one sequence at a time from a concatenated
 > cache and full-precision weights on one GPU; paging, batching, quantisation,
-> speculative decoding, its own kernels, multi-GPU training and most safety
-> controls are absent, and the lock, not a measured memory limit, holds it to
-> one request at a time.
+> speculative decoding, its own kernels, multi-GPU training, per-user
+> authentication and rate limits are absent, and the lock, not a measured
+> memory limit, holds it to one request at a time.
 
 ## References
 
@@ -430,12 +493,16 @@ used only for the claim in its register row:
 | [S10] | speculative sampling: several tokens per target-model call | CHECKED |
 | [S13] | PyTorch DDP: bucketing gradients, overlapping communication | CHECKED |
 
-Repository evidence, all at @084cbdd:
-- `anulm/model.py`: `_sdpa` 407–411, `GQAttention.forward` 463–469,
-  `AnuLM.new_cache` 861–863.
-- `anulm/training/train.py`: `make_optimizer` 451–478.
+Repository evidence, all at @fdbb09a:
+- `anulm/model.py`: `_sdpa` 414–418, `GQAttention.forward` 470–476,
+  `AnuLM.new_cache` 873–875.
+- `anulm/training/train.py`: `make_optimizer` 447–474.
 - `anulm/multimodal/audio_codec.py`: `WhisperEncoder.__init__` 220–232.
-- `anulm/inference/api.py`: `check_key` 170–174, `GPU` 265, `Generation.run` 378–409.
+- `anulm/inference/api.py`: `check_key` 173–180, `exposure_warning` 183–188,
+  limits 195–200, `GPU` 296, `log_error` 305–312, `_any_error` 319–323,
+  `Generation.run` 425–456, the warning printed in `main` 817–819.
+- `anulm/inference/serve.py`: `MAX_BODY_BYTES` 47, checked 212–213.
+- `anulm/apps/app_omni.py`: `Models.__init__`'s shared lock 173–181.
 - `anulm/multimodal/omni.py`: `Reader.ask` 97–111.
 - Book example and measurements: `book/code-examples/ch40_gap_arithmetic.py`,
   `book/measurements/part_viii_ix_gap.json`; Chapter 39's

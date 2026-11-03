@@ -42,7 +42,7 @@ HERE = Path(__file__).resolve().parent
 BOOK = HERE.parent
 ROOT = BOOK.parent
 CH = BOOK / "chapters"
-PIN = "084cbdd"
+PIN = "fdbb09a"
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 

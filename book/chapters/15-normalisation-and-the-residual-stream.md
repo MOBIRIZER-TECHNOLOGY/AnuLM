@@ -2,7 +2,7 @@
 title: "15 · Normalisation and the residual stream"
 part: "IV · Inside the transformer"
 accent: gold
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 15  Normalisation and the residual stream
@@ -55,7 +55,7 @@ direction of 1,024. `anulm/model.py`'s RMSNorm matches PyTorch's `F.rms_norm`.
 LayerNorm is not in `anulm/model.py`; the speech and image projectors use it, to
 bring encoder features to the scale the blocks expect (Chapter 36):
 
-> **In the repo** · `anulm/multimodal/speech_encoder.py` · `AudioProjector.__init__` · lines 80–83 · @084cbdd
+> **In the repo** · `anulm/multimodal/speech_encoder.py` · `AudioProjector.__init__` · lines 79–82 · @fdbb09a
 
 ```python
         hidden = hidden or max(out_dim, d)
@@ -70,7 +70,7 @@ bring encoder features to the scale the blocks expect (Chapter 36):
 
 ## 15.2  In the code: `RMSNorm`
 
-> **In the repo** · `anulm/model.py` · `RMSNorm` · lines 218–232 · @084cbdd
+> **In the repo** · `anulm/model.py` · `RMSNorm` · lines 225–239 · @fdbb09a
 
 ```python
 class RMSNorm(nn.Module):
@@ -132,7 +132,7 @@ fp32 keys in the cache under autocast: the gain is an fp32 parameter, and a
 
 Each block owns two norms:
 
-> **In the repo** · `anulm/model.py` · `Block.__init__` · lines 795–804 · @084cbdd
+> **In the repo** · `anulm/model.py` · `Block.__init__` · lines 802–811 · @fdbb09a
 
 ```python
     def __init__(self, cfg: AnuLMConfig, layer_idx: int, rotary: Rotary):
@@ -149,7 +149,7 @@ Each block owns two norms:
 
 and uses them like this:
 
-> **In the repo** · `anulm/model.py` · `Block.forward` · lines 809–817 · @084cbdd
+> **In the repo** · `anulm/model.py` · `Block.forward` · lines 816–824 · @fdbb09a
 
 ```python
     def forward(self, x, cos, sin, cache: Optional[dict] = None, start: int = 0,
@@ -171,7 +171,7 @@ the gradient reaches every layer directly through the additions. One more
 RMSNorm, built once for the whole model, normalises the stream at the end,
 before the output head:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 832–834 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 839–841 · @fdbb09a
 
 ```python
         self.layers = nn.ModuleList([Block(cfg, i, self.rotary) for i in range(cfg.n_layer)])
@@ -179,7 +179,7 @@ before the output head:
         self.lm_head = nn.Linear(cfg.hidden_size, cfg.vocab_size, bias=False)
 ```
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · line 900 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · line 912 · @fdbb09a
 
 ```python
         x = self.norm(x)
@@ -266,7 +266,7 @@ positions 1–511; `book/measurements/part_iv_a_stream.json`.
 The stream sums 40 sublayer outputs, so at initialisation the code shrinks
 the matrices that write into it:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 847–851 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 859–863 · @fdbb09a
 
 ```python
         self.apply(self._init_weights)
@@ -276,7 +276,7 @@ the matrices that write into it:
                 nn.init.normal_(p, mean=0.0, std=cfg.initializer_range / math.sqrt(2 * cfg.n_layer))
 ```
 
-> **In the repo** · `anulm/model.py` · `AnuLM._init_weights` · lines 853–859 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM._init_weights` · lines 865–871 · @fdbb09a
 
 ```python
     def _init_weights(self, m):
@@ -320,7 +320,7 @@ Unscaled, the untrained stream grows 79-fold; scaled, 12-fold. The effect on
 the trained model's quality is *not measured here*. The test that guards the
 start checks the loss:
 
-> **In the repo** · `tests/test_model.py` · `initial_loss_is_ln_vocab` · lines 338–348 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `initial_loss_is_ln_vocab` · lines 349–359 · @fdbb09a
 
 ```python
 def initial_loss_is_ln_vocab():
@@ -417,12 +417,12 @@ used only for the claim in its register row:
 | [R09] | LayerNorm: normalising with the mean and variance within a layer | CHECKED |
 | [R10] | pre-norm transformers without the warm-up stage reach comparable results | CHECKED |
 
-Repository evidence, all at @084cbdd:
-- `anulm/model.py`: `RMSNorm` 218–232, `Block.__init__` 795–804, `Block.forward`
-  809–817, `AnuLM.__init__` 832–834 and 847–851, `AnuLM._init_weights` 853–859,
-  `AnuLM.forward` 900.
-- `anulm/multimodal/speech_encoder.py` 80–83 and `anulm/multimodal/vision_encoder.py` 124 (LayerNorm in the projectors).
-- `tests/test_model.py`: `initial_loss_is_ln_vocab` 338.
+Repository evidence, all at @fdbb09a:
+- `anulm/model.py`: `RMSNorm` 225–239, `Block.__init__` 802–811, `Block.forward`
+  816–824, `AnuLM.__init__` 839–841 and 859–863, `AnuLM._init_weights` 865–871,
+  `AnuLM.forward` 912.
+- `anulm/multimodal/speech_encoder.py` 79–82 and `anulm/multimodal/vision_encoder.py` 124 (LayerNorm in the projectors).
+- `tests/test_model.py`: `initial_loss_is_ln_vocab` 349.
 - `book/measurements/part_iv_a_stream.json`.
 
 Book examples: `code-examples/ch15_norms.py`, `code-examples/ch15_measure_stream.py`.

@@ -1,6 +1,6 @@
 # Chapter verification
 
-Written by `book/tools/verify_chapters.py` against `@084cbdd`.
+Written by `book/tools/verify_chapters.py` against `@fdbb09a`.
 
 Chapters: 47. Problems: **0**.
 
@@ -93,7 +93,7 @@ Excerpts: 11 (162 quoted lines). Line references to definitions: 0. Problems: **
 
 _badges: IN THE REPO, MEASURED, NOT IN THE REPO; references cited: R04, R05_
 
-**Code standard:** 200 Python lines, 51% of the body.
+**Code standard:** 200 Python lines, 50% of the body.
 
 ## 10-embeddings-and-the-output-table.md
 
@@ -123,17 +123,17 @@ Excerpts: 10 (108 quoted lines). Line references to definitions: 0. Problems: **
 
 _badges: IN THE REPO, MEASURED; references cited: R50_
 
-**Code standard:** 158 Python lines, 52% of the body.
+**Code standard:** 158 Python lines, 51% of the body.
 
 ## 13-multi-head-and-gqa.md
 
-Excerpts: 8 (88 quoted lines). Line references to definitions: 0. Problems: **0**.
+Excerpts: 8 (89 quoted lines). Line references to definitions: 0. Problems: **0**.
 
 - none
 
 _badges: IMPLEMENTATION-DEPENDENT, IN THE REPO, MEASURED; references cited: R01, R12, R13_
 
-**Code standard:** 105 Python lines, 45% of the body.
+**Code standard:** 106 Python lines, 45% of the body.
 
 ## 14-rotary-positions.md
 
@@ -167,7 +167,7 @@ _badges: IN THE REPO, MEASURED, NOT IN THE REPO; references cited: R11, R49, S04
 
 ## 17-router.md
 
-Excerpts: 7 (81 quoted lines). Line references to definitions: 1. Problems: **0**.
+Excerpts: 7 (81 quoted lines). Line references to definitions: 0. Problems: **0**.
 
 - none
 
@@ -187,23 +187,23 @@ _badges: IMPLEMENTATION-DEPENDENT, IN THE REPO, MEASURED; references cited: R17,
 
 ## 19-latent-attention.md
 
-Excerpts: 6 (68 quoted lines). Line references to definitions: 0. Problems: **0**.
+Excerpts: 6 (69 quoted lines). Line references to definitions: 0. Problems: **0**.
 
 - none
 
 _badges: IN THE REPO, MEASURED, NOT IN THE REPO; references cited: R19, R49_
 
-**Code standard:** 136 Python lines, 46% of the body.
+**Code standard:** 137 Python lines, 46% of the body.
 
 ## 20-the-whole-model.md
 
-Excerpts: 13 (160 quoted lines). Line references to definitions: 5. Problems: **0**.
+Excerpts: 13 (165 quoted lines). Line references to definitions: 5. Problems: **0**.
 
 - none
 
 _badges: IN THE REPO, MEASURED; references cited: R04, R06, R08, R11, R12, R18, R20_
 
-**Code standard:** 209 Python lines, 51% of the body.
+**Code standard:** 214 Python lines, 52% of the body.
 
 ## 21-data.md
 
@@ -218,13 +218,14 @@ _badges: IN THE REPO, MEASURED, NOT IN THE REPO; references cited: none_
 
 ## 22-the-training-loop.md
 
-Excerpts: 7 (101 quoted lines). Line references to definitions: 0. Problems: **0**.
+Excerpts: 7 (102 quoted lines). Line references to definitions: 0. Problems: **0**.
 
 - none
 
 _badges: IMPLEMENTATION-DEPENDENT, IN THE REPO, MEASURED; references cited: R23, R52_
 
-**Code standard:** 152 Python lines, 45% of the body.
+**Code standard:** 153 Python lines, 44% of the body.
+- code share 44% (153 Python lines), below the 45% standard
 
 ## 23-precision-memory-speed.md
 
@@ -248,23 +249,23 @@ _badges: EXTENSION, IN THE REPO, MEASURED; references cited: none_
 
 ## 25-checkpoints-and-resuming.md
 
-Excerpts: 8 (95 quoted lines). Line references to definitions: 0. Problems: **0**.
+Excerpts: 10 (136 quoted lines). Line references to definitions: 0. Problems: **0**.
 
 - none
 
 _badges: IMPLEMENTATION-DEPENDENT, IN THE REPO, MEASURED; references cited: none_
 
-**Code standard:** 134 Python lines, 46% of the body.
+**Code standard:** 188 Python lines, 46% of the body.
 
 ## 26-debugging-silent-failures.md
 
-Excerpts: 12 (137 quoted lines). Line references to definitions: 0. Problems: **0**.
+Excerpts: 14 (159 quoted lines). Line references to definitions: 0. Problems: **0**.
 
 - none
 
 _badges: EXTENSION, IN THE REPO, MEASURED; references cited: none_
 
-**Code standard:** 186 Python lines, 49% of the body.
+**Code standard:** 209 Python lines, 49% of the body.
 
 ## 27-decoding-and-the-kv-cache.md
 
@@ -295,6 +296,7 @@ Excerpts: 6 (51 quoted lines). Line references to definitions: 0. Problems: **0*
 _badges: EXTENSION, IN THE REPO, MEASURED; references cited: R07, S02_
 
 **Code standard:** 113 Python lines, 45% of the body.
+- code share 45% (113 Python lines), below the 45% standard
 
 ## 30-instruction-tuning.md
 
@@ -308,33 +310,33 @@ _badges: IN THE REPO, MEASURED, NOT IN THE REPO; references cited: R39_
 
 ## 31-lora.md
 
-Excerpts: 8 (90 quoted lines). Line references to definitions: 0. Problems: **0**.
+Excerpts: 8 (98 quoted lines). Line references to definitions: 0. Problems: **0**.
 
 - none
 
 _badges: IN THE REPO, MEASURED, NOT IN THE REPO; references cited: R32, R33, S09_
 
-**Code standard:** 141 Python lines, 46% of the body.
+**Code standard:** 150 Python lines, 46% of the body.
 
 ## 32-classification-and-calibration.md
 
-Excerpts: 9 (102 quoted lines). Line references to definitions: 0. Problems: **0**.
+Excerpts: 9 (105 quoted lines). Line references to definitions: 0. Problems: **0**.
 
 - none
 
 _badges: IN THE REPO, MEASURED; references cited: R34, R35_
 
-**Code standard:** 117 Python lines, 46% of the body.
+**Code standard:** 132 Python lines, 46% of the body.
 
 ## 33-retrieval-and-readers.md
 
-Excerpts: 11 (119 quoted lines). Line references to definitions: 0. Problems: **0**.
+Excerpts: 12 (130 quoted lines). Line references to definitions: 0. Problems: **0**.
 
 - none
 
 _badges: IN THE REPO, MEASURED; references cited: R36, R37, R38_
 
-**Code standard:** 150 Python lines, 46% of the body.
+**Code standard:** 162 Python lines, 46% of the body.
 
 ## 34-preference-optimisation-and-rl.md
 
@@ -368,53 +370,53 @@ _badges: IN THE REPO, MEASURED; references cited: R09, R42, R43, R44, S04_
 
 ## 37-one-model-many-tasks.md
 
-Excerpts: 16 (217 quoted lines). Line references to definitions: 0. Problems: **0**.
+Excerpts: 16 (218 quoted lines). Line references to definitions: 0. Problems: **0**.
 
 - none
 
 _badges: IN THE REPO, MEASURED; references cited: none_
 
-**Code standard:** 233 Python lines, 46% of the body.
+**Code standard:** 234 Python lines, 46% of the body.
 
 ## 38-serving.md
 
-Excerpts: 14 (142 quoted lines). Line references to definitions: 0. Problems: **0**.
+Excerpts: 16 (174 quoted lines). Line references to definitions: 0. Problems: **0**.
 
 - none
 
 _badges: IMPLEMENTATION-DEPENDENT, IN THE REPO, NOT IN THE REPO; references cited: R31_
 
-**Code standard:** 155 Python lines, 45% of the body.
+**Code standard:** 220 Python lines, 45% of the body.
 
 ## 39-exporting.md
 
-Excerpts: 9 (141 quoted lines). Line references to definitions: 2. Problems: **0**.
+Excerpts: 12 (174 quoted lines). Line references to definitions: 2. Problems: **0**.
 
 - none
 
 _badges: IMPLEMENTATION-DEPENDENT, IN THE REPO, MEASURED; references cited: none_
 
-**Code standard:** 168 Python lines, 46% of the body.
+**Code standard:** 202 Python lines, 47% of the body.
 
 ## 40-the-production-gap.md
 
-Excerpts: 10 (63 quoted lines). Line references to definitions: 0. Problems: **0**.
+Excerpts: 10 (66 quoted lines). Line references to definitions: 0. Problems: **0**.
 
 - none
 
 _badges: EXTENSION, IMPLEMENTATION-DEPENDENT, IN THE REPO, NOT IN THE REPO; references cited: R21, R29, R33, R46, R47, R48, R50, S08, S10, S13_
 
-**Code standard:** 110 Python lines, 45% of the body.
+**Code standard:** 131 Python lines, 45% of the body.
 
 ## 41-capstone.md
 
-Excerpts: 9 (104 quoted lines). Line references to definitions: 0. Problems: **0**.
+Excerpts: 9 (113 quoted lines). Line references to definitions: 0. Problems: **0**.
 
 - none
 
 _badges: EXTENSION, IN THE REPO, MEASURED, NOT IN THE REPO; references cited: R31, R40, R46_
 
-**Code standard:** 263 Python lines, 46% of the body.
+**Code standard:** 272 Python lines, 46% of the body.
 
 ## A1-shape-trace.md
 

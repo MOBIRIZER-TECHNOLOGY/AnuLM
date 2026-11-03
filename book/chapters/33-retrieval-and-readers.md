@@ -2,7 +2,7 @@
 title: "33 · Retrieval and readers"
 part: "VII · After pre-training"
 accent: plum
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 33  Retrieval and readers
@@ -18,14 +18,14 @@ states.
 ![Figure 33.1 · Retrieve, then read](../figures/fig33-1-pipeline.svg)
 
 *Figure 33.1 · Retrieve, then read.* Every box exists in the repository.
-*verified*: `anulm/inference/rag.py` and `anulm/tasks/rc_pointer.py` at @084cbdd; the chunk count from
+*verified*: `anulm/inference/rag.py` and `anulm/tasks/rc_pointer.py` at @fdbb09a; the chunk count from
 `data/rag/meta.json`.
 
 ---
 
 ## 33.1  Words to hashed ids
 
-> **In the repo** · `anulm/inference/rag.py` · `term_ids` · lines 42–60 · @084cbdd
+> **In the repo** · `anulm/inference/rag.py` · `term_ids` · lines 42–60 · @fdbb09a
 
 ```python
 BUCKETS = 1 << 24
@@ -63,7 +63,7 @@ A word's weight grows with tf but saturates (k<sub>1</sub>), and long passages
 are discounted (b). `anulm/inference/rag.py` computes every (word, passage) weight once, when
 it builds the index:
 
-> **In the repo** · `anulm/inference/rag.py` · `build` · lines 136–145 · @084cbdd
+> **In the repo** · `anulm/inference/rag.py` · `build` · lines 136–145 · @fdbb09a
 
 ```python
     N, avgdl = len(pairs), float(lens.mean())
@@ -91,7 +91,7 @@ posting: a (word, passage) pair and its count. Line by line:
 
 A query is then a weighted count per query word:
 
-> **In the repo** · `anulm/inference/rag.py` · `Retriever.bm25` · lines 284–304 · @084cbdd
+> **In the repo** · `anulm/inference/rag.py` · `Retriever.bm25` · lines 288–308 · @fdbb09a
 
 ```python
         scores = np.zeros(self.n, dtype=np.float32)
@@ -156,7 +156,7 @@ BM25 matches words. A dense retriever embeds questions and passages as
 vectors and matches meaning. `anulm/inference/rag.py` borrows one, multilingual E5 in its
 small size [R38]:
 
-> **In the repo** · `anulm/inference/rag.py` · `Dense.embed` · lines 195–205 · @084cbdd
+> **In the repo** · `anulm/inference/rag.py` · `Dense.embed` · lines 195–205 · @fdbb09a
 
 ```python
     def embed(self, texts: list[str], max_len: int = 256):
@@ -173,8 +173,16 @@ small size [R38]:
 The last hidden states, (B, S, 384), are averaged over real tokens and
 scaled to unit length, so a dot product is a cosine. Passages are embedded once
 as `"passage: {title}. {text}"`, questions as `"query: {question}"` (lines
-203 and 213);
+216 and 228);
 a search is one (932,648 × 384) matrix–vector product and a top-k.
+`self.device` is where e5 runs: `Dense(device)` falls back to CUDA when it is
+available and no device is given (line 187), in fp16 there and fp32 on the
+CPU. `Retriever(root, device)` keeps the device it is given and builds
+`Dense(self.device)` on first use (line 271, in the excerpt below), and the
+readers pass their own model's device (`RagQA`, line 342), so `--device cpu`
+keeps retrieval off a GPU another job owns. At the book's previous pin they
+built `Retriever()` and `Dense()`, so e5 went to the GPU whatever the reader's
+device.
 
 > **Details.** The 384 is multilingual-e5-small's hidden size, read from the
 > copy in `data/rag/e5-small/config.json`; the code takes it from
@@ -182,14 +190,14 @@ a search is one (932,648 × 384) matrix–vector product and a top-k.
 
 Fusion combines the two rankings by reciprocal rank [R37]:
 
-> **In the repo** · `anulm/inference/rag.py` · `Retriever.search` · lines 263–277 · @084cbdd
+> **In the repo** · `anulm/inference/rag.py` · `Retriever.search` · lines 267–281 · @fdbb09a
 
 ```python
         mode = mode or self.mode
         if mode == "bm25":
             return self.bm25(query, k, lang, title_w, lead_b)
         if self.dense is None:
-            self.dense = Dense()
+            self.dense = Dense(self.device)
         di, dv = self.dense.search(query, 100 if mode == "hybrid" else k)
         if mode == "dense":
             return [{**self.chunks[i], "score": v} for i, v in zip(di, dv)]
@@ -233,8 +241,8 @@ stable sort keeps the dense list's first-seen order, so Tokyo wins.
 BM25 65%, dense 90%, hybrid 75%; answered end to end by RESULTS' "AnuLM 400M
 reader (ours)": 0, 5 and 2 of 20. *measured*: RESULTS §33. The section does not
 name that reader's file; its BM25 result, 0/20, is the pointer reader's
-(33.5). `Retriever` defaults to dense when the dense index exists (line 252;
-the comment at line 250 gives the same 0/20 to 5/20). The dense 5/20 includes
+(33.5). `Retriever` defaults to dense when the dense index exists (line 256;
+the comment at lines 253–254 gives the same 0/20 to 5/20). The dense 5/20 includes
 one false positive of the substring check, so strictly it is 4.
 
 `IN THE REPO` · `MEASURED`
@@ -246,7 +254,7 @@ reading examples, and prompts it with the `rc-en` or `rc-hi` template of
 Chapter 30, chosen by the question's script: numbered passages, then the
 question:
 
-> **In the repo** · `anulm/inference/rag.py` · `RagQA.prompt` · lines 340–347 · @084cbdd
+> **In the repo** · `anulm/inference/rag.py` · `RagQA.prompt` · lines 344–351 · @fdbb09a
 
 ```python
     def prompt(self, question: str, passages: list[str]) -> tuple[str, str]:
@@ -269,7 +277,7 @@ reader prompt (en), 241 characters:
 ```
 
 *verified*: printed by the example. The reader decodes greedily (`read`,
-lines 350–360). Trained on 59,400 examples, it learned the format and to say
+lines 354–364). Trained on 59,400 examples, it learned the format and to say
 "not found", not to read: F1 4.9 on SQuAD English, against 3.4 untuned
 (RESULTS §33). Two causes are recorded there: the question comes after the
 passages, so no passage token knows what to look for; and only about 1% of
@@ -282,7 +290,7 @@ positions carried loss.
 `anulm/tasks/rc_pointer.py` fixes both. The question goes first, and a two-way linear head
 scores every position as the answer's start and its end:
 
-> **In the repo** · `anulm/tasks/rc_pointer.py` · `Pointer.forward` · lines 61–73 · @084cbdd
+> **In the repo** · `anulm/tasks/rc_pointer.py` · `Pointer.forward` · lines 60–72 · @fdbb09a
 
 ```python
     def forward(self, idx):
@@ -302,7 +310,7 @@ The backbone loop is `Decider._hidden`'s (Chapter 32). The head is
 `nn.Linear(D, 2)`: (B, S, D) → (B, S, 2), unbound into start scores and end
 scores, (B, S) each. Training is two cross-entropies over positions:
 
-> **In the repo** · `anulm/tasks/rc_pointer.py` · `train` · lines 188–193 · @084cbdd
+> **In the repo** · `anulm/tasks/rc_pointer.py` · `train` · lines 185–190 · @fdbb09a
 
 ```python
     def loss_of(items):
@@ -316,10 +324,10 @@ scores, (B, S) each. Training is two cross-entropies over positions:
 Every position is in the softmax, so the signal is dense; padding is pushed
 to −10⁴. The targets come from `encode`:
 
-> **In the repo** · `anulm/tasks/rc_pointer.py` · `encode` · lines 83–103 · @084cbdd
+> **In the repo** · `anulm/tasks/rc_pointer.py` · `encode` · lines 82–102 · @fdbb09a
 
 ```python
-def encode(tok, qword, q, body, answer=None):
+def encode(tok, qword, q, body, answer=None, max_len: int = MAX_LEN):
     # ...
     head = [tok.eos_id] + tok.encode(f"{qword}: {q}\n\n")
     if answer and answer not in NOT_FOUND:
@@ -331,21 +339,48 @@ def encode(tok, qword, q, body, answer=None):
             ids = head + pre + span + post
             st = len(head) + len(pre)
             en = st + len(span) - 1
-            if en < MAX_LEN and span:
-                return ids[:MAX_LEN], st, en
+            if en < max_len and span:
+                return ids[:max_len], st, en
             return None
         return None
-    return (head + tok.encode(body))[:MAX_LEN], 0, 0
+    return (head + tok.encode(body))[:max_len], 0, 0
 ```
 
 The question comes first, after a start token at position 0. The passages are
 encoded in three pieces around the answer's first occurrence, the space before
 it going with the answer (Chapter 30, 30.1), so `st` and `en` are exact. An
-example whose answer is not in the passages, or falls past `MAX_LEN`, is
-dropped; an unanswerable one, 15% of the data, points both ends at 0. At
-inference:
+example whose answer is not in the passages, or falls past `max_len`, is
+dropped; an unanswerable one, 15% of the data, points both ends at 0.
 
-> **In the repo** · `anulm/tasks/rc_pointer.py` · `best_span` · lines 120–133 · @084cbdd
+`max_len` belongs to the reader, not the module:
+
+> **In the repo** · `anulm/tasks/rc_pointer.py` · `load` · lines 136–152 · @fdbb09a
+
+```python
+def load(ckpt, device, max_len: int | None = None):
+    # ...
+    ck = load_checkpoint(ckpt, "cpu")
+    cfg = replace(ck["cfg"], moe_impl="grouped" if device.startswith("cuda") else "sparse")
+    m = AnuLM(cfg)
+    m.load_state_dict(ck["model"])
+    p = Pointer(m)
+    p.max_len = ck.get("max_len", max_len if max_len is not None else MAX_LEN)
+    if "pointer_head" in ck:
+        p.head.load_state_dict(ck["pointer_head"])
+    from anulm.hf_tok import load_tokenizer
+    return p.to(device), load_tokenizer(cfg.tokenizer_path), ck
+```
+
+A trained reader brings the `max_len` it was trained with; a plain backbone
+takes the caller's, or `MAX_LEN` = 640 (line 43). It is stored on the
+`Pointer`, and `PointerQA` passes `self.p.max_len` to every `encode` (lines
+267 and 279). At the book's previous pin `load` overwrote the module-level
+`MAX_LEN` instead, so a second reader loaded in the same process changed how
+the first one cut its input. `PointerMaxLen.test_two_readers_keep_their_own_max_len`
+(`tests/test_quality_loading.py` line 281) loads two readers and checks the
+global is untouched and each keeps its own. At inference:
+
+> **In the repo** · `anulm/tasks/rc_pointer.py` · `best_span` · lines 120–133 · @fdbb09a
 
 ```python
 def best_span(s, e, n):
@@ -386,7 +421,7 @@ with position 0 at 9 + 9: best_span returns None
 given the right passage plus two hard negatives, not open retrieval. The two
 scores are `anulm/inference/rag.py`'s:
 
-> **In the repo** · `anulm/inference/rag.py` · `em_f1` · lines 374–396 · @084cbdd
+> **In the repo** · `anulm/inference/rag.py` · `em_f1` · lines 378–400 · @fdbb09a
 
 ```python
 _PUNCT = re.compile(r"[\"'()\[\],;:।.!?\-–—]")
@@ -493,12 +528,12 @@ used only for the claim in its register row:
 | [R37] | reciprocal rank fusion of several rankings | CHECKED |
 | [R38] | multilingual E5 embedding models, small, base and large | CHECKED |
 
-Repository evidence, all at @084cbdd:
+Repository evidence, all at @fdbb09a:
 - `anulm/inference/rag.py`: constants 42–43, `words` 51, `term_ids` 57, title + text indexed 91 (in `_tokenise`),
-  `em_f1` 374–396, `build` 103–168 (weights
-  136–145), `Dense` 174–230 (`embed` 195–205), `Retriever` 233–304 (default
-  mode 252, `search` 257–277, `bm25` 279–304), `RagQA` 320–371.
-- `anulm/tasks/rc_pointer.py`: `Pointer` 51–73, `encode` 83–103, `best_span` 120–133,
-  `train` 157–232 (loss 188–193).
+  `em_f1` 378–400, `build` 103–168 (weights
+  136–145), `Dense` 174–230 (device 184–193, `embed` 195–205), `Retriever` 233–308 (device 241, default
+  mode 256, `search` 261–281, `bm25` 283–308), `RagQA` 324–375.
+- `anulm/tasks/rc_pointer.py`: `MAX_LEN` 43, `Pointer` 49–72, `encode` 82–102, `best_span` 120–133, `load` 136–152,
+  `train` 155–229 (loss 185–190).
 - `docs/RESULTS.md` §33.
 - `data/rag/meta.json` (the index as built on this machine).

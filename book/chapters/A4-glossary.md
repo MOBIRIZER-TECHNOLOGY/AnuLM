@@ -2,7 +2,7 @@
 title: "Appendix D · Glossary"
 part: "Appendices"
 accent: slate
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # Appendix D  Glossary
@@ -49,7 +49,7 @@ symbols are listed in D.2.
 | feed-forward network (FFN) | the per-token second half of a block; `anulm/model.py` calls it the MLP | 16 |
 | fertility | how many tokens a tokenizer spends on a given text | 9 |
 | forward hook | a function PyTorch calls after a module runs, with its inputs and output | 20, 41 |
-| fp32 | the 32-bit float. Every `.pt` checkpoint here stores its weights in fp32; an exported folder stores its large tensors in bf16 and its small ones in fp32 by default, or every tensor in fp32 with `--weights-dtype float32` (`anulm/hf/export_hf.py` lines 51–60, 230–232) | 23, 39 |
+| fp32 | the 32-bit float. Every `.pt` checkpoint here stores its weights in fp32; an exported folder stores its large tensors in bf16 and its small ones in fp32 by default, or every tensor in fp32 with `--weights-dtype float32` (`anulm/hf/export_hf.py` lines 52–61, 231–233) | 23, 39 |
 | frozen encoder | a pretrained network whose weights are never updated here; it only turns input into vectors | 36 |
 | gate | a per-channel factor, computed from the token, that scales what the channel writes | 16 |
 | gradient | the derivative of the loss with respect to each parameter | 6 |
@@ -75,7 +75,7 @@ symbols are listed in D.2.
 | nats | the unit of a loss taken with the natural logarithm; divide by ln 2 for bits | 3 |
 | nucleus | the set top-p keeps, renormalised to sum to 1 | 28, 41 |
 | packing | laying several short examples end to end in one training row | 30 |
-| pin, the | commit `084cbdd`, the tip of the `restructure` branch; every line number in this book refers to it | 1 |
+| pin, the | commit `fdbb09a`, the `anulm/` package layout after the code-quality pass; every line number in this book refers to it | 1 |
 | pre-norm | normalising a sublayer's input rather than its output | 15 |
 | prefill | the first call, which runs the whole prompt at once and fills the cache | 27 |
 | projector | the small trained network that maps an encoder's vectors to the model's width D | 36 |
@@ -156,5 +156,5 @@ fixed within a part, not across the book:
 | **V**, V | **V**, bold: the value matrix; V, plain: the vocabulary size | |
 | p | a probability, as in p<sub>b,s</sub> | top-p's threshold (Chapters 28, 41) |
 
-*verified*: the values against `tests/test_model.py`'s `tiny()` (line 33) and the
+*verified*: the values against `tests/test_model.py`'s `tiny()` (line 44) and the
 configuration stored in `ckpt_base_v2.pt` (Appendix B.1).

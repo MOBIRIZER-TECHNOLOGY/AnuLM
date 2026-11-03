@@ -2,13 +2,14 @@
 title: "39 · Exporting to the ecosystem"
 part: "IX · To production"
 accent: teal
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 39  Exporting to the ecosystem
 
-A training checkpoint is a pickled Python dict: loading it runs code, it needs
-this repository's classes, and it holds the weights in 32-bit floats.
+A training checkpoint is a pickled Python dict: a full unpickle of it can run
+code (this repository loads it weights-only, Chapter 25), it needs this
+repository's classes, and it holds the weights in 32-bit floats.
 `anulm/hf/export_hf.py` turns it into a folder that anyone can download: weights in
 safetensors, a JSON configuration, the tokenizer and a model card. Two thin
 files let the Hugging Face `transformers` library load it, reusing
@@ -29,10 +30,10 @@ Hugging Face Hub. Its local copy:
 ```
 5. release\AnuLM-Base-v2-400M (local copy; release/ is git-ignored)
            2,301  config.json
-           3,124  configuration_anulm.py  differs from anulm/hf/configuration_anulm.py @084cbdd
-          61,044  model.py  differs from anulm/model.py @084cbdd
+           3,124  configuration_anulm.py  differs from anulm/hf/configuration_anulm.py @fdbb09a
+          61,044  model.py  differs from anulm/model.py @fdbb09a
      796,522,272  model.safetensors
-          12,275  modeling_anulm.py  differs from anulm/hf/modeling_anulm.py @084cbdd
+          12,275  modeling_anulm.py  differs from anulm/hf/modeling_anulm.py @fdbb09a
            6,946  README.md
        1,533,692  tokenizer.json
          413,097  tokenizer.multi32k.json
@@ -40,7 +41,10 @@ Hugging Face Hub. Its local copy:
 ```
 
 *measured*: `ch39_export_roundtrip.py --measure`, against the files the
-exporter copies at the pin. None matches: the exporter copies the checkout as
+exporter copies at the pin; run at @084cbdd and not rerun at @fdbb09a (it
+needs `release/` and `ckpt_base_v2.pt`). The two wrapper files are unchanged
+between those pins and `anulm/model.py` changed, so each "differs" still
+holds. None matches: the exporter copies the checkout as
 it was on export day (39.3), so a release is a snapshot. This one predates the
 `anulm/` package; its wrapper files equal those at @773b6a8. A safetensors file is an 8-byte length, a JSON header naming each
 tensor's dtype, shape and offsets, then the raw numbers (39.2 reads one): no
@@ -49,13 +53,13 @@ pickle, so reading it runs no code.
 ![Figure 39.1 · From a training checkpoint to two loaders](../figures/fig39-1-export.svg)
 
 *Figure 39.1 · From a training checkpoint to two loaders.* *verified*: from
-`anulm/hf/export_hf.py` at @084cbdd and the folder listing above.
+`anulm/hf/export_hf.py` at @fdbb09a and the folder listing above.
 
 `IN THE REPO` · `MEASURED`
 
 ## 39.2  Weights: big tensors in 16 bits, small ones in 32
 
-> **In the repo** · `anulm/hf/export_hf.py` · `to_bf16` · lines 51–60 · @084cbdd
+> **In the repo** · `anulm/hf/export_hf.py` · `to_bf16` · lines 52–61 · @fdbb09a
 
 ```python
 def to_bf16(sd: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
@@ -75,7 +79,7 @@ bfloat16, anything smaller stays float32. Big matrices dominate the bytes;
 small tensors cost nothing to keep exact. It is the default, not the only
 choice:
 
-> **In the repo** · `anulm/hf/export_hf.py` · `main` · lines 265–270 · @084cbdd
+> **In the repo** · `anulm/hf/export_hf.py` · `main` · lines 271–276 · @fdbb09a
 
 ```python
     n_params, sd, flat_groups = 0, None, {}
@@ -86,7 +90,7 @@ choice:
         n_params = sum(v.numel() for v in sd.values())
 ```
 
-`--weights-dtype` (lines 230–232) is `mixed` by default, which applies
+`--weights-dtype` (lines 231–233) is `mixed` by default, which applies
 `to_bf16`; `float32` writes every tensor as trained, for an export that must
 match the `.pt` exactly, at twice the size. `sd` is kept: it is what the
 parity check of 39.4 compares the written file against. The book example
@@ -176,10 +180,10 @@ Three readings:
 *Figure 39.2 · What the released file stores*, per group of tensors, on a
 logarithmic axis. *measured*: `book/measurements/part_viii_ix_export.json`.
 
-> **Details.** The exporter's comment (lines 322–325) and the wrapper's
+> **Details.** The exporter's comment (lines 328–331) and the wrapper's
 > warning (`anulm/hf/modeling_anulm.py` lines 120–133) say that 16-bit router biases
 > make the output collapse into repeated tokens. Neither reproduces at
-> @084cbdd with this checkpoint: the measured costs are 0.003 and 0.004 nats.
+> @fdbb09a with this checkpoint: the measured costs are 0.003 and 0.004 nats.
 > They probably predate the fix that runs the router in float32 (Chapter 17);
 > that history is *not verified here*. Keeping the small tensors in float32
 > remains the safe choice, since it is exact and costs 2 MB. An export that
@@ -190,7 +194,7 @@ logarithmic axis. *measured*: `book/measurements/part_viii_ix_export.json`.
 
 ## 39.3  The configuration, and the code that travels with it
 
-> **In the repo** · `anulm/hf/export_hf.py` · `main` · lines 307–356 · @084cbdd
+> **In the repo** · `anulm/hf/export_hf.py` · `main` · lines 313–362 · @fdbb09a
 
 ```python
     if cfg is not None:
@@ -237,7 +241,7 @@ Three choices:
   passes `trust_remote_code=True`. A speech or image checkpoint has no
   `auto_map`, so `AutoModelForCausalLM` cannot load it as a text model and
   silently drop its projector. Its projector and other extras go to
-  `extras.safetensors` instead (lines 281–287).
+  `extras.safetensors` instead (lines 287–293).
 
 `IN THE REPO`
 
@@ -245,15 +249,18 @@ Three choices:
 
 `load_checkpoint` accepts a `.pt`, a folder or a Hub id:
 
-> **In the repo** · `anulm/model.py` · `load_checkpoint` · lines 1221–1241 · @084cbdd
+> **In the repo** · `anulm/model.py` · `load_checkpoint` · lines 1296–1319 · @fdbb09a
 
 ```python
     p = _P(path)
-    if not p.exists() and re.fullmatch(r"[\w.-]+/[\w.-]+", str(path).replace("\\", "/")):
+    if not p.exists() and re.fullmatch(_HUB_ID, str(path).replace("\\", "/")):
+        # Say so: a typo in a local path otherwise turns into a confusing
+        # network error about a repository that does not exist.
+        print(f"{path}: not found locally, trying the Hugging Face Hub")
         from huggingface_hub import snapshot_download
         p = _P(snapshot_download(str(path).replace("\\", "/")))
     if not p.is_dir():
-        return torch.load(str(p), map_location=map_location, weights_only=False)
+        return safe_load(p, map_location)
     from safetensors.torch import load_file
     dev = map_location if isinstance(map_location, str) else str(map_location)
     meta = json.loads((p / "config.json").read_text(encoding="utf-8"))
@@ -261,7 +268,7 @@ Three choices:
     if "config" in meta:
         cfg_d = dict(meta["config"])
         if cfg_d.get("tokenizer_path"):
-            cfg_d["tokenizer_path"] = str(p / cfg_d["tokenizer_path"])
+            cfg_d["tokenizer_path"] = _inside(p, cfg_d["tokenizer_path"], "tokenizer_path")
         known = {f.name for f in dataclasses.fields(AnuLMConfig)}
         ck["cfg"] = AnuLMConfig(**{k: v for k, v in cfg_d.items() if k in known})
     if (p / "model.safetensors").exists():
@@ -271,22 +278,96 @@ Three choices:
             ck[k] = meta[k]
 ```
 
-A string shaped `owner/name` that is not a local path is downloaded first. A
-file goes to `torch.load`. A folder is rebuilt into the same dict a `.pt`
-holds: `cfg`, with unknown fields dropped so an older `anulm/model.py` can read a
-newer export, and `model`, the tensors in their stored dtypes.
-`load_state_dict` copies them into the float32 model, so bfloat16 becomes
-float32 on the way in. The test
-`an_exported_folder_loads_everywhere_a_pt_does` (`tests/test_model.py` line 914)
-holds the round trip, and checks that eleven named scripts (lines 961–963) call
+A string shaped `owner/name` (`_HUB_ID`, line 1261) that is not a local path
+is downloaded first, and the loader prints that it is trying the Hub, so a
+mistyped local path is not a silent download. A file goes to `safe_load`, the
+weights-only unpickler of Chapter 25: a `.pt` from elsewhere cannot run code
+on load. A folder is rebuilt into the same dict a `.pt` holds: `cfg`, with
+unknown fields dropped so an older `anulm/model.py` can read a newer export,
+and `model`, the tensors in their stored dtypes. `load_state_dict` copies them
+into the float32 model, so bfloat16 becomes float32 on the way in. The test
+`an_exported_folder_loads_everywhere_a_pt_does` (`tests/test_model.py` line 924)
+holds the round trip, and checks that eleven named scripts (lines 970–972) call
 `load_checkpoint` rather than `torch.load`; scripts outside that list are not
 checked.
 
+A downloaded folder is untrusted data too. Its `config.json` names three paths
+the loader follows: `config.tokenizer_path`, `extras.hf_backbone` (an open
+encoder shipped inside the folder) and `extras.base_model` (the backbone of an
+adapter-only folder). Each must stay inside the folder:
+
+> **In the repo** · `anulm/model.py` · `_inside` · lines 1264–1277 · @fdbb09a
+
+```python
+def _inside(root, value: str, what: str) -> str:
+    # ...
+    from pathlib import Path as _P, PurePosixPath, PureWindowsPath
+    v = str(value)
+    if (PureWindowsPath(v).anchor or PurePosixPath(v.replace("\\", "/")).is_absolute()
+            or ".." in PurePosixPath(v.replace("\\", "/")).parts):
+        raise ValueError(f"{root}/config.json: {what} {v!r} must be a relative path inside the folder")
+    full = _P(root) / v
+    # Resolve too, so a symlink inside the folder cannot lead out of it.
+    if not full.resolve().is_relative_to(_P(root).resolve()):
+        raise ValueError(f"{root}/config.json: {what} {v!r} resolves outside the folder")
+    return str(full)
+```
+
+Two tests, then a join. The first refuses a drive or root (`C:/…`, `/etc/…`)
+and any `..` part, on either slash. The second resolves the joined path,
+following symlinks, and requires it still to lie under the folder. The
+exporter writes `tokenizer_path` and `hf_backbone` as bare relative names, so
+its own folders pass. `base_model` is checked harder, because the loader
+fetches it:
+
+> **In the repo** · `anulm/model.py` · `load_checkpoint` · lines 1328–1340 · @fdbb09a
+
+```python
+    if "model" not in ck and base and extras.get("base_model"):
+        # base_model comes from an untrusted config.json: a Hub id only, never
+        # a local path, and its side-by-side copy must sit beside this folder.
+        bm = str(extras["base_model"])
+        side = p.parent / bm.split("/")[-1]                     # downloaded side by side: no fetch
+        # The Hub forbids ".." and a leading or trailing "." in a name, so
+        # "../x" or "a/.." is never a real id -- only a way out of the folder.
+        if (not re.fullmatch(_HUB_ID, bm) or ".." in bm
+                or any(part.startswith(".") or part.endswith(".") for part in bm.split("/"))
+                or side.resolve().parent != p.parent.resolve()):
+            raise ValueError(f"{p}/config.json: extras.base_model {bm!r} is not a Hugging Face "
+                             f"Hub id (owner/name)")
+        b = load_checkpoint(side if side.is_dir() else bm, map_location)
+```
+
+`base_model` must be exactly `owner/name`, never a local path. If a folder
+named `name` sits beside the adapter folder, it is used without a download;
+otherwise the id is fetched. The exporter enforces the same rule when it
+writes one: `--adapter-of` without `--base-model`, or a `--base-model` that is
+not `owner/name`, is a usage error (`p.error`), so an export cannot produce a
+folder its own loader would refuse:
+
+> **In the repo** · `anulm/hf/export_hf.py` · `main` · lines 254–259 · @fdbb09a
+
+```python
+    if args.adapter_of:
+        if not args.base_model:
+            p.error("--adapter-of needs --base-model (the Hub id the backbone is fetched from)")
+        if not re.fullmatch(r"[\w.-]+/[\w.-]+", args.base_model):
+            # load_checkpoint accepts nothing else from a folder's config.json
+            p.error(f"--base-model {args.base_model!r} is not a Hugging Face Hub id (owner/name)")
+```
+
+`tests/test_quality_loading.py`'s `FolderContainment` (lines 144–215) feeds
+the loader `../outside.json`, `/etc/passwd`, `C:/Windows/win.ini` and
+`..\outside.json` as a tokenizer path, two escapes as an encoder folder, and
+a local path, `../secret`, `a/..` and `a/b/c` as a base model, and requires a
+`ValueError` for each; a side-by-side base and an inside tokenizer path still
+load, and the Hub message is printed.
+
 Every export reads itself back through this loader before it reports success.
-The last step of `main` (lines 372–373) calls `check_parity` unless
+The last step of `main` (lines 378–379) calls `check_parity` unless
 `--skip-parity` is given:
 
-> **In the repo** · `anulm/hf/export_hf.py` · `check_parity` · lines 114–139 · @084cbdd
+> **In the repo** · `anulm/hf/export_hf.py` · `check_parity` · lines 115–140 · @fdbb09a
 
 ```python
 def check_parity(out: Path, weights: dict | None, groups: dict, tok_src: Path | None, tok_file: str | None) -> None:
@@ -320,7 +401,7 @@ In order:
   (projector, LoRA, heads). For each, the tensor names must match, then each
   tensor's dtype and every value (`torch.equal`, not a tolerance).
 - **The tokenizer**: the checkpoint's own and the copied file must encode the
-  three `PARITY_TEXTS` (line 111: English, Hindi, Python) to the same ids.
+  three `PARITY_TEXTS` (line 112: English, Hindi, Python) to the same ids.
 - **The verdict**: any mismatch ends the export with `SystemExit` naming up to
   five; otherwise one line reports the count.
 
@@ -341,7 +422,7 @@ tokenizer clause is absent).
 
 ## 39.5  The `transformers` wrapper reuses the real modules
 
-> **In the repo** · `anulm/hf/modeling_anulm.py` · `AnuLMForCausalLM.__init__` · lines 155–167 · @084cbdd
+> **In the repo** · `anulm/hf/modeling_anulm.py` · `AnuLMForCausalLM.__init__` · lines 155–167 · @fdbb09a
 
 ```python
     def __init__(self, config: AnuLMConfig):
@@ -364,7 +445,7 @@ dataclass. The wrapper builds a native `AnuLM` and adopts its modules under the
 same attribute names, so the parameter names match the file and no key is
 remapped. Only the outer loop is new:
 
-> **In the repo** · `anulm/hf/modeling_anulm.py` · `AnuLMForCausalLM.forward` · lines 220–255 · @084cbdd
+> **In the repo** · `anulm/hf/modeling_anulm.py` · `AnuLMForCausalLM.forward` · lines 220–255 · @fdbb09a
 
 ```python
         if inputs_embeds is not None:
@@ -427,7 +508,7 @@ both ways, then compares:
 ```
 
 *verified*: `ch39_export_roundtrip.py`. The test
-`transformers_wrapper_matches_the_native_model` (`tests/test_model.py` line 1271)
+`transformers_wrapper_matches_the_native_model` (`tests/test_model.py` line 1285)
 holds the same, cached and uncached.
 
 > **Details.** The rotary tables are buffers registered as non-persistent, so
@@ -441,7 +522,7 @@ holds the same, cached and uncached.
 
 ## 39.6  What the wrapper does not do
 
-> **In the repo** · `anulm/hf/modeling_anulm.py` · `AnuLMForCausalLM._reorder_cache` · lines 284–291 · @084cbdd
+> **In the repo** · `anulm/hf/modeling_anulm.py` · `AnuLMForCausalLM._reorder_cache` · lines 284–291 · @fdbb09a
 
 ```python
     @staticmethod
@@ -461,7 +542,7 @@ holds the same, cached and uncached.
   repository's own code (Chapter 36), not `AutoModelForCausalLM`.
 - **16-bit loading warns**, in `from_pretrained`:
 
-> **In the repo** · `anulm/hf/modeling_anulm.py` · `AnuLMPreTrainedModel.from_pretrained` · lines 111–134 · @084cbdd
+> **In the repo** · `anulm/hf/modeling_anulm.py` · `AnuLMPreTrainedModel.from_pretrained` · lines 111–134 · @fdbb09a
 
 ```python
     @classmethod
@@ -530,8 +611,9 @@ and grades each position against the token two ahead.
 - On held-out text bfloat16 storage moved the loss by −0.00004 nats. Rounding
   the router biases erases them and changes about half the expert choices, yet
   cost only 0.003 nats; a whole-bfloat16 model cost 0.004 and did not collapse.
-- `load_checkpoint` turns a folder or Hub id into the same dict a `.pt` gives;
-  a test holds eleven named scripts to using it.
+- `load_checkpoint` turns a folder or Hub id into the same dict a `.pt` gives,
+  reads a `.pt` weights-only, and refuses folder paths that lead outside the
+  folder or a `base_model` that is not a Hub id.
 - The `transformers` wrapper adopts `anulm/model.py`'s modules by name, returns every
   position's logits, shifts labels itself and carries the native cache.
 - It has no beam search, no padding mask and no `inputs_embeds`, and it warns
@@ -547,16 +629,19 @@ and grades each position against the token two ahead.
 ## References
 
 This chapter cites no external research. Its evidence is the repository at
-@084cbdd, the local release folder and the measurements:
-- `anulm/hf/export_hf.py`: `to_bf16` 51–60, `PARITY_TEXTS` 111, `check_parity`
-  114–139, `tensor_groups` 142–146, `main` 210–377 (`--weights-dtype` 230–232,
-  weights 263–287, config 305–351, code copy 353–356, parity 372–373).
-- `anulm/model.py`: `load_checkpoint` 1205–1254.
+@fdbb09a, the local release folder and the measurements:
+- `anulm/hf/export_hf.py`: `to_bf16` 52–61, `PARITY_TEXTS` 112, `check_parity`
+  115–140, `tensor_groups` 143–147, `main` 211–383 (`--weights-dtype` 231–233,
+  `--base-model` checks 254–259, weights 271–293, config 313–357, code copy
+  360–362, parity 378–379).
+- `anulm/model.py`: `safe_load` 1228–1258, `_HUB_ID` 1261, `_inside` 1264–1277,
+  `load_checkpoint` 1280–1342 (`base_model` 1328–1340).
 - `anulm/hf/configuration_anulm.py`: `AnuLMConfig` 34–84.
 - `anulm/hf/modeling_anulm.py`: `AnuLMCache` 45–70, `AnuLMPreTrainedModel` 73–143,
   `AnuLMForCausalLM` 146–291.
-- `tests/test_model.py`: `an_exported_folder_loads_everywhere_a_pt_does` 914,
-  `transformers_wrapper_matches_the_native_model` 1271.
+- `tests/test_model.py`: `an_exported_folder_loads_everywhere_a_pt_does` 924,
+  `transformers_wrapper_matches_the_native_model` 1285.
+- `tests/test_quality_loading.py`: `FolderContainment` 144–215.
 - `release/AnuLM-Base-v2-400M/` (git-ignored local copy of
   huggingface.co/toonist/AnuLM-Base-v2-400M).
 - Book example and measurements: `book/code-examples/ch39_export_roundtrip.py`,

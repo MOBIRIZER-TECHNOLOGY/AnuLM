@@ -2,12 +2,12 @@
 title: "Appendix A · Tensor shapes for every module"
 part: "Appendices"
 accent: slate
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # Appendix A  Tensor shapes for every module
 
-Every shape below was printed by running `anulm/model.py` unchanged at @084cbdd,
+Every shape below was printed by running `anulm/model.py` unchanged at @fdbb09a,
 with `book/code-examples/ch41_shapes.py` (**Book example, not repository
 code**). The script puts a forward hook on each module and wraps the two
 module-level functions `apply_rope` and `_sdpa`. It records what goes in and
@@ -61,7 +61,7 @@ Layer 0 is dense; layers 1 to L − 1 are mixtures of experts. A row marked
 *verified*: printed by `ch41_shapes.py`. Notes on four rows:
 
 - **`embed_tokens` never runs as a module.** `AnuLM.forward` reads its table
-  through `F.embedding(idx, self._table("in"))` (`anulm/model.py` line 884), so no
+  through `F.embedding(idx, self._table("in"))` (`anulm/model.py` line 896), so no
   hook fires; the stream it produces is the (B, S, D) input of
   `layers.0.input_layernorm`.
 - **The mask.** `tiny()` has no window, so `_sdpa` gets `mask=None` and uses
@@ -73,7 +73,7 @@ Layer 0 is dense; layers 1 to L − 1 are mixtures of experts. A row marked
 - **With targets.** `lm_head` gets every position and returns (B, S, V). The
   one exception is a model in training mode with `enable_chunked_loss` on: the
   head then runs a chunk at a time and `forward` returns `None` for the logits
-  (`anulm/model.py` line 907; Chapter 23). In evaluation mode the chunked path is
+  (`anulm/model.py` line 919; Chapter 23). In evaluation mode the chunked path is
   skipped and the full logits come back.
 
 ## A.2  The decode step

@@ -59,7 +59,7 @@ def probs_from_generate(z, prompt, cls=FixedLogits, **kw):
     or, if it made no draw (temperature <= 0), the one-hot of the id it chose."""
     seen, orig = [], torch.multinomial
 
-    def spy(p, num_samples):                         # generate calls this, line 1157
+    def spy(p, num_samples):                         # generate calls this, line 1169
         seen.append(p.clone())
         return orig(p, num_samples)
 
@@ -68,13 +68,13 @@ def probs_from_generate(z, prompt, cls=FixedLogits, **kw):
         out = cls(z).generate(torch.tensor([prompt]), 1, **kw)
     finally:
         torch.multinomial = orig
-    if not seen:                                     # the argmax branch, lines 1149-1150
+    if not seen:                                     # the argmax branch, lines 1161-1162
         return torch.nn.functional.one_hot(out[0, -1], z.numel()).float()
     return seen[0][0]
 
 
 def book_probs(z, seen_ids, temperature=1.0, top_k=None, penalty=1.0):
-    """generate's lines 1145-1156, one row at a time, as Chapter 28 states them."""
+    """generate's lines 1157-1168, one row at a time, as Chapter 28 states them."""
     z = z.clone().float()
     for i in set(seen_ids) if penalty != 1.0 else ():
         z[i] = z[i] / penalty if z[i] > 0 else z[i] * penalty   # generate's sign rule

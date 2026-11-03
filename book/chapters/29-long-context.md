@@ -2,7 +2,7 @@
 title: "29 · Long context: sliding windows and YaRN"
 part: "VI · Generation"
 accent: teal
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 29  Long context: sliding windows and YaRN
@@ -56,7 +56,7 @@ divides only the slow frequencies by s, keeps the fast ones and ramps between
 [R07]. The ramp's
 ends depend on how many turns a pair makes within the original context:
 
-> **In the repo** · `anulm/model.py` · `_yarn_correction_dim` · lines 253–268 · @084cbdd
+> **In the repo** · `anulm/model.py` · `_yarn_correction_dim` · lines 260–275 · @fdbb09a
 
 ```python
 def _yarn_correction_dim(num_rotations, dim, base, orig_ctx):
@@ -81,7 +81,7 @@ num_rotations` for the pair i that makes exactly `num_rotations` turns
 `high` the pair making `beta_slow` = 1, rounded outward: the paper's β = 32 and
 α = 1 [R07], the defaults at config lines 109–110. `yarn_mscale` is 29.3's.
 
-> **In the repo** · `anulm/model.py` · `Rotary._build_inv_freq` · lines 298–315 · @084cbdd
+> **In the repo** · `anulm/model.py` · `Rotary._build_inv_freq` · lines 305–322 · @fdbb09a
 
 ```python
     def _build_inv_freq(cfg: AnuLMConfig, dim: int) -> torch.Tensor:
@@ -136,7 +136,7 @@ blend is linear in frequency, so pair 4's divisor at factor 2 is
 frequency at factors 2 and 4, released configuration. *verified*: the figure's
 script calls `_build_inv_freq` and asserts the band edges.
 
-> **In the repo** · `tests/test_model.py` · `yarn_blends_the_right_bands` · lines 120–129 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `yarn_blends_the_right_bands` · lines 131–140 · @fdbb09a
 
 ```python
 def yarn_blends_the_right_bands():
@@ -162,7 +162,7 @@ YaRN's second half multiplies the attention logits by 1/t, where the paper
 fits √(1/t) = 0.1·ln(s) + 1 for LLaMA and Llama 2; it is not derived [R07].
 Here √(1/t) is `yarn_mscale`, m, and m² lands on the attention scale:
 
-> **In the repo** · `anulm/model.py` · `Rotary.__init__` · lines 286–291 · @084cbdd
+> **In the repo** · `anulm/model.py` · `Rotary.__init__` · lines 293–298 · @fdbb09a
 
 ```python
         if cfg.yarn:
@@ -173,7 +173,7 @@ Here √(1/t) is `yarn_mscale`, m, and m² lands on the attention scale:
             self.attn_mscale = self.table_mscale = 1.0
 ```
 
-> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 439–442 · @084cbdd
+> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 446–449 · @fdbb09a
 
 ```python
         # YaRN's temperature term lives here, not in the rotary tables --
@@ -182,7 +182,7 @@ Here √(1/t) is `yarn_mscale`, m, and m² lands on the attention scale:
         self.scale = cfg.head_dim ** -0.5 * (rotary.attn_mscale ** 2)
 ```
 
-The factor m is split as DeepSeek splits it (comment, lines 281–285).
+The factor m is split as DeepSeek splits it (comment, lines 288–292).
 `attn_mscale` goes on the scale squared, as scaling query and key by m
 multiplies their product by m²; `table_mscale`, for the cos and sin tables, is
 exactly 1 with the shipped settings. So m² = 1/t, as in the paper:
@@ -203,7 +203,7 @@ factor 4: mscale 1.1386, scale x 1.2965 (0.16206 instead of 0.12500); table fact
 `head_dim**-0.5`, so `yarn` applied the band blend alone and still ran.
 `docs/RESULTS.md` §3 records the fix, after which YaRN's far-end loss on its
 GQA preset fell from 1.7854 to 1.6882; `yarn_temperature_reaches_attention`
-(line 133) now checks both attention types.
+(line 144) now checks both attention types.
 
 `IN THE REPO`
 
@@ -212,7 +212,9 @@ GQA preset fell from 1.7854 to 1.6882; `yarn_temperature_reaches_attention`
 `book/code-examples/ch29_measure_context.py` loads `ckpt_base_v2.pt` into
 configurations that differ only in `block_size`, `yarn`, `yarn_factor` and
 `yarn_original_context`, as in `anulm/eval/eval_context.py`, plus one with the window off,
-which `anulm/eval/eval_context.py` never does. No retraining:
+which `anulm/eval/eval_context.py` never does. `block_size` must rise with the
+length: `AnuLM.forward` raises `ValueError` for any position past it
+(`anulm/model.py` lines 897–898). No retraining:
 
 ```python
     settings = {
@@ -288,7 +290,7 @@ with plain RoPE; why v2 extends so much worse is *not measured here*.
 
 ## 29.5  The sliding window
 
-> **In the repo** · `anulm/model.py` · `Block.__init__` · lines 805–807 · @084cbdd
+> **In the repo** · `anulm/model.py` · `Block.__init__` · lines 812–814 · @fdbb09a
 
 ```python
         # Sliding window on the first max_window_layers layers, full attention
@@ -412,13 +414,13 @@ The sliding window is described from the code only; sources for it and for a
 rolling-buffer cache are proposed in
 `technical-review/register-additions/part_vi.md`.
 
-Repository evidence, all at @084cbdd:
+Repository evidence, all at @fdbb09a:
 - `anulm/model.py`: configuration 109–110; `_yarn_correction_dim`,
-  `_yarn_correction_range`, `yarn_mscale` 253–268; `Rotary.__init__` 281–291;
-  `Rotary._build_inv_freq` 298–315; `_attn_mask` 358–374;
-  `GQAttention.__init__` 439–442; `Block.__init__` 805–807.
-- `tests/test_model.py`: `yarn_blends_the_right_bands` 120,
-  `yarn_temperature_reaches_attention` 133.
+  `_yarn_correction_range`, `yarn_mscale` 260–275; `Rotary.__init__` 288–298;
+  `Rotary._build_inv_freq` 305–322; `_attn_mask` 365–381;
+  `GQAttention.__init__` 446–449; `Block.__init__` 812–814.
+- `tests/test_model.py`: `yarn_blends_the_right_bands` 131,
+  `yarn_temperature_reaches_attention` 144.
 - `docs/RESULTS.md` §3, §15, §27.
 - Book examples: `code-examples/ch29_long_context.py` (CPU);
   `code-examples/ch29_measure_context.py` on `ckpt_base_v2.pt` and

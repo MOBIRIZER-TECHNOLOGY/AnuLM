@@ -30,14 +30,14 @@ downloaded, run and checked.
 
 Every code citation names a file, a symbol, line numbers and a commit:
 
-> **In the repo** · `anulm/model.py` · `_sdpa` · lines 407–411 · @084cbdd
+> **In the repo** · `anulm/model.py` · `_sdpa` · lines 414–418 · @fdbb09a
 
-The line numbers are checked against commit `084cbdd` by the book's own tools.
-That commit is the tip of the repository's `restructure` branch, which moved
+The line numbers are checked against commit `fdbb09a` by the book's own tools.
+That commit is on the repository's `restructure` branch, which moved
 the code into the `anulm/` package, and it is not on GitHub yet. The public
 `main`,
 [`ae59238`](https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/tree/ae592387dc373cc6f579abce444c7f08c9e373a3),
-still has the old flat layout (`model.py` at the root, not `anulm/model.py`),
+still has the old flat layout (`anulm/model.py` at the root, not `anulm/model.py`),
 so its line numbers differ and the HTML edition does not link citations yet.
 Once the branch is published, `tools/build_preview.py` links every citation
 whose file is identical at the published commit. The lab book under `course/`,

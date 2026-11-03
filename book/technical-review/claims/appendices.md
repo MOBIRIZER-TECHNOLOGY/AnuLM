@@ -164,3 +164,5 @@ above (appendices not read by the tools) no longer applies.
     integrator; Part X may not edit it.
   - The skip test is textual, so `trace_forward.py` and `attention_by_hand.py`
     are skipped because they mention the checkpoint.
+
+Re-pinned to @fdbb09a on 2026-11-03: A3's Line column regenerated from the `@test` defs at the pin (all 76 had been at 084cbdd), `tiny()` line 44, PASS/SKIP/FAIL and `ModelTests` described, *optional* now means SKIP, `block_size_boundary` and `config_rejects_unreachable_topk` raise `ValueError`; C.5's three early-return rows replaced by a SKIP row (699, 720, 738, 1299, 1358) and the demo page's partial skip (901); new C.6 lists the three `tests/test_quality_*.py` files (19, 26, 18 tests). A2: config Line column recomputed, unchanged; `__post_init__` refuses with `ValueError`. A4: the pin's definition. A6: `CUDA_VISIBLE_DEVICES=-1`, the quality-suite command, timings, and a note that the B.1 audit line was not rerun (needs `ckpt_base_v2.pt`). Audit (C, E, A) rerun: ok; 32 of 39 illustrative paragraphs name no script, unchanged.

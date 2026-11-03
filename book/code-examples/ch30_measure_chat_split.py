@@ -11,11 +11,11 @@ packed, without printing a single held-out row.
    exact same question string, in data/chat_train.jsonl; how many of those
    also have the same answer; and how many training questions occur more than
    once (the copies that make the leak possible).
-   Then finetune.py's rule at @084cbdd: how many held-out rows it drops
+   Then finetune.py's rule at @fdbb09a: how many held-out rows it drops
    because their make_qa.question_key is also a training question.
 2. The mechanism, on made-up rows: make_chat.main's old split (@773b6a8,
    copied verbatim), which built the files on disk, holds out one object and
-   keeps its identical twin in training; make_chat.split_chat_rows (@084cbdd)
+   keeps its identical twin in training; make_chat.split_chat_rows (@fdbb09a)
    puts every copy of a question on one side.
 3. The packed training cache finetune.py wrote beside chat_train.jsonl:
    rows, block length, and the share of positions that carry a target.
@@ -124,7 +124,7 @@ def main() -> None:
     # 3. the packed cache finetune.load_packed wrote
     cache = ROOT / "data" / "chat_train.jsonl.multi32k.b1024.pt"
     if cache.exists():
-        c = torch.load(cache, weights_only=False)
+        c = torch.load(cache, map_location="cpu", weights_only=True)   # as finetune.load_packed reads it
         x, y = c["x"], c["y"]
         share = float((y != -1).float().mean())
         res["packed"] = {"rows": int(x.shape[0]), "row_length": int(x.shape[1]),

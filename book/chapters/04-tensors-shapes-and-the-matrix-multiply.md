@@ -2,7 +2,7 @@
 title: "4 · Tensors, shapes and the matrix multiply"
 part: "II · Just enough mathematics"
 accent: slate
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 4  Tensors, shapes and the matrix multiply
@@ -59,7 +59,7 @@ against the module. Its driver:
 ## 4.1  Shapes are types
 
 A shape is the most useful type annotation a tensor has; AnuLM writes them as
-comments, as on `GQAttention.forward`'s lines 454–456 (4.3). The dangerous bugs are shapes that are right in
+comments, as on `GQAttention.forward`'s lines 461–463 (4.3). The dangerous bugs are shapes that are right in
 size but wrong in meaning: two axes swapped, a head read from the wrong slice.
 The running input is `x`, a (2, 5, 32) tensor: B = 2 sequences of S = 5
 positions, each a D = 32 vector.
@@ -70,7 +70,7 @@ positions, each a D = 32 vector.
 
 The attention layer's two matrices are built here:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 430–434 · @084cbdd
+> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 437–441 · @fdbb09a
 
 ```python
         # One fused projection: (H + 2*Hkv) * Dh, exactly as the 30B does.
@@ -107,7 +107,7 @@ output is one input row's dot product with one row of W.
 
 ## 4.3  `view`, `split` and `transpose`: cutting the width into heads
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 450–456 · @084cbdd
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 457–463 · @fdbb09a
 
 ```python
         B, S, _ = x.shape
@@ -172,7 +172,7 @@ position, as `view` and `split` divide them. *verified*: slot boundaries from
 
 After attention, the heads are laid side by side again:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 476–487 · @084cbdd
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 483–494 · @fdbb09a
 
 ```python
         if NATIVE_GQA and self.n_rep > 1:
@@ -189,7 +189,7 @@ After attention, the heads are laid side by side again:
         return self.dense(y)
 ```
 
-`NATIVE_GQA` is `False` by default (line 380), so the `else` branch runs
+`NATIVE_GQA` is `False` by default (line 387), so the `else` branch runs
 (Chapter 13). Either way `y` is (B, H, S, D<sub>h</sub>).
 `transpose(1, 2)` makes `y` (B, S, H, D<sub>h</sub>), and `view(B, S, -1)`
 merges the last two axes into H·D<sub>h</sub> = 32 (`-1`: whatever is left).
@@ -225,7 +225,7 @@ this CPU with torch 2.11, the kernel's output follows the layout of `q`. Here
 (B, S, H, D<sub>h</sub>) and a plain `view` would have worked; from a
 contiguous `q` it is stored as (B, H, S, D<sub>h</sub>) and the copy is needed.
 `contiguous()` returns the tensor itself when it is already in order and
-copies otherwise, so line 486 is correct for either layout.
+copies otherwise, so line 493 is correct for either layout.
 
 `IMPLEMENTATION-DEPENDENT` (the kernel's output layout) · `IN THE REPO`
 
@@ -234,7 +234,7 @@ copies otherwise, so line 486 is correct for either layout.
 Rotary position embeddings (Chapter 14) multiply every head of every sequence
 by the same per-position table:
 
-> **In the repo** · `anulm/model.py` · `apply_rope` · lines 339–355 · @084cbdd
+> **In the repo** · `anulm/model.py` · `apply_rope` · lines 346–362 · @fdbb09a
 
 ```python
 def rotate_half(x):
@@ -262,7 +262,7 @@ match, without copying, so each of the B·H heads is multiplied by the same
 table. RMSNorm uses the rule the other way, keeping a reduced axis to divide
 by:
 
-> **In the repo** · `anulm/model.py` · `RMSNorm.forward` · lines 227–232 · @084cbdd
+> **In the repo** · `anulm/model.py` · `RMSNorm.forward` · lines 234–239 · @fdbb09a
 
 ```python
     def forward(self, x):
@@ -304,7 +304,7 @@ RMSNorm: mean(-1, keepdim=True) (2, 5, 1); x * rsqrt(...) (2, 5, 32)
 First, the cache grows the key axis. With a KV cache (Chapter 27), new keys
 are joined to the stored ones along dimension 2:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 463–470 · @084cbdd
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 470–477 · @fdbb09a
 
 ```python
         if cache is not None:
@@ -424,10 +424,10 @@ inner axes must match and disappear. *verified*: shapes from `ch04_shapes.py`.
 
 This chapter cites no research references.
 
-Repository evidence, all at @084cbdd:
-- `anulm/model.py`: `RMSNorm.forward` 227–232; `rotate_half` 339–343;
-  `apply_rope` 346–355; `_sdpa` 407–411; `GQAttention.__init__` 430–434;
-  `NATIVE_GQA` 380; `GQAttention.forward` 450–456, 463–470 and 476–487.
-- `tests/test_model.py`: `tiny` 33–38.
+Repository evidence, all at @fdbb09a:
+- `anulm/model.py`: `RMSNorm.forward` 234–239; `rotate_half` 346–350;
+  `apply_rope` 353–362; `_sdpa` 414–418; `GQAttention.__init__` 437–441;
+  `NATIVE_GQA` 387; `GQAttention.forward` 457–463, 470–477 and 483–494.
+- `tests/test_model.py`: `tiny` 44–49.
 
 The book example is `code-examples/ch04_shapes.py`.

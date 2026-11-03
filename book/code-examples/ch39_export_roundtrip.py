@@ -47,7 +47,7 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 warnings.filterwarnings("ignore", category=FutureWarning)
 RELEASE = ROOT / "release" / "AnuLM-Base-v2-400M"
 OUT = ROOT / "book" / "measurements" / "part_viii_ix_export.json"
-PIN = "084cbdd"
+PIN = "fdbb09a"
 
 
 def small(**kw) -> M.AnuLMConfig:
@@ -216,7 +216,7 @@ def measure() -> dict:
         ("  + biases centred per layer, then bf16", RELEASE, lambda sd: bias(sd, lambda v: bf(v - v.mean())), False),
         ("native .pt, whole model .to(bfloat16)", ROOT / "ckpt_base_v2.pt", None, True),
     ]
-    sd0 = torch.load(ROOT / "ckpt_base_v2.pt", map_location="cpu", mmap=True, weights_only=False)["model"]
+    sd0 = M.safe_load(ROOT / "ckpt_base_v2.pt", map_location="cpu", mmap=True)["model"]
     bs = [v.float() for k, v in sd0.items() if k.endswith("expert_bias")]
     means, spans = [float(b.mean()) for b in bs], [float(b.max() - b.min()) for b in bs]
     distinct = [int(bf(b).unique().numel()) for b in bs]

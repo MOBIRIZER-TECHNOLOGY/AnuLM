@@ -2,7 +2,7 @@
 title: "31 · LoRA"
 part: "VII · After pre-training"
 accent: plum
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 31  LoRA
@@ -54,7 +54,7 @@ query–key–value projection with r = 16: 40,960 trainable numbers beside
 
 ## 31.2  `LoRALinear`
 
-> **In the repo** · `anulm/lora.py` · `LoRALinear` · lines 50–84 · @084cbdd
+> **In the repo** · `anulm/lora.py` · `LoRALinear` · lines 50–84 · @fdbb09a
 
 ```python
 class LoRALinear(nn.Module):
@@ -113,7 +113,7 @@ layer to float rounding, because x(**W** + c**BA**)<sup>T</sup> = x**W**<sup>T</
 
 ## 31.3  Which layers: `apply_lora`
 
-> **In the repo** · `anulm/lora.py` · `apply_lora` · lines 87–112 · @084cbdd
+> **In the repo** · `anulm/lora.py` · `apply_lora` · lines 87–112 · @fdbb09a
 
 ```python
 def apply_lora(model: nn.Module, r: int = 16, alpha: float = 32.0,
@@ -178,7 +178,7 @@ The balancing bias of each router (Chapter 17) is a buffer, not a parameter.
 30, 30.4). The bias keeps moving while the weights stand still. `anulm/lora.py`
 therefore saves it with the adapters:
 
-> **In the repo** · `anulm/lora.py` · `router_state_dict` · lines 126–137 · @084cbdd
+> **In the repo** · `anulm/lora.py` · `router_state_dict` · lines 126–137 · @fdbb09a
 
 ```python
 def router_state_dict(model: nn.Module) -> dict:
@@ -189,7 +189,7 @@ def router_state_dict(model: nn.Module) -> dict:
 
 and `anulm/training/finetune.py` writes it next to them:
 
-> **In the repo** · `anulm/training/finetune.py` · `main` · lines 392–399 · @084cbdd
+> **In the repo** · `anulm/training/finetune.py` · `main` · lines 393–400 · @fdbb09a
 
 ```python
                 if args.lora:
@@ -261,7 +261,7 @@ bias by up to 0.3, more than the widest layer's spread.
 
 ## 31.5  Merging
 
-> **In the repo** · `anulm/lora.py` · `merge_lora` · lines 150–166 · @084cbdd
+> **In the repo** · `anulm/lora.py` · `merge_lora` · lines 150–166 · @fdbb09a
 
 ```python
 @torch.no_grad()
@@ -280,12 +280,22 @@ def merge_lora(model: nn.Module) -> int:
 
 Each base weight becomes **W** + (α/r)**BA**, and the plain `nn.Linear` goes
 back in the wrapper's place: an ordinary AnuLM, as fast as the base, which is
-LoRA's "no additional inference latency" [R32]. The command-line merge
-restores the biases first:
+LoRA's "no additional inference latency" [R32]. The command-line merge,
+`python -m anulm.lora merge ADAPTER OUT`, reads the adapter, rebuilds the
+base, and restores the biases first:
 
-> **In the repo** · `anulm/lora.py` · `_merge_cli` · lines 196–204 · @084cbdd
+> **In the repo** · `anulm/lora.py` · `_merge_cli` · lines 189–209 · @fdbb09a
 
 ```python
+    ad = load_checkpoint(args.adapter, "cpu", base=False)
+    if "lora" not in ad:
+        raise ValueError(f"{args.adapter} has no adapters; is it a full checkpoint?")
+    base_path = args.base or ad.get("base_ckpt") or ad.get("base_model")
+    if not base_path:
+        raise ValueError("the adapter does not record its base; pass --base")
+    # ...
+    base = load_checkpoint(base_path, "cpu")
+    model = AnuLM(base["cfg"])
     model.load_state_dict(base["model"])
     cfg = ad.get("lora_cfg") or {}
     apply_lora(model, cfg.get("r", 16), cfg.get("alpha", 32.0),
@@ -296,6 +306,17 @@ restores the biases first:
         print(f"restored {len(ad['router'])} router biases")
     n = merge_lora(model)
 ```
+
+The adapter is read by `load_checkpoint` (Chapter 25), not `torch.load`. That
+does two things. The read is weights-only, so an adapter downloaded from
+someone else cannot run code when it is merged
+(`test_lora_merge_refuses_an_unsafe_adapter`, `tests/test_quality_loading.py`
+line 131). And `ADAPTER` may be an exported adapter folder (Chapter 39) as well
+as a `.pt`: such a folder records its base as `base_model`, a Hub id, hence
+the third choice for `base_path`. `base=False` stops `load_checkpoint` from
+fetching that base itself; the next line loads it once. A missing adapter or
+base is a `ValueError`, which `python -O` cannot strip as it would an
+`assert`.
 
 On the released checkpoint, in fp32 on the GPU, with every **B** set to
 random values of standard deviation 10⁻³ (**A** and **B** drawn with seed 0) on a 21-token made-up
@@ -308,7 +329,7 @@ the adapted one, with no LoRA tensor left. *measured*:
 
 ## 31.6  The proof, and what it does not exercise
 
-> **In the repo** · `tests/test_model.py` · `lora_starts_as_the_base_model_and_merges_back_exactly` · lines 1047–1061 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `lora_starts_as_the_base_model_and_merges_back_exactly` · lines 1056–1070 · @fdbb09a
 
 ```python
     model = AnuLM(cfg).eval()
@@ -326,12 +347,12 @@ the adapted one, with no LoRA tensor left. *measured*:
         f"something other than the adapters is trainable: {sorted(trainable)[:3]}"
 ```
 
-`lora_starts_as_the_base_model_and_merges_back_exactly` (line 1021) checks step 0 to 10⁻⁶ and that only `lora_` tensors
+`lora_starts_as_the_base_model_and_merges_back_exactly` (line 1030) checks step 0 to 10⁻⁶ and that only `lora_` tensors
 train. It then takes one optimiser step, saves the adapter and biases,
 rebuilds from the base, and requires the merged model within 10⁻⁴ of the
 adapted one. Its last block is meant to show the router drift:
 
-> **In the repo** · `tests/test_model.py` · `lora_starts_as_the_base_model_and_merges_back_exactly` · lines 1102–1106 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `lora_starts_as_the_base_model_and_merges_back_exactly` · lines 1111–1115 · @fdbb09a
 
 ```python
     trained_bias = router[sorted(router)[0]]
@@ -344,7 +365,7 @@ adapted one. Its last block is meant to show the router drift:
 > **Details.** The test's single step never calls `update_expert_biases()`, so
 > the bias does not move: run as written, `trained_bias` equals `base_bias`
 > and the `if` skips the assertion (checked by running the test's steps at
-> @084cbdd). The drift is exercised by the book example in 31.4, not by the
+> @fdbb09a). The drift is exercised by the book example in 31.4, not by the
 > suite. Calling `model.update_expert_biases()` after `opt.step()` in the
 > test would make the block run.
 
@@ -373,7 +394,7 @@ LoRA buys size: 5.7 MB against 1,517.6 MB, and optimiser state that fits a
 small card. Adapting the experts is the worst trade, +0.049 for five times the
 wall clock: each expert trains only on the tokens routed to it.
 
-> **Details.** `anulm/tasks/decide.py` has its own LoRA (lines 247–286), attached by
+> **Details.** `anulm/tasks/decide.py` has its own LoRA (lines 249–288), attached by
 > forward hooks so that the backbone's modules and state dict stay untouched
 > and the same weights still chat (Chapter 32). Its **A** is drawn with
 > standard deviation 1/r, and its `LoRAQV` adapts only the Q and V slices of
@@ -456,12 +477,12 @@ used only for the claim in its register row:
 | [R33] | QLoRA: 4-bit NormalFloat, double quantisation, paged optimisers | CHECKED |
 | [S09] | adapter modules for parameter-efficient transfer, before LoRA | CHECKED |
 
-Repository evidence, all at @084cbdd:
+Repository evidence, all at @fdbb09a:
 - `anulm/lora.py`: `DEFAULT_TARGETS` 47, `LoRALinear` 50–84, `apply_lora` 87–112,
-  `router_state_dict` 126–137, `merge_lora` 150–166, `_merge_cli` 181–214.
-- `anulm/training/finetune.py`: adapter save 392–399; `update_expert_biases` call 374.
-- `anulm/model.py`: `AnuLM.update_expert_biases` 1059–1089.
-- `anulm/tasks/decide.py`: `LoRA` 247–262, `LoRAQV` 265–286.
-- `tests/test_model.py`: `lora_starts_as_the_base_model_and_merges_back_exactly` 1021.
+  `router_state_dict` 126–137, `merge_lora` 150–166, `_merge_cli` 181–219.
+- `anulm/training/finetune.py`: adapter save 393–400; `update_expert_biases` call 375.
+- `anulm/model.py`: `AnuLM.update_expert_biases` 1071–1101.
+- `anulm/tasks/decide.py`: `LoRA` 249–264, `LoRAQV` 267–288.
+- `tests/test_model.py`: `lora_starts_as_the_base_model_and_merges_back_exactly` 1030.
 - `docs/RESULTS.md` §29.
 - Measurements: `book/measurements/part_vii_lora.json`.

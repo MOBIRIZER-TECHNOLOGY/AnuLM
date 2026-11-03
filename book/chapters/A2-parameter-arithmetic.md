@@ -2,7 +2,7 @@
 title: "Appendix B · The 400M arithmetic"
 part: "Appendices"
 accent: slate
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # Appendix B  The 400M arithmetic
@@ -31,8 +31,8 @@ compare with a tool that reports GiB.
 
 ## B.1  The configuration
 
-`AnuLMConfig` (`anulm/model.py` lines 39–211) is a dataclass of 42 fields. The table
-gives each field's line and declared default at @084cbdd, the two presets this
+`AnuLMConfig` (`anulm/model.py` lines 39–218) is a dataclass of 42 fields. The table
+gives each field's line and declared default at @fdbb09a, the two presets this
 book uses, and the value stored in `ckpt_base_v2.pt`. "=" means the same as
 the default.
 
@@ -82,9 +82,10 @@ the default.
 | `merge_tree` | 124 | `''` | = | = | = | merge-tree tables (Chapter 10) |
 
 *verified*: printed by `ch41_arithmetic.py --config`; the released column is the
-`cfg` object pickled in `ckpt_base_v2.pt`. `__post_init__` (lines 126–149) also
+`cfg` object pickled in `ckpt_base_v2.pt`. `__post_init__` (lines 126–156) also
 sets `head_dim` for MLA to `qk_nope_head_dim + qk_rope_head_dim` and refuses an
-unreachable top-k.
+unreachable top-k with a `ValueError` (not an `assert`, which `python -O`
+would strip).
 
 **`released()` is not the stored configuration.** `trace_forward.released()`
 builds `nano_350m` with the released run's architecture. It differs from the
@@ -170,7 +171,7 @@ is activations and workspace, which this arithmetic does not count. *measured*,
 
 The same section disagrees with itself about the run without checkpointing.
 Its table gives 15.75 GB for the 443M model with AdamW and no checkpointing.
-Its closing prose, and `anulm/model.py`'s `nano_350m` docstring (lines 180–181),
+Its closing prose, and `anulm/model.py`'s `nano_350m` docstring (lines 187–188),
 give the same 15.75 GB for the 353M preset without `--grad-ckpt`. This
 appendix cites only the table row, for the 443M model.
 

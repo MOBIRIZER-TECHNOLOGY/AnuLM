@@ -22,7 +22,8 @@ from pathlib import Path
 import torch
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT))          # the pickled AnuLMConfig needs model.py
+sys.path.insert(0, str(ROOT))          # the pickled AnuLMConfig needs anulm/model.py
+from anulm.model import safe_load      # noqa: E402  weights-only, AnuLMConfig allow-listed
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 # Results go to book/measurements/ only with --save, so a reader's rerun never overwrites them.
 SAVE = "--save" in sys.argv[1:]
@@ -44,7 +45,7 @@ def main():
     R = {}
     for name in ("ckpt_base_v2.pt", "ckpt_base_v2.pt.last"):
         path = ROOT / name
-        ck = torch.load(path, map_location="cpu", weights_only=False, mmap=True)
+        ck = safe_load(path, map_location="cpu", mmap=True)
         parts = {k: nbytes(v) for k, v in ck.items()}
         meta = {k: (v if isinstance(v, (int, float, str, dict)) and k not in ("model", "opt", "sampler") else None)
                 for k, v in ck.items()}

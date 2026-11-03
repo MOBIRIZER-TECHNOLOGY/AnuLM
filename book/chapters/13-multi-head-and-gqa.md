@@ -2,7 +2,7 @@
 title: "13 · Many heads, shared keys: multi-head and grouped-query attention"
 part: "IV · Inside the transformer"
 accent: gold
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 13  Many heads, shared keys: multi-head and grouped-query attention
@@ -28,25 +28,27 @@ A head is Chapter 11's attention on a D<sub>h</sub>-wide slice; H of them
 side by side cost about what one head of width H·D<sub>h</sub> would, and
 each learns its own pattern. The configuration fixes the sizes:
 
-> **In the repo** · `anulm/model.py` · `AnuLMConfig.__post_init__` · lines 144–147 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLMConfig.__post_init__` · lines 150–154 · @fdbb09a
 
 ```python
         if self.attn == "gqa":
             if self.head_dim is None:
                 self.head_dim = self.hidden_size // self.n_head
-            assert self.n_head % self.n_kv_head == 0
+            check(self.n_head % self.n_kv_head == 0,
+                  f"n_kv_head={self.n_kv_head} must divide n_head={self.n_head}")
 ```
 
 The released model's preset sets `head_dim=64` explicitly (`nano_350m`, line
-180), so the default branch is not its path, though it gives the same 64 =
-1,024 / 16. The assertion makes
-the query heads split evenly into groups.
+192), so the default branch is not its path, though it gives the same 64 =
+1,024 / 16. The check makes the query heads split evenly into groups;
+`check` raises `ValueError` (lines 129–131), so a bad `--cfg` or a downloaded
+`config.json` is refused even under `python -O`.
 
 `IN THE REPO`
 
 ## 13.2  One fused projection
 
-> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 423–438 · @084cbdd
+> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 430–445 · @fdbb09a
 
 ```python
     def __init__(self, cfg: AnuLMConfig, rotary: Rotary):
@@ -72,7 +74,7 @@ the query heads split evenly into groups.
   (16 + 8)·64 = 1,536: one matrix multiply instead of three.
 - **`dense`** maps the heads' outputs, H·D<sub>h</sub> wide, back to D.
 - **QK-norm** is one RMSNorm over D<sub>h</sub> for queries, one for keys
-  (11.6). The scale, line 442, is Chapter 11's.
+  (11.6). The scale, line 449, is Chapter 11's.
 
 Which rows make which head? The book example checks each D<sub>h</sub>-row
 slice against `forward`'s split, on `tiny()` (**Book example, not repository
@@ -108,7 +110,7 @@ weight row: query heads first, then key heads, then value heads.
 
 ## 13.3  Reshape, normalise, rotate
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 444–461 · @084cbdd
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 451–468 · @fdbb09a
 
 ```python
     def forward(self, x, cos, sin, cache: Optional[dict] = None, start: int = 0,
@@ -145,7 +147,7 @@ With `tiny()`'s B = 2, S = 5 (Chapter 20 prints these shapes):
 
 ## 13.4  The cache, and sharing the heads
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 463–470 · @084cbdd
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 470–477 · @fdbb09a
 
 ```python
         if cache is not None:
@@ -177,7 +179,7 @@ then repeats the call under bf16 autocast, as the serving code runs:
 parameter (Chapter 15), which is why Chapter 20 counts 30 KiB per token as
 served, not 20. A test pins the layout; this is its GQA half:
 
-> **In the repo** · `tests/test_model.py` · `cache_holds_what_it_should` · lines 571–579 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `cache_holds_what_it_should` · lines 582–590 · @fdbb09a
 
 ```python
 def cache_holds_what_it_should():
@@ -194,7 +196,7 @@ def cache_holds_what_it_should():
 
 Only after caching are the shared heads copied for attention:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 476–487 · @084cbdd
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 483–494 · @fdbb09a
 
 ```python
         if NATIVE_GQA and self.n_rep > 1:
@@ -232,7 +234,7 @@ the H outputs side by side, (B, S, H·D<sub>h</sub>), for `dense`.
 
 The other branch is a switch:
 
-> **In the repo** · `anulm/model.py` · `NATIVE_GQA` · lines 377–380 · @084cbdd
+> **In the repo** · `anulm/model.py` · `NATIVE_GQA` · lines 384–387 · @fdbb09a
 
 ```python
 # GQA through SDPA's own `enable_gqa` instead of repeat_interleave. Same
@@ -241,11 +243,11 @@ The other branch is a switch:
 NATIVE_GQA = False
 ```
 
-`train.py --native-gqa` turns it on (lines 516–522); `docs/RESULTS.md` §32
+`train.py --native-gqa` turns it on (lines 637–643); `docs/RESULTS.md` §32
 records it as written and tested but not yet measured on the GPU, so it stays
 off. Its test:
 
-> **In the repo** · `tests/test_model.py` · `native_gqa_matches_repeat_interleave` · lines 1585–1606 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `native_gqa_matches_repeat_interleave` · lines 1602–1623 · @fdbb09a
 
 ```python
 def native_gqa_matches_repeat_interleave():
@@ -308,7 +310,7 @@ seed 0), recomputes the weights beside `_sdpa`, and measures for every pair of
 heads the total-variation distance between their weight rows: half the summed
 absolute difference, 0 when identical, 1 when disjoint. It runs in fp32
 without autocast, except the experts, which the released configuration
-computes in bf16 (`anulm/model.py` lines 749 and 777).
+computes in bf16 (`anulm/model.py` lines 756 and 784).
 
 ![Figure 13.2 · Do heads that share keys attend alike?](../figures/fig13-2-group-tv.svg)
 
@@ -390,11 +392,11 @@ used only for the claim in its register row:
 | [R12] | grouped-query attention; reached by uptraining MHA checkpoints | CHECKED |
 | [R13] | multi-query attention: keys and values shared across all heads, for incremental decoding | CHECKED |
 
-Repository evidence, all at @084cbdd:
-- `anulm/model.py`: `AnuLMConfig.__post_init__` 144–147, `NATIVE_GQA` 377–380,
-  `GQAttention.__init__` 423–438 and 442, `GQAttention.forward` 444–487.
-- `anulm/training/train.py`: `--native-gqa`, lines 641–647.
-- `tests/test_model.py`: `cache_holds_what_it_should` 571, `native_gqa_matches_repeat_interleave` 1585.
+Repository evidence, all at @fdbb09a:
+- `anulm/model.py`: `AnuLMConfig.__post_init__` 129–131 and 150–154, `NATIVE_GQA` 384–387,
+  `GQAttention.__init__` 430–445 and 449, `GQAttention.forward` 451–494.
+- `anulm/training/train.py`: `--native-gqa`, lines 637–643.
+- `tests/test_model.py`: `cache_holds_what_it_should` 582, `native_gqa_matches_repeat_interleave` 1602.
 - `docs/RESULTS.md` §32; `book/measurements/part_iv_a_groups.json`.
 
 Book examples: `code-examples/ch13_gqa.py`, `code-examples/ch13_measure_groups.py`.

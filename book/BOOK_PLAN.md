@@ -84,14 +84,14 @@ or a special case of what is · ○ not in the repo (background or extension).
 
 **3. The one job: a probability for every next token** ●
 - Loss as average surprise; nats and bits; why a fresh model sits at ln V; bits per byte.
-- Repo: `AnuLM.forward` loss (lines 910–916); `anulm/training/train.py` bits/byte (line 903); `__main__` smoke test (1119–1144).
+- Repo: `AnuLM.forward` loss (lines 922–928); `anulm/training/train.py` bits/byte (line 906); `__main__` smoke test (1119–1144).
 - Proof: `initial_loss_is_ln_vocab`.
 
 ### Part II: Just enough mathematics (accent: slate)
 
 **4. Tensors, shapes and the matrix multiply** ●
 - Shapes as types. Reading `(B, S, D)`, view and transpose, broadcasting, `nn.Linear` as `xWᵀ`.
-- Repo: `GQAttention.forward` reshapes (lines 450–456) as the worked case.
+- Repo: `GQAttention.forward` reshapes (lines 457–463) as the worked case.
 
 **5. Softmax, temperature and cross-entropy** ●
 - exp/normalise; why subtract the max; the derivative p − y; the temperature as division.
@@ -99,7 +99,7 @@ or a special case of what is · ○ not in the repo (background or extension).
 
 **6. Gradients and backpropagation** ●
 - The chain rule as bookkeeping; autograd; a gradient step by hand.
-- Repo: `loss.backward()` in `anulm/training/train.py` (line 865).
+- Repo: `loss.backward()` in `anulm/training/train.py` (line 868).
 - Proof: `all_parameters_receive_gradients`, `causality_holds_under_gradients_too`.
 
 **7. Optimisation: AdamW, schedules and clipping** ●

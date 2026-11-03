@@ -2,7 +2,7 @@
 title: "16 · The feed-forward network: SwiGLU"
 part: "IV · Inside the transformer"
 accent: gold
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 16  The feed-forward network: SwiGLU
@@ -87,7 +87,7 @@ model.SwiGLU gives tensor([ 1.224, -0.238]) (matches)
 
 ## 16.3  In the code
 
-> **In the repo** · `anulm/model.py` · `SwiGLU` · lines 235–246 · @084cbdd
+> **In the repo** · `anulm/model.py` · `SwiGLU` · lines 242–253 · @fdbb09a
 
 ```python
 class SwiGLU(nn.Module):
@@ -154,7 +154,7 @@ upward: close to 0 for very negative g, about g itself for large g (SiLU(4) =
 
 ## 16.4  Three matrices: 3·D·I parameters
 
-> **In the repo** · `anulm/model.py` · `AnuLMConfig` · lines 77–79 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLMConfig` · lines 77–79 · @fdbb09a
 
 ```python
     moe_intermediate_size: int = 96
@@ -165,7 +165,7 @@ upward: close to 0 for very negative g, about g itself for large g (SiLU(4) =
 These are I<sub>e</sub>, an expert's width; I, layer 0's; and the number of
 dense layers from the bottom. The released model's preset sets I:
 
-> **In the repo** · `anulm/model.py` · `AnuLMConfig.nano_350m` · lines 184–193 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLMConfig.nano_350m` · lines 191–200 · @fdbb09a
 
 ```python
         cfg = dict(
@@ -219,15 +219,15 @@ Two readings (*verified*):
   width is 2,730.67; I = 2,816 is it rounded up to a multiple of 256. The code
   does not say that this is how it was chosen.
 
-> **Details.** The smaller presets set I to 2·D (`nano_30b`, line 159) and
-> 4·D (`nano_105b`, line 206), mirroring Sarvam's 30B and 105B
+> **Details.** The smaller presets set I to 2·D (`nano_30b`, line 166) and
+> 4·D (`nano_105b`, line 213), mirroring Sarvam's 30B and 105B
 > (`docs/RESULTS.md`, "The two presets").
 
 `IN THE REPO`
 
 ## 16.5  Dense layer 0, and the experts that replace it
 
-> **In the repo** · `anulm/model.py` · `Block.__init__` · lines 802–804 · @084cbdd
+> **In the repo** · `anulm/model.py` · `Block.__init__` · lines 809–811 · @fdbb09a
 
 ```python
         # Layer 0 dense, the rest MoE -- first_k_dense_replace = 1 in both models.
@@ -239,7 +239,7 @@ Only layers below `first_k_dense_replace`, here layer 0, get a SwiGLU of width
 I. "Both models" are Sarvam's 30B and 105B, whose configurations set the value
 to 1 [R49]; the repository gives no other reason. Every expert is a SwiGLU:
 
-> **In the repo** · `anulm/model.py` · `MoE.__init__` · lines 681–687 · @084cbdd
+> **In the repo** · `anulm/model.py` · `MoE.__init__` · lines 688–694 · @fdbb09a
 
 ```python
         self.experts = nn.ModuleList(
@@ -257,7 +257,7 @@ are stored as one wider one; the released model has none.
 
 Every `down_proj`, dense or expert, starts small:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 848–851 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 860–863 · @fdbb09a
 
 ```python
         # nanoGPT's scaled init for the residual output projections.
@@ -369,11 +369,11 @@ output scale 0.4609; gate/up swapped: max difference 0.1585; gate transposed: 0.
 - **Swapped `gate_proj` and `up_proj`** changed it by about a third of its scale
   (0.1585). Both are (I, D), so no shape test sees it. *Catch it:* compare
   outputs with the source on the same input, as
-  `transformers_wrapper_matches_the_native_model` (`tests/test_model.py` line 1271)
+  `transformers_wrapper_matches_the_native_model` (`tests/test_model.py` line 1285)
   does. That test returns early, and counts as a pass, when `transformers` is
   not installed.
 - **A projection built but never used** still lets the loss fall. *Catch it:*
-  `all_parameters_receive_gradients` (`tests/test_model.py` line 325).
+  `all_parameters_receive_gradients` (`tests/test_model.py` line 336).
 
 `IN THE REPO`
 
@@ -427,12 +427,12 @@ used only for the claim in its register row:
 | [R49] | Sarvam's 30B and 105B configurations, which set `first_k_dense_replace` to 1 | CHECKED |
 | [S04] | the GELU activation | CHECKED |
 
-Repository evidence, all at @084cbdd:
-- `anulm/model.py`: `AnuLMConfig` 77–79, `nano_30b` line 159, `nano_350m` 184–193,
-  `nano_105b` line 206; `SwiGLU` 235–246, `MoE.__init__` 681–687,
-  `Block.__init__` 802–804, `AnuLM.__init__` 848–851.
-- `tests/test_model.py`: `all_parameters_receive_gradients` 325,
-  `transformers_wrapper_matches_the_native_model` 1271.
+Repository evidence, all at @fdbb09a:
+- `anulm/model.py`: `AnuLMConfig` 77–79, `nano_30b` line 166, `nano_350m` 191–200,
+  `nano_105b` line 213; `SwiGLU` 242–253, `MoE.__init__` 688–694,
+  `Block.__init__` 809–811, `AnuLM.__init__` 860–863.
+- `tests/test_model.py`: `all_parameters_receive_gradients` 336,
+  `transformers_wrapper_matches_the_native_model` 1285.
 - `sarvam/sarvam-30b/config.json`, `sarvam/sarvam-105b/config.json`:
   `first_k_dense_replace`.
 - `docs/RESULTS.md`, "The two presets".

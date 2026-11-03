@@ -2,7 +2,7 @@
 title: "34 · Preference optimisation and reinforcement learning"
 part: "VII · After pre-training"
 accent: plum
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 34  Preference optimisation and reinforcement learning
@@ -40,7 +40,7 @@ Each method needs log π(a | p), the sum over an answer's ids of
 log p(id | everything before it). It is Chapter 30's masked loss, summed
 instead of averaged. The lab book computes it so:
 
-> **In the repo** · `course/build/solutions/ch11.py` · `answer_logprobs` · lines 17–30 · @084cbdd
+> **In the repo** · `course/build/solutions/ch11.py` · `answer_logprobs` · lines 17–30 · @fdbb09a
 
 ```python
 def answer_logprobs(model, prompts, answers, pad: int = 0) -> torch.Tensor:
@@ -62,7 +62,7 @@ position's next id from (B, T − 1, V) log-probabilities; the masked sum is
 (B,). This needs logits at every position. `anulm/model.py` gives them only with
 targets:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 903–909 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 915–921 · @fdbb09a
 
 ```python
         if targets is None:
@@ -119,7 +119,7 @@ model [R40]. For a chosen answer a<sup>+</sup> and a rejected a<sup>−</sup>:
 
 and the loss is −log σ(m), σ the logistic sigmoid.
 
-> **In the repo** · `course/build/solutions/ch11.py` · `dpo_loss` · lines 33–37 · @084cbdd
+> **In the repo** · `course/build/solutions/ch11.py` · `dpo_loss` · lines 33–37 · @fdbb09a
 
 ```python
 def dpo_loss(pol_chosen, pol_rejected, ref_chosen, ref_rejected, beta: float = 0.1):
@@ -158,7 +158,7 @@ asserted at m = 0 and m = 0.2 by the figure script.
 
 ## 34.4  A DPO step on an MoE model
 
-> **In the repo** · `course/build/solutions/ch11.py` · `dpo_step` · lines 48–63 · @084cbdd
+> **In the repo** · `course/build/solutions/ch11.py` · `dpo_step` · lines 48–63 · @fdbb09a
 
 ```python
     with torch.no_grad():
@@ -316,7 +316,7 @@ answer ids, stands in for a checker.
 | the step | `anulm/training/finetune.py`'s loop with a new loss | `EXTENSION` |
 | router balancing | `update_expert_biases()` after each step | in the repo |
 
-> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1149–1157 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1161–1169 · @fdbb09a
 
 ```python
             if temperature <= 0:
@@ -401,10 +401,10 @@ used only for the claim in its register row:
 | [R41] | GRPO: a PPO variant without a critic, its baseline from group scores | CHECKED |
 | [S12] | PPO's objective with clipped probability ratios | CHECKED |
 
-Repository evidence, all at @084cbdd:
+Repository evidence, all at @fdbb09a:
 - `course/build/solutions/ch11.py`: `answer_logprobs` 17–30, `dpo_loss` 33–37,
   `dpo_step` 40–63.
-- `anulm/model.py`: `AnuLM.forward` 903–909, `AnuLM.generate` 1149–1157.
+- `anulm/model.py`: `AnuLM.forward` 915–921, `AnuLM.generate` 1161–1169.
 - `book/REPOSITORY_SOURCE_MAP.md` §4: DPO, RLHF and GRPO absent in the root.
 - The lab book's Chapter 19 (`course/ch19-rl`) was added after the pin
   (commit d3f1d97); it is cross-linked, not quoted.

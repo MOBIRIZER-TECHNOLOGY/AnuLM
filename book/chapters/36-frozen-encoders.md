@@ -2,7 +2,7 @@
 title: "36 · Seeing and hearing: frozen encoders and projectors"
 part: "VIII · Beyond text"
 accent: plum
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 36  Seeing and hearing: frozen encoders and projectors
@@ -24,7 +24,7 @@ sequence of patches [R43]; its weights come from SigLIP, which trained an
 image encoder against text with a sigmoid loss [R42]. The repository loads it
 with `timm` and freezes it:
 
-> **In the repo** · `anulm/multimodal/vision_encoder.py` · `VisionTower` · lines 74–106 · @084cbdd
+> **In the repo** · `anulm/multimodal/vision_encoder.py` · `VisionTower` · lines 74–106 · @fdbb09a
 
 ```python
     def __init__(self, name: str = DEFAULT_TOWER, device: str | None = None):
@@ -54,7 +54,7 @@ Whisper is a speech recogniser trained on 680,000 hours of weakly supervised
 audio [R44]. Only its encoder is used, through `faster-whisper` and
 `ctranslate2`:
 
-> **In the repo** · `anulm/multimodal/audio_codec.py` · `WhisperEncoder` · lines 220–255 · @084cbdd
+> **In the repo** · `anulm/multimodal/audio_codec.py` · `WhisperEncoder` · lines 220–255 · @fdbb09a
 
 ```python
     def __init__(self, size: str = "small", device: str = "auto", compute_type: str | None = None):
@@ -114,7 +114,7 @@ At 50 frames a second, 20 seconds of speech would fill the released model's
 1,024 positions. The audio projector first stacks four neighbouring frames
 into one vector:
 
-> **In the repo** · `anulm/multimodal/speech_encoder.py` · `AudioProjector` · lines 76–93 · @084cbdd
+> **In the repo** · `anulm/multimodal/speech_encoder.py` · `AudioProjector` · lines 75–92 · @fdbb09a
 
 ```python
     def __init__(self, in_dim: int, out_dim: int, stack: int = STACK, hidden: int | None = None):
@@ -135,7 +135,7 @@ into one vector:
         return self.net(states[:, :T].reshape(B, T // self.stack, D * self.stack))
 ```
 
-With `STACK = 4` (line 56), Whisper-small and the released model:
+With `STACK = 4` (line 55), Whisper-small and the released model:
 
 1. **Trim.** `T - T % 4` drops a partial group: 501 frames become 500.
 2. **Stack.** `reshape` puts four consecutive frames side by side:
@@ -160,7 +160,7 @@ A 10-second clip costs 125 positions: 12.5 a second.
 196 patches per image is the same problem. The image projector concatenates
 each 2 × 2 neighbourhood of the patch grid into one vector:
 
-> **In the repo** · `anulm/multimodal/vision_encoder.py` · `ImageProjector.forward` · lines 127–141 · @084cbdd
+> **In the repo** · `anulm/multimodal/vision_encoder.py` · `ImageProjector.forward` · lines 127–141 · @fdbb09a
 
 ```python
     def forward(self, patches: torch.Tensor) -> torch.Tensor:
@@ -180,7 +180,7 @@ each 2 × 2 neighbourhood of the patch grid into one vector:
 
 The network after the pooling is built like the audio one:
 
-> **In the repo** · `anulm/multimodal/vision_encoder.py` · `ImageProjector.__init__` · lines 118–125 · @084cbdd
+> **In the repo** · `anulm/multimodal/vision_encoder.py` · `ImageProjector.__init__` · lines 118–125 · @fdbb09a
 
 ```python
     def __init__(self, in_dim: int, out_dim: int, pool: int = POOL, hidden: int | None = None):
@@ -233,7 +233,7 @@ next row's left.
 `VisionLanguage.build` lays out an image example the way Chapter 35's speech
 example was laid out:
 
-> **In the repo** · `anulm/multimodal/vision_encoder.py` · `VisionLanguage.build` · lines 162–183 · @084cbdd
+> **In the repo** · `anulm/multimodal/vision_encoder.py` · `VisionLanguage.build` · lines 162–183 · @fdbb09a
 
 ```python
         dev = patches.device
@@ -340,8 +340,8 @@ Whether that hurts the text tasks is *not measured here*.
 *measured*: `book/measurements/part_viii_ix_scale.json`.
 
 > **Details.** Starting a projector at the text embeddings' scale is in the
-> code at @084cbdd, behind a flag that is off by default. With
-> `--proj-scale embed` (`anulm/multimodal/omni_train.py` line 501; default `ln`),
+> code at @fdbb09a, behind a flag that is off by default. With
+> `--proj-scale embed` (`anulm/multimodal/omni_train.py` line 502; default `ln`),
 > `Omni._match_scale` (lines 249–263) multiplies the final LayerNorm's gain
 > and bias by one factor, the text rows' mean norm over √(Σγ² + Σβ²), so the
 > expected output length starts at a text token's. Both stay learnable. The
@@ -356,7 +356,7 @@ Whether that hurts the text tasks is *not measured here*.
 The projector starts from random weights; the backbone is already trained. The
 trainers give each its own learning rate:
 
-> **In the repo** · `anulm/multimodal/vision_encoder.py` · `train` · lines 486–489 · @084cbdd
+> **In the repo** · `anulm/multimodal/vision_encoder.py` · `train` · lines 485–488 · @fdbb09a
 
 ```python
     opt = torch.optim.AdamW(
@@ -366,12 +366,12 @@ trainers give each its own learning rate:
 ```
 
 The projector learns at `--proj-lr`, default 1e-3; the backbone at `--lr`,
-5e-5 (lines 654–655). The tower is in neither group.
+5e-5 (lines 653–654). The tower is in neither group.
 
 Because the tower never changes, its output for an image never changes either,
 so it can be computed once and stored:
 
-> **In the repo** · `anulm/multimodal/vision_encoder.py` · `build_cache` · lines 312–361 · @084cbdd
+> **In the repo** · `anulm/multimodal/vision_encoder.py` · `build_cache` · lines 312–361 · @fdbb09a
 
 ```python
     path = Path(path)
@@ -460,7 +460,7 @@ rebuilt on first use.
 
 The speech path has no such cache. It runs Whisper on every clip, every epoch:
 
-> **In the repo** · `anulm/multimodal/speech_encoder.py` · `batches` · lines 198–204 · @084cbdd
+> **In the repo** · `anulm/multimodal/speech_encoder.py` · `batches` · lines 197–203 · @fdbb09a
 
 ```python
         for r in chunk:
@@ -474,7 +474,7 @@ The speech path has no such cache. It runs Whisper on every clip, every epoch:
 
 The limit is set beside the stack:
 
-> **In the repo** · `anulm/multimodal/speech_encoder.py` · `MAX_AUDIO_FRAMES` · lines 56–57 · @084cbdd
+> **In the repo** · `anulm/multimodal/speech_encoder.py` · `MAX_AUDIO_FRAMES` · lines 55–56 · @fdbb09a
 
 ```python
 STACK = 4                      # 50 Hz -> 12.5 Hz
@@ -486,7 +486,7 @@ so `states` has at most 1,500 rows (36.1) and at most 375 stacked positions,
 under the limit of 400. What guards the length instead is a filter applied to
 the training rows before any batch is built:
 
-> **In the repo** · `anulm/multimodal/speech_encoder.py` · `whisper_window_rows` · lines 160–183 · @084cbdd
+> **In the repo** · `anulm/multimodal/speech_encoder.py` · `whisper_window_rows` · lines 159–182 · @fdbb09a
 
 ```python
 WHISPER_SECONDS = 30.0      # the encoder's window; WhisperEncoder.encode refuses anything longer
@@ -512,7 +512,7 @@ def whisper_window_rows(rows: list[dict], name: str = "asr") -> list[dict]:
 `clip_seconds` takes the manifest's recorded duration, or reads only the WAV
 header. `whisper_window_rows` keeps the clips of at most 30 seconds and prints
 how many it dropped. Both trainers call it on their training rows:
-`speech_encoder.py`'s `train` (line 250) and the joint trainer
+`speech_encoder.py`'s `train` (line 216) and the joint trainer
 (`anulm/multimodal/omni_train.py` line 99, Chapter 37). Its docstring gives the reason: cropping a long clip would
 pair part of the audio with the whole transcript, a wrong label; five
 FLEURS Hindi training clips run 31 to 36 seconds, and they stopped the first
@@ -585,12 +585,12 @@ used only for the claim in its register row:
 | [R44] | Whisper: speech recognition trained on 680,000 hours of weak supervision | CHECKED |
 | [S04] | the GELU activation | CHECKED |
 
-Repository evidence, all at @084cbdd:
+Repository evidence, all at @fdbb09a:
 - `anulm/multimodal/vision_encoder.py`: `POOL` 55, `VisionTower` 69–106, `ImageProjector` 109–141,
-  `VisionLanguage.build` 153–183, `build_cache` 298–361, `train` 443–535
-  (optimiser 486–489, defaults 654–655).
-- `anulm/multimodal/speech_encoder.py`: `STACK` 56, `AudioProjector` 65–93, `WHISPER_SECONDS` 160,
-  `clip_seconds` 163–169, `whisper_window_rows` 172–183, `batches` 186–214, `train`'s call 250.
+  `VisionLanguage.build` 153–183, `build_cache` 298–361, `train` 443–534
+  (optimiser 485–488, defaults 653–654).
+- `anulm/multimodal/speech_encoder.py`: `STACK` 55, `AudioProjector` 64–92, `WHISPER_SECONDS` 159,
+  `clip_seconds` 162–168, `whisper_window_rows` 171–182, `batches` 185–213, `train`'s call 249.
 - `anulm/multimodal/omni_train.py`: the joint trainer's call to `whisper_window_rows` 99.
 - `anulm/multimodal/audio_codec.py`: `WhisperEncoder` 211–255.
 - `docs/RESULTS.md` §39.

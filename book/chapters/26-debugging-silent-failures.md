@@ -2,7 +2,7 @@
 title: "26 · Debugging: when the loss goes down and the model is still wrong"
 part: "V · Training"
 accent: teal
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 26  Debugging: when the loss goes down and the model is still wrong
@@ -27,13 +27,18 @@ story is told from a code comment, a test docstring or a section of
 
 `tests/test_model.py` opens with its reason for existing:
 
-> **In the repo** · `tests/test_model.py` · `test_model` · lines 1–10 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `test_model` · lines 1–15 · @fdbb09a
 
 ```python
 """
 Tests for AnuLM. Plain asserts, no pytest needed:
 
     python -m tests.test_model
+
+The same tests also run under a standard runner -- `python -m unittest
+tests.test_model` or pytest -- through the TestCase generated at the bottom.
+A test that cannot run here (a missing optional package, no grouped GEMM)
+raises unittest.SkipTest and is reported as SKIP, never as PASS.
 
 These target the failure modes that TRAINING WOULD NOT CATCH. A leaky causal
 mask still converges (it just cheats). Broken RoPE still converges (it just
@@ -70,11 +75,11 @@ def train_curve(steps=200):
     return out
 ```
 
-`leaky_sdpa` has `_sdpa`'s signature (`anulm/model.py` line 407) but passes neither
+`leaky_sdpa` has `_sdpa`'s signature (`anulm/model.py` line 414) but passes neither
 the mask nor `is_causal`, so every position attends to every other. The
 training loop feeds (16, 32) inputs and the same ids shifted by one as targets.
 The patch works only because `GQAttention` calls `_sdpa` while `NATIVE_GQA` is
-off (lines 476–485); with it on, the native branch bypasses `_sdpa` and the
+off (lines 483–492); with it on, the native branch bypasses `_sdpa` and the
 mutant would silently test nothing, so the script asserts it is off.
 This leak is hypothetical: the module docstring names it, and no recorded run
 had it.
@@ -107,7 +112,7 @@ than the loss. The suite uses three kinds.
 **Invariance.** Change something the output must not depend on, and require
 that it did not move. Causality is the first test in the file:
 
-> **In the repo** · `tests/test_model.py` · `causal_mask_does_not_leak_future` · lines 45–63 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `causal_mask_does_not_leak_future` · lines 56–74 · @fdbb09a
 
 ```python
 @test
@@ -134,13 +139,13 @@ def causal_mask_does_not_leak_future():
 Both attention types are built; `x` is (2, 16). Passing targets makes the model
 return all (2, 16, 64) logits. Positions 8 to 15 are rewritten, and the logits
 at positions 0 to 7 must not move by more than 10⁻⁵. Other invariance tests:
-`rope_is_relative` (line 90) moves a query and key together and requires an
-unchanged dot product; `sliding_window_limits_reach` (line 642) perturbs a
+`rope_is_relative` (line 101) moves a query and key together and requires an
+unchanged dot product; `sliding_window_limits_reach` (line 653) perturbs a
 token outside the window.
 
 **Equivalence.** Two implementations of the same maths must agree:
 
-> **In the repo** · `tests/test_model.py` · `dense_and_sparse_moe_agree` · lines 462–476 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `dense_and_sparse_moe_agree` · lines 473–487 · @fdbb09a
 
 ```python
 @test
@@ -163,14 +168,14 @@ def dense_and_sparse_moe_agree():
 Two models with the same weights (`load_state_dict`) differ only in how the
 experts are dispatched (Chapter 18), and their (2, 16, 64) logits must agree to
 10⁻⁵. Most of the suite has this shape: cached against uncached decoding
-(`cached_generation_matches_uncached`, line 593), chunked against full loss
-(`chunked_loss_matches_the_full_loss_and_its_gradients`, line 1531), compiled
+(`cached_generation_matches_uncached`, line 604), chunked against full loss
+(`chunked_loss_matches_the_full_loss_and_its_gradients`, line 1548), compiled
 against eager, accumulated against one large batch.
 
 **Conservation.** Count what must be preserved. The interleaved split must lose
 no tokens and hold out both sources:
 
-> **In the repo** · `tests/test_model.py` · `interleaved_split_samples_the_whole_corpus` · lines 1753–1766 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `interleaved_split_samples_the_whole_corpus` · lines 1770–1783 · @fdbb09a
 
 ```python
 @test
@@ -193,9 +198,9 @@ Source A is 8M zeros, source B 8M ones. The split must keep every token
 (`len(train) + len(val)`), hold out 5–15%, and hold out a mix of both sources;
 the last line documents that the old tail split was all B. Other conservation
 tests count each training window once per epoch
-(`window_sampler_covers_every_window_once_per_epoch`, line 787) and each answer
+(`window_sampler_covers_every_window_once_per_epoch`, line 798) and each answer
 token labelled exactly once (`qa_packing_masks_prompts_and_keeps_examples_whole`,
-line 1494).
+line 1511).
 
 `IN THE REPO`
 
@@ -257,7 +262,7 @@ that follow take the mutants one at a time.
 The router picks experts with a discrete top-k (Chapter 17). Under bf16
 autocast, small rounding changes can swap which experts win.
 
-> **In the repo** · `anulm/model.py` · `Router.forward` · lines 604–615 · @084cbdd
+> **In the repo** · `anulm/model.py` · `Router.forward` · lines 611–622 · @fdbb09a
 
 ```python
     def forward(self, x_flat, seq_len: Optional[int] = None):   # (N, D)
@@ -327,7 +332,7 @@ expert ids. On random weights the mutant changes 4.2% of sets (26.3).
 The merge-tree option (Chapter 10) composes the embedding tables from a sparse
 matrix, and in evaluation mode caches the result:
 
-> **In the repo** · `anulm/model.py` · `AnuLM._table` · lines 954–972 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM._table` · lines 966–984 · @fdbb09a
 
 ```python
     def _table(self, side: str):
@@ -360,7 +365,7 @@ evaluation after the first therefore scored the current network with step
 loss fell to 4.43, which looked like the recipe diverging (§32). The fix ties
 the cache to the mode instead:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.train` · lines 974–978 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.train` · lines 986–990 · @fdbb09a
 
 ```python
     def train(self, mode: bool = True):
@@ -372,7 +377,7 @@ the cache to the mode instead:
 24), so the cache cannot outlive a training step. The test reproduces the
 update the counter cannot see:
 
-> **In the repo** · `tests/test_model.py` · `merge_tree_eval_cache_sees_optimizer_updates` · lines 1671–1681 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `merge_tree_eval_cache_sees_optimizer_updates` · lines 1688–1698 · @fdbb09a
 
 ```python
         x = torch.randint(0, 259, (2, 8))
@@ -396,7 +401,7 @@ differ. The mutant `train` that keeps the cache fails it (26.3).
 
 ## 26.6  Case: the split that held out one language
 
-> **In the repo** · `anulm/training/train.py` · `interleaved_split` · lines 206–220 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `interleaved_split` · lines 202–216 · @fdbb09a
 
 ```python
 def interleaved_split(data: torch.Tensor, chunk: int = 262144, every: int = 10):
@@ -430,7 +435,7 @@ curves stay comparable (Chapter 21); the test in 26.2 fails on the tail split.
 YaRN extends context in two parts: a change to the rotary frequencies and a
 softmax temperature (Chapter 29). The GQA path once applied only the first:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 439–442 · @084cbdd
+> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 446–449 · @fdbb09a
 
 ```python
         # YaRN's temperature term lives here, not in the rotary tables --
@@ -444,7 +449,7 @@ softmax temperature (Chapter 29). The GQA path once applied only the first:
 says the missing half "was caught by reading, not by any test, which is why
 this covers both" attention types:
 
-> **In the repo** · `tests/test_model.py` · `yarn_temperature_reaches_attention` · lines 149–153 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `yarn_temperature_reaches_attention` · lines 160–164 · @fdbb09a
 
 ```python
     gqa = tiny(attn="gqa", yarn=True, yarn_factor=40.0, head_dim=8)
@@ -466,7 +471,7 @@ the coder run's curve with no error bar at all (§25). Chapter 24 tells the
 story, and why the 0.125 spread across window sets, which §25 then set against
 them, is the error of the level and not of a move. What changed in code is that
 `evaluate()` now returns a standard error and `--eval-windows` exists.
-`eval_windows_are_frozen_and_strided_windows_cover_the_split` (line 971) pins
+`eval_windows_are_frozen_and_strided_windows_cover_the_split` (line 980) pins
 the old windows' indices and checks that the error is finite (NaN for one
 batch); no test checks how a move between evaluations is read.
 
@@ -476,19 +481,21 @@ batch); no test checks how a move between evaluations is read.
 
 | The failure | Recorded in | What catches it now |
 |---|---|---|
-| the `transformers` wrapper left the rotary tables as uninitialised memory; every weight loaded, positions were noise | test docstring | `transformers_wrapper_matches_the_native_model` (line 1271) |
-| an exported question answerer reported itself a base model and hid its question mode | test docstring | `an_exported_qa_checkpoint_still_offers_its_question_mode` (line 1110) |
-| exports dropped projectors, LoRA weights and labels, and still loaded as a plain language model | test docstring | `an_export_keeps_what_makes_a_checkpoint_more_than_a_language_model` (line 1170) |
-| five evaluation scripts crashed on exported folders | §27; test docstring | `an_exported_folder_loads_everywhere_a_pt_does` (line 914) |
-| a generated `random.py` could shadow the standard library for every later problem | `anulm/eval/eval_code.py` docstring; test | `eval_code_sandbox_contains_generated_code` (line 1219) |
-| the golden-set builder's check passed by luck on a small vocabulary | test comment ("It did, once.") | `golden_items_are_well_formed_and_the_scorer_runs` (line 1448), on 400 words |
-| a project rename changed the tokenizer format id, which every older tokenizer (four on the Hub) still carries | test docstring | `bpe_files_load_under_both_format_ids` (line 1367) |
-| a documented hazard, not a recorded incident: `is_causal` aligns top-left, wrong for a multi-token step against a cache | `_attn_mask` docstring | `incremental_forward_matches_full_forward` (line 550) |
+| the `transformers` wrapper left the rotary tables as uninitialised memory; every weight loaded, positions were noise | test docstring | `transformers_wrapper_matches_the_native_model` (line 1285) |
+| an exported question answerer reported itself a base model and hid its question mode | test docstring | `an_exported_qa_checkpoint_still_offers_its_question_mode` (line 1119) |
+| exports dropped projectors, LoRA weights and labels, and still loaded as a plain language model | test docstring | `an_export_keeps_what_makes_a_checkpoint_more_than_a_language_model` (line 1177) |
+| five evaluation scripts crashed on exported folders | §27; test docstring | `an_exported_folder_loads_everywhere_a_pt_does` (line 924) |
+| a generated `random.py` could shadow the standard library for every later problem | `anulm/eval/eval_code.py` docstring; test | `eval_code_sandbox_contains_generated_code` (line 1225) |
+| the golden-set builder's check passed by luck on a small vocabulary | test comment ("It did, once.") | `golden_items_are_well_formed_and_the_scorer_runs` (line 1465), on 400 words |
+| a project rename changed the tokenizer format id, which every older tokenizer (four on the Hub) still carries | test docstring | `bpe_files_load_under_both_format_ids` (line 1379) |
+| a documented hazard, not a recorded incident: `is_causal` aligns top-left, wrong for a multi-token step against a cache | `_attn_mask` docstring | `incremental_forward_matches_full_forward` (line 561) |
 | a checkpoint killed mid-write; a restart loop for three hours | §25 | `atomic_save` and the fallback (Chapter 25); no test |
 | a benchmark with 11% of its documents leaked into a training corpus | §9 | `anulm/data/make_bench.py`'s signature filter; no test in the suite |
 | an evaluation file mixed into the training mix whole | §28 | `anulm/data/mix_corpus.py` now holds out `data/bench_hindi.txt`; no test in the suite |
 | HumanEval 0.0% from the wrong prompt mode | §25 | `eval_code.py --mode`; no test |
 | batch 16 without checkpointing spilled to system RAM, 3,657 against 13,639 tokens per second | `warn_if_spilling` docstring | a warning at step 0, not a test |
+| a test that could not run (a missing package, no grouped GEMM) returned early and printed PASS | `tests/test_model.py` module docstring | `unittest.SkipTest` and a SKIP line in `main` (26.10) |
+| the sandbox test passed if the grandchild it meant to kill never started | test comment | the `spawned.txt` check in `eval_code_sandbox_contains_generated_code` (26.10) |
 
 Five rows end in "no test" or "a warning": the suite covers the model and its
 files well, and the data and evaluation pipeline less. Those are where the next
@@ -501,32 +508,84 @@ checks belong.
 The suite needs no framework: a decorator collects each test, and `main` runs
 them all:
 
-> **In the repo** · `tests/test_model.py` · `main` · lines 2213–2226 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `main` · lines 2250–2271 · @fdbb09a
 
 ```python
 def main():
-    passed, failed = [], []
+    passed, skipped, failed = [], [], []
     for fn in TESTS:
         try:
             fn()
             passed.append(fn.__name__)
             print(f"  PASS  {fn.__name__}")
+        except unittest.SkipTest as e:        # before Exception: SkipTest is one
+            skipped.append((fn.__name__, e))
+            print(f"  SKIP  {fn.__name__}  ({e})")
         except Exception as e:
             failed.append((fn.__name__, e))
             print(f"  FAIL  {fn.__name__}")
             print("        " + "\n        ".join(
                 traceback.format_exception_only(type(e), e)).rstrip())
-    print(f"\n{len(passed)} passed, {len(failed)} failed, {len(TESTS)} total")
+    # With nothing skipped this is the line the docs and the course quote
+    # ("76 passed, 0 failed, 76 total"), so it keeps that exact shape.
+    if skipped:
+        print(f"\n{len(passed)} passed, {len(skipped)} skipped, {len(failed)} failed, {len(TESTS)} total")
+    else:
+        print(f"\n{len(passed)} passed, {len(failed)} failed, {len(TESTS)} total")
     return 1 if failed else 0
 ```
 
-`TESTS` is filled by `@test` (line 28) in file order. Each test runs; any
-exception counts as a failure and its message is printed; the exit code is 1
-if anything failed, so a CI job can gate on it. Run it with
-`python -m tests.test_model`. Some tests skip themselves, printing why, when an
-optional package (`gradio`, `safetensors`, `transformers`) is missing, and the
-grouped-GEMM tests return early on a PyTorch without `F.grouped_mm`; a skip
-prints as a PASS.
+`TESTS` is filled by `@test` (line 34) in file order. Each test runs. A test
+that raises `unittest.SkipTest` is listed as SKIP with its reason; the
+`except` for it comes first because `SkipTest` is itself an `Exception`, and
+the other order would count every skip as a failure. Any other exception
+counts as a failure and its message is printed. The exit code is 1 if
+anything failed, so a CI job can gate on it. Run it with
+`python -m tests.test_model`; on this machine's CPU
+(`CUDA_VISIBLE_DEVICES=-1`) it printed `76 passed, 0 failed, 76 total` in 46
+seconds. *verified*: run at the pin. A `ModelTests` class at the bottom of the
+file turns each `@test` into a `unittest` method, so `python -m unittest` and
+pytest run the same 76.
+
+**Case: the test that passed by not running.** Before the code-quality pass that the pin records, a test that
+could not run returned early, and `main` counted the return as a pass. The
+grouped-GEMM tests on a PyTorch without `F.grouped_mm`, and the tests that
+need `gradio`, `safetensors`, `transformers` or `tokenizers`, all printed
+PASS without checking anything; on a machine missing a package, "76 passed"
+overstated what had been tested. A skip now says what it is:
+
+> **In the repo** · `tests/test_model.py` · `grouped_moe_matches_sparse_under_bf16` · lines 694–699 · @fdbb09a
+
+```python
+def grouped_moe_matches_sparse_under_bf16():
+    """Same weights, same routing, one grouped GEMM per projection. Both run in
+    bf16 (the grouped kernel's contract), so agreement is to bf16 precision."""
+    import torch.nn.functional as F
+    if not hasattr(F, "grouped_mm"):
+        raise unittest.SkipTest("this torch has no F.grouped_mm")
+```
+
+Where the line had been `return`, the test now raises, and the summary
+becomes "N passed, M skipped, F failed, T total" whenever M is above zero.
+The same pass found a check inside a test that passed when its premise
+failed. The sandbox test kills a program and then checks that the
+grandchild it started left no marker file; if the grandchild never started,
+there was no marker either, and the check passed. The program now writes a
+second file once `Popen` returns, and the test requires it first:
+
+> **In the repo** · `tests/test_model.py` · `eval_code_sandbox_contains_generated_code` · lines 1270–1273 · @fdbb09a
+
+```python
+        assert os.path.exists(os.path.join(outside, "spawned.txt")), \
+            "the grandchild was never started, so the kill was not tested"
+        assert not os.path.exists(os.path.join(outside, "survived.txt")), \
+            "a grandchild outlived the timeout kill"
+```
+
+The first assert proves the setup happened; only then does the second mean
+anything. Both are the same lesson as 26.3, turned on the test itself: a
+check whose absence of evidence looks like success needs a second check that
+the evidence could have appeared.
 
 `IN THE REPO`
 
@@ -543,7 +602,7 @@ prints as a PASS.
 ## 26.12  Exercises
 
 1. Which kind of check is `gradient_accumulation_equals_large_batch`
-   (line 437)?
+   (line 448)?
 2. Write the mutant that would fail `window_sampler_resumes_exactly`
    (Chapter 25).
 3. The leaky model in 26.1 reached 0.218 on random ids. Why can it not reach
@@ -567,7 +626,8 @@ decides the output.
   conservation tests, each comparing the model with something other than its
   loss.
 - A test is trusted only after it fails on a mutant: four recorded failures
-  and one hypothetical leak, put back, each fail their test.
+  and one hypothetical leak, put back, each fail their test. A test that
+  cannot run says SKIP, never PASS.
 - bf16 autocast in the router would change 3.17% of the released model's
   expert sets (Chapter 23's measurement); no test in the suite pins it.
 - A cache keyed on a version counter, a tail split and a half-applied YaRN all
@@ -585,16 +645,18 @@ decides the output.
 This chapter cites no external sources. Quality claims are measured here or in
 `docs/RESULTS.md` §9, §25, §27, §28 and §32.
 
-Repository evidence, all at @084cbdd:
-- `tests/test_model.py`: module docstring 1–10; `test` 28–30;
-  `causal_mask_does_not_leak_future` 45–63; `yarn_temperature_reaches_attention`
-  132–161; `dense_and_sparse_moe_agree` 462–476;
-  `merge_tree_eval_cache_sees_optimizer_updates` 1658–1681;
-  `interleaved_split_samples_the_whole_corpus` 1753–1766; `main` 2213–2226;
+Repository evidence, all at @fdbb09a:
+- `tests/test_model.py`: module docstring 1–15; `test` 34–38;
+  `grouped_moe_matches_sparse_under_bf16` 693–711 (the skip 698–699);
+  `eval_code_sandbox_contains_generated_code` 1224–1281 (the `spawned.txt` check 1270–1271);
+  `causal_mask_does_not_leak_future` 56–74; `yarn_temperature_reaches_attention`
+  143–172; `dense_and_sparse_moe_agree` 473–487;
+  `merge_tree_eval_cache_sees_optimizer_updates` 1675–1698;
+  `interleaved_split_samples_the_whole_corpus` 1770–1783; `main` 2250–2271;
   and the tests named in 26.2 and 26.9.
-- `anulm/model.py`: `_sdpa` 407–411; `GQAttention.__init__` 439–442;
-  `Router.forward` 604–615; `AnuLM._table` 954–972; `AnuLM.train` 974–978.
-- `anulm/training/train.py`: `interleaved_split` 206–220; `warn_if_spilling` 223–238.
+- `anulm/model.py`: `_sdpa` 414–418; `GQAttention.__init__` 446–449;
+  `Router.forward` 611–622; `AnuLM._table` 966–984; `AnuLM.train` 986–990.
+- `anulm/training/train.py`: `interleaved_split` 202–216; `warn_if_spilling` 219–234.
 - `anulm/eval/eval_code.py` (docstring); `anulm/data/make_bench.py`; `anulm/data/mix_corpus.py`.
 - Chapter 23's canonical router-flip measurement: `book/measurements/part_v_a_memory.json`.
 - Measurements: `book/measurements/part_v_b_router_bf16.json` from

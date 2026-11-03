@@ -27,8 +27,8 @@ Read it fully before writing.
 
 ## The code at the pin
 
-Every line number refers to commit `084cbdd`. Read code with
-`git show 084cbdd:anulm/model.py` (or `anulm/training/train.py`, `tests/test_model.py`, …) and find lines
+Every line number refers to commit `fdbb09a`. Read code with
+`git show fdbb09a:anulm/model.py` (or `anulm/training/train.py`, `tests/test_model.py`, …) and find lines
 with `grep -n` on that output. Never cite line numbers from memory, from the
 working tree, or from `.claude/worktrees/`. The working tree's `anulm/multimodal/omni_train.py`
 has uncommitted edits, so cite it only at the pin. Quote code verbatim; mark

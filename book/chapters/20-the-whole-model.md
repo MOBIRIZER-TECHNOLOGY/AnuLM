@@ -2,7 +2,7 @@
 title: "20 · The whole model, traced end to end"
 part: "IV · Inside the transformer"
 accent: gold
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 20  The whole model, traced end to end
@@ -59,7 +59,7 @@ beside the released model's:
 | shared expert | an expert every token uses | 1 | 0 |
 | sliding window | attention limited to the last 256 tokens (Chapters 12, 29) | none | layers 0–9 |
 
-*verified*: `tiny()` is `tests/test_model.py` lines 33–38 at @084cbdd; the released
+*verified*: `tiny()` is `tests/test_model.py` lines 44–49 at @fdbb09a; the released
 column is the configuration stored in `ckpt_base_v2.pt`. The last two rows
 change no shape below.
 
@@ -77,18 +77,18 @@ Layers 0–9 attend within a 256-token window. Drawn by `tools/make_figures.py`.
 x<sup>(ℓ)</sup> is the residual stream entering layer ℓ, a (B, S, D) tensor
 that each layer adds to:
 
-| Step | Equation | Code @084cbdd | Shape out |
+| Step | Equation | Code @fdbb09a | Shape out |
 |---|---|---|---|
-| embed | x<sup>(0)</sup><sub>b,s</sub> = W<sub>emb</sub>[id<sub>b,s</sub>] | `anulm/model.py` 884 | (B, S, D) |
-| attention half | h = x<sup>(ℓ)</sup> + Attn(RMSNorm(x<sup>(ℓ)</sup>)) | `anulm/model.py` 813 | (B, S, D) |
-| feed-forward half | x<sup>(ℓ+1)</sup> = h + F<sub>ℓ</sub>(RMSNorm(h)) | `anulm/model.py` 815–817 | (B, S, D) |
-| output | z = RMSNorm(x<sup>(L)</sup>) · W<sub>out</sub> | `anulm/model.py` 900, 910 | (B, S, V) |
-| probabilities | p = softmax(z) over the V entries | inside `F.cross_entropy` (911); explicit in `generate` (1156) | (B, S, V) |
-| loss | ℒ = −(1/\|P\|) Σ<sub>(b,s)∈P</sub> log p<sub>b,s</sub>[t<sub>b,s</sub>] + aux | `anulm/model.py` 911–915 | scalar |
+| embed | x<sup>(0)</sup><sub>b,s</sub> = W<sub>emb</sub>[id<sub>b,s</sub>] | `anulm/model.py` 896 | (B, S, D) |
+| attention half | h = x<sup>(ℓ)</sup> + Attn(RMSNorm(x<sup>(ℓ)</sup>)) | `anulm/model.py` 820 | (B, S, D) |
+| feed-forward half | x<sup>(ℓ+1)</sup> = h + F<sub>ℓ</sub>(RMSNorm(h)) | `anulm/model.py` 822–824 | (B, S, D) |
+| output | z = RMSNorm(x<sup>(L)</sup>) · W<sub>out</sub> | `anulm/model.py` 912, 922 | (B, S, V) |
+| probabilities | p = softmax(z) over the V entries | inside `F.cross_entropy` (923); explicit in `generate` (1168) | (B, S, V) |
+| loss | ℒ = −(1/\|P\|) Σ<sub>(b,s)∈P</sub> log p<sub>b,s</sub>[t<sub>b,s</sub>] + aux | `anulm/model.py` 923–927 | scalar |
 
 | Symbol | Meaning |
 |---|---|
-| RMSNorm(x) | x / √(mean(x²) + ε) ⊙ γ, ε = 10⁻⁶, learned gain γ (`RMSNorm` 213–223; Chapter 15) |
+| RMSNorm(x) | x / √(mean(x²) + ε) ⊙ γ, ε = 10⁻⁶, learned gain γ (`RMSNorm` 225–239; Chapter 15) |
 | Attn | causal attention per head (Chapter 11), then the output projection |
 | F<sub>0</sub> | a SwiGLU (20.5; Chapter 16) |
 | F<sub>ℓ</sub>, ℓ ≥ 1 | F<sub>ℓ</sub>(u) = Σ<sub>i ∈ chosen</sub> w<sub>i</sub> · Expert<sub>i</sub>(u), u = RMSNorm(h), the A chosen experts, weights w<sub>i</sub> summing to 2.5 (20.5), plus a shared expert if configured |
@@ -102,7 +102,7 @@ that each layer adds to:
 
 The model's constructor builds everything this chapter traces:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 826–851 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 833–863 · @fdbb09a
 
 ```python
     def __init__(self, cfg: AnuLMConfig):
@@ -121,10 +121,15 @@ The model's constructor builds everything this chapter traces:
         self.ce_chunk = 0               # set via enable_chunked_loss()
         self.merge_P = None             # sparse (V, V), see merge_tree_matrix()
         self._merged = None             # eval-mode cache of composed tables
+        self.aux_loss = None            # set by forward(): the router regulariser, detached
+        self.imbalance_median = None    # set by update_expert_biases()
+        self.text_vocab = None          # set by loaders of a grown speech/image model
         if cfg.merge_tree:
-            assert cfg.merge_tree in ("in", "out", "both"), cfg.merge_tree
+            if cfg.merge_tree not in ("in", "out", "both"):
+                raise ValueError(f"merge_tree must be 'in', 'out' or 'both', not {cfg.merge_tree!r}")
             import json as _json
-            merges = _json.load(open(cfg.tokenizer_path, encoding="utf-8"))["merges"]
+            with open(cfg.tokenizer_path, encoding="utf-8") as f:
+                merges = _json.load(f)["merges"]
             self.merge_P = merge_tree_matrix(merges, cfg.vocab_size)
         self.apply(self._init_weights)
         # nanoGPT's scaled init for the residual output projections.
@@ -135,15 +140,16 @@ The model's constructor builds everything this chapter traces:
 
 | Lines | What they build |
 |---|---|
-| 829 | the (V, D) input table |
-| 831–832 | **one** `Rotary`, handed to every `Block` |
-| 833–836 | the final norm and the (D → V) output head; untied in both models (`tie_word_embeddings = False`) |
-| 838–841 | switches for checkpointing and chunked loss (20.5, 20.6) and the merge tree, off here (Chapter 10) |
-| 847–851 | initialisation: every layer's output projection is shrunk by √(2L) (Chapter 15) |
+| 836 | the (V, D) input table |
+| 837–839 | **one** `Rotary`, handed to every `Block` |
+| 840–843 | the final norm and the (D → V) output head; untied in both models (`tie_word_embeddings = False`) |
+| 845–848, 852–858 | switches for checkpointing and chunked loss (20.5, 20.6) and the merge tree, off here (Chapter 10); a bad `merge_tree` raises `ValueError` |
+| 849–851 | three attributes other code fills in later, declared here as `None` so every reader finds them on any model: the router's auxiliary loss (20.6), the median imbalance (Chapter 18), the text vocabulary of a grown model (Chapter 28) |
+| 859–863 | initialisation: every layer's output projection is shrunk by √(2L) (Chapter 15) |
 
 `AnuLM.forward` takes `idx`, a (B, S) tensor of ids:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 879–887 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 891–899 · @fdbb09a
 
 ```python
         if embeds is not None:
@@ -152,17 +158,17 @@ The model's constructor builds everything this chapter traces:
         else:
             B, S = idx.shape
             x = F.embedding(idx, self._table("in"))               # (B, S, D)
-        assert start + S <= self.cfg.block_size, \
-            f"positions up to {start + S} exceed block_size {self.cfg.block_size}"
+        if start + S > self.cfg.block_size:      # an error, not an assert: python -O strips those
+            raise ValueError(f"positions up to {start + S} exceed block_size {self.cfg.block_size}")
         cos, sin = self.rotary(S, x.device, x.dtype, start=start)
 ```
 
-Text takes the `else` branch: each id selects a row, (B, S) → (B, S, D). The
-assertion refuses a call past `block_size`. The `if` branch is for audio and
+Text takes the `else` branch: each id selects a row, (B, S) → (B, S, D). A call
+past `block_size` raises `ValueError`; an `assert` would vanish under `python -O`. The `if` branch is for audio and
 images, which arrive as vectors (Chapter 35). The rotary tables are built once
 and only sliced per call:
 
-> **In the repo** · `anulm/model.py` · `Rotary._grow`, `Rotary.forward` · lines 317–336 · @084cbdd
+> **In the repo** · `anulm/model.py` · `Rotary._grow`, `Rotary.forward` · lines 324–343 · @fdbb09a
 
 ```python
     def _grow(self, seq_len: int, device, dtype):
@@ -187,8 +193,8 @@ and only sliced per call:
         return self.cos_cached[start:start + seq_len], self.sin_cached[start:start + seq_len]
 ```
 
-Line 309 returns early when the cached tables are long enough for this device
-and dtype. Line 324 slices positions `start` … `start + S − 1`, which is how a
+Line 329 returns early when the cached tables are long enough for this device
+and dtype. Line 343 slices positions `start` … `start + S − 1`, which is how a
 cached decode step puts its new token at the right position (Chapters 14, 27).
 
 ```
@@ -203,7 +209,7 @@ layer 0 input x                    (2, 5, 32)  (B, S, D)
 
 ## 20.5  The layers, and the residual stream
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 888–899 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 900–911 · @fdbb09a
 
 ```python
         aux_total = None
@@ -223,7 +229,7 @@ The first branch, activation checkpointing, recomputes activations in the
 backward pass instead of storing them (Chapter 23); both compute the same
 thing.
 
-> **In the repo** · `anulm/model.py` · `Block.forward` · lines 809–817 · @084cbdd
+> **In the repo** · `anulm/model.py` · `Block.forward` · lines 816–824 · @fdbb09a
 
 ```python
     def forward(self, x, cos, sin, cache: Optional[dict] = None, start: int = 0,
@@ -240,13 +246,13 @@ thing.
 Each half normalises a copy of `x`, transforms it and **adds** the result:
 the residual stream, (B, S, D) from first layer to last. Normalising first is
 pre-norm (Chapter 15); GPT-2 moved layer norm to each sub-block's input [R04],
-and RMSNorm drops LayerNorm's re-centring [R08]. Line 778 unpacks an MoE's
+and RMSNorm drops LayerNorm's re-centring [R08]. Line 823 unpacks an MoE's
 `(output, regulariser)` pair, or pairs a dense output with `None`, so every
 block returns the same shape.
 
 ### Inside the attention half
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 451–487 · @084cbdd
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 458–494 · @fdbb09a
 
 ```python
         qkv = self.query_key_value(x)
@@ -277,12 +283,12 @@ block returns the same shape.
 
 | Lines | What happens | `tiny()` | Released |
 |---|---|---|---|
-| 451–456 | one projection, (H + 2H<sub>kv</sub>)·D<sub>h</sub> wide; `view` cuts heads, `split` the roles, `transpose` puts heads first | 64 wide | 1,536 wide |
-| 458–461 | per-head QK-norm (Chapter 11, 11.7), then rotation, so attention depends on relative position [R06] | | |
+| 458–463 | one projection, (H + 2H<sub>kv</sub>)·D<sub>h</sub> wide; `view` cuts heads, `split` the roles, `transpose` puts heads first | 64 wide | 1,536 wide |
+| 465–468 | per-head QK-norm (Chapter 11, 11.7), then rotation, so attention depends on relative position [R06] | | |
 | first `# ...` | append to the KV cache, which holds the H<sub>kv</sub> heads (Chapter 27); T is then cached + new | | |
 | second `# ...` | build the mask (Chapter 11, 11.6) and the dropout rate | | |
-| 481–485 | grouped-query attention: query heads share a key/value head [R12]; with `NATIVE_GQA` off (line 380) each is copied to its group | 2 per group | 4 per group |
-| 486–487 | heads back side by side (`contiguous` makes the copy `view` needs), then `dense` | H·D<sub>h</sub> = 32 | 1,024 |
+| 488–492 | grouped-query attention: query heads share a key/value head [R12]; with `NATIVE_GQA` off (line 387) each is copied to its group | 2 per group | 4 per group |
+| 493–494 | heads back side by side (`contiguous` makes the copy `view` needs), then `dense` | H·D<sub>h</sub> = 32 | 1,024 |
 
 ```
 layer 0 input_layernorm          out (2, 5, 32)
@@ -301,7 +307,7 @@ both models is a coincidence the code does not need.
 Layer 0's feed-forward half, and every expert, is a SwiGLU, a gated
 feed-forward network [R11]:
 
-> **In the repo** · `anulm/model.py` · `SwiGLU` · lines 235–246 · @084cbdd
+> **In the repo** · `anulm/model.py` · `SwiGLU` · lines 242–253 · @fdbb09a
 
 ```python
 class SwiGLU(nn.Module):
@@ -321,7 +327,7 @@ Three bias-free matrices, so 3·D·I numbers. The gate's SiLU scales the up
 projection element-wise before `down_proj` returns to width D (Chapter 16).
 From layer 1 on, the half is a mixture of experts:
 
-> **In the repo** · `anulm/model.py` · `MoE.forward` · lines 689–700 · @084cbdd
+> **In the repo** · `anulm/model.py` · `MoE.forward` · lines 696–707 · @fdbb09a
 
 ```python
     def forward(self, x):                                     # (B, S, D)
@@ -341,7 +347,7 @@ From layer 1 on, the half is a mixture of experts:
 The router ignores which sequence a token came from, so the batch flattens to
 N = B·S rows. It runs with autocast off:
 
-> **In the repo** · `anulm/model.py` · `Router.forward` · lines 604–615 · @084cbdd
+> **In the repo** · `anulm/model.py` · `Router.forward` · lines 611–622 · @fdbb09a
 
 ```python
     def forward(self, x_flat, seq_len: Optional[int] = None):   # (N, D)
@@ -367,7 +373,7 @@ it on the released checkpoint: 3.17% of token-layer choices (19,717 of
 10.95% in layer 1 (*measured*; Chapter 17 finds 3.18% in a different
 setting). The choice itself:
 
-> **In the repo** · `anulm/model.py` · `Router._gate` · lines 617–665 · @084cbdd
+> **In the repo** · `anulm/model.py` · `Router._gate` · lines 624–672 · @fdbb09a
 
 ```python
         logits = F.linear(x_flat, self.weight.float())             # (N, E)
@@ -394,10 +400,10 @@ setting). The choice itself:
 > `sparse` (the default, `tiny()`'s), `dense` (every expert on every token,
 > for `torch.compile`) and `grouped` (one `F.grouped_mm` per projection over
 > groups of different sizes, in bf16; the released model's).
-> `dense_and_sparse_moe_agree` (`tests/test_model.py` line 463) holds the first two
-> together to 10⁻⁵. `grouped_moe_matches_sparse_under_bf16` (line 683) holds
+> `dense_and_sparse_moe_agree` (`tests/test_model.py` line 474) holds the first two
+> together to 10⁻⁵. `grouped_moe_matches_sparse_under_bf16` (line 694) holds
 > grouped to sparse within 5% of the largest output; on a PyTorch without
-> `F.grouped_mm` it returns early and checks nothing (Chapter 18).
+> `F.grouped_mm` it is skipped, and reported as SKIP rather than a pass (Chapter 18).
 
 ```
 layer 1 mlp.router               in  (10, 32)  -> expert ids (10, 2), weights (10, 2)  (N, A)
@@ -415,7 +421,7 @@ and a router z-loss with weight 1e-3 (`router_z_alpha`) (Chapter 18).
 
 ## 20.6  Out: the loss, or one row of logits
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 900–916 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 912–928 · @fdbb09a
 
 ```python
         x = self.norm(x)
@@ -439,14 +445,14 @@ and a router z-loss with weight 1e-3 (`router_z_alpha`) (Chapter 18).
 
 | Lines | Detail | Later chapters |
 |---|---|---|
-| 903–906 | without targets, only the last position is projected: (B, 1, V), skipping B·(S − 1) rows of a V-wide multiply; with a KV cache each decode step already has S = 1, so the saving is on the prompt's first pass | 27 |
-| 907–909 | with chunked loss in training (`--ce-chunk`), the head and loss run a few thousand positions at a time and the logits are `None` | 23 |
-| 910 | `lm_head` is not tied to the embedding table, so the arithmetic counts 2·V·D | 10 |
-| 911–913 | cross-entropy in fp32; targets of −1 are not graded, which is how fine-tuning grades only answers | 30 |
+| 915–918 | without targets, only the last position is projected: (B, 1, V), skipping B·(S − 1) rows of a V-wide multiply; with a KV cache each decode step already has S = 1, so the saving is on the prompt's first pass | 27 |
+| 919–921 | with chunked loss in training (`--ce-chunk`), the head and loss run a few thousand positions at a time and the logits are `None` | 23 |
+| 922 | `lm_head` is not tied to the embedding table, so the arithmetic counts 2·V·D | 10 |
+| 923–925 | cross-entropy in fp32; targets of −1 are not graded, which is how fine-tuning grades only answers | 30 |
 
 The model does not shift the targets; the caller does:
 
-> **In the repo** · `anulm/training/train.py` · `make_batch` · lines 241–254 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `make_batch` · lines 237–250 · @fdbb09a
 
 ```python
 def make_batch(data: torch.Tensor, ix: torch.Tensor, block_size: int, device: str):
@@ -473,13 +479,13 @@ without targets: logits            (2, 1, 64)  (B, 1, V): the last position only
 
 *verified*: printed by `trace_forward.py`, on random targets. An untrained model
 guesses almost uniformly, so its loss starts near ln V (Chapter 3 shows why it
-sits slightly above); `initial_loss_is_ln_vocab` (`tests/test_model.py` line 338)
+sits slightly above); `initial_loss_is_ln_vocab` (`tests/test_model.py` line 349)
 requires it within 0.35. Here 4.1550 is 0.004 from ln 64.
 
 The released model shows what training buys. On 64 windows of 512 held-out
 tokens (seed 0; 32,732 graded, as the 36 targets after an end-of-document
 token are not graded) its loss is 3.379 nats, in fp32 except the experts, which
-the checkpoint's grouped path runs in bf16 (`anulm/model.py` 749, 777), against
+the checkpoint's grouped path runs in bf16 (`anulm/model.py` 756, 784), against
 ln 32,768 = 10.397: about as uncertain as a uniform choice among
 e<sup>3.379</sup> ≈ 29 tokens. *measured*: `measure_attention.py`, output in
 `book/measurements/`. `docs/RESULTS.md` §39's 3.3523 ± 0.049 was measured
@@ -489,7 +495,7 @@ differently (400 windows of 1,024 tokens, bf16).
 
 ## 20.7  One step further: from logits to a token
 
-> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1140–1157 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1152–1169 · @fdbb09a
 
 ```python
             logits = logits[:, -1, :].float()
@@ -507,11 +513,11 @@ differently (400 windows of 1,024 tokens, bf16).
 
 | Line | Effect |
 |---|---|
-| 1140 | (B, 1, V) → (B, V), in fp32 |
-| 1149–1150 | temperature ≤ 0: exact greedy, the highest-scoring id per row, (B, 1), with no random draw |
-| 1152 | otherwise divide by the temperature: above 1 flattens, below 1 sharpens (Chapter 5) |
-| 1153–1155 | optional `top_k` cut: `v[:, [-1]]` is each row's smallest survivor, kept as a (B, 1) column by the list index so it compares across the row; everything below becomes −∞. This `top_k` is a sampling setting, unrelated to the router's |
-| 1156–1157 | softmax, then one id drawn per sequence, (B, 1) |
+| 1152 | (B, 1, V) → (B, V), in fp32 |
+| 1161–1162 | temperature ≤ 0: exact greedy, the highest-scoring id per row, (B, 1), with no random draw |
+| 1164 | otherwise divide by the temperature: above 1 flattens, below 1 sharpens (Chapter 5) |
+| 1165–1167 | optional `top_k` cut: `v[:, [-1]]` is each row's smallest survivor, kept as a (B, 1) column by the list index so it compares across the row; everything below becomes −∞. This `top_k` is a sampling setting, unrelated to the router's |
+| 1168–1169 | softmax, then one id drawn per sequence, (B, 1) |
 
 The id is appended and fed back as the next call's only token, `start`
 advanced by one. The elided lines block audio and image ids and apply an
@@ -552,7 +558,7 @@ and a SwiGLU holds 3·D·I. The trace script sums eight terms:
 Each token uses A = 2 of 8 routed experts in each of the two MoE layers, so
 2 × 6 × 1,536 = 18,432 sit idle and `num_params()` reports **29,456** active.
 
-> **In the repo** · `anulm/model.py` · `AnuLM.num_params` · lines 1092–1101 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.num_params` · lines 1104–1113 · @fdbb09a
 
 ```python
     def num_params(self) -> tuple[int, int]:
@@ -623,7 +629,7 @@ key/value head: 20 · 2 · 4 · 64 = 10,240 numbers.
 | all fp32, e.g. on a CPU | 40 KiB | 40 MiB |
 
 *verified*: dtypes checked under autocast. The 256-token window does not
-shrink this: `GQAttention.forward` appends and never trims (lines 463–469).
+shrink this: `GQAttention.forward` appends and never trims (lines 470–476).
 With 16 key/value heads instead of 4 every row would be four times larger
 (Chapters 23, 27, 29).
 
@@ -631,14 +637,14 @@ With 16 key/value heads instead of 4 every row would be four times larger
 
 ## 20.10  The proof, and how to see it yourself
 
-> **In the repo** · `tests/test_model.py` · `param_count_matches_analysis` · line 399 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `param_count_matches_analysis` · line 410 · @fdbb09a
 
 It builds two more presets, `nano_30b` and `nano_105b`, small models shaped like
 Sarvam's 30B and 105B, and requires 17,440,384 parameters (6,602,368 active)
 and 47,389,728 (13,327,392 active), each within 1,000. That catches a missing
 matrix, the smallest being 6,144 numbers, but not a missing gain vector of 64
-or 384. `all_parameters_receive_gradients` (line 325) catches a parameter that
-is built but never used, and `initial_loss_is_ln_vocab` (line 338) a badly
+or 384. `all_parameters_receive_gradients` (line 336) catches a parameter that
+is built but never used, and `initial_loss_is_ln_vocab` (line 349) a badly
 scaled initialisation. To print the trace:
 
 ```bash
@@ -688,7 +694,7 @@ python book/code-examples/trace_forward.py
 4. (B, V) logits would break `generate`'s three-dimensional `logits[:, -1, :]`.
 5. 47,888 − 3,072 = 44,816 total; 29,456 − 3,072 = 26,384 active.
 
-*verified*: each answer recomputed with `anulm/model.py` at @084cbdd.
+*verified*: each answer recomputed with `anulm/model.py` at @fdbb09a.
 
 ---
 
@@ -729,20 +735,20 @@ used only for the claim in its register row:
 | [R18] | the balancing bias is used only for selection | CHECKED |
 | [R20] | sigmoid affinity scores in the router | CHECKED |
 
-Repository evidence, all at @084cbdd:
+Repository evidence, all at @fdbb09a:
 - `anulm/model.py`:
-  - `RMSNorm` 218–232, `SwiGLU` 235–246, `Rotary._grow` / `forward` 317–336,
-    `NATIVE_GQA` 380;
-  - `GQAttention.forward` 444–487, `Router.forward` 604–615,
-    `Router._gate` 617–665, `MoE.forward` 689–700, `Block.forward` 809–817;
-  - `AnuLM.__init__` 826–851, `AnuLM.forward` 865–916,
-    `AnuLM.num_params` 1092–1101, `AnuLM.generate` 1104–1168.
-- `anulm/training/train.py`: `make_batch` 241–254.
+  - `RMSNorm` 225–239, `SwiGLU` 242–253, `Rotary._grow` / `forward` 324–343,
+    `NATIVE_GQA` 387;
+  - `GQAttention.forward` 451–494, `Router.forward` 611–622,
+    `Router._gate` 624–672, `MoE.forward` 696–707, `Block.forward` 816–824;
+  - `AnuLM.__init__` 833–863, `AnuLM.forward` 877–928,
+    `AnuLM.num_params` 1104–1113, `AnuLM.generate` 1116–1180.
+- `anulm/training/train.py`: `make_batch` 237–250.
 - `tests/test_model.py`:
-  - `tiny` 33–38;
-  - `all_parameters_receive_gradients` 325, `initial_loss_is_ln_vocab` 338,
-    `param_count_matches_analysis` 399;
-  - `dense_and_sparse_moe_agree` 463, `grouped_moe_matches_sparse_under_bf16` 683.
+  - `tiny` 44–49;
+  - `all_parameters_receive_gradients` 336, `initial_loss_is_ln_vocab` 349,
+    `param_count_matches_analysis` 410;
+  - `dense_and_sparse_moe_agree` 474, `grouped_moe_matches_sparse_under_bf16` 694.
 - The released configuration, stored in `ckpt_base_v2.pt`.
 - Measurements of the released model on held-out text:
   `book/measurements/attention.json`, written by

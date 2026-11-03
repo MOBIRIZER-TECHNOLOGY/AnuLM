@@ -86,7 +86,7 @@ def temperature_zero_is_greedy() -> None:
 def top_k_cut(z: torch.Tensor, k: int) -> torch.Tensor:
     z = z.clone()
     v, _ = torch.topk(z, k)
-    z[z < v[..., [-1]]] = -float("inf")                 # generate's lines 1154-1155
+    z[z < v[..., [-1]]] = -float("inf")                 # generate's lines 1166-1167
     return F.softmax(z, -1)
 
 

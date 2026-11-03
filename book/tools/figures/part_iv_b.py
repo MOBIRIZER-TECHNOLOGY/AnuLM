@@ -26,6 +26,14 @@ from make_figures import (BOOK, CARD, CORAL, GOLD, GOLDTEXT, INK, MONO, MUTED, N
 MEAS = BOOK / "measurements" / "part_iv_b_trained.json"
 
 
+def _lines(obj) -> str:
+    """'first–last' line of a class in the model code, read from the source, so a
+    caption cannot fall behind the code it names."""
+    import inspect
+    src, first = inspect.getsourcelines(obj)
+    return f"{first}–{first + len(src) - 1}"
+
+
 def _meas():
     return json.loads(MEAS.read_text(encoding="utf-8"))
 
@@ -57,7 +65,7 @@ def fig_16_swiglu():
     assert (D, I) == (1024, 2816)
     w, h = 760, 300
     b = [text(20, 28, "SwiGLU: two projections, one gate, one projection back", 15, weight=700, family=SERIF),
-         text(20, 48, f"model.py lines 226–236 · shapes for the released layer 0: D = {D:,}, I = {I:,}", 12,
+         text(20, 48, f"model.py lines {_lines(M.SwiGLU)} · shapes for the released layer 0: D = {D:,}, I = {I:,}", 12,
               "f-muted", MUTED)]
     b += _box(20, 130, 110, 54, "u", "(B, S, D)")
     b += _box(190, 76, 130, 54, "gate_proj", "D → I")
@@ -414,7 +422,7 @@ def fig_19_mla():
     assert (D, H, Dc, Dr, Dn, Dv) == (384, 6, 48, 24, 48, 48)
     W, H_ = 760, 520
     b = [text(20, 28, "Latent attention, one layer: cache a latent and one rotary key", 15, weight=700, family=SERIF),
-         text(20, 48, f"model.py lines 472–543 · shapes for nano_105b: D = {D}, H = {H}, Dc = {Dc}, Dr = {Dr}, "
+         text(20, 48, f"model.py lines {_lines(M.MLAttention)} · shapes for nano_105b: D = {D}, H = {H}, Dc = {Dc}, Dr = {Dr}, "
                       f"Dn = {Dn}, Dv = {Dv}", 12, "f-muted", MUTED)]
     b += _box(20, 230, 100, 54, "x", "(B, S, D)")
     # query branch

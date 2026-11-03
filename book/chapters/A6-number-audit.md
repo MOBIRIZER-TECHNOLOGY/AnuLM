@@ -2,14 +2,14 @@
 title: "Appendix F · Reproducing every number"
 part: "Appendices"
 accent: slate
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # Appendix F  Reproducing every number
 
 Every number in this book carries one of four labels (`STYLE.md` §7):
 
-- ***verified***: checked against the repository at @084cbdd, or recomputed by
+- ***verified***: checked against the repository at @fdbb09a, or recomputed by
   a book script;
 - ***measured***: from a run recorded in `docs/RESULTS.md` or `logs/`, or from
   a book script run on the released checkpoint, whose output is saved in
@@ -28,15 +28,22 @@ figures and four appendix tables.
 
 ## F.1  The repository at the pin
 
-The line numbers refer to commit `084cbdd`, the tip of the repository's
-`restructure` branch, which is not on GitHub yet; the public `main`
+The line numbers refer to commit `fdbb09a`, the `anulm/` package layout
+after a code-quality pass, which is not on GitHub yet; the public `main`
 (`ae59238`) has the old flat layout, whose line numbers differ (front matter).
 To work on exactly the cited code, export the pin rather than checking it out:
 
 ```bash
-mkdir pin && git archive 084cbdd | tar -x -C pin
-cd pin && CUDA_VISIBLE_DEVICES="" python -m tests.test_model   # 76 passed, 0 failed, 76 total (Chapter 41.5)
+mkdir pin && git archive fdbb09a | tar -x -C pin
+cd pin && CUDA_VISIBLE_DEVICES=-1 python -m tests.test_model   # 76 passed, 0 failed, 76 total (Chapter 41.5)
+CUDA_VISIBLE_DEVICES=-1 python -m unittest discover -s tests -p "test_quality_*.py" -t .   # Ran 63 tests ... OK
 ```
+
+The first suite runs in under a minute on a CPU (46 s on the book's
+machine), the second in about 5 s. `-1` hides the GPU; on the book's machine
+an empty `CUDA_VISIBLE_DEVICES` did not. A test that cannot run for want of a
+package prints SKIP, and the first suite's summary then reads
+"N passed, M skipped, F failed, T total" (Appendix C).
 
 The export has no untracked data. The tests need none: they build `tiny()`
 models and temporary files. The book's measurements need two things git does
@@ -94,7 +101,7 @@ three things.
 **It checks four appendix tables against their sources:**
 
 ```
-Appendix C: 76 rows against 76 tests at @084cbdd: ok
+Appendix C: 76 rows against 76 tests at @fdbb09a: ok
 Appendix B.1: 42 configuration rows recomputed: ok
 Appendix E: 66 rows against 66 register entries: ok
 Appendix A: 47 distinct concrete shapes, 0 not in ch41_shapes.py's output
@@ -122,7 +129,10 @@ skipped too.
 It exits with status 1 if an appendix check fails or an example run fails.
 
 *verified*: the four lines above are the script's output at the time of
-writing.
+writing. At @fdbb09a the lines for Appendices C, E and A were rerun and are
+unchanged; the B.1 line needs `ckpt_base_v2.pt` and was not rerun, but its
+Line column was recomputed from `anulm/model.py` at the pin and still
+matches.
 
 ## F.5  Everything, in order
 

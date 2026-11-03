@@ -2,7 +2,7 @@
 title: "7 · Optimisation: AdamW, schedules and clipping"
 part: "II · Just enough mathematics"
 accent: slate
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 7  Optimisation: AdamW, schedules and clipping
@@ -18,7 +18,7 @@ not repository code**) prints every number.
 The released run's settings, from its command line (`_v2_run.cmd` at the pin):
 AdamW, peak learning rate 6 × 10⁻⁴, minimum 6 × 10⁻⁵, 2,000 warmup steps, the
 WSD schedule with its decay over the last 16.3% of 1,900,000 steps; weight
-decay 0.1 and clipping at 1.0 are `anulm/training/train.py`'s defaults (lines 559–560).
+decay 0.1 and clipping at 1.0 are `anulm/training/train.py`'s defaults (lines 555–556).
 
 ---
 
@@ -73,7 +73,7 @@ to the weight, w ← w·(1 − η·λ), rather than adding λw to the gradient, 
 Adam's division by √v would rescale it differently for every parameter [R22].
 `anulm/training/train.py` builds two groups:
 
-> **In the repo** · `anulm/training/train.py` · `make_optimizer` · lines 451–478 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `make_optimizer` · lines 447–474 · @fdbb09a
 
 ```python
 def make_optimizer(model: AnuLM, args):
@@ -201,7 +201,7 @@ on an 8 GB card (§6).
 
 `anulm/training/train.py` computes the learning rate for every step from the step number:
 
-> **In the repo** · `anulm/training/train.py` · `lr_at` · lines 379–404 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `lr_at` · lines 375–400 · @fdbb09a
 
 ```python
 def lr_at(step: int, args, start_step: int = 0) -> float:
@@ -246,14 +246,14 @@ Three shapes:
 `anulm/training/train.py` turns the rate into a factor, so that every optimiser and group
 keeps its own base rate:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 849–850 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `main` · lines 852–853 · @fdbb09a
 
 ```python
         lr = lr_at(step, args, start_step)
         opt.set_lr_scale(lr / args.lr)
 ```
 
-> **In the repo** · `anulm/training/train.py` · `OptimizerSet.set_lr_scale` · lines 420–424 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `OptimizerSet.set_lr_scale` · lines 416–420 · @fdbb09a
 
 ```python
     def set_lr_scale(self, scale: float):
@@ -305,7 +305,7 @@ figure calls `lr_at`.
 
 The WSD shape is pinned by a test:
 
-> **In the repo** · `tests/test_model.py` · `wsd_schedule_is_flat_then_decays_to_min_lr` · lines 1610–1619 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `wsd_schedule_is_flat_then_decays_to_min_lr` · lines 1627–1636 · @fdbb09a
 
 ```python
 def wsd_schedule_is_flat_then_decays_to_min_lr():
@@ -331,7 +331,7 @@ middle, a strictly falling tail that reaches `min_lr`.
 One unusual batch can produce a gradient many times the usual size. The step
 after the backward pass caps it:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 871–875 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `main` · lines 874–878 · @fdbb09a
 
 ```python
         if args.grad_clip > 0:
@@ -399,7 +399,7 @@ values**, how much G stretches each direction. *Orthogonalising* G replaces it
 by U Vᵀ: the same directions, every stretch set to 1. `anulm/muon.py` approximates
 that:
 
-> **In the repo** · `anulm/muon.py` · `zeropower_via_newtonschulz5` · lines 35–56 · @084cbdd
+> **In the repo** · `anulm/muon.py` · `zeropower_via_newtonschulz5` · lines 35–56 · @fdbb09a
 
 ```python
 def zeropower_via_newtonschulz5(G: torch.Tensor, steps: int = 5, eps: float = 1e-7):
@@ -456,7 +456,7 @@ for groups of same-shaped updates, such as all the experts' matrices of one
 projection. It stacks them and calls `zeropower_batched` (line 59), the same
 iteration over a batch of matrices:
 
-> **In the repo** · `anulm/muon.py` · `Muon.step` · lines 125–133 · @084cbdd
+> **In the repo** · `anulm/muon.py` · `Muon.step` · lines 125–133 · @fdbb09a
 
 ```python
             by_shape: dict = {}
@@ -480,7 +480,7 @@ was the largest single gain, −0.371 in held-out loss at 25M tokens (§32). At
 embeddings and a bigram teacher) led plain AdamW by only about one standard
 error, at 43% more time per token, and the next run kept plain AdamW (§32).
 The batching is a pure speed change:
-`batched_muon_matches_per_matrix_muon` (`tests/test_model.py` line 1712) requires
+`batched_muon_matches_per_matrix_muon` (`tests/test_model.py` line 1729) requires
 the two to agree to 10⁻⁶.
 
 `IN THE REPO` · `MEASURED`
@@ -559,15 +559,15 @@ used only for the claim in its register row:
 The cosine schedule, warmup and gradient clipping are described without a
 citation; proposals are in `technical-review/register-additions/part_i_ii.md`.
 
-Repository evidence, all at @084cbdd:
-- `anulm/training/train.py`: `lr_at` 379–404; `OptimizerSet` 407–448 (`set_lr_scale`
-  420–424); `make_optimizer` 451–478; `main` defaults 559–560, schedule
-  849–850, clip and step 871–875.
+Repository evidence, all at @fdbb09a:
+- `anulm/training/train.py`: `lr_at` 375–400; `OptimizerSet` 403–444 (`set_lr_scale`
+  416–420); `make_optimizer` 447–474; `main` defaults 555–556, schedule
+  852–853, clip and step 874–878.
 - `anulm/muon.py`: module docstring 13–14; `zeropower_via_newtonschulz5` 35–56;
   `zeropower_batched` 59–82; `Muon` 85–141 (`step` 125–133);
   `build_optimizers` 144–182 (split 152–165).
-- `tests/test_model.py`: `wsd_schedule_is_flat_then_decays_to_min_lr` 1610–1619;
-  `batched_muon_matches_per_matrix_muon` 1712.
+- `tests/test_model.py`: `wsd_schedule_is_flat_then_decays_to_min_lr` 1627–1636;
+  `batched_muon_matches_per_matrix_muon` 1729.
 - `_v2_run.cmd`: the released run's command line.
 - `docs/RESULTS.md` §6 and §32.
 - Measurements: `book/measurements/part_i_ii_released.json`.

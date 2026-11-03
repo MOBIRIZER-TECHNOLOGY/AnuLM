@@ -2,7 +2,7 @@
 title: "37 · One model, many tasks"
 part: "VIII · Beyond text"
 accent: plum
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 37  One model, many tasks
@@ -15,7 +15,7 @@ must not look. This chapter reads the trainer and the release recipe, then the
 first full run, from October 2026, whose score improved at every evaluation
 while the skill it was meant to keep got worse.
 
-Every excerpt is quoted at @084cbdd. The October run used an earlier version
+Every excerpt is quoted at @fdbb09a. The October run used an earlier version
 of the trainer, at commit `773b6a8`, with one batch per optimizer step; the
 book example loads that version to check the run's log. Where the two differ,
 the text says so. A new run with the current recipe is training now. Its
@@ -31,7 +31,7 @@ Speech and image batches come from `speech_encoder.batches` and
 `vision_encoder.batches` (Chapter 36). Text needs its own builder, because a
 text row has no projector but must arrive in the same form:
 
-> **In the repo** · `anulm/multimodal/omni_train.py` · `text_batches` · lines 104–174 · @084cbdd
+> **In the repo** · `anulm/multimodal/omni_train.py` · `text_batches` · lines 104–174 · @fdbb09a
 
 ```python
 def pad(built, device):
@@ -74,7 +74,7 @@ The book example checks that this path is the plain id path in disguise:
 ```
 
 *verified*: `ch37_task_mix.py` on `tiny()`, with `text_batches` as of
-`773b6a8`; lines 104–111 and 161–174 are identical at @084cbdd.
+`773b6a8`; lines 104–111 and 161–174 are identical at @fdbb09a.
 
 `IN THE REPO`
 
@@ -82,7 +82,7 @@ The book example checks that this path is the plain id path in disguise:
 
 A task is one command-line string, `name=kind:path[:weight[:batch]]`:
 
-> **In the repo** · `anulm/multimodal/omni_train.py` · `Task.__init__` · lines 69–82 · @084cbdd
+> **In the repo** · `anulm/multimodal/omni_train.py` · `Task.__init__` · lines 69–82 · @fdbb09a
 
 ```python
     def __init__(self, spec: str):
@@ -113,7 +113,7 @@ into a path `C` and a weight `\data`:
 
 `Omni.__init__` then loads each task and splits off its held-out set:
 
-> **In the repo** · `anulm/multimodal/omni_train.py` · `Omni.__init__` · lines 216–235 · @084cbdd
+> **In the repo** · `anulm/multimodal/omni_train.py` · `Omni.__init__` · lines 216–235 · @fdbb09a
 
 ```python
         self.caches = {}
@@ -157,7 +157,7 @@ In order:
 
 Both splits work on *input groups*, not rows:
 
-> **In the repo** · `anulm/multimodal/omni_train.py` · `split_rows` · lines 123–136 · @084cbdd
+> **In the repo** · `anulm/multimodal/omni_train.py` · `split_rows` · lines 123–136 · @fdbb09a
 
 ```python
 def split_rows(rows, kind, held_fraction=0.02):
@@ -179,7 +179,7 @@ are held out, with every row that belongs to them. Five captions of one image
 therefore land on the same side. An explicit held-out file gets the same
 treatment from the other direction:
 
-> **In the repo** · `anulm/multimodal/omni_train.py` · `disjoint_held` · lines 148–159 · @084cbdd
+> **In the repo** · `anulm/multimodal/omni_train.py` · `disjoint_held` · lines 148–159 · @fdbb09a
 
 ```python
 def disjoint_held(training, held, kind, name):
@@ -216,7 +216,7 @@ draws:
 | caption | image | 0.17 | 0.17 | 8 |
 | vqa | image | 0.12 | 0.12 | 8 |
 
-*verified*: "now" from `experiments/omni_one.py` at @084cbdd; "October run"
+*verified*: "now" from `experiments/omni_one.py` at @fdbb09a; "October run"
 printed by `ch37_task_mix.py` from the file at `773b6a8`. The October weights
 sum to 1.00. Today's sum to 1.18, so chat gets 0.25 / 1.18 = 21.2% of the
 draws and asr_hi 27.1% (arithmetic).
@@ -232,7 +232,7 @@ draws and asr_hi 27.1% (arithmetic).
 
 ## 37.3  One step: several draws, one update
 
-> **In the repo** · `anulm/multimodal/omni_train.py` · `train` · lines 422–451 · @084cbdd
+> **In the repo** · `anulm/multimodal/omni_train.py` · `train` · lines 423–452 · @fdbb09a
 
 ```python
     w = np.array([t.weight for t in om.tasks], dtype=float)
@@ -287,16 +287,16 @@ The comment states the reason. AdamW moves each weight by about the learning
 rate whatever the batch held, so with one batch per step a 30-token intent
 batch moves the shared decoder as far as a full chat batch. Summing batches
 makes each step an average over several. `--accum` defaults to 1, and `main`
-refuses 0 (lines 504 and 516–517).
+refuses 0 (lines 505 and 517–518).
 
 The optimizer has the backbone in one group and each projector in another,
-at `--lr` (default 5e-5) and `--proj-lr` (1e-3) (lines 372–376, 493–494), as
+at `--lr` (default 5e-5) and `--proj-lr` (1e-3) (lines 372–376, 494–495), as
 in Chapter 36.
 
 Two seeds make a run repeatable, and the resume path checks that it is still
 the same run:
 
-> **In the repo** · `anulm/multimodal/omni_train.py` · `train` · lines 365–402 · @084cbdd
+> **In the repo** · `anulm/multimodal/omni_train.py` · `train` · lines 365–404 · @fdbb09a
 
 ```python
     # Fresh projectors (vision always, audio without --audio-proj-from) are
@@ -307,7 +307,8 @@ the same run:
     recipe = recipe_of(args, om.tasks)
     # ...
     if args.resume and last.exists():
-        st = torch.load(last, map_location=dev, weights_only=False)
+        from anulm.model import safe_load
+        st = safe_load(last, map_location=dev)       # weights-only: a resume file runs no code
         if "recipe" not in st:
             print(f"warning: {last} predates recorded recipes; cannot check it matches this run", flush=True)
         elif st["recipe"] != recipe:
@@ -318,10 +319,11 @@ the same run:
 
 `torch.manual_seed` runs before `Omni` builds the projectors, so a fresh
 projector starts from the same weights in every run with the same `--seed`.
-The task draw has its own generator, `default_rng(args.seed + start)`. `recipe`
-comes from `recipe_of`:
+The task draw has its own generator, `default_rng(args.seed + start)`. The
+resume file is read with `safe_load` (Chapter 25), weights only, so loading it
+cannot run code hidden in the file. `recipe` comes from `recipe_of`:
 
-> **In the repo** · `anulm/multimodal/omni_train.py` · `recipe_of` · lines 353–359 · @084cbdd
+> **In the repo** · `anulm/multimodal/omni_train.py` · `recipe_of` · lines 353–359 · @fdbb09a
 
 ```python
 def recipe_of(args, tasks) -> dict:
@@ -331,16 +333,16 @@ def recipe_of(args, tasks) -> dict:
             "tasks": [[t.name, float(t.weight), int(t.batch)] for t in tasks]}
 ```
 
-It is stored in `<out>.last` at every evaluation (line 474). A resume under a
+It is stored in `<out>.last` at every evaluation (lines 474–476). A resume under a
 different accumulation, learning rate, schedule, projector scale or task mix
 stops with the names of the settings that changed; a `.last` written before
 recipes were recorded gets a warning. Otherwise the run reloads the model,
 both projectors, the optimizer and the step-0 losses, and continues at the
-next step with a new shuffle per task (lines 403–413).
+next step with a new shuffle per task (lines 404–414).
 
-> **Details.** `--stop-after N` (line 505) ends the run at step N while keeping
+> **Details.** `--stop-after N` (line 506) ends the run at step N while keeping
 > `--steps`' learning-rate schedule, and writes no resume file: a short probe
-> that follows the first N steps of a full run exactly (lines 470–471).
+> that follows the first N steps of a full run exactly (lines 471–472).
 
 `IN THE REPO`
 
@@ -350,7 +352,7 @@ The trainer keeps the best checkpoint, so it needs one number. Each task's
 held-out loss is divided by its value before training, and the ratios are
 averaged:
 
-> **In the repo** · `anulm/multimodal/omni_train.py` · `train` · lines 457–464 · @084cbdd
+> **In the repo** · `anulm/multimodal/omni_train.py` · `train` · lines 458–465 · @fdbb09a
 
 ```python
         if step % args.eval_every == 0 or step == args.steps:
@@ -363,8 +365,8 @@ averaged:
                 flag = "  <- saved"
 ```
 
-`first` holds the held-out losses at step 0 (line 415), which must all be
-finite and positive (lines 416–417). Dividing by them puts every task on the
+`first` holds the held-out losses at step 0 (line 416), which must all be
+finite and positive (lines 417–418). Dividing by them puts every task on the
 same footing: a caption loss of 5.5 and a speech loss of 6.6 both start at
 1.0. Lower is better, and a checkpoint is saved whenever the mean improves.
 
@@ -443,7 +445,7 @@ per task, and their mean, in the October run. *measured*:
 What the trainer saves is the backbone plus the small parts that differ per
 input:
 
-> **In the repo** · `anulm/multimodal/omni_train.py` · `Omni.state` · lines 336–350 · @084cbdd
+> **In the repo** · `anulm/multimodal/omni_train.py` · `Omni.state` · lines 336–350 · @fdbb09a
 
 ```python
     def state(self, step, score, losses) -> dict:
@@ -468,7 +470,7 @@ names (`whisper`, `tower`), because they are frozen and downloaded on use.
 `val_loss` holds the score, not a loss. `anulm/multimodal/omni.py` then builds every skill on
 one loaded copy:
 
-> **In the repo** · `anulm/multimodal/omni.py` · `Omni.ear` · lines 47–57 · @084cbdd
+> **In the repo** · `anulm/multimodal/omni.py` · `Omni.ear` · lines 47–57 · @fdbb09a
 
 ```python
     def ear(self):
@@ -494,7 +496,7 @@ The pipeline that runs this training, `experiments/omni_one.py`, does not trust
 the score with the release. Each task gets a gate: how much it may lose against
 the separate model it would replace.
 
-> **In the repo** · `experiments/omni_one.py` · `gates` · lines 375–383 · @084cbdd
+> **In the repo** · `experiments/omni_one.py` · `gates` · lines 375–383 · @fdbb09a
 
 ```python
 def gates(res) -> dict:
@@ -511,7 +513,7 @@ def gates(res) -> dict:
 A missing measurement fails its gate (`v is not None and ...`). Hindi speech
 is gated on the mean of three test sets, because each set alone pulled a
 different way (comment, lines 94–97). The rule and the thresholds are the same
-at `773b6a8` and @084cbdd. Applied by the book example to the October run's
+at `773b6a8` and @fdbb09a. Applied by the book example to the October run's
 evaluation results:
 
 ```
@@ -531,12 +533,12 @@ pipeline's evaluation step; copied into
 `book/measurements/part_viii_ix_omni_log.json`. Four gates failed, so the
 model was not published. For comparison, the separate English speech model
 scored 7.1% WER on the same 100-clip measure (`docs/RESULTS.md` §39).
-`docs/RESULTS.md` at @084cbdd records no result for the joint model.
+`docs/RESULTS.md` at @fdbb09a records no result for the joint model.
 
 Two different chat numbers appear in this chapter. The trainer's held-out loss
 (5.391 at step 100,000, 37.4) comes from `Omni.held_loss`:
 
-> **In the repo** · `anulm/multimodal/omni_train.py` · `Omni.held_loss` · lines 322–334 · @084cbdd
+> **In the repo** · `anulm/multimodal/omni_train.py` · `Omni.held_loss` · lines 322–334 · @fdbb09a
 
 ```python
     @torch.no_grad()
@@ -560,7 +562,7 @@ tokens, or a non-finite total, now raises; the October code returned
 `tot / max(n, 1)`, which would have reported 0 for an empty set. The gate's
 5.3181 comes from a separate scorer:
 
-> **In the repo** · `anulm/multimodal/omni_eval.py` · `chat_loss` · lines 115–131 · @084cbdd
+> **In the repo** · `anulm/multimodal/omni_eval.py` · `chat_loss` · lines 115–131 · @fdbb09a
 
 ```python
 def chat_loss(m, tok, path, device):
@@ -596,7 +598,7 @@ compare each only with its own kind.
 Short probes after the October run pointed to the cause in 37.3: one batch per
 optimizer step. The release recipe now reads:
 
-> **In the repo** · `experiments/omni_one.py` · `ACCUM` · lines 65–87 · @084cbdd
+> **In the repo** · `experiments/omni_one.py` · `ACCUM` · lines 65–87 · @fdbb09a
 
 ```python
 # Each optimizer step sums ACCUM batches. One batch per step (the first run,
@@ -637,7 +639,7 @@ rerun for this book. The comment says plainly that the learning rate and the
 chat weight were never probed together. The pipeline turns these constants
 into the training command:
 
-> **In the repo** · `experiments/omni_one.py` · `main` · lines 460–469 · @084cbdd
+> **In the repo** · `experiments/omni_one.py` · `main` · lines 460–469 · @fdbb09a
 
 ```python
         args = ["-m", "anulm.multimodal.omni_train", "--ckpt", "ckpt_chat_mm.pt", "--out", OUT, "--steps", str(a.steps),
@@ -687,7 +689,7 @@ early order twice. 4. Eight, each drawn independently with probability w, so
 yes; their gradients are averaged into one update.
 
 *verified*: exercise 1 by `omni_train.Task` at `773b6a8` (the same lines
-69–82 at @084cbdd); exercises 2 and 4 by arithmetic and the loop in 37.3.
+69–82 at @fdbb09a); exercises 2 and 4 by arithmetic and the loop in 37.3.
 
 ---
 
@@ -717,13 +719,13 @@ yes; their gradients are averaged into one update.
 This chapter cites no external research. Its evidence is the repository, the
 October run's logs and `docs/RESULTS.md`.
 
-Repository evidence, all at @084cbdd:
+Repository evidence, all at @fdbb09a:
 - `anulm/multimodal/omni_train.py`: `KINDS`, `DEFAULT_BATCH` 64–65, `Task` 68–82, `load_rows`
   85–101, `pad` 104–111, `_row_group` 114–120, `split_rows` 123–136,
   `check_split` 139–144, `disjoint_held` 148–159, `text_batches` 161–174,
   `Omni.__init__` 181–235, `Omni._validate_context` 265–296,
   `Omni.next_batch` 309–320, `Omni.held_loss` 322–334, `Omni.state` 336–350,
-  `recipe_of` 353–359, `train` 362–478, `main` 481–518.
+  `recipe_of` 353–359, `train` 362–479, `main` 482–519.
 - `anulm/multimodal/omni.py`: `Omni` 33–86.
 - `experiments/omni_one.py`: `ACCUM`, `STEPS`, `LR` 65–74, `TASKS` 77–87, `HELD` 88,
   `GATES` 92–104, `prepare_training` 222–238, `gates` 375–383, the training
@@ -735,5 +737,5 @@ Repository evidence, all at @084cbdd:
   `book/measurements/part_viii_ix_omni_log.json`). It ran `omni_train.py` and
   `experiments/omni_one.py` at commit `773b6a8`.
 - Book example: `book/code-examples/ch37_task_mix.py` (loads the `773b6a8`
-  code; not rerun for @084cbdd, because `logs/omni_one/` now belongs to the
+  code; not rerun for @fdbb09a, because `logs/omni_one/` now belongs to the
   new run).

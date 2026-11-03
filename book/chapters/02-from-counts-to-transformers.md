@@ -2,7 +2,7 @@
 title: "2 · From counts to transformers"
 part: "I · Foundations"
 accent: slate
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 2  From counts to transformers
@@ -42,7 +42,7 @@ with `accumulate=True` adds one at (previous, next) for every pair; dividing
 each row by its sum gives P(next | previous). The repository keeps one count
 model, as a training aid:
 
-> **In the repo** · `anulm/bigram_teacher.py` · `build_bigram_teacher` · lines 42–51 · @084cbdd
+> **In the repo** · `anulm/bigram_teacher.py` · `build_bigram_teacher` · lines 42–51 · @fdbb09a
 
 ```python
     V = vocab_size
@@ -79,7 +79,7 @@ A count table shares nothing between tokens; learned vectors can. word2vec
 learned continuous vectors for words from large corpora [R03]. AnuLM begins
 with a table of vectors and ends with a matrix:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 829–834 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 836–841 · @fdbb09a
 
 ```python
         self.embed_tokens = nn.Embedding(cfg.vocab_size, cfg.hidden_size)
@@ -93,7 +93,7 @@ with a table of vectors and ends with a matrix:
 With `n_layer = 0` the block list is empty, and the forward pass's loop does
 nothing:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 888–900 · @084cbdd
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 900–912 · @fdbb09a
 
 ```python
         aux_total = None
@@ -262,7 +262,7 @@ the whole input, every position seeing every other; a **decoder** writes one
 token at a time, each position seeing only earlier ones. GPT-2 was a decoder
 only, trained as a language model on web text [R04]. AnuLM is a decoder too:
 
-> **In the repo** · `anulm/model.py` · `_sdpa` · lines 407–411 · @084cbdd
+> **In the repo** · `anulm/model.py` · `_sdpa` · lines 414–418 · @fdbb09a
 
 ```python
 def _sdpa(q, k, v, mask, S, scale, dropout_p):
@@ -277,7 +277,7 @@ position (Chapter 12). Reading one way gives three things: S graded
 predictions per window of S tokens (Chapter 3); generation that is just
 reading one more token; and a past that never changes, so it can be cached:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 463–469 · @084cbdd
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 470–476 · @fdbb09a
 
 ```python
         if cache is not None:
@@ -310,7 +310,7 @@ message and the options before it, never those after. `anulm/bidirectional.py`
 makes the decoder an encoder, following LLM2Vec's bidirectional attention and
 masked next-token prediction [R35]:
 
-> **In the repo** · `anulm/bidirectional.py` · `bidir_hidden` · lines 40–53 · @084cbdd
+> **In the repo** · `anulm/bidirectional.py` · `bidir_hidden` · lines 40–53 · @fdbb09a
 
 ```python
 def bidir_hidden(m: AnuLM, idx: torch.Tensor, attn: torch.Tensor | None = None) -> torch.Tensor:
@@ -331,13 +331,13 @@ def bidir_hidden(m: AnuLM, idx: torch.Tensor, attn: torch.Tensor | None = None) 
 
 It repeats `AnuLM.forward`'s steps with one change: each block gets
 `bidir_mask`, (B, 1, 1, S), `True` for every real token, which
-`GQAttention.forward` uses instead of the causal mask (line 474).
+`GQAttention.forward` uses instead of the causal mask (line 481).
 `m._table("in")` is the input embedding table (Chapter 10). No cache, no
 head: it returns the normalised vectors, (B, S, D). The adaptation that
 follows is masked next-token prediction (MNTP): hide 20% of the tokens and
 predict each one from the position before it:
 
-> **In the repo** · `anulm/bidirectional.py` · `adapt` · lines 82–93 · @084cbdd
+> **In the repo** · `anulm/bidirectional.py` · `adapt` · lines 82–93 · @fdbb09a
 
 ```python
         masked = torch.rand(x.shape, device=x.device) < a.mask_frac
@@ -412,14 +412,14 @@ used only for the claim in its register row:
 | [R35] | LLM2Vec: bidirectional attention and masked next-token prediction | CHECKED |
 
 
-Repository evidence, all at @084cbdd:
-- `anulm/model.py`: `_sdpa` 407–411; `GQAttention.forward` 463–469, 474;
-  `AnuLM.__init__` 829–834; `AnuLM.forward` 888–900.
+Repository evidence, all at @fdbb09a:
+- `anulm/model.py`: `_sdpa` 414–418; `GQAttention.forward` 470–476, 481;
+  `AnuLM.__init__` 836–841; `AnuLM.forward` 900–912.
 - `anulm/bigram_teacher.py`: `build_bigram_teacher` 34–62 (counts 42–51),
   `teacher_kl` 65–70.
 - `anulm/bidirectional.py`: `bidir_hidden` 40–53; `adapt` 56–105 (MNTP 82–93).
 - `docs/RESULTS.md` §32 (the teacher) and §36 (bidirectional for Decide).
-- `anulm/training/train.py`: `make_batch` 241–254, `make_optimizer` 451–478.
+- `anulm/training/train.py`: `make_batch` 237–250, `make_optimizer` 447–474.
 - `course/ch01-smallest-model/results.json`: the lab book's recorded bigram
   (2.4931) and tiny transformer (1.7505).
 - Measurements: `book/measurements/part_i_ii_ladder.json`.

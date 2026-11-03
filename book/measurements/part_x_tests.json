@@ -1,9 +1,9 @@
 {
- "command": "CUDA_VISIBLE_DEVICES=\"\" python -m tests.test_model",
- "where": "a `git archive 084cbdd` export of the repository (no untracked data), CPU only (CUDA hidden)",
+ "command": "CUDA_VISIBLE_DEVICES=-1 python -m tests.test_model",
+ "where": "the repository at fdbb09a (a worktree whose only changes are under book/), CPU only (CUDA hidden)",
  "python": "3.14.7",
  "torch": "2.11.0+cu128",
- "wall_seconds": 41.0,
+ "wall_seconds": 46.0,
  "summary": "76 passed, 0 failed, 76 total",
  "passed": [
   "causal_mask_does_not_leak_future",

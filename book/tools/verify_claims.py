@@ -40,7 +40,7 @@ def main() -> int:
 
     src = at("anulm/model.py")
     n = len(src.splitlines())
-    claim("anulm/model.py has 1,276 lines", n == 1276, f"{n} lines at @{PIN}")
+    claim("anulm/model.py has 1,364 lines", n == 1364, f"{n} lines at @{PIN}")
 
     tsrc = at("tests/test_model.py")
     tree = ast.parse(tsrc)

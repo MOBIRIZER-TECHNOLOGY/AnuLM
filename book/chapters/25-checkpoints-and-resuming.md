@@ -2,7 +2,7 @@
 title: "25 · Checkpoints, resuming and failure"
 part: "V · Training"
 accent: teal
-pinned: "@084cbdd"
+pinned: "@fdbb09a"
 ---
 
 # 25  Checkpoints, resuming and failure
@@ -19,12 +19,13 @@ Prerequisites: Chapters 22 and 24. A bare "§n" is a section of `docs/RESULTS.md
 | resume point | `<out>.last`: the newest step, with everything needed to continue it |
 | optimizer moments | AdamW's running averages of each gradient and its square (Chapter 7) |
 | atomic write | here: a write that, if the process is killed, either completes or leaves the old file untouched |
+| weights-only load | `torch.load(weights_only=True)`: rebuilds tensors and plain containers, and only the classes allow-listed by name |
 
 ## 25.1  Two files
 
 At every evaluation `anulm/training/train.py` writes up to two checkpoints:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 888–902 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `main` · lines 891–905 · @fdbb09a
 
 ```python
         if (step + 1) % args.eval_every == 0 or step == end - 1:
@@ -58,8 +59,10 @@ The released run's pair, read memory-mapped:
 
 *Figure 25.1 · What a resume point holds.* *measured*:
 `book/code-examples/ch25_measure_resume_point.py` (with `--save`, it writes
-`book/measurements/part_v_b_resume_point.json`). Sizes are decimal GB, as in
-the code's comments; 1.59 GB is 1.48 GiB.
+`book/measurements/part_v_b_resume_point.json`; not rerun at @fdbb09a: needs
+`ckpt_base_v2.pt` and its `.last`, so the numbers are from the earlier run,
+whose files have not changed). Sizes are decimal GB, as in the code's
+comments; 1.59 GB is 1.48 GiB.
 
 | | `ckpt_base_v2.pt` | `ckpt_base_v2.pt.last` |
 |---|---|---|
@@ -77,7 +80,7 @@ evaluation, so both files hold the same weights: all 1,551 tensors are equal
 
 ## 25.2  A write that a kill cannot destroy
 
-> **In the repo** · `anulm/training/train.py` · `atomic_save` · lines 32–46 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `atomic_save` · lines 32–46 · @fdbb09a
 
 ```python
 def atomic_save(obj, path) -> None:
@@ -163,10 +166,10 @@ To continue exactly, a resume point needs everything that decides the next
 step: weights and buffers, both AdamW moments, the step (it sets the learning
 rate), the data order, kept by `WindowSampler` (Chapter 21), and any other
 random state. `anulm/training/train.py` saves all but the last: the global RNG is reseeded at
-line 649 and not saved, so dropout above 0 or `--sample-with-replacement`
-(line 856) would not resume exactly. The sampler's state:
+line 645 and not saved, so dropout above 0 or `--sample-with-replacement`
+(line 859) would not resume exactly. The sampler's state:
 
-> **In the repo** · `anulm/training/train.py` · `WindowSampler.state` · lines 152–160 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `WindowSampler.state` · lines 152–160 · @fdbb09a
 
 ```python
     def state(self) -> dict:
@@ -180,7 +183,7 @@ line 649 and not saved, so dropout above 0 or `--sample-with-replacement`
 `order` is this epoch's shuffled starts, shape (W,) for W windows per epoch;
 `pos` counts those used; `g`'s state makes the *next* epoch's shuffle match too:
 
-> **In the repo** · `tests/test_model.py` · `window_sampler_resumes_exactly` · lines 812–822 · @084cbdd
+> **In the repo** · `tests/test_model.py` · `window_sampler_resumes_exactly` · lines 823–833 · @fdbb09a
 
 ```python
 def window_sampler_resumes_exactly():
@@ -198,7 +201,7 @@ def window_sampler_resumes_exactly():
 
 `b` has another seed, so only the state can make it agree, and 300 batches
 cross an epoch boundary, where `g` matters. `checkpoint_roundtrip_is_exact`
-(line 352) requires a reloaded model's logits to match exactly.
+(line 363) requires a reloaded model's logits to match exactly.
 
 `IN THE REPO`
 
@@ -206,7 +209,7 @@ cross an epoch boundary, where `g` matters. `checkpoint_roundtrip_is_exact`
 
 With `--resume`, `main` reads the resume point before the first step:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 790–837 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `main` · lines 788–840 · @fdbb09a
 
 ```python
     start_step, best_val = 0, float("inf")
@@ -214,22 +217,27 @@ With `--resume`, `main` reads the resume point before the first step:
     if args.resume and last_path.exists():
         # ...
         try:
-            ck = torch.load(last_path, map_location="cpu", weights_only=False)
+            ck = safe_load(last_path, map_location="cpu")
+        except UnsafeCheckpointError:
+            # Readable but refused by the weights-only loader: a policy
+            # decision for the user (the error names the escape), not damage
+            # to paper over by silently dropping the optimizer state.
+            raise
         except Exception as e:
             # ...
             print(f"WARNING: {last_path} is unreadable ({type(e).__name__}: "
                   f"{str(e)[:80]}).")
             if not Path(args.out).exists():
                 raise
-            ck = torch.load(args.out, map_location="cpu", weights_only=False)
+            ck = safe_load(args.out, map_location="cpu")
             ck = {"model": ck["model"], "step": ck["step"],
                   "best_val": ck.get("val_loss", float("inf"))}
             # ...
         raw_model.load_state_dict(ck["model"])
         if "opt" in ck:
-            assert len(ck["opt"]) == len(opt.opts), (
-                f"{last_path} holds state for {len(ck['opt'])} optimizer(s) but --optimizer "
-                f"{args.optimizer} builds {len(opt.opts)}; resume with the optimizer the run used")
+            if len(ck["opt"]) != len(opt.opts):
+                p.error(f"{last_path} holds state for {len(ck['opt'])} optimizer(s) but --optimizer "
+                        f"{args.optimizer} builds {len(opt.opts)}; resume with the optimizer the run used")
             opt.load_state_dict(ck["opt"])
         start_step = ck["step"] + 1
         best_val = ck.get("best_val", float("inf"))
@@ -250,11 +258,15 @@ With `--resume`, `main` reads the resume point before the first step:
 
 1. **To the CPU**, then `del ck`. Loading the 4.6 GB blob onto an 8 GB GPU and
    keeping it spilled to system memory: 210 tokens per second, not about 4,400 (§8).
-2. **Fall back, loudly.** An unreadable resume point is replaced by the
-   best-val file's weights and step, with two warnings; if that is missing, the
-   error is raised.
+2. **Refuse, or fall back.** `safe_load` (25.7) reads the file without
+   running any code in it. A file it *refuses*, because it holds a Python
+   object outside the allow-list, re-raises `UnsafeCheckpointError` and stops
+   the run. Only a file that is *unreadable* (truncated, corrupt) takes the
+   fallback: the best-val file's weights and step, with two warnings; if that
+   is missing too, the error is raised.
 3. **Restore** the weights and buffers, the optimizer (checking the count:
-   Muon builds two, Chapter 7), the step, `best_val` and the sampler.
+   Muon builds two, Chapter 7, and a mismatch is a `p.error`, a usage error
+   that exits), the step, `best_val` and the sampler.
 4. **Compare `eval_spec`** (Chapter 24), and say so if the method changed.
 
 `IN THE REPO`
@@ -264,7 +276,7 @@ With `--resume`, `main` reads the resume point before the first step:
 `--stop-at` ends an invocation early, after an evaluation and a resume point;
 the next invocation passes `--resume`:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 846–847 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `main` · lines 849–850 · @fdbb09a
 
 ```python
     end = min(args.steps, args.stop_at) if args.stop_at else args.steps
@@ -276,10 +288,15 @@ unchanged on a byte corpus: A straight through 60 steps; B stopped at 30 and
 resumed; C as B, with its resume point cut in half first.
 
 ```python
+def run(folder: Path, *extra: str, env: dict | None = None) -> subprocess.CompletedProcess:
+    return subprocess.run([sys.executable, "-m", "anulm.training.train", *CMD,
+                           "--data", str(folder.parent / "corpus.txt"), "--out", str(folder / "ckpt.pt"), *extra],
+                          cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                          env={**os.environ, "PYTHONPATH": str(ROOT), **(env or {})})
+
+
 def train(folder: Path, *extra: str) -> str:
-    r = subprocess.run([sys.executable, str(ROOT / "train.py"), *CMD, "--data", str(folder.parent / "corpus.txt"),
-                        "--out", str(folder / "ckpt.pt"), *extra],
-                       cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    r = run(folder, *extra)
     assert r.returncode == 0, r.stderr[-2000:]
     return r.stdout
 ```
@@ -325,7 +342,7 @@ the same run (`--save` writes `book/measurements/part_v_b_resume_curves.json`).
 Read C carefully. Its best-val file was written at step 29, at the same
 evaluation as `.last`, so C starts step 30 with A's exact weights. Its logged
 2.1005 against A's 1.7326 is a different *batch*: the restarted sampler serves
-step 0's windows again (the loss is computed before the update, lines 694–702).
+step 0's windows again (the loss is computed before the update, lines 857–876).
 The fresh moments first act on step 31. The means over steps 30–59 also
 compare different batches; only the final val loss, 1.2905 against 1.2510, is
 read on the same windows. That is the "visible dent" the fallback's comment
@@ -338,7 +355,7 @@ promises, and still better than starting over.
 Resuming a cosine run with a larger `--steps` lands mid-cosine, at a much
 higher rate; `--rewarmup N` ramps back to it:
 
-> **In the repo** · `anulm/training/train.py` · `lr_at` · lines 398–403 · @084cbdd
+> **In the repo** · `anulm/training/train.py` · `lr_at` · lines 394–399 · @fdbb09a
 
 ```python
     # Extending a finished run (--resume with a larger --steps) lands mid-cosine,
@@ -352,7 +369,7 @@ higher rate; `--rewarmup N` ramps back to it:
 For N steps after `start_step` the rate is scaled by (step − `start_step` +
 1)/N. It applies to the cosine schedule only: `lr_at` returns earlier, before
 these lines, during the initial warmup and on every step of `--schedule wsd`
-(lines 384–395). A WSD run needs none in its flat phase.
+(lines 380–391). A WSD run needs none in its flat phase.
 
 > **Details.** The coder run's owner was a Windows scheduled task, firing
 > every 30 minutes and resuming from `.last` if no trainer was alive. Sharing
@@ -361,36 +378,154 @@ these lines, during the initial warmup and on every step of `--schedule wsd`
 
 `IN THE REPO` · `IMPLEMENTATION-DEPENDENT`
 
-## 25.7  Loading a checkpoint anywhere
+## 25.7  Loading without running code
+
+A `.pt` file is a zip holding tensors and a *pickle*: Python's own format,
+which records how to rebuild each object. Rebuilding is not passive. A full
+unpickle, `torch.load(path, weights_only=False)`, imports whatever module the
+pickle names and calls whatever it says to, so a file from the Hub or a
+colleague's disk can run any code on your machine the moment it is loaded.
+At the book's previous pin, `load_checkpoint` and the resume path both loaded
+that way.
+
+`weights_only=True` swaps in a restricted unpickler: tensors, dicts, lists,
+numbers and strings, and any class you allow-list by name. Every load now goes
+through one function:
+
+> **In the repo** · `anulm/model.py` · `safe_load` · lines 1228–1258 · @fdbb09a
+
+```python
+def safe_load(path, map_location="cpu", trust_pickle: Optional[bool] = None, **kwargs):
+    # ...
+    import os
+    import pickle
+    if trust_pickle is None:
+        trust_pickle = os.environ.get(TRUST_PICKLE_ENV, "") not in ("", "0")
+    if trust_pickle:
+        return torch.load(str(path), map_location=map_location, weights_only=False, **kwargs)
+    allowed = [AnuLMConfig, (AnuLMConfig, "model.AnuLMConfig"), (AnuLMConfig, "model.NanoSarvamConfig")]
+    try:
+        with torch.serialization.safe_globals(allowed):
+            return torch.load(str(path), map_location=map_location, weights_only=True, **kwargs)
+    except pickle.UnpicklingError as e:
+        # torch's message is a page long; keep the line that names the type
+        lines = [l.strip() for l in str(e).splitlines() if l.strip()]
+        why = next((l for l in lines if "Unsupported" in l or "global" in l), lines[0] if lines else "")
+        raise UnsafeCheckpointError(
+            f"{path}: the weights-only loader refused it ({why.split(' Please use')[0][:200]}). "
+            f"If you made this file yourself and trust it, load it with trust_pickle=True or set "
+            f"{TRUST_PICKLE_ENV}=1; unpickling an untrusted file can run arbitrary code.") from e
+```
+
+1. **The escape.** `trust_pickle=True`, or `ANULM_TRUST_PICKLE` set to
+   anything but empty or `0`, loads the old way. It is never chosen for you.
+2. **The allow-list.** Every project checkpoint stores its configuration as a
+   pickled `AnuLMConfig`, so the class must be allowed. A pickle names a class
+   by the module path it had *when it was saved*, and this one has had three:
+   `anulm.model.AnuLMConfig` (the plain entry), `model.AnuLMConfig` (from
+   before the `anulm/` package, when `model.py` sat at the root) and
+   `model.NanoSarvamConfig` (from before the project's rename). The pairs map
+   each old name onto today's class; without them, every older checkpoint
+   would be refused. `NanoSarvamConfig = AnuLMConfig` (line 1213) keeps the
+   old name importable for the trusted path.
+3. **The refusal.** Anything else raises `pickle.UnpicklingError`, which
+   becomes `UnsafeCheckpointError` naming both escapes. It is its own type so
+   a caller can tell "refused by policy" from "truncated or corrupt".
+
+That is why the resume path (25.4) re-raises it. If a refused `.last` took the
+`except Exception` fallback, a run would quietly restart from the best-val
+file without its optimizer moments or sampler position: run C's dent (25.5),
+for a file that is not damaged at all. The user decides instead. Part 3 of the
+book example writes a real resume point with one extra Python object, an
+`argparse.Namespace`, and resumes it twice:
+
+```python
+    ck = safe_load(last)                                     # the real resume point loads safely
+    ck["args"] = argparse.Namespace(lr=1e-3)                  # a Python object outside the allow-list
+    torch.save(ck, last)
+    # ...
+    refused = run(D, "--resume")
+    # ...
+    trusted = run(D, "--resume", env={"ANULM_TRUST_PICKLE": "1"})
+```
+
+```
+Part 3. a readable resume point that holds a Python object
+  --resume                      -> exit 1, fell back: False
+    anulm.model.UnsafeCheckpointError: <tmp>\D\ckpt.pt.last: the weights-only loader refused it (WeightsUnpickler error: Unsupported global: GLOBAL argpar ...
+  --resume, ANULM_TRUST_PICKLE=1 -> exit 0, resuming from <tmp>\D\ckpt.pt.last at step 30
+```
+
+*verified* (CPU). The refused run exits without a fallback warning; the
+trusted one resumes at step 30. The run's own resume points need no escape:
+weights, an optimizer state dict, the sampler's generator state (a byte
+tensor) and the configuration are all inside the allow-list.
+The repository's own test of the refusal uses a class whose `__setstate__`,
+called during a full unpickle, sets a flag:
+
+> **In the repo** · `tests/test_quality_loading.py` · `SafeLoad.test_arbitrary_object_is_refused_with_the_escape_named` · lines 109–122 · @fdbb09a
+
+```python
+    def test_arbitrary_object_is_refused_with_the_escape_named(self):
+        self.assertIsNotNone(safe_load, "anulm.model.safe_load is missing")
+        torch.save({"x": Payload()}, self.d / "evil.pt")
+        Payload.ran = False
+        with patch.dict(os.environ, {model_mod.TRUST_PICKLE_ENV: ""}):
+            with self.assertRaises(UnsafeCheckpointError) as cm:
+                safe_load(self.d / "evil.pt")
+            self.assertFalse(Payload.ran, "the object was unpickled anyway")
+            self.assertIn("trust_pickle=True", str(cm.exception))
+            self.assertIn("ANULM_TRUST_PICKLE", str(cm.exception))
+            # load_checkpoint is the path every tool uses: it must refuse too
+            with self.assertRaises(UnsafeCheckpointError):
+                load_checkpoint(self.d / "evil.pt")
+            self.assertFalse(Payload.ran)
+```
+
+With the escape variable cleared, both `safe_load` and `load_checkpoint`
+must raise, the message must name both escapes, and `Payload.ran` must stay
+`False`: the object's code never ran. Its neighbours check that a
+`.last`-shaped file loads (line 66), that both legacy names load (line 85),
+and that the escapes load the refused file (line 124).
+
+`IN THE REPO`
+
+## 25.8  Loading a checkpoint anywhere
 
 Scripts that only *read* a checkpoint call `load_checkpoint`, which accepts a
 `.pt`, a folder written by `anulm/hf/export_hf.py`, or a Hub id:
 
-> **In the repo** · `anulm/model.py` · `load_checkpoint` · lines 1205–1238 · @084cbdd
+> **In the repo** · `anulm/model.py` · `load_checkpoint` · lines 1280–1316 · @fdbb09a
 
 ```python
 def load_checkpoint(path, map_location="cpu", base: bool = True) -> dict:
     # ...
     p = _P(path)
-    if not p.exists() and re.fullmatch(r"[\w.-]+/[\w.-]+", str(path).replace("\\", "/")):
+    if not p.exists() and re.fullmatch(_HUB_ID, str(path).replace("\\", "/")):
+        # Say so: a typo in a local path otherwise turns into a confusing
+        # network error about a repository that does not exist.
+        print(f"{path}: not found locally, trying the Hugging Face Hub")
         from huggingface_hub import snapshot_download
         p = _P(snapshot_download(str(path).replace("\\", "/")))
     if not p.is_dir():
-        return torch.load(str(p), map_location=map_location, weights_only=False)
+        return safe_load(p, map_location)
     # ...
     if (p / "model.safetensors").exists():
         ck["model"] = load_file(str(p / "model.safetensors"), device=dev)
 ```
 
-A path that does not exist and looks like `owner/name` goes to the Hub, so a
-mistyped local name is downloaded, or fails there. A file is a `.pt`, loaded
-with `weights_only=False` because the configuration is a pickled `AnuLMConfig`.
+A path that does not exist and matches `_HUB_ID` (`owner/name`, line 1261)
+goes to the Hub, and says so first, so a mistyped local name is not a silent
+download or a puzzling network error. A file is a `.pt`, read by `safe_load`.
 In a folder, the elided lines start `ck = {}`, rebuild the configuration from
 `config.json` keeping only known fields (an unknown one is dropped silently),
-then load `model.safetensors`. A folder holds no optimizer or sampler state, so
-it can be sampled from or fine-tuned, not resumed. Five evaluation scripts once crashed on exported
-folders by calling `torch.load` (§27); `an_exported_folder_loads_everywhere_a_pt_does`
-(line 914) round-trips a folder and scans eleven scripts for `torch.load(ckpt`.
+then load `model.safetensors`, which holds tensors only and cannot carry code.
+Paths read from a folder's `config.json` must stay inside the folder
+(Chapter 39). A folder holds no optimizer or sampler state, so it can be
+sampled from or fine-tuned, not resumed. Five evaluation scripts once crashed
+on exported folders by calling `torch.load` (§27);
+`an_exported_folder_loads_everywhere_a_pt_does` (line 924) round-trips a
+folder and scans eleven scripts for `torch.load(ckpt`.
 
 `IN THE REPO`
 
@@ -399,7 +534,7 @@ folders by calling `torch.load` (§27); `an_exported_folder_loads_everywhere_a_p
 > `a_crash_mid_save_keeps_the_old_checkpoint` catch the two bugs this chapter
 > describes (§8.6).
 
-## 25.8  Common mistakes, and how to catch them
+## 25.9  Common mistakes, and how to catch them
 
 | Mistake | Catch it |
 |---|---|
@@ -409,8 +544,10 @@ folders by calling `torch.load` (§27); `an_exported_folder_loads_everywhere_a_p
 | a restart loop that dies on the same file | log each restart's exit; the coder run looped for three hours |
 | saving `parameters()` instead of `state_dict()` | buffers such as `expert_bias` vanish; compare a resumed run with an uninterrupted one (25.5). `expert_bias_is_not_trainable` checks the model's state dict, not what a writer saves |
 | trusting `atomic_save` and the fallback to keep working | no test in `tests/test_model.py` covers either; the book example's part 2 and run C are the checks |
+| loading a downloaded `.pt` with `torch.load(weights_only=False)` | use `safe_load` or `load_checkpoint`; set `ANULM_TRUST_PICKLE=1` only for a file you made |
+| catching every load error and falling back | a refusal is not damage: re-raise `UnsafeCheckpointError`, as 25.4 does. No repository test covers the resume path's re-raise; the book example's part 3 is the check |
 
-## 25.9  Exercises
+## 25.10  Exercises
 
 1. The released model has 397,659,648 parameters (Chapter 20). How many
    bytes do AdamW's two fp32 moments add?
@@ -419,6 +556,9 @@ folders by calling `torch.load` (§27); `an_exported_folder_loads_everywhere_a_p
 3. Why must `atomic_save` write `<path>.tmp` beside the target, rather than in
    a temporary directory elsewhere?
 4. You resume a WSD run with `--steps` doubled. Do you need `--rewarmup`?
+5. A resume point is refused with `UnsafeCheckpointError`. Why does
+   `anulm/training/train.py` stop rather than fall back to the best-val file,
+   as it does for a truncated one?
 
 **Answers.** (1) 2 × 4 × 397,659,648 bytes = 3.18 GB, as measured. (2) Its sampler
 starts epoch 0's permutation from the beginning, so the windows of steps 0–29.
@@ -426,7 +566,11 @@ starts epoch 0's permutation from the beginning, so the windows of steps 0–29.
 another one. (4) Not if the run is still in its flat phase, and `--rewarmup`
 would do nothing under WSD anyway. If the run had already begun its decay,
 doubling `--steps` moves the decay's start later, the rate jumps back to the
-peak, and `--rewarmup` cannot soften it. *verified*: (1) is printed by `ch25_measure_resume_point.py`.
+peak, and `--rewarmup` cannot soften it. (5) The file is intact; the fallback
+would throw away its optimizer moments and sampler position (run C's dent) to
+avoid a decision only the user can make: trust the file and set the escape, or
+not. *verified*: (1) is printed by `ch25_measure_resume_point.py`, (5)'s
+behaviour by part 3 of `ch25_resume.py`.
 
 ---
 
@@ -441,29 +585,34 @@ peak, and `--rewarmup` cannot soften it. *verified*: (1) is printed by `ch25_mea
   against power loss).
 - On the CPU with default flags, a resumed run matches an uninterrupted one bit
   for bit; one without moments or sampler position re-reads data and ends worse.
-- The resume path loads to the CPU, falls back loudly to the best-val file,
-  checks the optimizer count and warns when the evaluation method changed.
-- `load_checkpoint` reads a `.pt`, an exported folder or a Hub id into one
-  dictionary, and a test keeps every script using it.
+- The resume path loads to the CPU, falls back loudly to the best-val file
+  when `.last` is unreadable, stops when it is refused, checks the optimizer
+  count and warns when the evaluation method changed.
+- `safe_load` unpickles weights-only, with `AnuLMConfig` allowed under its
+  three pickled names; anything else needs an explicit `trust_pickle=True` or
+  `ANULM_TRUST_PICKLE=1`, and `load_checkpoint` uses it for every `.pt`.
 
 > **In one breath.** Save the newest step with everything that decides the
 > next one, write it beside the old file and rename, keep a smaller best-val
 > file as a second copy, and resume on the CPU with a loud fallback, so a kill
-> costs a dent rather than the run.
+> costs a dent rather than the run. Load weights-only, and stop on a refusal.
 
 ## References
 
 This chapter cites no external sources. Quality claims are measured here or in
 `docs/RESULTS.md` §8, §25 and §27.
 
-Repository evidence, all at @084cbdd:
+Repository evidence, all at @fdbb09a:
 - `anulm/training/train.py`: `atomic_save` 32–46, `WindowSampler.state` and `load_state`
-  152–160, `lr_at` 379–404, `main` 790–837 (resume), 846–847 (`--stop-at`),
-  888–902 (saves).
-- `anulm/model.py`: `load_checkpoint` 1205–1254.
-- `tests/test_model.py`: `checkpoint_roundtrip_is_exact` 352–369,
-  `window_sampler_resumes_exactly` 812–822, `expert_bias_is_not_trainable`
-  310–317, `an_exported_folder_loads_everywhere_a_pt_does` 914–967.
+  152–160, `lr_at` 375–400, `main` 788–840 (resume), 849–850 (`--stop-at`),
+  857–876 (one step), 891–905 (saves).
+- `anulm/model.py`: `NanoSarvamConfig` alias 1213, `TRUST_PICKLE_ENV` 1219,
+  `UnsafeCheckpointError` 1222–1225, `safe_load` 1228–1258, `_HUB_ID` 1261,
+  `load_checkpoint` 1280–1342.
+- `tests/test_quality_loading.py`: `SafeLoad` 54–141.
+- `tests/test_model.py`: `checkpoint_roundtrip_is_exact` 363–380,
+  `window_sampler_resumes_exactly` 823–833, `expert_bias_is_not_trainable`
+  321–328, `an_exported_folder_loads_everywhere_a_pt_does` 924–976.
 - `anulm/training/finetune.py` line 52 imports `atomic_save`.
 - Measurements: `book/measurements/part_v_b_resume_point.json` from
   `code-examples/ch25_measure_resume_point.py --save`, and

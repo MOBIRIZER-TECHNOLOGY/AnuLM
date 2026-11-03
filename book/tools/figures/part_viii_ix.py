@@ -10,6 +10,8 @@ Part VIII's accent is plum, Part IX's teal (STYLE.md section 1).
 
 from __future__ import annotations
 
+import re
+
 import json
 import sys
 from pathlib import Path
@@ -37,6 +39,11 @@ def _arrow(x1, y1, x2, y2, dashed=False):
     d = ' stroke-dasharray="4 3"' if dashed else ""
     return line(x1, y1, x2, y2, MUTED, "f-muted-stroke", 1.5, f' marker-end="url(#arrow)"{d}')
 
+
+
+def _pin() -> str:
+    """The commit the book cites, from the source map (as every book tool reads it)."""
+    return re.search(r"`@([0-9a-f]{7,40})`", (BOOK / "REPOSITORY_SOURCE_MAP.md").read_text(encoding="utf-8")).group(1)
 
 # --------------------------------------------------------------------------- Ch 35
 def fig_35_1_vocab():
@@ -465,14 +472,14 @@ def fig_39_2_dtypes():
 def fig_40_1_gap():
     w, h = 760, 380
     b = [text(20, 28, "The repository against a serving stack", 15, weight=700, family=SERIF),
-         text(20, 48, "solid: at @773b6a8 · dashed: EXTENSION, not in the repository", 12, "f-muted", MUTED)]
+         text(20, 48, f"solid: at @{_pin()} · dashed: EXTENSION, not in the repository", 12, "f-muted", MUTED)]
     rows = [("requests", "one lock: one sequence on the device", "continuous batching"),
             ("KV cache", "dict per layer, grown by torch.cat", "paged blocks (PagedAttention)"),
             ("weights", "fp32 in memory, bf16 autocast", "int8 / int4 quantisation"),
             ("decoding", "one token per forward", "speculative: draft + verify"),
             ("attention", "PyTorch SDPA picks a kernel", "own fused kernels"),
             ("training", "one GPU, AdamW or Muon", "data / tensor / pipeline, ZeRO"),
-            ("operations", "optional bearer key", "rate limits, metrics, filters")]
+            ("operations", "shared key, upload caps, error ids", "per-user auth, rate limits, metrics")]
     b.append(text(150, 76, "in the repository", 12, weight=700))
     b.append(text(470, 76, "a large serving stack adds", 12, weight=700))
     for i, (k, have, add) in enumerate(rows):
