@@ -13,7 +13,7 @@ git clone https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM.git && cd AnuLM
 pip install --index-url https://download.pytorch.org/whl/cpu torch   # or the CUDA wheel for your driver
 pip install -r requirements.txt
 python -m anulm quickstart          # confirms the install; prints the fix for anything missing
-python -m tests.test_model          # 76 tests, ~2 min, must pass before and after your change
+python -m tests.test_model          # 76 tests, under a minute, must pass before and after your change
 ```
 
 CI runs the tests plus a 50-step training run on Ubuntu and Windows for

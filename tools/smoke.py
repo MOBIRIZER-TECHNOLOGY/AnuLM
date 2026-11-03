@@ -1,6 +1,6 @@
 """Run every main user flow once, end to end, on a tiny model on the CPU.
 
-    python -m tools.smoke            # about 3-5 minutes on a laptop CPU
+    python -m tools.smoke            # about 65-80 seconds on a laptop CPU
     python -m tools.smoke --keep     # keep the work folder to look at what each step wrote
 
 The unit tests (`python -m tests.test_model`) check the parts; this checks that

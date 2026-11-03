@@ -419,17 +419,16 @@ class DecontaminationTests(unittest.TestCase):
 
 
 class SpeechSafetyTests(unittest.TestCase):
-    def setUp(self):
-        try:
-            import soundfile  # noqa: F401
-        except ImportError:
-            self.skipTest("soundfile not installed")
-
     def test_training_drops_clips_longer_than_whispers_window(self):
         # Five FLEURS Hindi train clips (31-36 s, float WAVs with no `seconds`)
         # stopped the joint run at its first step.
         import numpy as np
-        import soundfile as sf
+        # Only this test writes WAVs. The skip used to sit in setUp, which took
+        # the two tests below -- neither touches soundfile -- down with it.
+        try:
+            import soundfile as sf
+        except ImportError:
+            self.skipTest("soundfile not installed")
         from anulm.multimodal.speech_encoder import whisper_window_rows
         d = Path(tempfile.mkdtemp())
         for name, secs in (("short", 2.0), ("long", 31.0)):

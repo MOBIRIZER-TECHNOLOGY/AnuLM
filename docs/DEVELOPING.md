@@ -5,7 +5,7 @@
 ```bash
 python -m anulm quickstart                   # what this machine can run, and how to fix what it cannot
 pip install -r requirements.txt        # torch, safetensors; pyarrow for the parquet converters
-python -m tests.test_model                   # 76 tests, ~2 min — run this first
+python -m tests.test_model                   # 76 tests, under a minute on CPU — run this first
 ```
 
 Everything runs from the repository root (this file lives in `docs/`, the
@@ -88,7 +88,7 @@ does the same from anywhere.
 ├── examples/             the API demo and demo_colab.ipynb
 ├── course/               the lab book that builds the model from stubs
 ├── docs/                 this file, ARCHITECTURE.md, RESULTS.md, the model cards, TUTORIAL.md,
-│                         DATASETS.md, PUBLISHING.md, TASKS.md (the operations log), TODO.md,
+│                         DATASETS.md, PUBLISHING.md, history/TASKS.md (the operations log), TODO.md,
 │                         curves/ (val-loss curves of the recorded runs)
 ├── golden/               the golden set itself; committed, unlike data/
 ├── sarvam/               Sarvam's released modelling code + the five annotated walkthroughs
@@ -105,9 +105,10 @@ and backward, prints parameter counts and loss against `ln(V)`.
 ## Testing
 
 ```bash
-python -m tests.test_model                         # the core suite, ~2 min
+python -m tests.test_model                         # the core suite, under a minute
 python -m unittest tests.test_training_pipeline tests.test_multimodal_contracts tests.test_release_fixes
-python -m tools.smoke                              # every main command end to end, ~1-2 min on CPU
+python -m unittest discover -s tests -t . -p "test_quality_*.py"   # code-quality regressions
+python -m tools.smoke                              # every main command end to end, ~65-80 s on CPU
 ```
 
 `tools.smoke` is the check to run before handing the code to someone else: it
@@ -132,7 +133,13 @@ The ones that earn their keep:
 | `checkpoint_roundtrip_is_exact` | save/load drift |
 
 Add tests to `test_model.py` by decorating with `@test` — the runner collects
-them automatically. Use the `tiny()` helper for a fast config.
+them automatically, and so do `python -m unittest tests.test_model` and pytest,
+through a `TestCase` generated from the same list. Use the `tiny()` helper for
+a fast config. A test that cannot run on this machine (an optional package
+missing) must `raise unittest.SkipTest("why")`, never `return`: a skip that
+returns is counted as a pass, which is how an untested path looks tested.
+Skips print as `SKIP` and the summary becomes
+`N passed, M skipped, 0 failed, 76 total`.
 
 `.github/workflows/tests.yml` runs all of it on Ubuntu and Windows for every
 push and pull request, from the CPU wheel, plus a 50-step training run, a
