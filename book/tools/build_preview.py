@@ -356,6 +356,10 @@ pre { margin: 0 0 18px; overflow-x: auto; border-radius: 6px; font: 13.5px/1.55 
 pre code { background: none; padding: 0; font: inherit }
 pre.code { background: var(--code-bg); color: var(--code-fg); padding: 16px 18px }
 pre.code.shell::before { content: "$ "; color: var(--gold) }
+/* print.html only: print_layout puts each code line in a .ln block (so it also reads right on screen) */
+pre .ln { display: block }
+pre.code.shell:has(.ln)::before { content: none }
+pre.code.shell .ln:first-child::before { content: "$ "; color: var(--gold) }
 pre.output { background: var(--card); color: var(--ink); padding: 14px 18px; border-left: 3px solid var(--teal) }
 pre.mermaid { background: var(--card); padding: 18px; text-align: center; border-radius: 6px }
 .cite { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; margin: 26px 0 8px;
@@ -430,33 +434,127 @@ details.details > div { padding: 0 16px 6px; font-size: 15.5px }
   :root { --paper: #FFFFFF; --ink: #17262E; --card: #F0F2F1; --rule: #DCE1DF; --muted: #4E5E62; --link: #1F6F67;
     --gold-text: #8F6A1E; --heat: #A8701A; --onheat: #FFFFFF; color-scheme: light }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact }
-  body { font-size: 10pt; line-height: 1.5 }
+  /* Sizes are the printed sizes: nothing may be wider than the 5.7 in measure, or Chrome shrinks every page to fit. */
+  body { font-size: 9.4pt; line-height: 1.45; orphans: 3; widows: 2 }
   .print-only { display: block }
   nav.toc, .toc-mobile, .cite-gh, .cover .links { display: none }
   .band { padding-left: 0.65in; padding-right: 0.65in }
   .band.cover { page: cover; height: 9.25in; padding-top: 2.6in; break-after: page }
-  .cover h1 { font-size: 46pt } .cover .sub { font-size: 17pt }
-  .about { padding: 0; border: 0; break-after: page; font-size: 9.2pt } .about-inner { max-width: none }
-  .about h3 { font-size: 12.5pt; margin: 14px 0 6px } .about table { font-size: 8pt }
+  .cover h1 { font-size: 40pt } .cover .sub { font-size: 15pt }
+  .about { padding: 0; border: 0; break-after: page; font-size: 9pt } .about-inner { max-width: none }
+  .about h3 { font-size: 11.5pt; margin: 12px 0 5px } .about table { font-size: 7.8pt }
   .contents { break-after: page } .contents h2 { margin-top: 0 }
-  .contents .c-ch { font: 600 12pt/1.3 var(--display); margin: 14px 0 4px }
-  .contents .c-sec { font-size: 9.5pt; color: var(--muted); margin: 2px 0 2px 18px }
+  .contents .c-ch { font: 600 10.5pt/1.3 var(--display); margin: 11px 0 3px; break-after: avoid }
+  .contents .c-sec { font-size: 8.4pt; line-height: 1.35; color: var(--muted); margin: 1px 0 1px 18px }
   .band.part { page: cover; break-before: page; break-after: page; height: 9.25in; padding-top: 3.4in;
     border-top-width: 10px }
+  .part h2 { font-size: 28pt } .part p { font-size: 11pt }
   .wrap { display: block; padding: 0; max-width: none }
   article.chapter { max-width: none; break-before: page }
   article.chapter + article.chapter { margin-top: 0; padding-top: 0; border: 0 }
-  .ch-head h1 { font-size: 24pt }
-  h2 { font-size: 15pt; margin: 26px 0 8px; break-after: avoid } h3 { font-size: 12pt; break-after: avoid }
-  pre { font-size: 7.6pt; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; break-inside: avoid }
-  .cite { font-size: 7.6pt; break-after: avoid }
-  figure.fig { break-inside: avoid; padding: 8px; border: 0 } figure.fig svg { min-width: 0 }
-  figure.fig figcaption { font-size: 8.5pt }
-  table { font-size: 8.5pt } .table { overflow: visible } tr, .breath, .build, details.details { break-inside: avoid }
-  details.details summary::marker { content: "" }
-  .sources { break-before: page; margin-top: 0; padding-top: 0; border: 0 }
+  .ch-head h1 { font-size: 22pt; margin: 8px 0 20px }
+  p { margin: 0 0 9pt } ul, ol { margin: 0 0 9pt } li { margin: 2pt 0 }
+  /* A heading stays with what follows; orphans: 3 then keeps at least three lines of its first paragraph under it.
+     (A zero-net-height ::after "reserve" under headings was tried: Chrome then pushed whole blocks to the next page.) */
+  h2 { font-size: 13.5pt; margin: 20pt 0 6pt; break-after: avoid; break-inside: avoid }
+  h3 { font-size: 11pt; margin: 14pt 0 5pt; break-after: avoid; break-inside: avoid }
+  h2 .secnum { font-size: 10pt; vertical-align: 1pt; margin-right: 8pt }
+  /* The citation strip stays with its excerpt; a section's closing badges stay with the section. Lead-in paragraphs
+     are not chained to the block after them: with short blocks kept whole, that chain left half-empty pages. */
+  .cite { break-after: avoid } .badges { break-before: avoid }
+  p.lead { break-after: avoid; break-inside: avoid }      /* marked by print_layout: a short lead-in right under a heading */
+  /* overflow: visible matters: Chrome never breaks inside a scroll container, so a long block jumped whole to the next page. */
+  pre { font-size: 7pt; line-height: 1.42; white-space: pre-wrap; overflow-wrap: anywhere; margin-bottom: 10pt;
+    overflow: visible; orphans: 1; widows: 1 }   /* the line rules below do this job; orphans > 1 here pushed short blocks */
+  pre.code { padding: 7pt 8pt } pre.output { padding: 6pt 8pt }
+  pre.short { break-inside: avoid }
+  /* One block per source line, so a wrapped line hangs under its own indentation instead of at column 0. */
+  pre > code { display: block }       /* line blocks inside an inline <code> would make the whole block unbreakable */
+  pre .ln { display: block; padding-left: calc(var(--i, 0ch) + 3ch); text-indent: calc(-1 * (var(--i, 0ch) + 3ch)) }
+  /* a long block breaks with at least three lines on each side; a short one is kept whole by break-inside alone
+     (adding these line rules to a short block made Chrome push it to the next page even when it fitted) */
+  pre:not(.short) .ln:nth-child(-n+3) { break-after: avoid } pre:not(.short) .ln:nth-last-child(-n+3) { break-before: avoid }
+  .cite { font-size: 7pt; margin: 14pt 0 5pt; padding: 5pt 8pt }
+  code { padding: 0 2pt }
+  .badges { margin: 2pt 0 6pt } .badge { font-size: 7pt; padding: 3pt 6pt } .badge-note { font-size: 8.4pt; margin: 0 4pt 0 0 }
+  .ev { font-size: 6.8pt; padding: 1.5pt 4pt; vertical-align: 1pt }
+  .breath { padding: 12pt 16pt; margin: 16pt 0 } .breath p { font-size: 11pt; line-height: 1.45 }
+  .build { padding: 9pt 12pt; margin: 14pt 0 }
+  figure.fig { break-inside: avoid; padding: 4pt 0; margin: 12pt 0 14pt; border: 0 }
+  figure.fig svg { min-width: 0; max-height: 6.2in }
+  figure.fig figcaption { font-size: 8pt; line-height: 1.45; margin-top: 6pt; max-width: none }
+  table { font-size: 8pt; line-height: 1.35 } th { padding: 4pt 6pt } td { padding: 3.5pt 6pt }
+  .table { overflow: visible; margin-bottom: 12pt } .table.short { break-inside: avoid }
+  tr, .breath, .build { break-inside: avoid }
+  details.details { margin: 12pt 0 } details.details > div { font-size: 9pt; padding: 0 10pt 4pt }
+  details.details summary { padding: 7pt 10pt; break-after: avoid } details.details summary::marker { content: "" }
+  hr { margin: 18pt 0 }
+  .sources { break-before: page; margin-top: 0; padding-top: 0; border: 0 } .sources li { font-size: 8.6pt; margin: 4pt 0 }
 }
 """
+
+
+SHORT_PRE, SHORT_TABLE = 12, 8          # lines / body rows: blocks this small are never split across pages
+
+
+def print_layout(page: str) -> str:
+    """Markup the printed page needs and the screen page does not:
+
+    - each code line in its own block, with its indentation as --i, so a line
+      too long for the measure wraps with a hanging indent;
+    - short code blocks and short tables marked `short`, which keeps them on one page;
+    - break opportunities after _ / . in inline code, so a long identifier or path
+      breaks inside a table cell instead of widening the table past the page."""
+    def lines(m):
+        cls, src = m.group(1), m.group(2)
+        out, open_tags = [], []
+        rows = src.split("\n")
+        if rows and rows[-1] == "":
+            rows.pop()
+        for row in rows:
+            body = "".join(open_tags) + row
+            for tag in re.findall(r"<span[^>]*>|</span>", row):
+                if tag == "</span>":
+                    if open_tags:
+                        open_tags.pop()
+                else:
+                    open_tags.append(tag)
+            body += "</span>" * len(open_tags)
+            text = html.unescape(re.sub(r"<[^>]+>", "", row))
+            indent = len(text) - len(text.lstrip(" "))
+            style = f' style="--i:{indent}ch"' if indent else ""
+            out.append(f'<span class="ln"{style}>{body if text.strip() else body + " "}</span>')
+        short = " short" if len(rows) <= SHORT_PRE else ""
+        return f'<pre class="{cls}{short}"><code>{"".join(out)}</code></pre>'
+    page = re.sub(r'<pre class="((?:code|output)[^"]*)"><code>(.*?)</code></pre>', lines, page, flags=re.S)
+
+    def long_tokens(text):                # text between tags: a token over 18 characters may break after . / _ :
+        return re.sub(r"[^\s<>]{19,}", lambda t: re.sub(r"(?<=[_/.:])(?=[^\s&;])", "<wbr>", t.group(0)), text)
+
+    def table(m):
+        rows = len(re.findall(r"<tr>", m.group(1))) - 1
+        inner = re.sub(r">([^<]+)<", lambda t: ">" + long_tokens(t.group(1)) + "<", m.group(1))
+        return f'<div class="table{" short" if rows <= SHORT_TABLE else ""}"><table>{inner}</table></div>'
+    page = re.sub(r'<div class="table"><table>(.*?)</table></div>', table, page, flags=re.S)
+
+    # a one- or two-line paragraph between a heading and a block ("... in banner sections:") travels with both,
+    # so a heading never ends a page with one line under it
+    def lead(m):
+        head, first, first_in, gap, second_in, after = m.groups()
+        if any(len(re.sub(r"<[^>]+>", "", p)) >= 190 for p in (first_in or "", second_in)):
+            return m.group(0)
+        first = f'<p class="lead">{first_in}</p>{gap}' if first else ""
+        return f'{head}{first}<p class="lead">{second_in}</p>{after}'
+    page = re.sub(r'(</h[23]>\s*)(<p>([^\n]*?)</p>(\s*))?<p>([^\n]*?)</p>(\s*<(?:pre|ul|ol|div class="(?:table|cite|badges)))',
+                  lead, page)
+
+    def breakable(m):
+        inner = m.group(1)
+        if "<" in inner or len(inner) < 12:
+            return m.group(0)
+        return "<code>" + re.sub(r"(?<=[_/.])(?=[^\s&;])", "<wbr>", inner) + "</code>"
+    parts = re.split(r"(<pre[ >].*?</pre>)", page, flags=re.S)
+    return "".join(p if p.startswith("<pre") else re.sub(r"<code>(.*?)</code>", breakable, p) for p in parts)
 
 
 def build(wanted: list[str], print_mode: bool = False) -> Path:
@@ -539,7 +637,7 @@ def build(wanted: list[str], print_mode: bool = False) -> Path:
     page = "\n".join(out)
     target = OUT
     if print_mode:                                   # a full HTML document, Details open, for Chrome's PDF printer
-        page = page.replace('<details class="details">', '<details class="details" open>')
+        page = print_layout(page.replace('<details class="details">', '<details class="details" open>'))
         page = ('<!doctype html><html lang="en"><head><meta charset="utf-8">' + page.replace("<style>", "<style>", 1)
                 .replace("</style>", "</style></head><body>", 1) + "</body></html>")
         target = OUT.with_name("print.html")
