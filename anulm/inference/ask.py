@@ -65,8 +65,8 @@ def main() -> None:
     print(f"{args.ckpt}: step {(ck.get('step') or 0) + 1:,}, val {'n/a' if ck.get('val_loss') is None else format(ck['val_loss'], '.4f')}, "
           f"base {ck.get('base_ckpt', '-')}, templates {sorted(templates) if templates else 'none (base model)'}\n")
 
-    from anulm.bpe import BPE
-    tok = BPE.load(cfg.tokenizer_path)
+    from anulm.hf_tok import load_tokenizer   # the project's BPE or a HF tokenizer.json
+    tok = load_tokenizer(cfg.tokenizer_path)
     eos_id = tok.eos_id if cfg.vocab_size > tok.eos_id else None
 
     if args.prompts:
@@ -97,10 +97,11 @@ def main() -> None:
             out = model.generate(x, args.tokens, temperature=args.temperature, top_k=args.top_k,
                                  eos_id=eos_id, use_cache=True, repetition_penalty=args.rep)
         new = out[0, len(ids):].tolist()
-        answer = tok.decode(new)
+        stopped = eos_id is not None and eos_id in new
+        # Only what came before EOS: a HF tokenizer would write "<|endoftext|>".
+        answer = tok.decode(new[:new.index(eos_id)] if stopped else new)
         if mode == "translate":
             answer = answer.strip().split("\n")[0]
-        stopped = eos_id is not None and eos_id in new
         print("=" * 72)
         print(f"Q: {raw}")
         print(f"A: {answer.strip()}")

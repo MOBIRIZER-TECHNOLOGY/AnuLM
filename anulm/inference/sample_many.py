@@ -65,8 +65,8 @@ def main() -> None:
 
     tok, eos_id = None, 257
     if getattr(cfg, "tokenizer_path", None):
-        from anulm.bpe import BPE
-        tok = BPE.load(cfg.tokenizer_path)
+        from anulm.hf_tok import load_tokenizer   # the project's BPE or a HF tokenizer.json
+        tok = load_tokenizer(cfg.tokenizer_path)
         eos_id = tok.eos_id if cfg.vocab_size > tok.eos_id else None
 
     for group, temp, prompt in PROMPTS:
@@ -78,14 +78,14 @@ def main() -> None:
         t0 = time.time()
         with torch.autocast(device_type="cuda", dtype=torch.bfloat16,
                             enabled=args.device.startswith("cuda")):
-            out = model.generate(x, args.tokens, temperature=args.temp or temp, top_k=args.top_k,
+            out = model.generate(x, args.tokens, temperature=temp if args.temp is None else args.temp, top_k=args.top_k,
                                  eos_id=eos_id, use_cache=True,
                                  repetition_penalty=args.rep)
         n_new = out.shape[1] - x.shape[1]
         text = (tok.decode(out[0].tolist()) if tok is not None
                 else bytes(i for i in out[0].tolist() if i < 256).decode("utf-8", errors="replace"))
         print("=" * 72)
-        print(f"[{group}, temperature {args.temp or temp}, rep {args.rep}, {n_new} tokens in {time.time() - t0:.1f}s"
+        print(f"[{group}, temperature {temp if args.temp is None else args.temp}, rep {args.rep}, {n_new} tokens in {time.time() - t0:.1f}s"
               f"{', stopped at EOS' if n_new < args.tokens else ''}]")
         print(text)
         print()

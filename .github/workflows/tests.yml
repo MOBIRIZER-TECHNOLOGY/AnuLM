@@ -45,10 +45,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install --index-url https://download.pytorch.org/whl/cpu torch
           pip install -r requirements.txt
-          # Not a dependency of the model, training or serving -- only of the
-          # transformers export, whose two tests skip themselves without it.
-          # A skip that reports PASS is how an untested path looks tested.
-          pip install transformers
+          # Not dependencies of the model, training or serving, but of paths
+          # the tests cover: the transformers export, the HF tokenizer, the
+          # Gradio demos and the OpenAI-compatible API (gradio brings fastapi
+          # and uvicorn). Each of those tests skips itself without them, and a
+          # skip that reports PASS is how an untested path looks tested.
+          pip install transformers tokenizers gradio python-multipart
+          # The package itself, so `python -m anulm` works from any directory
+          # (tests.test_release_fixes checks it from outside the checkout).
+          # --no-deps: torch is already the CPU wheel and must stay that one.
+          pip install --no-deps -e .
 
       # Left on each runner's default shell (PowerShell on Windows, bash on
       # Linux) on purpose: these are the commands a newcomer types, and they
@@ -68,7 +74,7 @@ jobs:
       - name: Test suite
         run: |
           python -u -m tests.test_model
-          python -u -m unittest tests.test_training_pipeline tests.test_multimodal_contracts
+          python -u -m unittest tests.test_training_pipeline tests.test_multimodal_contracts tests.test_release_fixes
 
       - name: Train 50 steps end to end
         # Downloads tinyshakespeare, trains, evaluates, saves, and samples from

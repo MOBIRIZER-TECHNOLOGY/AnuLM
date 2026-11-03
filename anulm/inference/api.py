@@ -191,7 +191,7 @@ class ChatRequest(BaseModel):
     max_completion_tokens: Optional[int] = Field(None, description="Same as max_tokens (newer OpenAI name).")
     temperature: Optional[float] = Field(None, ge=0, le=2, description="Default 0.3. 0 = greedy.")
     top_p: Optional[float] = Field(None, description="Accepted for compatibility; AnuLM samples with top_k.")
-    top_k: Optional[int] = Field(None, description="AnuLM extension. Default 40.")
+    top_k: Optional[int] = Field(None, ge=0, description="AnuLM extension. Default 40; 0 turns it off.")
     repetition_penalty: Optional[float] = Field(None, description="AnuLM extension. Default 1.15.")
     stop: Union[str, list[str], None] = None
     seed: Optional[int] = None
@@ -333,7 +333,11 @@ def images_of(content) -> list[str]:
 
 
 def stops_of(stop) -> list[str]:
-    return [stop] if isinstance(stop, str) else [s for s in (stop or []) if s]
+    # An empty string is no stop at all: "".find("") is 0, so treating it as
+    # one ended every reply before its first character.
+    if isinstance(stop, str):
+        return [stop] if stop else []
+    return [s for s in (stop or []) if s]
 
 
 class Generation:
@@ -351,19 +355,22 @@ class Generation:
         self.new: list[int] = []
         self.sent, self.text, self.finish = "", "", "length"
         self.cancelled = False
+        self.matched_stop = False          # a `stop` string was found (EOS alone is not one)
 
     def _release(self, final: bool) -> str:
-        text = self.eng.decode(self.new)
+        # Whole characters only: a Devanagari letter split across tokens is held
+        # back until complete, while a genuine U+FFFD in the text is kept.
+        text = self.eng.decode_complete(self.new)
         cut = len(text)
         for s in self.stops:
             i = text.find(s, max(0, len(self.sent) - len(s)))
             if i >= 0:
-                cut, self.finish = min(cut, i), "stop"
+                cut, self.finish, self.matched_stop = min(cut, i), "stop", True
         text = text[:cut]
-        if self.finish != "stop" and not final:
+        if not self.matched_stop and not final:
+            # Hold back what could still turn out to be the start of a stop string.
             hold = max((len(s) - 1 for s in self.stops), default=0)
             text = text[:len(text) - hold] if hold else text
-            text = text.rstrip("�")
         delta, self.sent = text[len(self.sent):], text if len(text) > len(self.sent) else self.sent
         self.text = self.sent
         return delta
@@ -389,10 +396,13 @@ class Generation:
                 torch.manual_seed(self.seed)
             with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16,
                                                  enabled=self.eng.device.startswith("cuda")):
-                self.eng.model.generate(x, self.max_tokens, temperature=max(self.temperature, 1e-3),
+                self.eng.model.generate(x, self.max_tokens, temperature=self.temperature,  # 0 = exact greedy
                                         top_k=self.top_k or None, eos_id=eos,
                                         repetition_penalty=self.rep, on_token=on_token)
-        if self.finish != "stop":
+        # Release the held-back tail unless a stop string ended the reply. Ending
+        # on EOS also sets finish to "stop", which once skipped this and lost the
+        # last characters of every streamed reply that used `stop`.
+        if not self.matched_stop:
             delta = self._release(final=True)
             if delta and emit:
                 emit(delta)
@@ -547,7 +557,7 @@ def chat_completions(req: ChatRequest):
         prefix = ""
 
     gen = Generation(chat_prompt(question), req.max_completion_tokens or req.max_tokens or 200,
-                     0.3 if req.temperature is None else req.temperature, req.top_k or 40,
+                     0.3 if req.temperature is None else req.temperature, 40 if req.top_k is None else req.top_k,
                      1.15 if req.repetition_penalty is None else req.repetition_penalty,
                      req.seed, stops_of(req.stop))
     rid, now = f"chatcmpl-{uuid.uuid4().hex[:24]}", int(time.time())
@@ -585,7 +595,7 @@ def completions(req: CompletionRequest):
         raise APIError(400, "Only one prompt and n=1 are supported.", param="prompt")
     prompt = req.prompt[0] if isinstance(req.prompt, list) else req.prompt
     gen = Generation(prompt, req.max_tokens or 64, 0.7 if req.temperature is None else req.temperature,
-                     req.top_k or 40, 1.0 if req.repetition_penalty is None else req.repetition_penalty,
+                     40 if req.top_k is None else req.top_k, 1.0 if req.repetition_penalty is None else req.repetition_penalty,
                      req.seed, stops_of(req.stop))
     rid, now = f"cmpl-{uuid.uuid4().hex[:24]}", int(time.time())
     base = {"id": rid, "object": "text_completion", "created": now, "model": req.model}

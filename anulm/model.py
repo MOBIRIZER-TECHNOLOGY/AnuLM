@@ -1120,6 +1120,10 @@ class AnuLM(nn.Module):
 
         `on_token`, if given, is called with each new (B, 1) token tensor as it
         is sampled (api.py streams replies with it); returning True stops.
+
+        `temperature` <= 0 is exact greedy decoding: the highest-scoring id
+        (the first one on a tie), with no random draw, so the output does not
+        depend on the random seed.
         """
         B = idx.shape[0]
         bs = self.cfg.block_size
@@ -1142,12 +1146,15 @@ class AnuLM(nn.Module):
                 seen = logits.gather(1, idx)
                 seen = torch.where(seen > 0, seen / repetition_penalty, seen * repetition_penalty)
                 logits = logits.scatter(1, idx, seen)
-            logits = logits / max(temperature, 1e-5)
-            if top_k is not None:
-                v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
-                logits[logits < v[:, [-1]]] = -float("inf")
-            probs = F.softmax(logits, dim=-1)
-            nxt = torch.multinomial(probs, num_samples=1)              # (B, 1)
+            if temperature <= 0:
+                nxt = logits.argmax(dim=-1, keepdim=True)              # (B, 1), no draw
+            else:
+                logits = logits / temperature
+                if top_k is not None:
+                    v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
+                    logits[logits < v[:, [-1]]] = -float("inf")
+                probs = F.softmax(logits, dim=-1)
+                nxt = torch.multinomial(probs, num_samples=1)          # (B, 1)
             if eos_id is not None:
                 nxt = torch.where(done[:, None], torch.full_like(nxt, eos_id), nxt)
             idx = torch.cat((idx, nxt), dim=1)

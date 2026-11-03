@@ -63,8 +63,8 @@ class Engine:
         self.model.text_vocab = ck.get("speech_text_vocab")      # set on the one joint model (omni_train.py)
         self.tok = None
         if getattr(cfg, "tokenizer_path", None):
-            from anulm.bpe import BPE
-            self.tok = BPE.load(cfg.tokenizer_path)
+            from anulm.hf_tok import load_tokenizer       # the project's BPE or a HF tokenizer.json
+            self.tok = load_tokenizer(cfg.tokenizer_path)
             self.eos_id = self.tok.eos_id if cfg.vocab_size > self.tok.eos_id else None
         else:
             self.eos_id = 257
@@ -121,6 +121,16 @@ class Engine:
             return self.tok.decode(ids)
         return bytes(i for i in ids if i < 256).decode("utf-8", errors="replace")
 
+    def decode_complete(self, ids) -> str:
+        """`decode` for text still being generated: a trailing, incomplete UTF-8
+        character is held back instead of showing as U+FFFD (api.py streams
+        with it). A tokenizer without byte-level decoding falls back to `decode`."""
+        if self.tok:
+            fn = getattr(self.tok, "decode_complete", None)
+            return fn(ids) if fn else self.tok.decode(ids)
+        from anulm.bpe import complete_utf8
+        return complete_utf8(bytes(i for i in ids if i < 256))
+
     def generate(self, prompt: str, max_tokens: int, temperature: float, top_k: int, seed: int,
                  mode: str = "continue", repetition_penalty: float = 1.0):
         """Sample a completion of `prompt` under the lock, with `seed` set first.
@@ -140,13 +150,15 @@ class Engine:
             torch.manual_seed(seed)
             t0 = time.time()
             with torch.autocast("cuda", dtype=torch.bfloat16, enabled=self.device.startswith("cuda")):
-                out = self.model.generate(x, max_tokens, temperature=max(temperature, 1e-3),
+                out = self.model.generate(x, max_tokens, temperature=temperature,   # 0 = exact greedy
                                           top_k=top_k or None, eos_id=self.eos_id,
                                           repetition_penalty=repetition_penalty)
             dt = time.time() - t0
         new = out[0, len(ids):].tolist()
         stopped = self.eos_id is not None and self.eos_id in new
-        text = self.decode(new)
+        # Decode only what came before EOS: a HF tokenizer would otherwise
+        # write the control token ("<|endoftext|>") into the reply.
+        text = self.decode(new[:new.index(self.eos_id)] if stopped else new)
         if mode == "translate":
             text = text.strip().split("\n")[0]      # one sentence out
         elif mode == "question" and not self.coder:

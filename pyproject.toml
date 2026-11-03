@@ -12,9 +12,11 @@ license = {file = "LICENSE"}
 dependencies = ["torch>=2.1", "numpy"]
 
 [project.optional-dependencies]
-export = ["safetensors>=0.4"]
+export = ["safetensors>=0.4", "transformers", "tokenizers"]
 data = ["pyarrow>=15"]
 demo = ["gradio>=5"]
+# The OpenAI-compatible API imports the demo's model loaders, hence gradio.
+api = ["fastapi>=0.110", "uvicorn>=0.29", "python-multipart>=0.0.9", "gradio>=5"]
 
 [project.scripts]
 anulm = "anulm.__main__:main"

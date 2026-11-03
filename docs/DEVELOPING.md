@@ -106,7 +106,7 @@ and backward, prints parameter counts and loss against `ln(V)`.
 
 ```bash
 python -m tests.test_model                         # the core suite, ~2 min
-python -m unittest tests.test_training_pipeline tests.test_multimodal_contracts
+python -m unittest tests.test_training_pipeline tests.test_multimodal_contracts tests.test_release_fixes
 python -m tools.smoke                              # every main command end to end, ~1-2 min on CPU
 ```
 

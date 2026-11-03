@@ -90,6 +90,11 @@ def export_loads_without_repo(folder: Path) -> tuple[bool, str]:
 
 
 def main() -> int:
+    # The table quotes each step's output, which can hold Devanagari or other
+    # characters a Windows console (cp1252) cannot encode: print them, never crash.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(errors="replace")
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     p.add_argument("--keep", action="store_true", help="keep the work folder and print its path")
     args = p.parse_args()
@@ -99,8 +104,18 @@ def main() -> int:
     qa.write_text("".join(json.dumps({"question": f"What is {a} plus {b}?", "answer": str(a + b), "lang": "en"}) + "\n"
                           for a in range(8) for b in range(8)), encoding="utf-8")
     held = work / "held.jsonl"
-    held.write_text("".join(json.dumps({"question": f"What is {a} plus {a}?", "answer": str(2 * a), "lang": "en"}) + "\n"
-                            for a in range(8, 12)), encoding="utf-8")
+    # The last row repeats a training question (in different case and spacing):
+    # finetune must drop it from the held-out side and say so.
+    held.write_text("".join(json.dumps({"question": q, "answer": a, "lang": "en"}) + "\n"
+                            for q, a in [*((f"What is {a} plus {a}?", str(2 * a)) for a in range(8, 12)),
+                                         ("what is 2  PLUS 3?", "5")]), encoding="utf-8")
+
+    def finetune() -> tuple[bool, str]:
+        ok, out = run(["-m", "anulm", "finetune", "--ckpt", str(ckpt), "--qa", str(qa), "--heldout", str(held),
+                       "--out", str(qa_ckpt), "--epochs", "1", "--batch-size", "8", "--device", "cpu"])
+        if ok and "held-out: dropped 1 of 5 rows" not in out:
+            return False, out + "\nexpected finetune to drop the held-out row that repeats a training question"
+        return ok, out
 
     def text_tail() -> list[str]:
         bench = work / "bench.txt"
@@ -121,8 +136,7 @@ def main() -> int:
                                                "--out", str(ckpt), "--device", "cpu"])),
         ("sample", lambda: run(["-m", "anulm", "sample", "--ckpt", str(ckpt), "--prompt", "KING", "--tokens", "20",
                                 "--device", "cpu"])),
-        ("fine-tune on Q&A", lambda: run(["-m", "anulm", "finetune", "--ckpt", str(ckpt), "--qa", str(qa), "--heldout", str(held),
-                                          "--out", str(qa_ckpt), "--epochs", "1", "--batch-size", "8", "--device", "cpu"])),
+        ("fine-tune on Q&A", finetune),
         ("ask questions", lambda: run(["-m", "anulm", "ask", "--ckpt", str(qa_ckpt), "--mode", "question",
                                        "--tokens", "8", "--device", "cpu", "What is 2 plus 3?"])),
         ("score held-out text", lambda: run(text_tail())),

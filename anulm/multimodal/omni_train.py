@@ -350,10 +350,24 @@ class Omni:
         return st
 
 
+def recipe_of(args, tasks) -> dict:
+    """The settings a resumed run must share with the run that wrote `.last`:
+    resuming under a different accumulation, schedule, scale or task mix would
+    silently splice two recipes into one checkpoint."""
+    return {"accum": args.accum, "proj_scale": args.proj_scale, "lr": args.lr, "proj_lr": args.proj_lr,
+            "steps": args.steps, "warmup": args.warmup,
+            "tasks": [[t.name, float(t.weight), int(t.batch)] for t in tasks]}
+
+
 def train(args) -> None:
     from anulm.training.train import atomic_save
 
+    # Fresh projectors (vision always, audio without --audio-proj-from) are
+    # initialised from torch's global generator: seed it so a rerun, or an A/B
+    # probe against it, starts from the same weights.
+    torch.manual_seed(args.seed)
     om = Omni(args)
+    recipe = recipe_of(args, om.tasks)
     model, dev = om.model, om.dev
     groups = [{"params": model.parameters(), "lr": args.lr}]
     for m in (om.sm, om.vl):
@@ -380,6 +394,12 @@ def train(args) -> None:
     start, best, seen = 1, float("inf"), {t.name: 0 for t in om.tasks}
     if args.resume and last.exists():
         st = torch.load(last, map_location=dev, weights_only=False)
+        if "recipe" not in st:
+            print(f"warning: {last} predates recorded recipes; cannot check it matches this run", flush=True)
+        elif st["recipe"] != recipe:
+            changed = sorted(k for k in recipe if st["recipe"].get(k) != recipe[k])
+            raise SystemExit(f"{last} was written with a different recipe ({', '.join(changed)}): "
+                             "resume with the original settings, or train to a new --out")
         model.load_state_dict(st["model"])
         if om.sm is not None:
             om.sm.proj.load_state_dict(st["proj"])
@@ -451,7 +471,7 @@ def train(args) -> None:
                 break            # an A/B probe: the full run's schedule, cut short, no resume file
             if step < args.steps:
                 st = om.state(step, score, losses)
-                st.update(opt=opt.state_dict(), first=first, best=best, seen=seen)
+                st.update(opt=opt.state_dict(), first=first, best=best, seen=seen, recipe=recipe)
                 atomic_save(st, last)
     if last.exists():
         last.unlink()            # finished: the optimizer state is 3.7 GB nobody needs

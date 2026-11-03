@@ -63,6 +63,15 @@ PROMPTS = {"hi": PROMPT, "en": PROMPT_EN, "py": PROMPT_EN,
 _DEVANAGARI = re.compile(r"[ऀ-ॿ]")
 
 
+def question_key(question: str) -> str:
+    """The form two questions must share to count as the same prompt: Unicode
+    NFKC, case-folded, whitespace collapsed. make_chat splits train from
+    held-out on it, and finetune drops held-out rows whose key is in training,
+    so "  SAME question " and "same QUESTION" can never sit on both sides."""
+    import unicodedata
+    return " ".join(unicodedata.normalize("NFKC", question).casefold().split())
+
+
 def template_for(question: str, templates: dict | None = None) -> str:
     """The prompt template a question should be wrapped in, chosen by script:
     any Devanagari means Hindi, anything else gets the English template. A

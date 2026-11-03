@@ -106,7 +106,7 @@ class SpeechModel:
         x = torch.tensor([ids], dtype=torch.long, device=self.device)
         with torch.inference_mode(), torch.autocast(
                 "cuda", dtype=torch.bfloat16, enabled=self.device.startswith("cuda")):
-            out = self.model.generate(x, max_tokens, temperature=max(temperature, 1e-3),
+            out = self.model.generate(x, max_tokens, temperature=temperature,   # 0 = exact greedy
                                       top_k=top_k or None, eos_id=eos)
         return out[0, len(ids):].tolist()
 

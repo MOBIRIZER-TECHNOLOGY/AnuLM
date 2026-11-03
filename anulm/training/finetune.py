@@ -37,6 +37,7 @@ import argparse
 import hashlib
 import json
 import math
+import pickle
 import time
 from array import array
 from dataclasses import replace
@@ -46,7 +47,7 @@ import torch
 
 from anulm import bpe
 from anulm.bpe import BPE, _encode_init
-from anulm.data.make_qa import PROMPT, PROMPTS
+from anulm.data.make_qa import PROMPT, PROMPTS, question_key
 from anulm.model import AnuLM, load_checkpoint
 from anulm.training.train import OptimizerSet, atomic_save, lr_at, make_optimizer
 
@@ -57,6 +58,11 @@ def _pair_ids(tok: BPE, it: dict) -> tuple[list[int], list[int]]:
     identically to the joined string."""
     template = PROMPTS.get(it.get("lang", "hi"), PROMPT)
     return tok.encode(template.format(q=it["question"])), tok.encode(" " + it["answer"]) + [tok.eos_id]
+
+
+def read_jsonl(path: str) -> list[dict]:
+    """The rows of a jsonl file, split on newline only (see load_packed)."""
+    return [json.loads(l) for l in Path(path).read_text(encoding="utf-8").split("\n") if l.strip()]
 
 
 def encode_pairs(tok: BPE, items: list[dict]) -> list[tuple[list[int], list[int]]]:
@@ -132,6 +138,11 @@ def load_packed(path: str, tokenizer_path: str, block_size: int, eos: int, worke
 
     The content key covers the source and tokenizer bytes, prompt templates,
     block size and EOS. Legacy, partial and stale caches are rebuilt.
+
+    The cache sits beside the data, so it is read as data, never as code:
+    `weights_only=True` refuses anything but tensors and plain containers (a
+    planted or corrupt pickle cannot run), and the rows must have the shape
+    and dtype `pack` writes before they are used.
     """
     # split("\n"), not splitlines(): Python also splits on \x0b \x0c \x1c-\x1e
     # \x85 \u2028 \u2029, and json.dumps(ensure_ascii=False) leaves those raw
@@ -143,11 +154,16 @@ def load_packed(path: str, tokenizer_path: str, block_size: int, eos: int, worke
     cache = Path(f"{path}.{Path(tokenizer_path).stem}.b{block_size}.pt")
     if cache.exists():
         try:
-            c = torch.load(cache, weights_only=False)
-            if c.get("cache_key") == key:
-                return c["x"], c["y"]
-        except Exception:
-            pass
+            c = torch.load(cache, map_location="cpu", weights_only=True)
+            x, y = c["x"], c["y"]
+            if (c.get("cache_key") == key and c.get("n_items") == len(items)
+                    and x.ndim == 2 and x.shape == y.shape and x.shape[1] == block_size
+                    and x.dtype == y.dtype == torch.int32):
+                return x, y
+            print(f"  {cache.name}: stale or malformed, rebuilding")
+        except (OSError, EOFError, RuntimeError, ValueError, KeyError, TypeError, AttributeError,
+                IndexError, pickle.UnpicklingError) as e:
+            print(f"  {cache.name}: unreadable ({type(e).__name__}), rebuilding")
     t0 = time.time()
     x, y = pack(encode_pairs_parallel(tokenizer_path, items, workers), block_size, eos)
     atomic_save({"x": x, "y": y, "n_items": len(items), "cache_key": key}, cache)
@@ -287,7 +303,20 @@ def main():
             raise SystemExit(f"no held-out set at {args.heldout}: pass --heldout FILE, a jsonl of the same "
                              "{question, answer, lang} rows kept out of --qa")
         x, y = load_packed(args.qa, cfg.tokenizer_path, cfg.block_size, tok.eos_id, args.workers)
-        hx, hy = load_packed(args.heldout, cfg.tokenizer_path, cfg.block_size, tok.eos_id, args.workers)
+        # A held-out loss over questions the model trained on is optimistic, and
+        # it picks the "best" checkpoint. The release chat files share 4 such
+        # prompts, so drop them from the held-out side (with a count) rather
+        # than refusing to train.
+        held = read_jsonl(args.heldout)
+        trained = {question_key(it["question"]) for it in read_jsonl(args.qa)}
+        kept = [it for it in held if question_key(it["question"]) not in trained]
+        if not kept:
+            raise SystemExit(f"every question in {args.heldout} is also in {args.qa}: nothing is held out")
+        if len(kept) < len(held):
+            print(f"held-out: dropped {len(held) - len(kept)} of {len(held)} rows whose question is also in {args.qa}")
+            hx, hy = pack(encode_pairs(tok, kept), cfg.block_size, tok.eos_id)
+        else:
+            hx, hy = load_packed(args.heldout, cfg.tokenizer_path, cfg.block_size, tok.eos_id, args.workers)
     n_ans = int((y != -1).sum())
     print(f"train: {len(x)} rows of {cfg.block_size}, {n_ans/1e6:.2f}M answer tokens "
           f"({100 * n_ans / max(y.numel(), 1):.0f}% of positions)  |  held-out: {len(hx)} rows")

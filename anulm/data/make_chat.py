@@ -33,6 +33,8 @@ import random
 import re
 from pathlib import Path
 
+from anulm.data.make_qa import question_key
+
 HERE = Path(__file__).resolve().parents[2]
 DATA = HERE / "data"
 DEV = re.compile(r"[ऀ-ॿ]")
@@ -114,11 +116,40 @@ def hindi_wiki_qa(n: int, rng) -> list[dict]:
 LOCAL_SOURCES = {"dolly_train.jsonl": "Dolly (English)", "qa_lora.jsonl": "Hindi Wikipedia QA"}
 
 
+def split_chat_rows(rows: list[dict], held_groups: int = 300, seed: int = 0) -> tuple[list[dict], list[dict]]:
+    """(train, held-out), split by question rather than by row.
+
+    Rows whose questions share a `question_key` (the same prompt from two
+    sources, or differing only in case and spacing) go to the same side, so the
+    held-out loss never scores a prompt the model trained on; the old split held
+    out 300 random rows and the release files ended up sharing 4 prompts. Exact
+    duplicate rows (same question key, answer and language) are kept once.
+    Identity pairs stay in training, repeats included: they are deliberately
+    repeated, and a question they ask is never held out."""
+    import unicodedata
+    reserved = {question_key(r["question"]) for r in rows if r.get("source") == "identity"}
+    groups = sorted({question_key(r["question"]) for r in rows} - reserved)
+    if len(groups) < 2:
+        raise ValueError("splitting needs at least two distinct non-identity questions")
+    random.Random(seed).shuffle(groups)
+    held_keys = set(groups[:min(held_groups, len(groups) - 1)])
+    train, held, seen = [], [], set()
+    for r in rows:
+        key = question_key(r["question"])
+        if r.get("source") != "identity":
+            same = (key, unicodedata.normalize("NFKC", r["answer"]).strip(), r.get("lang"))
+            if same in seen:
+                continue
+            seen.add(same)
+        (held if key in held_keys else train).append(r)
+    return train, held
+
+
 def main(argv: list[str] | None = None) -> None:
     """Build the chat set: gather every source, repeat the identity pairs 20
     times, drop empty pairs and answers over MAX_ANSWER characters, shuffle,
-    hold out 300 non-identity pairs, and write chat_train.jsonl and
-    chat_heldout.jsonl into --out-dir (default data/)."""
+    hold out 300 non-identity questions (`split_chat_rows`), and write
+    chat_train.jsonl and chat_heldout.jsonl into --out-dir (default data/)."""
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--out-dir", type=Path, default=DATA, help="where to write the two files (default: data/)")
     p.add_argument("--force", action="store_true", help="overwrite chat_train.jsonl / chat_heldout.jsonl if they exist")
@@ -142,9 +173,7 @@ def main(argv: list[str] | None = None) -> None:
         print(f"{name:9s} {len(items):6d} rows, {len(kept):6d} kept")
         rows += kept
     rng.shuffle(rows)
-    held = [r for r in rows if r["source"] != "identity"][:300]
-    held_ids = {id(r) for r in held}
-    train = [r for r in rows if id(r) not in held_ids]
+    train, held = split_chat_rows(rows)
     args.out_dir.mkdir(parents=True, exist_ok=True)
     for out, rs in zip(outs, (train, held)):
         with open(out, "w", encoding="utf-8") as f:

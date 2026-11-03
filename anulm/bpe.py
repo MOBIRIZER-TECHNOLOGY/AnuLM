@@ -48,6 +48,19 @@ MAX_TRAIN_CHUNK_BYTES = 48        # ignore absurd chunks (URLs, minified junk)
                                   # handles any length.
 
 
+def complete_utf8(data: bytes) -> str:
+    """The text of `data` up to its last complete UTF-8 character.
+
+    A byte-level tokenizer can split one character across tokens (a
+    Devanagari letter is three bytes), so text streamed token by token would
+    show U+FFFD for the half-written character. This holds the incomplete tail
+    back instead. Bytes that can never be valid still become U+FFFD, and a real
+    U+FFFD in the text (EF BF BD) is kept as the character it is.
+    """
+    import codecs
+    return codecs.getincrementaldecoder("utf-8")(errors="replace").decode(data, final=False)
+
+
 class BPE:
     """A trained byte-level BPE: its merge list, the id -> bytes vocabulary and
     an EOS id one past the last merge. Build one with `train` or `load`."""
@@ -197,6 +210,11 @@ class BPE:
         invalid UTF-8 becomes U+FFFD."""
         # EOS (and anything else outside the vocab) decodes to nothing.
         return b"".join(self.vocab.get(int(i), b"") for i in ids).decode("utf-8", errors="replace")
+
+    def decode_complete(self, ids) -> str:
+        """`decode` for text still being generated: a trailing, incomplete UTF-8
+        character is held back rather than shown as U+FFFD (`complete_utf8`)."""
+        return complete_utf8(b"".join(self.vocab.get(int(i), b"") for i in ids))
 
     # ---------------- persistence ----------------
 
