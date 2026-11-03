@@ -9,9 +9,10 @@ known issues still open. Everything here can be re-run from a fresh clone.
 From the repository root (or after `pip install -e .`, from anywhere):
 
 ```bash
-python -m tests.test_model                                                   # 76 tests, ~2 min CPU
+python -m tests.test_model                                                   # 76 tests, under a minute on CPU
 python -m unittest tests.test_training_pipeline tests.test_multimodal_contracts tests.test_release_fixes   # 79 tests, seconds
-python -m tools.smoke                                                        # 11 end-to-end steps, ~1-2 min CPU
+python -m unittest discover -s tests -t . -p "test_quality_*.py"               # 63 tests, seconds
+python -m tools.smoke                                                        # 11 end-to-end steps, ~65-80 s on CPU
 ```
 
 `tools.smoke` is the one to run first. Each step runs as its own process,
@@ -40,10 +41,12 @@ Windows 11, Python 3.14.7, torch 2.11 (CUDA build, run on CPU), transformers 5.1
 
 | check | result |
 | --- | --- |
-| `tests.test_model` | 76 passed, 0 failed |
+| `tests.test_model` | 76 passed, 0 failed (also under `python -m unittest tests.test_model`) |
 | `tests.test_training_pipeline`, `tests.test_multimodal_contracts`, `tests.test_release_fixes` | 79 passed, 1 skipped (the installed-command check, because another copy of AnuLM is installed on this machine) |
+| `tests.test_quality_*` (layout, loading, serving) | 63 passed |
 | `tools.smoke` | 11 of 11 steps passed |
-| every `python -m anulm` command with `--help` | 58 of 61 run; see "Known issues" for the three |
+| `ruff check .` (the configuration in `pyproject.toml`, which CI runs) | clean |
+| every `python -m anulm` command with `--help` | 53 of 57 print their help; see "Known issues" for the four |
 | restructure regression | a 50-step training run before and after the move into `anulm/`: identical loss and router imbalance at every step, val 2.7870 both |
 | old checkpoints | all 89 local checkpoints pickle only `model.AnuLMConfig`, which the root `model.py` alias resolves; `ckpt_chat_v5.pt` loaded |
 | Omni model layer, CPU, local `ckpt_omni.pt` | chat answers (Hindi "the capital is Delhi" correct; English answer repetitive), intent "my card has not arrived" -> `card_arrival` at 1.0, reader retrieved the right passage but extracted a wrong answer |
@@ -68,7 +71,8 @@ local Omni checkpoint predates the current training recipe (see
 Found while documenting and reviewing; none is caused by the restructure.
 
 - `make_rc` has no `--help` and starts building immediately; `hf_tokenizer`
-  and `hf_upgrade` mishandle `--help`.
+  and `hf_upgrade` mishandle `--help`; `python -m anulm model --help` runs the
+  module's shape demo instead of printing help (harmless, no files written).
 - `rc_pointer train --max-len` is ignored when the starting checkpoint already
   records a `max_len`.
 - `decide train-general` ignores a loaded head/LoRA mode and always optimises
@@ -90,6 +94,43 @@ Found while documenting and reviewing; none is caused by the restructure.
   so a fresh clone's Omni demo has no model until one is trained or published.
 - A local SigLIP folder path is saved into checkpoints as `tower`, so such a
   checkpoint's image tab only works on a machine with the same folder.
+
+## Fixed in the code-quality pass (2026-11-03)
+
+A four-part review (structure, core library, serving, tests and CI) found
+these; each fix has a test in `tests/test_quality_*.py` that fails on the code
+before it, unless noted.
+
+- **`/v1/decide` failed on every call** with the joint (Omni) model, the
+  default: the API passed `options` to an intent classifier that did not take
+  them. Trained labels are now scored; an unknown option is a 400.
+- **Loading is weights-only.** Every checkpoint and resume file goes through
+  `anulm.model.safe_load` (`torch.load(weights_only=True)` with the config
+  class allow-listed under its three pickled names); a file it refuses raises
+  `UnsafeCheckpointError` naming the explicit escape (`trust_pickle=True` or
+  `ANULM_TRUST_PICKLE=1`). All local checkpoints and resume files load
+  unchanged. A downloaded folder can no longer point `tokenizer_path`,
+  `hf_backbone` or `base_model` outside itself.
+- **Input checks survive `python -O`:** `assert`s that validated user input or
+  files raise `ValueError` (or a CLI error); `hf_upgrade`'s parity checks are
+  real errors.
+- **API hardening:** constant-time key check; a start-up warning when it is
+  reachable without a key; upload limits (audio 25 MB and 60 s, images 10 MB,
+  decide 64 inputs, 256 options, 8,000 characters; `serve` 1 MB); 500 replies
+  carry an error id instead of the exception text. Limits are in `docs/API.md`.
+- **The shared demo is locked:** one lock covers model loading and every call
+  on the shared decoder, and a visitor's threshold can no longer change another
+  visitor's verdict. The retriever honours `--device`; a second reading model
+  no longer changes the first one's length limit.
+- **Tests:** the 76 core tests also run under `unittest` and pytest; 15 tests
+  that returned early when an optional package was missing (and counted as
+  passed) now report SKIP; two timing-dependent checks were fixed.
+- **CI:** read-only permissions, Python 3.10, the smoke test, a `ruff` lint
+  job, the quality tests, and one step per test command.
+- **Hygiene:** `.demo_auth` (the demo's password file) and logs are
+  git-ignored; six commands that ran nothing are removed; tools no longer
+  hard-code a local path or write outside the repository; dated one-off
+  scripts are in `experiments/archive/`; version 0.2.0.
 
 ## Fixed after the three-way comparison (2026-11-03)
 

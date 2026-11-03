@@ -84,11 +84,11 @@ does the same from anywhere.
 │                         eval_noise.py (RESULTS.md §25), backfill_curve.py, sweep.py, samples.py,
 │                         screenshot.py, qwen.py; windows/: the scheduled-task launchers
 ├── model.py              the one alias at the root: old checkpoints pickle model.AnuLMConfig
-├── experiments/          one script per RESULTS.md section from §9 on; see its README
+├── experiments/          one script per RESULTS.md section from §9 on (dated one-offs in archive/); see its README
 ├── examples/             the API demo and demo_colab.ipynb
 ├── course/               the lab book that builds the model from stubs
 ├── docs/                 this file, ARCHITECTURE.md, RESULTS.md, the model cards, TUTORIAL.md,
-│                         DATASETS.md, PUBLISHING.md, history/TASKS.md (the operations log), TODO.md,
+│                         DATASETS.md, PUBLISHING.md, history/ (the operations log, finished plans), results/ (raw measurement files), TODO.md,
 │                         curves/ (val-loss curves of the recorded runs)
 ├── golden/               the golden set itself; committed, unlike data/
 ├── sarvam/               Sarvam's released modelling code + the five annotated walkthroughs
