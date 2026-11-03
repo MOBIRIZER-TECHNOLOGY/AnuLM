@@ -48,7 +48,7 @@ import torch
 from anulm import bpe
 from anulm.bpe import BPE, _encode_init
 from anulm.data.make_qa import PROMPT, PROMPTS, question_key
-from anulm.model import AnuLM, load_checkpoint
+from anulm.model import AnuLM, load_checkpoint, safe_load
 from anulm.training.train import OptimizerSet, atomic_save, lr_at, make_optimizer
 
 
@@ -267,7 +267,8 @@ def main():
 
     ck = load_checkpoint(args.ckpt, "cpu")   # a .pt or an exported folder
     cfg = ck["cfg"]
-    assert getattr(cfg, "tokenizer_path", None), "finetune.py needs a BPE checkpoint"
+    if not getattr(cfg, "tokenizer_path", None):
+        p.error("finetune.py needs a BPE checkpoint")
     if args.moe_impl or args.device.startswith("cuda"):
         cfg = replace(cfg, moe_impl=args.moe_impl or "grouped")
     tok = BPE.load(cfg.tokenizer_path)
@@ -334,7 +335,7 @@ def main():
     order, pos = torch.randperm(len(x), generator=g), 0
     start_step, best, base = 0, float("inf"), None
     if args.resume and last_path.exists():
-        r = torch.load(last_path, map_location="cpu", weights_only=False)
+        r = safe_load(last_path, map_location="cpu")
         model.load_state_dict(r["model"])
         opt.load_state_dict(r["opt"])
         start_step, best, base = r["step"] + 1, r["best"], r.get("base")

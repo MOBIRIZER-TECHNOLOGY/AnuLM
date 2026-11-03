@@ -237,9 +237,10 @@ class BPE:
         """Read a tokenizer `save` wrote; also accepts the pre-rename
         ``nanosarvam-bpe`` type."""
         d = json.loads(Path(path).read_text(encoding="utf-8"))
-        assert d.get("type") in cls.TYPES, (
-            f"{path}: not an AnuLM tokenizer (type {d.get('type')!r}, "
-            f"expected one of {cls.TYPES})")
+        if d.get("type") not in cls.TYPES:          # a real check: python -O strips asserts
+            raise ValueError(
+                f"{path}: not an AnuLM tokenizer (type {d.get('type')!r}, "
+                f"expected one of {cls.TYPES})")
         return cls([tuple(p) for p in d["merges"]])
 
 

@@ -270,11 +270,13 @@ def main():
             write_pairs(args.jsonl, items)
 
     elif args.kind == "textbook":
-        assert args.out, "textbook writes a text corpus: pass --out"
+        if not args.out:
+            p.error("textbook writes a text corpus: pass --out")
         textbook(args)
 
     elif args.kind == "clean":
-        assert args.out, "clean writes a filtered corpus: pass --out"
+        if not args.out:
+            p.error("clean writes a filtered corpus: pass --out")
         clean_corpus(args)
 
     else:  # pairs

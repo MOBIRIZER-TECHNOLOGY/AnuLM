@@ -128,6 +128,10 @@ def main() -> None:
         raise SystemExit(f"no {args.ckpt}; train one with:\n"
                          f"  python -m anulm vision_encoder train --ckpt ckpt_mm_init.pt "
                          f"--manifest data/flickr8k.jsonl --out {args.ckpt} --epochs 1")
+    from anulm.apps.app import exposure_warning
+    warning = exposure_warning(args.host, args.share)
+    if warning:
+        print(warning, flush=True)
     print(f"loading {args.ckpt} on {args.device}...")
     build(Captioner(args.ckpt, args.device)).launch(
         server_name=args.host, server_port=args.port, share=args.share)

@@ -233,8 +233,12 @@ class Dense:
 class Retriever:
     """Search over the chunks `build` wrote: BM25, or dense e5 retrieval when
     dense_e5s.npy exists (the default mode is then "dense"), or a fusion of
-    the two. Hits are the chunk dicts (lang, title, text) plus a score."""
-    def __init__(self, root: Path = RAG):
+    the two. Hits are the chunk dicts (lang, title, text) plus a score.
+    `device` is where the dense e5 encoder runs; None picks CUDA when it is
+    available. Callers pass their own model's device, so `--device cpu` keeps
+    retrieval off a GPU that another job owns."""
+    def __init__(self, root: Path = RAG, device: str | None = None):
+        self.device = device
         self.indptr = np.load(root / "indptr.npy")
         self.docs = np.load(root / "docs.npy", mmap_mode="r")
         self.weights = np.load(root / "weights.npy", mmap_mode="r")
@@ -264,7 +268,7 @@ class Retriever:
         if mode == "bm25":
             return self.bm25(query, k, lang, title_w, lead_b)
         if self.dense is None:
-            self.dense = Dense()
+            self.dense = Dense(self.device)
         di, dv = self.dense.search(query, 100 if mode == "hybrid" else k)
         if mode == "dense":
             return [{**self.chunks[i], "score": v} for i, v in zip(di, dv)]
@@ -335,7 +339,7 @@ class RagQA:
         # so an untuned model can be scored as the control.
         self.templates = {**PROMPTS, **(ck.get("qa_templates") or {})}
         self.device = device
-        self.r = retriever or Retriever()
+        self.r = retriever or Retriever(device=device)
 
     def prompt(self, question: str, passages: list[str]) -> tuple[str, str]:
         """-> (prompt, lang). Numbered passages, each cut to 120 words, then the

@@ -28,12 +28,13 @@ def _gpt2_byte_decoder() -> dict[str, int]:
 
 class HFTokenizer:
     """A decoder's tokenizer.json (Qwen-style); `eos_id` is the id of
-    `eos_token`, and asserted to exist."""
+    `eos_token`, which must exist (ValueError otherwise)."""
     def __init__(self, path: str | Path, eos_token: str = "<|endoftext|>"):
         from tokenizers import Tokenizer
         self.tk = Tokenizer.from_file(str(path))
         self.eos_id = self.tk.token_to_id(eos_token)
-        assert self.eos_id is not None, f"{eos_token} not in {path}"
+        if self.eos_id is None:
+            raise ValueError(f"{eos_token} not in {path}")
         config = json.loads(Path(path).read_text(encoding="utf-8"))
         # Only a ByteLevel tokenizer stores bytes we can reassemble exactly;
         # anything else falls back to the library's own decode.
@@ -72,7 +73,8 @@ class EncoderTokenizer:
         self.tk = Tokenizer.from_file(str(path))
         self.eos_id = self.tk.token_to_id("[CLS]")
         self.pad_id = self.tk.token_to_id("[PAD]")
-        assert self.eos_id is not None and self.pad_id is not None, f"no [CLS]/[PAD] in {path}"
+        if self.eos_id is None or self.pad_id is None:
+            raise ValueError(f"no [CLS]/[PAD] in {path}")
 
     def encode(self, text: str) -> list[int]:
         """Ids for `text`, without the [CLS]/[SEP] the tokenizer would add."""

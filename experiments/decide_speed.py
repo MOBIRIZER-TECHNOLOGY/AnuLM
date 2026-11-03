@@ -1,8 +1,10 @@
 """
 Speed benchmark for AnuLM-Decide (decide.py).
 
-    python experiments/decide_speed.py --device cuda      # in a pause of the main run
-    python experiments/decide_speed.py --device cpu
+    python experiments/decide_speed.py --device cuda --out docs/results/decide_speed/gpu.json   # in a pause of the main run
+    python experiments/decide_speed.py --device cpu  --out docs/results/decide_speed/cpu.json
+
+docs/RESULTS.md section 36 cites the two JSON files these commands write.
 
 Measures, for the trained BANKING77 checkpoint:
   1. cold start: loading the model
@@ -85,7 +87,7 @@ def main():
         opts = pool[:k]
         try:
             ids, pos = encode(tok, msgs[0], opts)
-        except AssertionError:
+        except ValueError:            # decide.encode: too many options for the context
             print(f"  {k:4d} options: exceeds the 1,024-token context")
             break
         ms = timed(lambda: run_batch([(ids, pos, 0, opts)]), dev, reps)

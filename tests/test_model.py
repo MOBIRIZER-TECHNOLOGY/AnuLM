@@ -3,6 +3,11 @@ Tests for AnuLM. Plain asserts, no pytest needed:
 
     python -m tests.test_model
 
+The same tests also run under a standard runner -- `python -m unittest
+tests.test_model` or pytest -- through the TestCase generated at the bottom.
+A test that cannot run here (a missing optional package, no grouped GEMM)
+raises unittest.SkipTest and is reported as SKIP, never as PASS.
+
 These target the failure modes that TRAINING WOULD NOT CATCH. A leaky causal
 mask still converges (it just cheats). Broken RoPE still converges (it just
 loses long-range structure). A MoE that silently drops experts still converges.
@@ -15,6 +20,7 @@ import contextlib
 import math
 import sys
 import traceback
+import unittest
 
 import torch
 import torch.nn.functional as F
@@ -26,8 +32,13 @@ TESTS = []
 
 
 def test(fn):
+    """Register fn as a test. Not a test itself: pytest collects any
+    module-level callable named test*, hence __test__ below."""
     TESTS.append(fn)
     return fn
+
+
+test.__test__ = False
 
 
 def tiny(**kw) -> AnuLMConfig:
@@ -378,7 +389,7 @@ def block_size_boundary():
     try:
         with torch.no_grad():
             m(torch.randint(0, 64, (1, 33)))
-    except AssertionError:
+    except ValueError:                             # a real error: python -O strips asserts
         return
     raise AssertionError("sequence longer than block_size was silently accepted")
 
@@ -412,7 +423,7 @@ def param_count_matches_analysis():
 def config_rejects_unreachable_topk():
     try:
         tiny(num_experts=16, n_group=4, topk_group=1, num_experts_per_tok=8)
-    except AssertionError:
+    except ValueError:
         return
     raise AssertionError("config accepted a top_k the groups cannot supply")
 
@@ -685,7 +696,7 @@ def grouped_moe_matches_sparse_under_bf16():
     bf16 (the grouped kernel's contract), so agreement is to bf16 precision."""
     import torch.nn.functional as F
     if not hasattr(F, "grouped_mm"):
-        return
+        raise unittest.SkipTest("this torch has no F.grouped_mm")
     for attn in ("gqa", "mla"):
         torch.manual_seed(0)
         a = AnuLM(tiny(attn=attn, moe_impl="sparse")).eval()
@@ -706,7 +717,7 @@ def grouped_moe_trains():
     expert that received a token gets a gradient, and none is NaN."""
     import torch.nn.functional as F
     if not hasattr(F, "grouped_mm"):
-        return
+        raise unittest.SkipTest("this torch has no F.grouped_mm")
     torch.manual_seed(0)
     m = AnuLM(tiny(moe_impl="grouped")).train()
     x = torch.randint(0, 64, (16, 32))
@@ -724,7 +735,7 @@ def grouped_moe_compiles_without_graph_breaks():
     import torch.nn.functional as F
     import torch._dynamo as dynamo
     if not hasattr(F, "grouped_mm"):
-        return
+        raise unittest.SkipTest("this torch has no F.grouped_mm")
     torch.manual_seed(0)
     m = AnuLM(tiny(moe_impl="grouped")).eval()
     x = torch.randint(0, 64, (2, 16))
@@ -850,8 +861,7 @@ def the_demo_page_offers_the_right_modes_for_each_checkpoint():
     try:
         import gradio  # noqa: F401
     except ImportError:
-        print("    (skipped: gradio not installed)", end="")
-        return
+        raise unittest.SkipTest("gradio not installed")
     from anulm.apps import app
 
     # The four kinds serve.py distinguishes, as /info reports them.
@@ -888,7 +898,7 @@ def the_demo_page_offers_the_right_modes_for_each_checkpoint():
     try:
         from safetensors.torch import save_file
     except ImportError:
-        return
+        raise unittest.SkipTest("safetensors not installed; the Hub-name half of this test did not run")
     # 259 = the byte vocabulary (256 bytes + BOS/EOS/PAD). Engine warms itself
     # up by generating from a Devanagari prompt encoded as raw UTF-8 bytes, so
     # a narrower vocab indexes off the end of the embedding.
@@ -927,8 +937,7 @@ def an_exported_folder_loads_everywhere_a_pt_does():
     try:
         from safetensors.torch import save_file
     except ImportError:
-        print("    (skipped: safetensors not installed)", end="")
-        return
+        raise unittest.SkipTest("safetensors not installed")
     import dataclasses
     from anulm.model import load_checkpoint
 
@@ -1122,13 +1131,11 @@ def an_exported_qa_checkpoint_still_offers_its_question_mode():
     try:
         import gradio  # noqa: F401  -- kind_of lives in app.py
     except ImportError:
-        print("    (skipped: gradio not installed)", end="")
-        return
+        raise unittest.SkipTest("gradio not installed")
     try:
         from safetensors.torch import save_file
     except ImportError:
-        print("    (skipped: safetensors not installed)", end="")
-        return
+        raise unittest.SkipTest("safetensors not installed")
     import dataclasses, json, tempfile
     from pathlib import Path as P
     from anulm.apps import app
@@ -1176,8 +1183,7 @@ def an_export_keeps_what_makes_a_checkpoint_more_than_a_language_model():
     try:
         from safetensors.torch import save_file  # noqa: F401
     except ImportError:
-        print("    (skipped: safetensors not installed)", end="")
-        return
+        raise unittest.SkipTest("safetensors not installed")
     import sys as _sys, tempfile
     from pathlib import Path as P
     from anulm.hf import export_hf
@@ -1245,16 +1251,24 @@ def eval_code_sandbox_contains_generated_code():
         assert os.listdir(wd) == [], f"scratch left behind: {os.listdir(wd)}"
 
     # A child started by the program must not outlive the kill. The marker is
-    # written outside the scratch directory, so its absence is the evidence.
+    # written outside the scratch directory, so its absence is the evidence --
+    # but only if the grandchild was started at all, so the program also
+    # writes `spawned.txt` once Popen has returned. Without that, a program
+    # that failed before Popen (a bad path, a sandbox refusing to spawn) made
+    # this check pass without testing anything.
     with tempfile.TemporaryDirectory() as outside:
         marker = os.path.join(outside, "survived.txt").replace("\\", "\\\\")
+        spawned = os.path.join(outside, "spawned.txt").replace("\\", "\\\\")
         src = ("import subprocess, sys, time\n"
                f"subprocess.Popen([sys.executable, '-c', \"import time; time.sleep(3);"
                f" open(r'{marker}','w').write('x')\"])\n"
+               f"open(r'{spawned}','w').write('x')\n"
                "time.sleep(60)\n")
         with tempfile.TemporaryDirectory() as wd:
             assert run_program(src, wd, timeout=2) is False
         time.sleep(5)
+        assert os.path.exists(os.path.join(outside, "spawned.txt")), \
+            "the grandchild was never started, so the kill was not tested"
         assert not os.path.exists(os.path.join(outside, "survived.txt")), \
             "a grandchild outlived the timeout kill"
 
@@ -1282,9 +1296,8 @@ def transformers_wrapper_matches_the_native_model():
     try:
         import transformers  # noqa: F401
     except ImportError:
-        print("    (skipped: transformers not installed)", end="")
-        return
-    import tempfile, os
+        raise unittest.SkipTest("transformers not installed")
+    import tempfile
     from anulm.hf.configuration_anulm import AnuLMConfig as HFConfig
     from anulm.hf.modeling_anulm import AnuLMForCausalLM
 
@@ -1342,9 +1355,8 @@ def hf_tokenizer_conversion_is_exact():
     try:
         from tokenizers import Tokenizer
     except ImportError:
-        print("    (skipped: tokenizers not installed)", end="")
-        return
-    import tempfile, os
+        raise unittest.SkipTest("tokenizers not installed")
+    import tempfile
     from pathlib import Path
     from anulm.hf import hf_tokenizer as conv
     from anulm.bpe import BPE
@@ -1384,11 +1396,16 @@ def bpe_files_load_under_both_format_ids():
             assert BPE.load(p).merges == tok.merges, f"{legacy} must still load"
         blob["type"] = "gpt2"                      # anything else is refused
         json.dump(blob, open(p, "w", encoding="utf-8"))
+        # ValueError, not an assert: `python -O` strips asserts, which let the
+        # foreign file through. And the failure is an AssertionError raised
+        # outside the try -- the SystemExit this used to raise is not an
+        # Exception, so it ended the whole run instead of failing one test.
         try:
             BPE.load(p)
-            raise SystemExit("a foreign tokenizer file must not load")
-        except AssertionError:
+        except ValueError:
             pass
+        else:
+            raise AssertionError("a foreign tokenizer file must not load")
     # The COMMITTED tokenizers, not every json that happens to be in data/.
     # data/ is gitignored except the tokenizers, so git's tracked list is exactly
     # that set; globbing picked up untracked working files (contamination
@@ -1451,7 +1468,7 @@ def golden_items_are_well_formed_and_the_scorer_runs():
     in_context items and absent for novel ones, the choices hold the gold
     word once at answer_idx and no distractor appears in the prefix. Then
     the scorer must run end to end on a byte checkpoint."""
-    import json, os, random, tempfile
+    import os, random, tempfile
     from anulm.data.make_golden import build, DOC_SEP
     from anulm.eval.eval_golden import score
     rng = random.Random(0)
@@ -1856,7 +1873,6 @@ def image_feature_cache_reuses_invalidates_and_recovers():
     rebuild rather than stale reads or an append to a partial file."""
     import tempfile
     from pathlib import Path
-    import numpy as np
     from anulm.multimodal.vision_encoder import build_cache
 
     class Tower:
@@ -1958,8 +1974,7 @@ def omni_api_availability_and_missing_reader_fallback():
     try:
         from anulm.inference import api
     except ImportError as e:
-        print(f"    (skipped: API dependency unavailable: {e})", end="")
-        return
+        raise unittest.SkipTest(f"API dependency unavailable: {e}")
     import tempfile
     from pathlib import Path
 
@@ -2010,8 +2025,7 @@ def legacy_half_keeps_routers_fp32_and_projectors_runnable():
     try:
         from anulm.apps.app_omni import Models
     except ImportError as e:
-        print(f"    (skipped: app dependency unavailable: {e})", end="")
-        return
+        raise unittest.SkipTest(f"app dependency unavailable: {e}")
     from anulm.model import AnuLMConfig, Router
     cfg = AnuLMConfig.nano_30b()
     module = torch.nn.Module()
@@ -2146,16 +2160,39 @@ def experiment_scripts_resolve_root_to_the_repository():
     """Every experiments/*.py that sets ROOT from its own path lands on the
     repository root. A one-level slip sent omni_one's chdir, data paths and
     subprocesses to the folder above, where they found nothing."""
-    import re
+    import ast
     from pathlib import Path as P
     repo = P(__file__).resolve().parents[1]
+
+    # Walk the expression instead of eval()-ing source text: only the handful
+    # of pathlib steps these scripts use is understood, and anything else is
+    # a failure that names the expression rather than code that gets run.
+    def walk(node, f):
+        if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "Path"
+                and len(node.args) == 1 and isinstance(node.args[0], ast.Name)
+                and node.args[0].id == "__file__" and not node.keywords):
+            return P(f)
+        if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                and node.func.attr == "resolve" and not node.args and not node.keywords):
+            return walk(node.func.value, f).resolve()
+        if isinstance(node, ast.Attribute) and node.attr == "parent":
+            return walk(node.value, f).parent
+        if (isinstance(node, ast.Subscript) and isinstance(node.value, ast.Attribute)
+                and node.value.attr == "parents" and isinstance(node.slice, ast.Constant)
+                and type(node.slice.value) is int):
+            return walk(node.value.value, f).parents[node.slice.value]
+        raise AssertionError(f"{f.name}: ROOT uses {ast.unparse(node)!r}, which this test cannot follow")
+
     checked = 0
     for f in sorted((repo / "experiments").glob("*.py")):
-        m = re.search(r"^ROOT = (Path\(__file__\)[^\n#]*)", f.read_text(encoding="utf-8"), re.M)
-        if m:
-            root = eval(m.group(1), {"Path": P, "__file__": str(f)})
-            assert P(root).resolve() == repo, f"{f.name}: ROOT is {root}"
-            checked += 1
+        tree = ast.parse(f.read_text(encoding="utf-8"), filename=str(f))
+        for node in tree.body:
+            if (isinstance(node, ast.Assign) and len(node.targets) == 1
+                    and isinstance(node.targets[0], ast.Name) and node.targets[0].id == "ROOT"
+                    and ast.unparse(node.value).startswith("Path(__file__)")):
+                root = walk(node.value, f)
+                assert root.resolve() == repo, f"{f.name}: ROOT is {root}"
+                checked += 1
     assert checked >= 5, f"only {checked} experiment scripts set ROOT; the pattern changed?"
 
 
@@ -2211,19 +2248,48 @@ def from_scratch_pipeline_runs_and_skips_completed_stages():
 
 
 def main():
-    passed, failed = [], []
+    passed, skipped, failed = [], [], []
     for fn in TESTS:
         try:
             fn()
             passed.append(fn.__name__)
             print(f"  PASS  {fn.__name__}")
+        except unittest.SkipTest as e:        # before Exception: SkipTest is one
+            skipped.append((fn.__name__, e))
+            print(f"  SKIP  {fn.__name__}  ({e})")
         except Exception as e:
             failed.append((fn.__name__, e))
             print(f"  FAIL  {fn.__name__}")
             print("        " + "\n        ".join(
                 traceback.format_exception_only(type(e), e)).rstrip())
-    print(f"\n{len(passed)} passed, {len(failed)} failed, {len(TESTS)} total")
+    # With nothing skipped this is the line the docs and the course quote
+    # ("76 passed, 0 failed, 76 total"), so it keeps that exact shape.
+    if skipped:
+        print(f"\n{len(passed)} passed, {len(skipped)} skipped, {len(failed)} failed, {len(TESTS)} total")
+    else:
+        print(f"\n{len(passed)} passed, {len(failed)} failed, {len(TESTS)} total")
     return 1 if failed else 0
+
+
+class ModelTests(unittest.TestCase):
+    """Every @test above as a unittest method, so `python -m unittest
+    tests.test_model`, `unittest discover` and pytest run the same 76 tests
+    main() does. Methods are generated rather than written out so the two
+    lists cannot drift apart."""
+
+
+def _as_method(fn):
+    def method(self):
+        fn()
+    method.__name__ = method.__qualname__ = f"test_{fn.__name__}"
+    method.__doc__ = fn.__doc__
+    return method
+
+
+for _fn in TESTS:
+    assert not hasattr(ModelTests, f"test_{_fn.__name__}"), f"two tests are called {_fn.__name__}"
+    setattr(ModelTests, f"test_{_fn.__name__}", _as_method(_fn))
+del _fn
 
 
 if __name__ == "__main__":

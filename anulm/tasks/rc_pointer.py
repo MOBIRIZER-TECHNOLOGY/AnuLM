@@ -26,7 +26,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import random
 import re
 import sys
@@ -38,7 +37,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from anulm.bpe import BPE
 from anulm.model import AnuLM, load_checkpoint
 
 HERE = Path(__file__).resolve().parents[2]
@@ -57,6 +55,7 @@ class Pointer(nn.Module):
         self.head = nn.Linear(model.cfg.hidden_size, 2)
         nn.init.normal_(self.head.weight, std=0.02)
         nn.init.zeros_(self.head.bias)
+        self.max_len = MAX_LEN          # tokens per example; load() sets the reader's own
 
     def forward(self, idx):
         """idx (B, S) -> (start, end) logits, (B, S) each in fp32. Causal
@@ -80,12 +79,12 @@ def split_row(row):
     return qword, q, body
 
 
-def encode(tok, qword, q, body, answer=None):
+def encode(tok, qword, q, body, answer=None, max_len: int = MAX_LEN):
     """-> (ids, start, end). Question first, then passages. With `answer`,
     the passages are encoded in three pieces around its first occurrence so
     the span's token positions are exact; (0, 0) with no answer (unanswerable).
-    None when an answer is given but not found in the passages or past MAX_LEN;
-    load_rows drops those examples."""
+    None when an answer is given but not found in the passages or past
+    `max_len` (the reader's, `Pointer.max_len`); load_rows drops those."""
     head = [tok.eos_id] + tok.encode(f"{qword}: {q}\n\n")
     if answer and answer not in NOT_FOUND:
         i = body.find(answer)
@@ -96,22 +95,23 @@ def encode(tok, qword, q, body, answer=None):
             ids = head + pre + span + post
             st = len(head) + len(pre)
             en = st + len(span) - 1
-            if en < MAX_LEN and span:
-                return ids[:MAX_LEN], st, en
+            if en < max_len and span:
+                return ids[:max_len], st, en
             return None
         return None
-    return (head + tok.encode(body))[:MAX_LEN], 0, 0
+    return (head + tok.encode(body))[:max_len], 0, 0
 
 
-def load_rows(path, tok, n=None):
+def load_rows(path, tok, n=None, max_len: int = MAX_LEN):
     """Encode the first `n` rows of a make_rc.py jsonl file ->
     [(ids, start, end, row)]. Rows whose answer is not in the passages, or
-    ends past MAX_LEN, are dropped."""
-    rows = [json.loads(l) for l in open(path, encoding="utf-8")][:n]
+    ends past `max_len`, are dropped."""
+    with open(path, encoding="utf-8") as f:
+        rows = [json.loads(l) for l in f][:n]
     out = []
     for r in rows:
         qword, q, body = split_row(r)
-        enc = encode(tok, qword, q, body, r["answer"])
+        enc = encode(tok, qword, q, body, r["answer"], max_len=max_len)
         if enc:
             out.append((*enc, r))
     return out
@@ -133,23 +133,21 @@ def best_span(s, e, n):
     return st + 1, en + 1
 
 
-def load(ckpt, device):
+def load(ckpt, device, max_len: int | None = None):
     """-> (Pointer, tokenizer, checkpoint dict). A trained reader brings its
-    head and sets the module-level MAX_LEN from the checkpoint; a plain
-    AnuLM checkpoint gets a fresh head. Grouped MoE on CUDA, sparse
+    head and its `max_len`, stored on the returned Pointer (`p.max_len`); a
+    plain AnuLM checkpoint gets a fresh head and `max_len` (default MAX_LEN).
+    Per instance, not a module global, so two readers loaded in one process
+    do not truncate each other's inputs. Grouped MoE on CUDA, sparse
     otherwise."""
-    global MAX_LEN
     ck = load_checkpoint(ckpt, "cpu")
-    MAX_LEN = ck.get("max_len", MAX_LEN)
     cfg = replace(ck["cfg"], moe_impl="grouped" if device.startswith("cuda") else "sparse")
     m = AnuLM(cfg)
+    m.load_state_dict(ck["model"])
+    p = Pointer(m)
+    p.max_len = ck.get("max_len", max_len if max_len is not None else MAX_LEN)
     if "pointer_head" in ck:
-        m.load_state_dict(ck["model"])
-        p = Pointer(m)
         p.head.load_state_dict(ck["pointer_head"])
-    else:
-        m.load_state_dict(ck["model"])
-        p = Pointer(m)
     from anulm.hf_tok import load_tokenizer
     return p.to(device), load_tokenizer(cfg.tokenizer_path), ck
 
@@ -158,13 +156,12 @@ def train(a):
     """`rc_pointer train`: fine-tune backbone and head on data/rc_train.jsonl
     with cross-entropy on the start and end positions; saves on the best
     span loss over data/rc_heldout.jsonl. Needs CUDA."""
-    global MAX_LEN
-    MAX_LEN = a.max_len
     torch.manual_seed(0)
-    p, tok, ck = load(a.ckpt, "cuda")
+    # --max-len applies to a plain backbone; a trained reader keeps its own.
+    p, tok, ck = load(a.ckpt, "cuda", max_len=a.max_len)
     p.model.enable_gradient_checkpointing(a.grad_ckpt)
-    data = load_rows(HERE / "data" / "rc_train.jsonl", tok)
-    held = load_rows(HERE / "data" / "rc_heldout.jsonl", tok)
+    data = load_rows(HERE / "data" / "rc_train.jsonl", tok, max_len=p.max_len)
+    held = load_rows(HERE / "data" / "rc_heldout.jsonl", tok, max_len=p.max_len)
     print(f"train {len(data)} examples, held-out {len(held)}; "
           f"{sum(1 for d in data if d[1] == 0) / len(data):.0%} unanswerable", flush=True)
     opt = torch.optim.AdamW([{"params": p.model.parameters(), "lr": a.lr},
@@ -225,7 +222,7 @@ def train(a):
             if v < best:
                 best = v
                 torch.save({"model": p.model.state_dict(), "pointer_head": p.head.state_dict(),
-                            "max_len": MAX_LEN,
+                            "max_len": p.max_len,
                             "cfg": p.model.cfg, "step": step, "val_loss": v, "base_ckpt": a.ckpt}, a.out)
                 flag = "  <- saved"
             print(f"  eval @ {step:5d} | held-out span loss {v:.4f}{flag}", flush=True)
@@ -267,7 +264,7 @@ class PointerQA:
     def extract(self, qword, q, body):
         """The best answer span in `body` for question `q`, or "" when no span
         outscores the no-answer position."""
-        ids, _, _ = encode(self.tok, qword, q, body)
+        ids, _, _ = encode(self.tok, qword, q, body, max_len=self.p.max_len)
         x = torch.tensor([ids], device=self.device)
         with torch.autocast("cuda", dtype=torch.bfloat16, enabled=self.device.startswith("cuda")):
             s, e = self.p(x)
@@ -279,7 +276,7 @@ class PointerQA:
         """-> (answer or "", confidence) where confidence is the best span's
         score minus the no-answer score: how much the reader prefers this
         span to saying the passage does not answer the question."""
-        ids, _, _ = encode(self.tok, qword, q, body)
+        ids, _, _ = encode(self.tok, qword, q, body, max_len=self.p.max_len)
         x = torch.tensor([ids], device=self.device)
         with torch.autocast("cuda", dtype=torch.bfloat16, enabled=self.device.startswith("cuda")):
             s, e = self.p(x)
@@ -301,7 +298,7 @@ class PointerQA:
         beats "no answer", the reply is empty."""
         from anulm.inference.rag import Retriever
         if self.r is None:
-            self.r = Retriever()
+            self.r = Retriever(device=self.device)
         t0 = time.time()
         hits = self.r.search(question, k)
         question = truecase(question, [h["text"] for h in hits])

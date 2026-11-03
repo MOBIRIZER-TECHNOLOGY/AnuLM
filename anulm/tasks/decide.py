@@ -35,7 +35,6 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import math
 import random
 import sys
 import time
@@ -89,13 +88,16 @@ def readable(label: str) -> str:
 
 def encode(tok, text: str, options: list[str], max_len: int = 1024):
     """-> (ids, positions) where positions[k] is the index of the last token of
-    option k's name. Pieces are encoded separately so the positions are exact."""
+    option k's name. Pieces are encoded separately so the positions are exact.
+    Raises ValueError past `max_len` (the backbone's block_size): the message
+    and options come from API callers, so this is input validation."""
     ids = [tok.eos_id] + tok.encode(f"Message: {text.strip()}\nWhich of these does it ask for?\nOptions:")
     pos = []
     for o in options:
         ids += tok.encode(f"\n- {readable(o)}")
         pos.append(len(ids) - 1)
-    assert len(ids) <= max_len, f"{len(ids)} tokens; too many options for the context"
+    if len(ids) > max_len:
+        raise ValueError(f"{len(ids)} tokens; too many options for the context")
     return ids, pos
 
 
@@ -396,13 +398,13 @@ def metrics(probs: torch.Tensor, y: torch.Tensor, bins: int = 15) -> dict:
 
 
 @torch.no_grad()
-def predict_logits(d: Decider, examples, tok, device, bs=16):
+def predict_logits(d: Decider, examples, device, bs=16):
     """Logits per example; examples in one call must share an option count."""
     d.eval()
     out = []
     ac = torch.autocast("cuda", dtype=torch.bfloat16, enabled=device.startswith("cuda"))
     for i in range(0, len(examples), bs):
-        x, pos, _ = batchify(examples[i:i + bs], tok, d.pad_id)
+        x, pos, _ = batchify(examples[i:i + bs], None, d.pad_id)
         with ac:
             out.append(d(x.to(device), pos.to(device)).cpu())
     return torch.cat(out)
@@ -600,7 +602,7 @@ def train(a):
         if step % 100 == 0:
             print(f"step {step:5d}/{steps} | loss {loss.item():.4f} | {time.time() - t0:.0f}s", flush=True)
         if (step + 1) % a.eval_every == 0 or step == steps - 1:
-            lv = predict_logits(d, val, tok, a.device)
+            lv = predict_logits(d, val, a.device)
             yv = torch.tensor([e[2] for e in val])
             acc = (lv.argmax(1) == yv).float().mean().item()
             flag = ""
@@ -622,7 +624,7 @@ def evaluate(a):
     labs = ck.get("labels") or labels(task)
     test = make_examples(load_split("test", task)[:a.limit or None], tok, labs)
     y = torch.tensor([e[2] for e in test])
-    logits = predict_logits(d, test, tok, a.device)
+    logits = predict_logits(d, test, a.device)
     t = float(d.temperature)
     for name, temp in (("raw (T=1)", 1.0), (f"calibrated (T={t:.2f}, fitted on val)", t)):
         m = metrics(F.softmax(logits / temp, 1), y)
@@ -636,12 +638,12 @@ def evaluate(a):
     ex = test[:50]
     with torch.no_grad():
         for e in ex[:3]:
-            predict_logits(d, [e], tok, a.device, bs=1)
+            predict_logits(d, [e], a.device, bs=1)
         if a.device.startswith("cuda"):
             torch.cuda.synchronize()
         t0 = time.time()
         for e in ex:
-            predict_logits(d, [e], tok, a.device, bs=1)
+            predict_logits(d, [e], a.device, bs=1)
         if a.device.startswith("cuda"):
             torch.cuda.synchronize()
     print(f"\nlatency: {1000 * (time.time() - t0) / len(ex):.1f} ms per query on {a.device} ({len(labs)} options, one pass)")
@@ -663,11 +665,13 @@ class Decide:
         so one copy of the weights serves chat and decisions. Refuses if the
         loaded model is not the backbone the adapter was trained on."""
         ck = load_checkpoint(ckpt, "cpu", base=False)       # an exported adapter has no backbone copy
-        assert ck.get("mode") in ("head", "lora"), f"{ckpt} is a full fine-tune; it has its own weights"
+        if ck.get("mode") not in ("head", "lora"):
+            raise ValueError(f"{ckpt} is a full fine-tune; it has its own weights")
         if "model" in ck:
             live = model.state_dict()
             diff = [k for k, v in ck["model"].items() if not torch.equal(live[k].cpu().to(v.dtype), v)]
-            assert not diff, f"the loaded model differs from {ckpt}'s backbone ({len(diff)} tensors)"
+            if diff:
+                raise ValueError(f"the loaded model differs from {ckpt}'s backbone ({len(diff)} tensors)")
         d = Decider(model, "causal", tok.eos_id)
         d.freeze(ck["mode"], ck.get("lora_rank", 16), ck.get("lora_targets", "dense"), ck.get("lora_alpha", 32.0))
         if "lora" in ck:
@@ -686,8 +690,11 @@ class Decide:
     @torch.no_grad()
     def __call__(self, message: str, options: list[str] | None = None, top: int = 3) -> dict:
         options = options or self.labels
-        ids, pos = encode(self.tok, message, options)
-        logits = predict_logits(self.d, [(ids, pos, 0, options)], self.tok, self.device, bs=1)[0]
+        # The context limit is the backbone's own block_size (the same bound
+        # AnuLM.forward enforces); an open encoder has no AnuLM cfg -> 1024.
+        cfg = getattr(self.d.model, "cfg", None)
+        ids, pos = encode(self.tok, message, options, max_len=getattr(cfg, "block_size", 1024))
+        logits = predict_logits(self.d, [(ids, pos, 0, options)], self.device, bs=1)[0]
         p = F.softmax(logits / float(self.d.temperature), 0)
         k = p.argsort(descending=True)[:top]
         conf = float(p[k[0]])

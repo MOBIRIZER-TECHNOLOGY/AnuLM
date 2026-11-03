@@ -98,7 +98,7 @@ class Reader:
         from anulm.data.make_qa import PROMPTS
         from anulm.inference.rag import Retriever
         if self.r is None:
-            self.r = Retriever()
+            self.r = Retriever(device=self.om.device)       # e5 on the model's device, not always CUDA
         t0 = time.time()
         hits = self.r.search(question, k)
         t1 = time.time()
@@ -121,12 +121,32 @@ class Intent:
         self.lang, self.template = INTENT_PROMPT[task]
         self.labels = labels(INTENT_TASK[task])
 
+    def choices(self, options: list[str] | None) -> list[str]:
+        """The labels to score. decide.Decide takes any option list, zero-shot;
+        the joint model only ever learned to write its own trained labels after
+        this prompt, so a subset of them is honest (the softmax is renormalised
+        over that subset) but a label it never saw would get a confident-looking
+        probability with nothing measured behind it. That is refused with a
+        ValueError, which api.py turns into a 400."""
+        if options is None:
+            return self.labels
+        known = set(self.labels)
+        unknown = [o for o in options if o not in known]
+        if unknown:
+            raise ValueError("custom options are not supported by the joint model: it scores only "
+                             f"its trained labels, and {unknown[:3]} are not among them. Pass a subset "
+                             "of the trained labels, or none for all of them.")
+        return list(dict.fromkeys(options))
+
     @torch.no_grad()
-    def __call__(self, message: str, top: int = 3) -> dict:
+    def __call__(self, message: str, options: list[str] | None = None, top: int = 3) -> dict:
+        """decide.Decide's call signature, so api.py's /v1/decide can call either.
+        `options`: see `choices`."""
         from anulm.data.make_qa import PROMPTS
         tok, m, dev = self.om.tok, self.om.model, self.om.device
+        labels = self.choices(options)
         p = tok.encode(PROMPTS[self.lang].format(q=self.template.format(m=message.strip())))
-        lab = [tok.encode(" " + l) + [tok.eos_id] for l in self.labels]
+        lab = [tok.encode(" " + l) + [tok.eos_id] for l in labels]
         S = len(p) + max(len(l) for l in lab)
         x = torch.zeros(len(lab), S, dtype=torch.long, device=dev)
         for i, l in enumerate(lab):
@@ -138,7 +158,7 @@ class Intent:
         prob = F.softmax(score * 10, 0)        # mean log-probs are close together; sharpen
         k = prob.argsort(descending=True)[:top]
         conf = float(prob[k[0]])
-        return {"choice": self.labels[int(k[0])],
-                "probabilities": {self.labels[int(i)]: round(float(prob[i]), 4) for i in k},
+        return {"choice": labels[int(k[0])],
+                "probabilities": {labels[int(i)]: round(float(prob[i]), 4) for i in k},
                 "confidence": round(conf, 4),
                 "action": "auto-route" if conf >= self.threshold else "send to human"}

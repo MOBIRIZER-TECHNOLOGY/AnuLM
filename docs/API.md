@@ -32,7 +32,9 @@ ANULM_API_KEY=your-secret python -m anulm api --host 0.0.0.0
 
 Clients then send `Authorization: Bearer your-secret`; the OpenAI client does
 this from `api_key=`. A missing or wrong key returns 401 `invalid_api_key`.
-Bind to `0.0.0.0` only with a key set.
+The key is compared in constant time. Bind to `0.0.0.0` only with a key set:
+the server prints a warning at start-up when it is reachable from other
+machines and no key is set.
 
 ## Models
 
@@ -298,8 +300,9 @@ OpenAI's shape, so OpenAI clients raise their usual exceptions
 | 400 | unsupported parameter (`tools`, `n` > 1, JSON mode), empty or missing input, unreadable audio or image, remote image URL, too many options for the context |
 | 401 | `ANULM_API_KEY` is set and the key is missing or wrong |
 | 404 | unknown model, or a model whose checkpoint is not on this server |
-| 422 | malformed request body; or no voice for the language (speech) |
-| 500 | anything else, with the exception in `message` |
+| 413 | an upload over its limit (see Limits) |
+| 422 | malformed request body, including more inputs, options or characters than the limits allow; or no voice for the language (speech) |
+| 500 | anything else. The reply says only "Internal server error (id X)", and `code` carries the same id; the details, with the traceback, go to the server's log under that id. |
 
 ## Limits
 
@@ -316,3 +319,10 @@ OpenAI's shape, so OpenAI clients raise their usual exceptions
   the chat model wrote 27 tokens in 0.85 s (about 30 tokens/s) and a decision
   takes ~60 ms; on CPU, expect several times slower.
 * `top_p` and the penalties other than `repetition_penalty` are ignored.
+* **Request sizes.** Audio uploads: 25 MB and 60 seconds. Images (base64
+  data URLs): 10 MB. `/v1/decide`: at most 64 inputs, 256 options and 8,000
+  characters per text. Larger requests get 413 (uploads) or 422 (decide).
+* **Decisions on the joint (Omni) model** score only the intents it was
+  trained on. `options` may name a subset of those labels (the probabilities
+  are renormalised over the subset); an option it was not trained on is a 400,
+  "custom options are not supported by the joint model".

@@ -49,20 +49,19 @@ CKPTS = {
     "vqa": "ckpt_vqa_v3.pt",
 }
 # Newest measured models first, older ones as fallbacks (docs/RESULTS.md section 35).
-_HERE = Path(__file__).resolve().parents[2]
 # The chat model and its Decide adapters go together: an adapter attaches only
 # to the exact chat model it was trained on (Decide.on refuses any other).
 # v3 is the chat model fine-tuned on base v2 (held-out answer loss 3.1445 vs
 # 3.2000), with recipe-F adapters (dense, rank 64; logs/post_v2, logs/indic_v4):
 # BANKING77 89.03% at 56 ms, MASSIVE-hi 84.46% at 54 ms, vs 86.4% / 82.6% for v2.
-if (_HERE / "ckpt_chat_v3.pt").exists() or not (_HERE / "ckpt_chat_v2.pt").exists():   # or a clone: the Hub's
+if (HERE / "ckpt_chat_v3.pt").exists() or not (HERE / "ckpt_chat_v2.pt").exists():   # or a clone: the Hub's
     BRAIN, DECIDE_ADAPTER, DECIDE_ADAPTER_HI = "ckpt_chat_v3.pt", "ckpt_decide_lora_F.pt", "ckpt_decide_lora_hi_F.pt"
     DECIDE_ADAPTER_IN = "ckpt_decide_lora_india_F.pt"
 else:
-    BRAIN = "ckpt_chat_v2.pt" if (_HERE / "ckpt_chat_v2.pt").exists() else "release/AnuLM-Hindi-QA-400M"
+    BRAIN = "ckpt_chat_v2.pt" if (HERE / "ckpt_chat_v2.pt").exists() else "release/AnuLM-Hindi-QA-400M"
     DECIDE_ADAPTER, DECIDE_ADAPTER_HI = "ckpt_decide_chat_lora.pt", "ckpt_decide_lora_hi.pt"
     DECIDE_ADAPTER_IN = "ckpt_decide_lora_india_F.pt"     # trained on v3 only: absent here, the task hides
-READER = "ckpt_rc_pointer_v2.pt" if (_HERE / "ckpt_rc_pointer_v2.pt").exists() else "ckpt_rc_pointer.pt"
+READER = "ckpt_rc_pointer_v2.pt" if (HERE / "ckpt_rc_pointer_v2.pt").exists() else "ckpt_rc_pointer.pt"
 # Decide backbones (docs/RESULTS.md section 36). ModernBERT is an open
 # pretrained encoder, not this project's model, and is labelled so in the UI.
 # AnuLM decides with the chat model itself plus a LoRA adapter (section 37):
@@ -75,7 +74,7 @@ TASK_HI = "Hindi assistant commands (MASSIVE, 60 intents)"
 # SYNTHETIC: experiments/make_india_banking.py, written for the demo (UPI, IFSC, KYC, ...).
 TASK_IN = "Indian banking: UPI, KYC, Aadhaar, EMI (English, Hindi, Hinglish; 20 intents, synthetic data)"
 DECIDE_TASKS = {
-    TASK_BANK: {DECIDE_OWN: DECIDE_ADAPTER if (_HERE / DECIDE_ADAPTER).exists() else "ckpt_decide.pt",
+    TASK_BANK: {DECIDE_OWN: DECIDE_ADAPTER if (HERE / DECIDE_ADAPTER).exists() else "ckpt_decide.pt",
                 DECIDE_MB: "ckpt_decide_modernbert.pt"},
     TASK_HI: {DECIDE_OWN: DECIDE_ADAPTER_HI, DECIDE_MB: "ckpt_decide_mb_hi.pt"},
     TASK_IN: {DECIDE_OWN: DECIDE_ADAPTER_IN, DECIDE_MB: "ckpt_decide_mb_india.pt"},
@@ -171,16 +170,23 @@ class Models:
         self.device = device
         self.brain_source = brain
         self._m: dict[str, object] = {}
-        # Chat and Decide share the chat model's weights; Decide switches its
-        # adapters on for a forward pass, so the two never run at once.
-        self.shared = threading.Lock()
+        # One lock for everything on the shared decoder. Chat and Decide share
+        # the chat model's weights (Decide switches its adapters on for a
+        # forward pass); with the one model, hearing, looking and reading run
+        # on that same decoder too. Gradio serves visitors from a thread pool,
+        # so without it two requests interleave on one module. It also guards
+        # loading: two first requests used to load the model twice. Re-entrant,
+        # because one loader calls another (Decide.on -> brain) and every
+        # caller holding it may load on first use.
+        self.shared = threading.RLock()
 
     def _get(self, key, make):
-        if key not in self._m:
-            t0 = time.time()
-            self._m[key] = make()
-            print(f"loaded {key} in {time.time() - t0:.1f}s", flush=True)
-        return self._m[key]
+        with self.shared:
+            if key not in self._m:
+                t0 = time.time()
+                self._m[key] = make()
+                print(f"loaded {key} in {time.time() - t0:.1f}s", flush=True)
+            return self._m[key]
 
     def _half(self, module):
         """bf16 weights on the GPU: five resident backbones in fp32 filled the
@@ -297,10 +303,39 @@ def chat_text(models: Models, text: str, max_tokens: int = 200) -> tuple[str, fl
     """The chat model in its own words (no lookup)."""
     from anulm.inference.voice import speakable
     t0 = time.time()
-    eng = models.brain()
     with models.shared:
+        eng = models.brain()
         out = eng.generate(text, max_tokens, 0.3, 40, 0, mode="question", repetition_penalty=1.15)
     return speakable(out["completion"]), time.time() - t0
+
+
+def hear(models: Models, lang: str, audio) -> dict:
+    """models.ear(lang).hear(audio), under the shared-decoder lock."""
+    with models.shared:
+        return models.ear(lang).hear(audio)
+
+
+def look(models: Models, image, question: str | None) -> str:
+    """A caption, or the answer to `question` about `image`, under the
+    shared-decoder lock."""
+    from anulm.multimodal.vision_encoder import answer, caption
+    with models.shared:
+        if question and question.strip():
+            vl, tower, tok = models.eye("vqa")
+            return answer(vl, tower, tok, image, question.strip(), device=models.device)
+        vl, tower, tok = models.eye("caption")
+        return caption(vl, tower, tok, image, device=models.device)
+
+
+def decide(models: Models, message: str, threshold: float, which: str = DECIDE_OWN,
+           task: str = TASK_BANK) -> dict:
+    """One decision. The decider is shared by every visitor, so its threshold
+    is set inside the lock, right before the call that reads it: set outside,
+    one visitor's slider could decide another visitor's action."""
+    with models.shared:
+        d = models.decider(which, task)
+        d.threshold = float(threshold)
+        return d(message.strip())
 
 
 def answer_text(models: Models, text: str, max_tokens: int = 120) -> tuple[str, float]:
@@ -309,13 +344,13 @@ def answer_text(models: Models, text: str, max_tokens: int = 120) -> tuple[str, 
     the question-answering model answer from memory, and the reply says so."""
     from anulm.inference.voice import speakable
     t0 = time.time()
-    qa = models.reader()
-    if qa is not None:
-        out = qa.ask(text)
-        if out["answer"]:
-            return f"{out['answer']}  (from Wikipedia: {out['sources'][0]})", time.time() - t0
-    eng = models.brain()
+    with models.shared:                     # the reader is a view of the shared decoder too
+        qa = models.reader()
+        out = qa.ask(text) if qa is not None else {"answer": ""}
+    if out["answer"]:
+        return f"{out['answer']}  (from Wikipedia: {out['sources'][0]})", time.time() - t0
     with models.shared:
+        eng = models.brain()
         out = eng.generate(text, max_tokens, 0.3, 40, 0, mode="question", repetition_penalty=1.15)
     return "(not found in Wikipedia; from memory) " + speakable(out["completion"]), time.time() - t0
 
@@ -408,187 +443,6 @@ def omni_tab(res: dict) -> None:
             gr.Markdown("### Training data\n" + m.group(1).strip())
 
 
-VISITOR_CSS = """
-.gradio-container {max-width: 880px !important; margin: auto}
-#hero h1 {margin-bottom: 0.15em}
-#hero p {margin-top: 0; font-size: 1.05em}
-#ready {font-size: 0.9em; opacity: 0.8}
-.small {font-size: 0.85em; opacity: 0.75}
-"""
-ROUTE_TASKS = {"Bank customer messages (English)": TASK_BANK,
-               "Phone assistant commands (हिन्दी)": TASK_HI}
-
-
-def build_visitor(models: Models, dev: bool = False) -> gr.Blocks:
-    """The demo as a visitor meets it: the one model only, five short tabs
-    that fit a phone, plain words, and the numbers kept under About. Each
-    browser gets its own session (Gradio's), so its own conversation."""
-    res = omni_results()
-
-    def warm():
-        try:
-            models.omni()
-        except Exception as e:          # the page still loads; the first request reports it
-            print(f"warm-up failed: {e}", flush=True)
-    threading.Thread(target=warm, daemon=True).start()
-
-    def ready_note():
-        return ("Ready." if "omni" in models._m
-                else "Waking the model up: the first answer can take about 15 seconds.")
-
-    with gr.Blocks(title="AnuLM Omni") as demo:          # css and theme go to launch() in Gradio 6
-        gr.Markdown("# AnuLM Omni\nOne AI model that **listens, sees and answers**, in English and "
-                    "हिन्दी. Built from scratch, small enough for one gaming PC.", elem_id="hero")
-        ready = gr.Markdown(elem_id="ready")
-        demo.load(ready_note, None, ready)
-
-        # -- Ask ---------------------------------------------------------
-        with gr.Tab("💬 Ask"):
-            chat = gr.Chatbot(height=380, show_label=False,
-                              placeholder="Ask a question in English or हिन्दी.")
-            with gr.Row(equal_height=True):
-                q = gr.Textbox(show_label=False, placeholder="Type your question…", scale=5,
-                               lines=1, max_lines=4, autofocus=True)
-                send = gr.Button("Send", variant="primary", scale=1, min_width=80)
-            wiki = gr.Checkbox(value=True, label="Check facts in Wikipedia (turn off to let it answer "
-                                                  "in its own words)")
-            gr.Examples(["What is the capital of India?", "भारत की राजधानी क्या है?",
-                         "Who wrote the Ramayana?", "What is photosynthesis?"], q, label="Try")
-            clear = gr.Button("New conversation", size="sm", variant="secondary")
-            gr.Markdown("Each question is answered on its own; it does not remember earlier ones. "
-                        "Facts from its own memory can be wrong.", elem_classes="small")
-
-            def ask(text, history, use_wiki):
-                text = (text or "").strip()
-                if not text:
-                    return "", history
-                if use_wiki:
-                    reply, _ = answer_text(models, text, max_tokens=200)
-                else:
-                    reply, _ = chat_text(models, text)
-                return "", (history or []) + [{"role": "user", "content": text},
-                                              {"role": "assistant", "content": reply or "(no answer)"}]
-
-            send.click(ask, [q, chat, wiki], [q, chat])
-            q.submit(ask, [q, chat, wiki], [q, chat])
-            clear.click(lambda: ([], ""), None, [chat, q])
-
-        # -- Speak -------------------------------------------------------
-        with gr.Tab("🎤 Speak"):
-            gr.Markdown("Say something or ask a question. It writes down what it heard, then answers.")
-            audio = gr.Audio(sources=["microphone", "upload"], type="numpy", show_label=False)
-            with gr.Row():
-                lang = gr.Radio([("English", "en"), ("हिन्दी", "hi")], value="en", label="I'm speaking")
-                answer_it = gr.Checkbox(value=True, label="Answer it out loud")
-            go = gr.Button("Go", variant="primary")
-            heard = gr.Textbox(label="It heard", lines=2)
-            said = gr.Textbox(label="Answer", lines=3)
-            voice = gr.Audio(label="Spoken answer", autoplay=True, visible=True)
-            gr.Markdown("No microphone? Upload a short voice recording instead. Names and noisy rooms "
-                        "are the hardest for it.", elem_classes="small")
-
-            def speak(a, lg, ans):
-                if a is None:
-                    return "", "", None
-                h = models.ear(lg).hear(a)["text"]
-                if not h:
-                    return "(heard nothing; try speaking closer to the mic)", "", None
-                if not ans:
-                    return h, "", None
-                reply, _ = answer_text(models, as_question(h))
-                return h, reply, speech_or_none(models, reply)
-
-            go.click(speak, [audio, lang, answer_it], [heard, said, voice])
-
-        # -- Photo -------------------------------------------------------
-        with gr.Tab("📷 Photo"):
-            gr.Markdown("Add a photo. Leave the question empty to get a description, or ask about it, "
-                        "for example what is written on it.")
-            img = gr.Image(type="filepath", show_label=False, height=300)
-            pq = gr.Textbox(show_label=False, placeholder="Question about the photo (optional)")
-            with gr.Accordion("Ask by voice instead (English)", open=False):
-                pv = gr.Audio(sources=["microphone", "upload"], type="numpy", show_label=False)
-            look = gr.Button("Describe / Answer", variant="primary")
-            seen = gr.Textbox(label="It sees", lines=3)
-            ex, credit = omni_look_examples()
-            if ex:
-                gr.Examples(ex, [img, pq], label="Try a photo it has never seen")
-            gr.Markdown(credit, elem_classes="small")
-
-            def see(image, question, spoken):
-                from anulm.multimodal.vision_encoder import answer, caption
-                if image is None:
-                    return question, "Add a photo first."
-                if spoken is not None:
-                    question = as_question(models.ear("en").hear(spoken)["text"])
-                vl, tower, tok = models.eye("vqa" if question and question.strip() else "caption")
-                if question and question.strip():
-                    out = answer(vl, tower, tok, image, question.strip(), device=models.device)
-                else:
-                    out = caption(vl, tower, tok, image, device=models.device)
-                return question, out or "(nothing)"
-
-            look.click(see, [img, pq, pv], [pq, seen])
-
-        # -- Route -------------------------------------------------------
-        with gr.Tab("🧭 Route"):
-            gr.Markdown("Paste a customer message. The model says what it is about, in one step and "
-                        "without writing any text, and passes it to a person when it is not sure.")
-            rtask = gr.Radio(list(ROUTE_TASKS), value=next(iter(ROUTE_TASKS)), show_label=False)
-            msg = gr.Textbox(show_label=False, lines=2, placeholder="I still haven't received my new card")
-            route = gr.Button("Route", variant="primary")
-            verdict = gr.Markdown()
-            top = gr.Label(label="What it is about", num_top_classes=3)
-            gr.Examples([["I still haven't received my new card", "Bank customer messages (English)"],
-                         ["Why was I charged twice for the same coffee?", "Bank customer messages (English)"],
-                         ["Someone is using my card right now, block it!", "Bank customer messages (English)"],
-                         ["कल सुबह सात बजे का अलार्म लगा दो", "Phone assistant commands (हिन्दी)"],
-                         ["आज की ताज़ा खबरें सुनाओ", "Phone assistant commands (हिन्दी)"],
-                         ["तीन गुना सात क्या है", "Phone assistant commands (हिन्दी)"]], [msg, rtask], label="Try")
-            with gr.Accordion("Settings", open=False):
-                thr = gr.Slider(0.3, 0.99, value=0.7, step=0.01,
-                                label="Pass to a person when it is less sure than this")
-
-            def do_route(m, t, th):
-                if not m or not m.strip():
-                    return "", None
-                d = models.decider(DECIDE_OWN, ROUTE_TASKS[t])
-                d.threshold = float(th)
-                with models.shared:
-                    out = d(m.strip())
-                name = out["choice"].replace("_", " ")
-                if out["action"] == "auto-route":
-                    v = f"### ➜ {name}\nSure enough to send it there ({out['confidence']:.0%})."
-                else:
-                    v = (f"### ➜ a person\nIts best guess is *{name}*, but it is only "
-                         f"{out['confidence']:.0%} sure, so a person should look.")
-                return v, {k.replace("_", " "): p for k, p in out["probabilities"].items()}
-
-            route.click(do_route, [msg, rtask, thr], [verdict, top])
-            msg.submit(do_route, [msg, rtask, thr], [verdict, top])
-
-        # -- About -------------------------------------------------------
-        with gr.Tab("ℹ️ About"):
-            gr.Markdown(
-                "### What this is\n"
-                "**AnuLM-Omni** is one 456M-parameter model that does everything on this page: it "
-                "answers questions, transcribes English and Hindi speech, describes photos, reads "
-                "text in them, and routes messages. Its language model was trained from scratch for "
-                "Hindi, English and Python on one consumer GPU; for hearing and seeing it uses two "
-                "small, frozen open encoders (Whisper-small and SigLIP). It was trained only on data "
-                "that allows commercial use. The spoken voice is Piper, a separate open model.\n\n"
-                "### How good it is\n"
-                "It is a research model, still in training, and its answers are often wrong: free-form "
-                "replies can repeat themselves, and it can misread a photo. A better-trained version "
-                "is on the way. The full measurements:")
-            omni_tab(res)
-
-        if dev:
-            from anulm.apps import app_benchmark
-            app_benchmark.wire_initial(demo, app_benchmark.add_tab())
-    return demo
-
-
 def build(models: Models) -> gr.Blocks:
     res = omni_results() if USE_OMNI else {}
     with gr.Blocks(title="AnuLM Omni") as demo:
@@ -630,7 +484,7 @@ def build(models: Models) -> gr.Blocks:
                 if a is None:
                     return "", "", None, "*record or upload a clip first*"
                 t0 = time.time()
-                h = models.ear(lg).hear(a)
+                h = hear(models, lg, a)
                 t_hear = time.time() - t0
                 if not h["text"]:
                     return "", "", None, f"heard nothing ({t_hear:.2f}s)"
@@ -672,23 +526,19 @@ def build(models: Models) -> gr.Blocks:
                     look_meta = gr.Markdown()
 
             def do_look(image, q, sq):
-                from anulm.multimodal.vision_encoder import answer, caption
                 if image is None:
                     return q, "", None, "*drop an image in first*"
                 t0 = time.time()
                 parts = []
                 if sq is not None:
-                    q = as_question(models.ear("en").hear(sq)["text"])
+                    q = as_question(hear(models, "en", sq)["text"])
                     parts.append(f"heard {time.time() - t0:.2f}s")
                 t1 = time.time()
+                out = look(models, image, q)
                 if q and q.strip():
-                    vl, tower, tok = models.eye("vqa")
-                    out = answer(vl, tower, tok, image, q.strip(), device=models.device)
                     parts.append(f"answer ({'AnuLM-Omni' if USE_OMNI else 'A-OKVQA-trained'}) "
                                  f"{time.time() - t1:.2f}s")
                 else:
-                    vl, tower, tok = models.eye("caption")
-                    out = caption(vl, tower, tok, image, device=models.device)
                     parts.append(f"caption ({'AnuLM-Omni' if USE_OMNI else 'Flickr30k-trained'}) "
                                  f"{time.time() - t1:.2f}s")
                 out = out or "(nothing)"
@@ -814,11 +664,10 @@ def build(models: Models) -> gr.Blocks:
                 name = "AnuLM-Omni" if USE_OMNI and which == DECIDE_OWN else which
                 if not have(DECIDE_TASKS[tk][which]):
                     return None, f"{name} has no trained model for this task here", None
-                d = models.decider(which, tk)
-                d.threshold = float(t)
+                with models.shared:                  # load first, so the time below is the decision's
+                    models.decider(which, tk)
                 t0 = time.time()
-                with models.shared:
-                    out = d(m.strip())
+                out = decide(models, m, t, which, tk)
                 ms = (time.time() - t0) * 1000
                 if out["action"] == "auto-route":
                     verdict = "**auto-route** to `" + out["choice"] + "`"
@@ -851,13 +700,14 @@ def main() -> None:
                         "else. Use it with --host 0.0.0.0 or --share, or anyone who can reach the port "
                         "can use this machine's GPU. Keep the file out of git (.demo_auth is ignored)")
     args = p.parse_args()
+    from anulm.apps.app import is_loopback
     auth = None
     if args.auth_file:
         user, _, pw = Path(args.auth_file).read_text(encoding="utf-8").strip().partition(":")
         if not user or not pw:
             raise SystemExit(f"{args.auth_file}: expected one line, user:password")
         auth = (user, pw)
-    elif args.share or args.host not in ("127.0.0.1", "localhost"):
+    elif args.share or not is_loopback(args.host):
         print("warning: reachable from other machines with no password; see --auth-file", flush=True)
     # Checkpoints and their tokenizers are saved with repo-relative paths;
     # launched from elsewhere, the chat model silently fell back to the Hub one.

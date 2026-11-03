@@ -146,8 +146,11 @@ class SafetyTests(unittest.TestCase):
             started = time.monotonic()
             with self.assertRaisesRegex(RuntimeError, "timed out"):
                 pipeline.run([sys.executable, "-c", "import time; print('started', flush=True); time.sleep(30)"],
-                             log_path=log, timeout=0.2)
-            self.assertLess(time.monotonic() - started, 10)
+                             log_path=log, timeout=2)
+            # 2 s, not 0.2: a cold interpreter on a loaded CI runner can take
+            # longer than 0.2 s to print "started", and the log check below
+            # then failed for a reason that had nothing to do with run().
+            self.assertLess(time.monotonic() - started, 20)
             self.assertIn("started", log.read_text(encoding="utf-8"))
 
     def test_dry_run_reads_no_input_and_creates_no_work_dir(self):
@@ -235,7 +238,9 @@ class PreflightTests(unittest.TestCase):
             self.assertTrue(torch.equal(buffer, before_buffers[name]), name)
         self.assertTrue(torch.equal(torch.random.get_rng_state(), before_rng))
         self.assertFalse(model.training)
-        self.assertFalse(hasattr(model, "aux_loss"))
+        # The model now declares aux_loss = None in __init__, so "absent" became
+        # "unset": the preflight forward must not leave its value behind.
+        self.assertIsNone(getattr(model, "aux_loss", None))
         self.assertTrue(all(parameter.grad is None for parameter in model.parameters()))
 
     def test_preflight_restores_resumed_router_and_optimizer_state(self):

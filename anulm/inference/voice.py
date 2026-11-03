@@ -203,6 +203,12 @@ class TTS:
                     return 22_050, np.zeros(0, dtype=np.int16)
                 return chunks[0].sample_rate, np.concatenate([c.audio_int16_array for c in chunks])
             except (ImportError, OSError) as e:
+                # The fallback below is Windows' SAPI through powershell; anywhere
+                # else it only failed later with a confusing FileNotFoundError.
+                if sys.platform != "win32":
+                    raise RuntimeError(f"Piper text-to-speech could not be loaded ({str(e)[:120]}). "
+                                       "Install it with `pip install piper-tts`; the Windows voice "
+                                       "fallback exists only on Windows.") from e
                 print(f"Piper unavailable ({str(e)[:80]}); using the Windows voice", file=sys.stderr)
                 self._piper_blocked = True
         return windows_say(text, lang)

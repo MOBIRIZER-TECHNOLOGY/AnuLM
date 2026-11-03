@@ -29,6 +29,8 @@ import json
 import sys
 import threading
 import time
+import traceback
+import uuid
 from dataclasses import replace
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -40,6 +42,9 @@ from anulm.model import AnuLM, load_checkpoint
 
 HERE = Path(__file__).resolve().parents[2]
 INDEX = HERE / "web" / "index.html"
+# A /generate body is a prompt and five numbers; the prompt is cut to the
+# context (at most 2,048 tokens) anyway, so 1 MB is generous.
+MAX_BODY_BYTES = 1 << 20
 
 try:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -200,22 +205,39 @@ def make_handler(engine: Engine):
                 return self._json({"error": "not found"}, 404)
             try:
                 n = int(self.headers.get("Content-Length", 0))
+            except ValueError:
+                return self._json({"error": "bad Content-Length"}, 400)
+            # n comes straight from the client: without a cap one request could
+            # ask the server to allocate and wait for gigabytes.
+            if n < 0 or n > MAX_BODY_BYTES:
+                return self._json({"error": f"request body must be at most {MAX_BODY_BYTES} bytes"}, 413)
+            try:
                 req = json.loads(self.rfile.read(n).decode("utf-8") or "{}")
-                prompt = str(req.get("prompt", "")).strip()
-                if not prompt:
-                    return self._json({"error": "empty prompt"}, 400)
-                res = engine.generate(
-                    prompt,
-                    max_tokens=max(1, min(int(req.get("max_tokens", 150)), 400)),
-                    temperature=float(req.get("temperature", 0.8)),
-                    top_k=int(req.get("top_k", 50)),
-                    seed=int(req.get("seed", 1337)),
-                    mode=req.get("mode") if req.get("mode") in ("question", "translate") else "continue",
-                    repetition_penalty=float(req.get("repetition_penalty", 1.0)),
-                )
-                self._json(res)
-            except Exception as e:                       # report, don't die
-                self._json({"error": f"{type(e).__name__}: {e}"}, 500)
+            except (UnicodeDecodeError, ValueError):
+                return self._json({"error": "the body must be UTF-8 JSON"}, 400)
+            if not isinstance(req, dict):
+                return self._json({"error": "the body must be a JSON object"}, 400)
+            prompt = str(req.get("prompt", "")).strip()
+            if not prompt:
+                return self._json({"error": "empty prompt"}, 400)
+            try:                                         # a client's mistake is a 400, not a 500
+                kw = dict(max_tokens=max(1, min(int(req.get("max_tokens", 150)), 400)),
+                          temperature=float(req.get("temperature", 0.8)),
+                          top_k=int(req.get("top_k", 50)),
+                          seed=int(req.get("seed", 1337)),
+                          mode=req.get("mode") if req.get("mode") in ("question", "translate") else "continue",
+                          repetition_penalty=float(req.get("repetition_penalty", 1.0)))
+            except (TypeError, ValueError):
+                return self._json({"error": "max_tokens, temperature, top_k, seed and repetition_penalty "
+                                            "must be numbers"}, 400)
+            try:
+                self._json(engine.generate(prompt, **kw))
+            except Exception:                            # report, don't die
+                # The details (exception text, file paths) go to the server log
+                # only; the client gets an id to quote, which finds them there.
+                eid = uuid.uuid4().hex[:12]
+                print(f"error {eid} on POST /generate:\n{traceback.format_exc()}", file=sys.stderr, flush=True)
+                self._json({"error": f"internal error (id {eid}); the server log has the details"}, 500)
 
         def log_message(self, fmt, *args):             # one quiet line per request
             print(f"{self.address_string()} {fmt % args}")

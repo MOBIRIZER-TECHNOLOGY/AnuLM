@@ -32,14 +32,16 @@ import gc
 import os
 
 import gradio as gr
-import numpy as np
 import torch
 
-from anulm.apps.app import MODELS, header_for
+from anulm.apps.app import MODELS, exposure_warning, header_for
 from anulm.inference.voice import ASR, TTS, Voice, mode_for
 
 MODE_LABELS = {"question": "answer it", "translate": "translate it",
                "continue": "carry on from it"}
+# The question answerer: the checkpoint worth talking to (it answers in the
+# language it hears). Named, rather than picked by its position in app.MODELS.
+DEFAULT_MODEL = next(k for k, v in MODELS.items() if v == "toonist/AnuLM-Hindi-QA-400M")
 
 
 class VoiceLoader:
@@ -78,7 +80,7 @@ def build(loader: VoiceLoader, initial: str | None = None) -> gr.Blocks:
                     "Piper speaks; all three run locally.")
         with gr.Row():
             picker = gr.Dropdown(list(MODELS), label="checkpoint",
-                                 value=initial or list(MODELS)[2], scale=3)
+                                 value=initial or DEFAULT_MODEL, scale=3)
             go_load = gr.Button("Load", variant="secondary", scale=1)
         header = gr.Markdown("*nothing loaded yet*")
 
@@ -144,6 +146,9 @@ def main() -> None:
             if repo == initial:
                 initial = label
                 break
+    warning = exposure_warning(args.host, args.share)
+    if warning:
+        print(warning, flush=True)
     print(f"loading whisper-{args.whisper} and the Piper voices on {args.device}...")
     loader = VoiceLoader(args.device, args.whisper)
     build(loader, initial).launch(server_name=args.host, server_port=args.port,

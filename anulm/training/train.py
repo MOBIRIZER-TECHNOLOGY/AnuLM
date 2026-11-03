@@ -26,7 +26,7 @@ import torch
 
 from anulm.bigram_teacher import teacher_kl, teacher_weight
 from anulm.bpe import DOC_SEP
-from anulm.model import AnuLM, AnuLMConfig, Router
+from anulm.model import AnuLM, AnuLMConfig, Router, UnsafeCheckpointError, safe_load
 
 
 def atomic_save(obj, path) -> None:
@@ -176,20 +176,16 @@ def load_memmap(meta_path: str):
 def load_encoded_splits(meta_path: str):
     """Load train/validation/test token files prepared by train_from_scratch.py."""
     import json
+    from anulm.training.train_from_scratch import ENCODED_FORMAT, sha256
     meta = json.loads(Path(meta_path).read_text(encoding="utf-8"))
-    if meta.get("format") != "anulm-encoded-splits":
+    if meta.get("format") != ENCODED_FORMAT:
         raise RuntimeError(f"unsupported encoded corpus metadata: {meta_path}")
-    import hashlib
     blobs = {}
     for name, record in meta["splits"].items():
         path = Path(record["path"])
-        digest = hashlib.sha256()
-        with path.open("rb") as stream:
-            for chunk in iter(lambda: stream.read(8 << 20), b""):
-                digest.update(chunk)
-        if digest.hexdigest() != record["sha256"]:
+        if sha256(path) != record["sha256"]:
             raise RuntimeError(f"encoded {name} split changed after completion: {path}")
-        blobs[name] = torch.load(path, map_location="cpu", weights_only=False)
+        blobs[name] = safe_load(path, map_location="cpu")
     train = blobs["train"]["ids"]
     val = blobs.get("validation", {}).get("ids")
     test = blobs.get("test", {}).get("ids")
@@ -678,7 +674,7 @@ def main():
               f"tokens, vocab {vocab_size}, {args.bytes_per_token:.2f} bytes/token "
               f"({', '.join(meta.get('sources', {}))})")
     elif args.data and args.data.endswith(".bin"):
-        blob = torch.load(args.data, weights_only=False)
+        blob = safe_load(args.data)
         data = blob["ids"]
         vocab_size = blob["vocab_size"]
         tokenizer_path = blob["tokenizer"]
@@ -702,7 +698,8 @@ def main():
     validate_split_lengths(train_data, val_data, test_data, args.block_size)
     teacher = None
     if args.bigram_teacher:
-        assert not args.ce_chunk, "--bigram-teacher needs the logits; drop --ce-chunk"
+        if args.ce_chunk:
+            p.error("--bigram-teacher needs the logits; drop --ce-chunk")
         from anulm.bigram_teacher import build_bigram_teacher
         teacher = build_bigram_teacher(train_data, vocab_size, device=args.device)
         print(f"bigram teacher: weight {args.bigram_teacher}, fading to 0 by "
@@ -719,7 +716,8 @@ def main():
     for kv in args.cfg:
         key, _, val = kv.partition("=")
         field = AnuLMConfig.__dataclass_fields__.get(key)
-        assert field is not None and _, f"--cfg: unknown field {kv!r}"
+        if field is None or not _:
+            p.error(f"--cfg: unknown field {kv!r}")
         cast = {"int": int, "float": float, "bool": lambda s: s.lower() in ("1", "true", "yes"),
                 "str": str}.get(str(field.type).replace("Optional[", "").rstrip("]"), str)
         overrides[key] = None if val.lower() == "none" else cast(val)
@@ -796,7 +794,12 @@ def main():
         # referenced for the life of the run -- forced WDDM spillover and a 20x
         # slowdown. Measured the hard way.
         try:
-            ck = torch.load(last_path, map_location="cpu", weights_only=False)
+            ck = safe_load(last_path, map_location="cpu")
+        except UnsafeCheckpointError:
+            # Readable but refused by the weights-only loader: a policy
+            # decision for the user (the error names the escape), not damage
+            # to paper over by silently dropping the optimizer state.
+            raise
         except Exception as e:
             # A resume point written before atomic_save existed, or truncated
             # some other way, is unreadable. Do not start from scratch and do
@@ -808,16 +811,16 @@ def main():
                   f"{str(e)[:80]}).")
             if not Path(args.out).exists():
                 raise
-            ck = torch.load(args.out, map_location="cpu", weights_only=False)
+            ck = safe_load(args.out, map_location="cpu")
             ck = {"model": ck["model"], "step": ck["step"],
                   "best_val": ck.get("val_loss", float("inf"))}
             print(f"WARNING: falling back to {args.out} at step {ck['step'] + 1} "
                   f"WITHOUT optimizer state or sampler position.")
         raw_model.load_state_dict(ck["model"])
         if "opt" in ck:
-            assert len(ck["opt"]) == len(opt.opts), (
-                f"{last_path} holds state for {len(ck['opt'])} optimizer(s) but --optimizer "
-                f"{args.optimizer} builds {len(opt.opts)}; resume with the optimizer the run used")
+            if len(ck["opt"]) != len(opt.opts):
+                p.error(f"{last_path} holds state for {len(ck['opt'])} optimizer(s) but --optimizer "
+                        f"{args.optimizer} builds {len(opt.opts)}; resume with the optimizer the run used")
             opt.load_state_dict(ck["opt"])
         start_step = ck["step"] + 1
         best_val = ck.get("best_val", float("inf"))
@@ -911,7 +914,7 @@ def main():
         return
     if test_data is not None:
         if Path(args.out).exists():
-            best = torch.load(args.out, map_location="cpu", weights_only=False)
+            best = safe_load(args.out, map_location="cpu")
             raw_model.load_state_dict(best["model"])
             del best
         test, test_sem = evaluate(raw_model, test_data, args, iters=args.test_iters)

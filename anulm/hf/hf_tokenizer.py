@@ -32,7 +32,7 @@ import json
 import sys
 from pathlib import Path
 
-from anulm.bpe import BPE, CHUNK_RE
+from anulm.bpe import BPE
 
 # The sentence that has to survive the round trip, in every script the project
 # trains on, plus the shapes that break naive tokenizers: repeated whitespace,

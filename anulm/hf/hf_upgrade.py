@@ -74,8 +74,16 @@ def upgrade(folder: Path) -> list[str]:
     return written
 
 
+def _require(ok: bool, msg: str) -> None:
+    """A parity check that survives `python -O`: these checks are the tool's
+    whole point, so they raise rather than assert."""
+    if not ok:
+        raise RuntimeError(msg)
+
+
 def check(folder: Path) -> None:
-    """Load it the way a stranger would, and hold it to the native numbers."""
+    """Load it the way a stranger would, and hold it to the native numbers.
+    Raises RuntimeError on the first check that fails."""
     import torch
     from transformers import AutoConfig, AutoModelForCausalLM
 
@@ -86,9 +94,9 @@ def check(folder: Path) -> None:
     native.load_state_dict(ck["model"])
 
     cfg_json = json.loads((folder / "config.json").read_text(encoding="utf-8"))
-    assert cfg_json.get("dtype") == "float32", (
-        "config.json must declare float32: bfloat16 weights change the router's "
-        "expert selection and collapse the output")
+    _require(cfg_json.get("dtype") == "float32",
+             "config.json must declare float32: bfloat16 weights change the router's "
+             "expert selection and collapse the output")
     AutoConfig.from_pretrained(str(folder), trust_remote_code=True)
     # float32 explicitly: the export keeps big tensors in bfloat16, so
     # transformers infers bfloat16 and the comparison below would be measuring
@@ -96,9 +104,9 @@ def check(folder: Path) -> None:
     # is the right default for running it.
     hf = AutoModelForCausalLM.from_pretrained(str(folder), trust_remote_code=True,
                                               dtype=torch.float32).eval()
-    assert torch.equal(native.rotary.inv_freq, hf.rotary.inv_freq), (
-        "rotary tables differ: the non-persistent buffers were not rebuilt "
-        "after load, so positions would be noise while every weight looked fine")
+    _require(torch.equal(native.rotary.inv_freq, hf.rotary.inv_freq),
+             "rotary tables differ: the non-persistent buffers were not rebuilt "
+             "after load, so positions would be noise while every weight looked fine")
 
     ids = torch.tensor([[7, 11, 42, 13, 5, 99]], dtype=torch.long)
     with torch.no_grad():
@@ -108,8 +116,8 @@ def check(folder: Path) -> None:
         gen_h = hf.generate(input_ids=ids, max_new_tokens=16, do_sample=False,
                             pad_token_id=0)[0].tolist()
     delta = (nat[:, -1] - out.logits[:, -1]).abs().max().item()
-    assert delta < 1e-4, f"logits differ by {delta}"
-    assert gen_n == gen_h, "greedy continuations differ"
+    _require(delta < 1e-4, f"logits differ by {delta}")
+    _require(gen_n == gen_h, "greedy continuations differ")
     print(f"  loads through AutoModelForCausalLM; logits agree to {delta:.1e}, "
           f"greedy identical over 16 tokens")
 
@@ -121,7 +129,7 @@ def check(folder: Path) -> None:
         ours = BPE.load(str(folder / json.loads((folder / "config.json")
                                                 .read_text(encoding="utf-8"))["tokenizer_file"]))
         probe = "def is_prime(n):\n    return n > 1  # भारत"
-        assert t(probe)["input_ids"] == ours.encode(probe), "tokenizers disagree"
+        _require(t(probe)["input_ids"] == ours.encode(probe), "tokenizers disagree")
         print("  AutoTokenizer matches bpe.py token-for-token")
 
 

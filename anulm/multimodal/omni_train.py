@@ -393,7 +393,8 @@ def train(args) -> None:
     t0 = time.time()
     start, best, seen = 1, float("inf"), {t.name: 0 for t in om.tasks}
     if args.resume and last.exists():
-        st = torch.load(last, map_location=dev, weights_only=False)
+        from anulm.model import safe_load
+        st = safe_load(last, map_location=dev)       # weights-only: a resume file runs no code
         if "recipe" not in st:
             print(f"warning: {last} predates recorded recipes; cannot check it matches this run", flush=True)
         elif st["recipe"] != recipe:

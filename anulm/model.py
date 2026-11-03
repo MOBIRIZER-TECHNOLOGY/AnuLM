@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import math
 import dataclasses
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 import torch
@@ -124,27 +124,34 @@ class AnuLMConfig:
     merge_tree: str = ""
 
     def __post_init__(self):
-        assert self.attn in ("gqa", "mla")
-        assert self.moe_impl in ("sparse", "dense", "grouped")
+        # Real errors, not asserts: a config arrives from --cfg flags and from a
+        # downloaded folder's config.json, and `python -O` strips asserts.
+        def check(ok, msg):
+            if not ok:
+                raise ValueError(msg)
+        check(self.attn in ("gqa", "mla"), f"attn must be 'gqa' or 'mla', not {self.attn!r}")
+        check(self.moe_impl in ("sparse", "dense", "grouped"),
+              f"moe_impl must be 'sparse', 'dense' or 'grouped', not {self.moe_impl!r}")
         if self.moe_impl == "grouped":
-            assert hasattr(F, "grouped_mm"), (
-                "moe_impl='grouped' needs torch.nn.functional.grouped_mm (present in 2.11)")
+            check(hasattr(F, "grouped_mm"),
+                  "moe_impl='grouped' needs torch.nn.functional.grouped_mm (present in 2.11)")
         if self.sliding_window is not None:
-            assert self.sliding_window >= 1 and self.max_window_layers >= 1, (
-                "sliding_window needs max_window_layers >= 1 to apply to any layer")
-        assert self.num_experts % self.n_group == 0, "n_group must divide num_experts"
+            check(self.sliding_window >= 1 and self.max_window_layers >= 1,
+                  "sliding_window needs max_window_layers >= 1 to apply to any layer")
+        check(self.num_experts % self.n_group == 0, "n_group must divide num_experts")
         # The footgun that group-limited routing hides: you cannot select more
         # experts than the surviving groups actually contain.
         per_group = self.num_experts // self.n_group
-        assert self.num_experts_per_tok <= per_group * self.topk_group, (
-            f"top_k={self.num_experts_per_tok} exceeds the {per_group * self.topk_group} "
-            f"experts reachable through {self.topk_group} of {self.n_group} groups"
-        )
-        assert self.topk_group <= self.n_group
+        check(self.num_experts_per_tok <= per_group * self.topk_group,
+              f"top_k={self.num_experts_per_tok} exceeds the {per_group * self.topk_group} "
+              f"experts reachable through {self.topk_group} of {self.n_group} groups")
+        check(self.topk_group <= self.n_group,
+              f"topk_group={self.topk_group} exceeds n_group={self.n_group}")
         if self.attn == "gqa":
             if self.head_dim is None:
                 self.head_dim = self.hidden_size // self.n_head
-            assert self.n_head % self.n_kv_head == 0
+            check(self.n_head % self.n_kv_head == 0,
+                  f"n_kv_head={self.n_kv_head} must divide n_head={self.n_head}")
         else:
             self.head_dim = self.qk_nope_head_dim + self.qk_rope_head_dim
 
@@ -839,10 +846,15 @@ class AnuLM(nn.Module):
         self.ce_chunk = 0               # set via enable_chunked_loss()
         self.merge_P = None             # sparse (V, V), see merge_tree_matrix()
         self._merged = None             # eval-mode cache of composed tables
+        self.aux_loss = None            # set by forward(): the router regulariser, detached
+        self.imbalance_median = None    # set by update_expert_biases()
+        self.text_vocab = None          # set by loaders of a grown speech/image model
         if cfg.merge_tree:
-            assert cfg.merge_tree in ("in", "out", "both"), cfg.merge_tree
+            if cfg.merge_tree not in ("in", "out", "both"):
+                raise ValueError(f"merge_tree must be 'in', 'out' or 'both', not {cfg.merge_tree!r}")
             import json as _json
-            merges = _json.load(open(cfg.tokenizer_path, encoding="utf-8"))["merges"]
+            with open(cfg.tokenizer_path, encoding="utf-8") as f:
+                merges = _json.load(f)["merges"]
             self.merge_P = merge_tree_matrix(merges, cfg.vocab_size)
         self.apply(self._init_weights)
         # nanoGPT's scaled init for the residual output projections.
@@ -882,8 +894,8 @@ class AnuLM(nn.Module):
         else:
             B, S = idx.shape
             x = F.embedding(idx, self._table("in"))               # (B, S, D)
-        assert start + S <= self.cfg.block_size, \
-            f"positions up to {start + S} exceed block_size {self.cfg.block_size}"
+        if start + S > self.cfg.block_size:      # an error, not an assert: python -O strips those
+            raise ValueError(f"positions up to {start + S} exceed block_size {self.cfg.block_size}")
         cos, sin = self.rotary(S, x.device, x.dtype, start=start)
         aux_total = None
         for i, layer in enumerate(self.layers):
@@ -1202,6 +1214,69 @@ NanoSarvamConfig = AnuLMConfig
 NanoSarvam = AnuLM
 
 
+# Set to 1 to load a legacy checkpoint that holds Python objects beyond the
+# allow-list below. Only for a file you made yourself: unpickling runs code.
+TRUST_PICKLE_ENV = "ANULM_TRUST_PICKLE"
+
+
+class UnsafeCheckpointError(Exception):
+    """A ``.pt`` holds an object the weights-only loader refuses. Raised in
+    place of torch's own error so callers can tell "refused by policy" apart
+    from "truncated or corrupt" (train.py falls back on the second only)."""
+
+
+def safe_load(path, map_location="cpu", trust_pickle: Optional[bool] = None, **kwargs):
+    """``torch.load`` with ``weights_only=True``: tensors, containers, numbers,
+    strings and AnuLMConfig -- under all three names it has been pickled as
+    (``anulm.model``, the root alias ``model``, and pre-rename
+    ``NanoSarvamConfig``). A checkpoint from the Hub or anywhere else cannot
+    run code on load. Every project ``.pt`` (weights, ``.last`` resume points
+    with optimizer and sampler state, encoded corpora) needs nothing more.
+
+    ``trust_pickle=True``, or the environment variable ``ANULM_TRUST_PICKLE=1``,
+    is the explicit escape for an odd legacy file: a full unpickle. There is
+    no silent fallback to it; a refused file raises UnsafeCheckpointError
+    naming both escapes. Other keyword arguments (``mmap=True``) go to
+    ``torch.load``."""
+    import os
+    import pickle
+    if trust_pickle is None:
+        trust_pickle = os.environ.get(TRUST_PICKLE_ENV, "") not in ("", "0")
+    if trust_pickle:
+        return torch.load(str(path), map_location=map_location, weights_only=False, **kwargs)
+    allowed = [AnuLMConfig, (AnuLMConfig, "model.AnuLMConfig"), (AnuLMConfig, "model.NanoSarvamConfig")]
+    try:
+        with torch.serialization.safe_globals(allowed):
+            return torch.load(str(path), map_location=map_location, weights_only=True, **kwargs)
+    except pickle.UnpicklingError as e:
+        # torch's message is a page long; keep the line that names the type
+        lines = [l.strip() for l in str(e).splitlines() if l.strip()]
+        why = next((l for l in lines if "Unsupported" in l or "global" in l), lines[0] if lines else "")
+        raise UnsafeCheckpointError(
+            f"{path}: the weights-only loader refused it ({why.split(' Please use')[0][:200]}). "
+            f"If you made this file yourself and trust it, load it with trust_pickle=True or set "
+            f"{TRUST_PICKLE_ENV}=1; unpickling an untrusted file can run arbitrary code.") from e
+
+
+_HUB_ID = r"[\w.-]+/[\w.-]+"
+
+
+def _inside(root, value: str, what: str) -> str:
+    """``root / value`` as a string, for a relative path read from a folder's
+    config.json. A downloaded folder is untrusted: an absolute path or a
+    ``..`` would point the loader at any file on the machine."""
+    from pathlib import Path as _P, PurePosixPath, PureWindowsPath
+    v = str(value)
+    if (PureWindowsPath(v).anchor or PurePosixPath(v.replace("\\", "/")).is_absolute()
+            or ".." in PurePosixPath(v.replace("\\", "/")).parts):
+        raise ValueError(f"{root}/config.json: {what} {v!r} must be a relative path inside the folder")
+    full = _P(root) / v
+    # Resolve too, so a symlink inside the folder cannot lead out of it.
+    if not full.resolve().is_relative_to(_P(root).resolve()):
+        raise ValueError(f"{root}/config.json: {what} {v!r} resolves outside the folder")
+    return str(full)
+
+
 def load_checkpoint(path, map_location="cpu", base: bool = True) -> dict:
     """Load a training checkpoint (``.pt``) or a folder written by
     ``export_hf.py`` (``config.json`` + ``model.safetensors``) into the same
@@ -1219,11 +1294,14 @@ def load_checkpoint(path, map_location="cpu", base: bool = True) -> dict:
     import re
     from pathlib import Path as _P
     p = _P(path)
-    if not p.exists() and re.fullmatch(r"[\w.-]+/[\w.-]+", str(path).replace("\\", "/")):
+    if not p.exists() and re.fullmatch(_HUB_ID, str(path).replace("\\", "/")):
+        # Say so: a typo in a local path otherwise turns into a confusing
+        # network error about a repository that does not exist.
+        print(f"{path}: not found locally, trying the Hugging Face Hub")
         from huggingface_hub import snapshot_download
         p = _P(snapshot_download(str(path).replace("\\", "/")))
     if not p.is_dir():
-        return torch.load(str(p), map_location=map_location, weights_only=False)
+        return safe_load(p, map_location)
     from safetensors.torch import load_file
     dev = map_location if isinstance(map_location, str) else str(map_location)
     meta = json.loads((p / "config.json").read_text(encoding="utf-8"))
@@ -1231,7 +1309,7 @@ def load_checkpoint(path, map_location="cpu", base: bool = True) -> dict:
     if "config" in meta:
         cfg_d = dict(meta["config"])
         if cfg_d.get("tokenizer_path"):
-            cfg_d["tokenizer_path"] = str(p / cfg_d["tokenizer_path"])
+            cfg_d["tokenizer_path"] = _inside(p, cfg_d["tokenizer_path"], "tokenizer_path")
         known = {f.name for f in dataclasses.fields(AnuLMConfig)}
         ck["cfg"] = AnuLMConfig(**{k: v for k, v in cfg_d.items() if k in known})
     if (p / "model.safetensors").exists():
@@ -1241,15 +1319,25 @@ def load_checkpoint(path, map_location="cpu", base: bool = True) -> dict:
             ck[k] = meta[k]
     extras = dict(meta.get("extras") or {})
     if extras.get("hf_backbone"):                       # an open encoder's folder, shipped inside
-        extras["hf_backbone"] = str(p / extras["hf_backbone"])
+        extras["hf_backbone"] = _inside(p, extras["hf_backbone"], "extras.hf_backbone")
     ck.update(extras)
     if (p / "extras.safetensors").exists():
         for k, v in load_file(str(p / "extras.safetensors"), device=dev).items():
             group, name = k.split("/", 1)
             ck.setdefault(group, {})[name] = v
     if "model" not in ck and base and extras.get("base_model"):
-        side = p.parent / extras["base_model"].split("/")[-1]   # downloaded side by side: no fetch
-        b = load_checkpoint(side if side.is_dir() else extras["base_model"], map_location)
+        # base_model comes from an untrusted config.json: a Hub id only, never
+        # a local path, and its side-by-side copy must sit beside this folder.
+        bm = str(extras["base_model"])
+        side = p.parent / bm.split("/")[-1]                     # downloaded side by side: no fetch
+        # The Hub forbids ".." and a leading or trailing "." in a name, so
+        # "../x" or "a/.." is never a real id -- only a way out of the folder.
+        if (not re.fullmatch(_HUB_ID, bm) or ".." in bm
+                or any(part.startswith(".") or part.endswith(".") for part in bm.split("/"))
+                or side.resolve().parent != p.parent.resolve()):
+            raise ValueError(f"{p}/config.json: extras.base_model {bm!r} is not a Hugging Face "
+                             f"Hub id (owner/name)")
+        b = load_checkpoint(side if side.is_dir() else bm, map_location)
         ck["model"], ck["cfg"] = b["model"], b["cfg"]
     return ck
 

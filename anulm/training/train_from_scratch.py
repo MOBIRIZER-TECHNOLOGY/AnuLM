@@ -158,6 +158,12 @@ def run(cmd: list[str], dry_run: bool = False, log_path: Path | None = None,
             terminate_process_tree(process)
             if pump is not None:
                 pump.join(timeout=5)
+                # Close our end of the pipe so the handle does not leak. Only
+                # once the pump has stopped: closing a buffered stream another
+                # thread is blocked reading waits for that read (a grandchild
+                # that outlived the kill can hold the pipe open forever).
+                if not pump.is_alive():
+                    process.stdout.close()
             location = f"; log: {log_path}" if log_path is not None else ""
             raise RuntimeError(f"stage timed out after {timeout:g}s{location}") from e
         if pump is not None:
@@ -391,10 +397,10 @@ def expected_config(args, tokenizer: Path, vocab_size: int):
 def checkpoint_validator(expected, tokenizer: Path, text_vocab: int, grown: bool,
                          names: list[str] | None = None, base: Path | None = None):
     def validate(path: Path) -> None:
-        import torch
+        from anulm.model import safe_load
 
         try:
-            ck = torch.load(path, map_location="cpu", weights_only=False)
+            ck = safe_load(path, map_location="cpu")
             cfg = ck["cfg"]
             model = ck["model"]
             compatible = asdict(cfg) == asdict(expected)
@@ -428,9 +434,9 @@ def validate_tokenizer(path: Path) -> None:
 
 def encoded_validator(tokenizer: Path, vocab_size: int):
     def validate(path: Path) -> None:
-        import torch
+        from anulm.model import safe_load
 
-        blob = torch.load(path, map_location="cpu", weights_only=False)
+        blob = safe_load(path, map_location="cpu")
         if (blob.get("vocab_size") != vocab_size
                 or Path(blob.get("tokenizer", "")).resolve() != tokenizer
                 or not len(blob.get("ids", ()))):
@@ -620,7 +626,6 @@ def main() -> None:
         "validation_text": split_dir / "validation.txt",
         "test_text": split_dir / "test.txt",
         "tokenizer": work / "bpe.json",
-        "encoded": work / "corpus.bin",
         "train_encoded": work / "corpus.bin",
         "validation_encoded": work / "validation.bin",
         "test_encoded": work / "test.bin",

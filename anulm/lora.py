@@ -183,10 +183,15 @@ def _merge_cli(args) -> int:
     import torch
     from anulm.model import AnuLM, load_checkpoint
 
-    ad = torch.load(args.adapter, map_location="cpu", weights_only=False)
-    assert "lora" in ad, f"{args.adapter} has no adapters; is it a full checkpoint?"
-    base_path = args.base or ad.get("base_ckpt")
-    assert base_path, "the adapter does not record its base; pass --base"
+    # load_checkpoint, not torch.load: a safe (weights-only) load, and an
+    # exported adapter folder works as well as a .pt. base=False: the backbone
+    # comes from --base / the recorded base below, not fetched twice.
+    ad = load_checkpoint(args.adapter, "cpu", base=False)
+    if "lora" not in ad:
+        raise ValueError(f"{args.adapter} has no adapters; is it a full checkpoint?")
+    base_path = args.base or ad.get("base_ckpt") or ad.get("base_model")
+    if not base_path:
+        raise ValueError("the adapter does not record its base; pass --base")
     print(f"base    {base_path}")
     print(f"adapter {args.adapter}  ({len(ad['lora'])} tensors, "
           f"r={ad.get('lora_cfg', {}).get('r')})")

@@ -446,7 +446,6 @@ def train(args) -> None:
     from anulm.hf_tok import load_tokenizer
     from anulm.model import AnuLM, fit_memory, load_checkpoint
     from .speech_vocab import vocab_of
-    from anulm.training.train import atomic_save
 
     dev = args.device
     ck = load_checkpoint(args.ckpt, dev)

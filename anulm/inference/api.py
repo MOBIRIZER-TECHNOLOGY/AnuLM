@@ -31,6 +31,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import base64
+import hmac
 import io
 import json
 import os
@@ -38,10 +39,11 @@ import queue
 import tempfile
 import threading
 import time
+import traceback
 import uuid
 import wave
 from pathlib import Path
-from typing import Any, Literal, Optional, Union
+from typing import Annotated, Any, Optional, Union
 
 import torch
 from fastapi import Depends, FastAPI, File, Form, Header, Request, UploadFile
@@ -49,6 +51,7 @@ from fastapi.responses import JSONResponse, Response, StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from anulm.apps import app_omni as A
+from anulm.apps.app import is_loopback
 
 HERE = Path(__file__).resolve().parents[2]
 CREATED = int(time.time())
@@ -169,9 +172,32 @@ class APIError(Exception):
 
 def check_key(authorization: Optional[str] = Header(default=None)):
     key = os.environ.get("ANULM_API_KEY")
-    if key and authorization != f"Bearer {key}":
+    # compare_digest takes the same time wherever the strings first differ, so
+    # response timing cannot be used to guess the key one character at a time.
+    if key and not hmac.compare_digest((authorization or "").encode("utf-8"),
+                                       f"Bearer {key}".encode("utf-8")):
         raise APIError(401, "Missing or wrong API key: send 'Authorization: Bearer <ANULM_API_KEY>'.",
                        "authentication_error", code="invalid_api_key")
+
+
+def exposure_warning(host: str) -> str | None:
+    """The start-up warning for a server other machines can reach with no key."""
+    if is_loopback(host) or os.environ.get("ANULM_API_KEY"):
+        return None
+    return (f"warning: listening on {host} with no ANULM_API_KEY set: anyone who can reach this port "
+            "can use the models and this machine's GPU. Set ANULM_API_KEY to require a key.")
+
+
+# ------------------------------------------------------------------ limits
+# Uploads are read into memory and decoded, so each has a cap. The audio cap is
+# OpenAI's own (25 MB); the duration cap keeps one request from holding the
+# device for minutes (the speech models were trained on clips under 30 s).
+MAX_AUDIO_BYTES = 25 * 1024 * 1024
+MAX_AUDIO_SECONDS = 60
+MAX_IMAGE_BYTES = 10 * 1024 * 1024
+MAX_DECIDE_INPUTS = 64               # messages per /v1/decide request
+MAX_DECIDE_OPTIONS = 256             # BANKING77 has 77; the context limits the rest anyway
+MAX_TEXT_CHARS = 8000                # one decide message or option: far past the 1,024-token context
 
 
 # ------------------------------------------------------------------ request schemas
@@ -222,12 +248,17 @@ class CompletionRequest(BaseModel):
 
 class DecideRequest(BaseModel):
     model: str = Field("anulm-decide-banking", description="An anulm-decide-* or modernbert-decide-* model.")
-    input: Union[str, list[str]] = Field(..., description="One message, or a list of messages.",
-                                         examples=["I still haven't received my new card"])
-    options: Optional[list[str]] = Field(
+    input: Union[Annotated[str, Field(max_length=MAX_TEXT_CHARS)],
+                 Annotated[list[Annotated[str, Field(max_length=MAX_TEXT_CHARS)]],
+                           Field(max_length=MAX_DECIDE_INPUTS)]] = Field(
+        ..., description=f"One message, or a list of at most {MAX_DECIDE_INPUTS} messages.",
+        examples=["I still haven't received my new card"])
+    options: Optional[Annotated[list[Annotated[str, Field(max_length=MAX_TEXT_CHARS)]],
+                                Field(max_length=MAX_DECIDE_OPTIONS)]] = Field(
         None, description="The options to choose between. Default: the model's trained labels. "
                           "Required for anulm-decide-general. Options outside the trained labels are "
-                          "zero-shot and much less accurate.")
+                          "zero-shot and much less accurate. In Omni mode (the one joint model) only "
+                          "a subset of the trained labels is accepted; any other option is a 400.")
     threshold: float = Field(0.7, ge=0, le=1, description="Below this confidence, action is 'send to human'.")
     top: int = Field(3, ge=1, le=20, description="How many options to return probabilities for.")
 
@@ -271,10 +302,25 @@ async def _api_error(request: Request, e: APIError):
         "message": e.message, "type": e.type, "param": e.param, "code": e.code}})
 
 
+def log_error(where: str, e: BaseException) -> str:
+    """Print `e`'s traceback to the server log under a new id, and return the
+    id. Clients get the id, never the exception text: it can carry file paths,
+    checkpoint names and other server internals."""
+    eid = uuid.uuid4().hex[:12]
+    print(f"error {eid} in {where}:\n{''.join(traceback.format_exception(type(e), e, e.__traceback__))}",
+          flush=True)
+    return eid
+
+
+def internal_error_message(eid: str) -> str:
+    return f"Internal server error (id {eid}); the server log has the details."
+
+
 @app.exception_handler(Exception)
 async def _any_error(request: Request, e: Exception):
+    eid = log_error(f"{request.method} {request.url.path}", e)
     return JSONResponse(status_code=500, content={"error": {
-        "message": f"{type(e).__name__}: {e}", "type": "server_error", "param": None, "code": None}})
+        "message": internal_error_message(eid), "type": "server_error", "param": None, "code": eid}})
 
 
 def need(mid: str, allowed) -> dict:
@@ -347,7 +393,8 @@ class Generation:
 
     def __init__(self, prompt: str, max_tokens: int, temperature: float, top_k: int,
                  repetition_penalty: float, seed: int | None, stops: list[str]):
-        self.eng = models.brain()
+        with GPU:                          # a first call loads the model onto the device
+            self.eng = models.brain()
         self.ids = self.eng.encode(prompt)[-(self.eng.cfg.block_size - 1):]
         self.max_tokens = max(1, min(max_tokens, self.eng.cfg.block_size - len(self.ids)))
         self.temperature, self.top_k, self.rep = temperature, top_k, repetition_penalty
@@ -412,7 +459,8 @@ class Generation:
 def chat_prompt(question: str) -> str:
     """The template the chat model was tuned on, by the question's language."""
     from anulm.data.make_qa import template_for
-    eng = models.brain()
+    with GPU:
+        eng = models.brain()
     return template_for(question.strip(), eng.qa_templates).format(q=question.strip())
 
 
@@ -432,7 +480,7 @@ def stream_generation(gen: Generation, chunk, final_chunk, usage_chunk=None):
             gen.run(emit=lambda d: q.put(("delta", d)))
             q.put(("done", None))
         except Exception as e:                                   # pragma: no cover
-            q.put(("error", f"{type(e).__name__}: {e}"))
+            q.put(("error", internal_error_message(log_error("streaming generation", e))))
 
     async def events():
         threading.Thread(target=work, daemon=True).start()
@@ -470,9 +518,13 @@ def usage(prompt_tokens: int, completion_tokens: int) -> dict:
 
 
 def save_image(url: str) -> str:
-    if not url or not url.startswith("data:image/"):
+    if not isinstance(url, str) or not url.startswith("data:image/"):
         raise APIError(400, "Images must be base64 data URLs (data:image/jpeg;base64,...); this server "
                             "does not fetch remote URLs.", param="messages")
+    # Checked on the encoded length, before decoding: base64 is 4 characters per 3 bytes.
+    if len(url) > MAX_IMAGE_BYTES * 4 // 3 + 64:
+        raise APIError(413, f"The image is larger than {MAX_IMAGE_BYTES // (1024 * 1024)} MB.",
+                       param="messages", code="image_too_large")
     try:
         raw = base64.b64decode(url.split(",", 1)[1])
         from PIL import Image
@@ -546,8 +598,8 @@ def chat_completions(req: ChatRequest):
         raise APIError(400, "The last user message is empty.", param="messages")
 
     if mid == "anulm-answer":
-        qa = models.reader()
         with GPU:
+            qa = models.reader()
             out = qa.ask(question) if qa else {"answer": "", "sources": []}
         if out["answer"]:
             return one_shot_reply(req, out["answer"], {"sources": out["sources"]})
@@ -643,14 +695,16 @@ def decide(req: DecideRequest):
     inputs = [req.input] if isinstance(req.input, str) else req.input
     if not inputs or any(not s or not s.strip() for s in inputs):
         raise APIError(400, "input must be non-empty text.", param="input")
-    d = decider_for(req.model)
     t0, results = time.time(), []
     with GPU:
+        d = decider_for(req.model)                           # a first call loads it onto the device
         d.threshold = req.threshold                         # the decider is shared between requests
         for s in inputs:
             try:
                 out = d(s.strip(), req.options, top=req.top)
-            except AssertionError as e:                      # too many options for the context
+            # Too many options for the context (decide.encode: an assert, now a
+            # ValueError), or options the joint model was never trained on (omni.Intent).
+            except (AssertionError, ValueError) as e:
                 raise APIError(400, str(e), param="options")
             results.append({"input": s, **out})
     return {"object": "decision", "model": req.model, "from_scratch": m["from_scratch"],
@@ -664,9 +718,9 @@ def answer_question(req: AnswerRequest):
     need("anulm-answer", ("anulm-answer",))
     if not req.question.strip():
         raise APIError(400, "question is empty.", param="question")
-    qa = models.reader()
     t0 = time.time()
     with GPU:
+        qa = models.reader()
         out = qa.ask(req.question.strip()) if qa else {"answer": "", "sources": []}
     if out["answer"] or not req.fallback:
         return {"object": "answer", "question": req.question, "answer": out["answer"] or None,
@@ -691,9 +745,13 @@ def transcriptions(file: UploadFile = File(..., description="WAV, FLAC or OGG au
         raise APIError(400, "response_format must be json, text or verbose_json.", param="response_format")
     if not A.USE_OMNI and not (HERE / A.CKPTS["asr_" + language]).exists():
         raise APIError(404, f"No {language} speech model on this server.", param="language")
+    raw = file.file.read(MAX_AUDIO_BYTES + 1)              # one byte over says "too large"
+    if len(raw) > MAX_AUDIO_BYTES:
+        raise APIError(413, f"The audio file is larger than {MAX_AUDIO_BYTES // (1024 * 1024)} MB.",
+                       param="file", code="file_too_large")
     suffix = Path(file.filename or "audio.wav").suffix or ".wav"
     f = tempfile.NamedTemporaryFile(suffix=suffix, delete=False)
-    f.write(file.file.read())
+    f.write(raw)
     f.close()
     try:
         from anulm.multimodal.audio_codec import read_wav
@@ -701,10 +759,15 @@ def transcriptions(file: UploadFile = File(..., description="WAV, FLAC or OGG au
             audio = read_wav(f.name, 16000)
         except Exception:
             raise APIError(400, "Could not read the audio; send WAV, FLAC or OGG.", param="file")
-        with GPU:
-            h = models.ear(language).hear(f.name)
     finally:
         os.unlink(f.name)
+    if len(audio) > MAX_AUDIO_SECONDS * 16000:
+        raise APIError(413, f"The audio is {len(audio) / 16000:.0f} s long; this server transcribes at most "
+                            f"{MAX_AUDIO_SECONDS} s per request. Split it into shorter clips.",
+                       param="file", code="audio_too_long")
+    with GPU:
+        # The samples decoded above, not the file again: it used to be read twice.
+        h = models.ear(language).hear((16000, audio))
     if response_format == "text":
         return Response(h["text"], media_type="text/plain; charset=utf-8")
     if response_format == "verbose_json":
@@ -751,6 +814,9 @@ def main():
     if a.preload:
         models.brain()
     import uvicorn
+    warning = exposure_warning(a.host)
+    if warning:                        # warn, don't refuse: a trusted LAN is a fair use
+        print(warning, flush=True)
     print(f"AnuLM API on http://{a.host}:{a.port}  (docs: /docs)  device {a.device}"
           + ("  [API key required]" if os.environ.get("ANULM_API_KEY") else ""), flush=True)
     uvicorn.run(app, host=a.host, port=a.port, log_level="warning")

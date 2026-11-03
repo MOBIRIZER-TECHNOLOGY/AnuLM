@@ -36,6 +36,7 @@ from __future__ import annotations
 import argparse
 import dataclasses
 import json
+import re
 import shutil
 from pathlib import Path
 
@@ -251,10 +252,15 @@ def main() -> None:
     groups = tensor_groups(ck)
     extras = {k: v for k, v in ck.items() if k not in CORE_KEYS and k not in groups}
     if args.adapter_of:
-        assert args.base_model, "--adapter-of needs --base-model (the Hub id the backbone is fetched from)"
+        if not args.base_model:
+            p.error("--adapter-of needs --base-model (the Hub id the backbone is fetched from)")
+        if not re.fullmatch(r"[\w.-]+/[\w.-]+", args.base_model):
+            # load_checkpoint accepts nothing else from a folder's config.json
+            p.error(f"--base-model {args.base_model!r} is not a Hugging Face Hub id (owner/name)")
         live = load_checkpoint(args.adapter_of, "cpu")["model"]
         diff = [k for k, v in ck["model"].items() if not torch.equal(live[k], v)]
-        assert not diff, f"{args.ckpt}'s backbone differs from {args.adapter_of} ({len(diff)} tensors)"
+        if diff:
+            p.error(f"{args.ckpt}'s backbone differs from {args.adapter_of} ({len(diff)} tensors)")
         del ck["model"]
         extras["base_model"] = args.base_model
         print(f"  adapter only: backbone equals {args.adapter_of}, fetched from {args.base_model} on load")

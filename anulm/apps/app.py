@@ -146,6 +146,35 @@ def examples_for(kind: str) -> list[list[str]]:
     return [[p, labels[m]] for m in MODES[kind] for p in EXAMPLES.get(kind, {}).get(m, [])]
 
 
+def default_penalty(kind: str, mode: str) -> float:
+    """The starting repetition penalty for a page kind and mode: 1.3 for the
+    question answerer's question mode (what eval_qa.py and serve.py use, so the
+    page reproduces the cards), 1.0 -- no penalty -- everywhere else."""
+    return 1.3 if (kind == "qa" and mode == "question") else 1.0
+
+
+def repetition_penalty(kind: str, mode: str, user: float | None) -> float:
+    """The penalty a generation runs with: the user's value whenever they have
+    set one, the mode's default only when they have not (None)."""
+    return default_penalty(kind, mode) if user is None else float(user)
+
+
+def is_loopback(host: str | None) -> bool:
+    """True when `host` only accepts connections from this machine (None is
+    Gradio's default, which is loopback)."""
+    return host is None or host in ("localhost", "::1") or host.startswith("127.")
+
+
+def exposure_warning(host: str | None, share: bool = False, auth=None) -> str | None:
+    """The start-up warning for a page other machines can reach with no
+    password, or None. A warning, not a refusal: a phone on the same wifi is
+    what --host 0.0.0.0 is for."""
+    if auth or (is_loopback(host) and not share):
+        return None
+    return (f"warning: {'a public share link' if share else f'listening on {host}'} with no password: "
+            "anyone who can reach it can use the model and this machine's GPU.")
+
+
 def default_temp(kind: str) -> float:
     """The starting temperature for a page kind: 0.2 coder, 0.3 qa and translate, 0.8 base."""
     return 0.2 if kind == "coder" else 0.3 if kind in ("qa", "translate") else 0.8
@@ -247,6 +276,20 @@ def build(loader: Loader, initial: str | None = None) -> gr.Blocks:
         go_load.click(do_load, [picker], outputs)
         picker.change(lambda: gr.update(value="Press **Load** to switch."), None, [status])
 
+        # The penalty slider shows the mode's default until the user moves it;
+        # from then on their value is used, whatever the mode or checkpoint.
+        pen_touched = gr.State(False)
+        rep_penalty.input(lambda: True, None, pen_touched)
+
+        def follow_mode(mode_label, touched):
+            if touched or loader.engine is None:
+                return gr.update()
+            kind = kind_of(loader.engine.info)
+            m = {v: k for k, v in labels_for(kind).items()}.get(mode_label, "continue")
+            return gr.update(value=default_penalty(kind, m))
+
+        mode.change(follow_mode, [mode, pen_touched], rep_penalty)
+
         def run(text, mode_label, n_tokens, temp, is_greedy, penalty):
             if loader.engine is None:
                 return "", "Nothing loaded — press **Load** first."
@@ -258,12 +301,12 @@ def build(loader: Loader, initial: str | None = None) -> gr.Blocks:
             kind = kind_of(engine.info)
             inv = {v: k for k, v in labels_for(kind).items()}
             m = inv.get(mode_label, "continue")
-            # The question mode's 1.3 is what eval_qa.py and serve.py use, so
-            # the page reproduces the cards; anything the user sets wins.
-            default_pen = 1.3 if (kind == "qa" and m == "question") else 1.0
+            # The slider starts at the mode's default (follow_mode); whatever it
+            # says now is the user's choice and wins. It used to be
+            # max(penalty, default), so nobody could go below 1.3 in question mode.
             r = engine.generate(text, int(n_tokens), float(temp), 1 if is_greedy else 50, 1337,
                                 mode=m,
-                                repetition_penalty=max(float(penalty), default_pen))
+                                repetition_penalty=repetition_penalty(kind, m, penalty))
             note = f"{r['tokens']} tokens in {r['seconds']}s, mode {r['mode']}"
             if r["stopped_at_eos"]:
                 note += ", stopped at end of answer"
@@ -322,6 +365,9 @@ def main() -> None:
             initial = label
 
     host = args.host or ("0.0.0.0" if os.environ.get("SPACE_ID") else "127.0.0.1")
+    warning = exposure_warning(host, args.share)
+    if warning and not os.environ.get("SPACE_ID"):       # a Space is public on purpose
+        print(warning, flush=True)
     if host == "0.0.0.0":
         import socket
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
