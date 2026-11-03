@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 34.1 · The DPO loss against the margin</title>
+<desc id="d">The loss minus log sigmoid of the margin falls from about 3 at margin minus 3 to near 0 at margin 5; it is ln 2 at margin 0 and 0.598 at margin 0.2.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">The DPO loss against the margin</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">loss = −log σ(m), m = β·[(log π_θ − log π_ref)(chosen) − (same)(rejected)] · computed</text>
+<line x1="80.0" y1="70.0" x2="80.0" y2="270.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="80.0" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">-3</text>
+<line x1="157.5" y1="70.0" x2="157.5" y2="270.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="157.5" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">-2</text>
+<line x1="235.0" y1="70.0" x2="235.0" y2="270.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="235.0" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">-1</text>
+<line x1="312.5" y1="70.0" x2="312.5" y2="270.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="312.5" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<line x1="390.0" y1="70.0" x2="390.0" y2="270.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="390.0" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1</text>
+<line x1="467.5" y1="70.0" x2="467.5" y2="270.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="467.5" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">2</text>
+<line x1="545.0" y1="70.0" x2="545.0" y2="270.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="545.0" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3</text>
+<line x1="622.5" y1="70.0" x2="622.5" y2="270.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="622.5" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">4</text>
+<line x1="700.0" y1="70.0" x2="700.0" y2="270.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="700.0" y="286.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">5</text>
+<line x1="80.0" y1="270.0" x2="700.0" y2="270.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="274.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0</text>
+<line x1="80.0" y1="207.5" x2="700.0" y2="207.5" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="211.5" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">1</text>
+<line x1="80.0" y1="145.0" x2="700.0" y2="145.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="149.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">2</text>
+<line x1="80.0" y1="82.5" x2="700.0" y2="82.5" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="86.5" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">3</text>
+<polyline points="80.0,79.5 83.9,82.4 87.8,85.4 91.6,88.4 95.5,91.3 99.4,94.3 103.2,97.2 107.1,100.1 111.0,103.0 114.9,105.9 118.8,108.8 122.6,111.7 126.5,114.6 130.4,117.4 134.2,120.3 138.1,123.1 142.0,125.9 145.9,128.7 149.8,131.5 153.6,134.3 157.5,137.1 161.4,139.8 165.2,142.5 169.1,145.2 173.0,147.9 176.9,150.6 180.8,153.3 184.6,155.9 188.5,158.5 192.4,161.1 196.2,163.7 200.1,166.2 204.0,168.7 207.9,171.2 211.8,173.7 215.6,176.1 219.5,178.5 223.4,180.9 227.2,183.3 231.1,185.6 235.0,187.9 238.9,190.2 242.8,192.4 246.6,194.6 250.5,196.8 254.4,198.9 258.2,201.1 262.1,203.1 266.0,205.2 269.9,207.2 273.8,209.1 277.6,211.0 281.5,212.9 285.4,214.8 289.2,216.6 293.1,218.4 297.0,220.1 300.9,221.8 304.8,223.5 308.6,225.1 312.5,226.7 316.4,228.2 320.2,229.7 324.1,231.2 328.0,232.6 331.9,234.0 335.8,235.4 339.6,236.7 343.5,237.9 347.4,239.2 351.2,240.4 355.1,241.5 359.0,242.7 362.9,243.7 366.8,244.8 370.6,245.8 374.5,246.8 378.4,247.8 382.2,248.7 386.1,249.6 390.0,250.4 393.9,251.2 397.8,252.0 401.6,252.8 405.5,253.5 409.4,254.3 413.2,254.9 417.1,255.6 421.0,256.2 424.9,256.8 428.8,257.4 432.6,258.0 436.5,258.5 440.4,259.0 444.2,259.5 448.1,260.0 452.0,260.4 455.9,260.9 459.8,261.3 463.6,261.7 467.5,262.1 471.4,262.4 475.3,262.8 479.1,263.1 483.0,263.4 486.9,263.7 490.8,264.0 494.6,264.3 498.5,264.6 502.4,264.8 506.2,265.1 510.1,265.3 514.0,265.5 517.9,265.7 521.8,265.9 525.6,266.1 529.5,266.3 533.4,266.5 537.2,266.7 541.1,266.8 545.0,267.0 548.9,267.1 552.8,267.2 556.6,267.4 560.5,267.5 564.4,267.6 568.2,267.7 572.1,267.8 576.0,267.9 579.9,268.0 583.8,268.1 587.6,268.2 591.5,268.3 595.4,268.4 599.2,268.5 603.1,268.5 607.0,268.6 610.9,268.7 614.8,268.7 618.6,268.8 622.5,268.9 626.4,268.9 630.2,269.0 634.1,269.0 638.0,269.1 641.9,269.1 645.8,269.2 649.6,269.2 653.5,269.2 657.4,269.3 661.2,269.3 665.1,269.3 669.0,269.4 672.9,269.4 676.8,269.4 680.6,269.5 684.5,269.5 688.4,269.5 692.2,269.5 696.1,269.6 700.0,269.6" fill="none" stroke="#7B5E8E" stroke-width="2.5"/>
+<circle cx="312.5" cy="226.7" r="5" fill="#17262E" class="f-ink"><title>start: m = 0, loss ln 2 = 0.693</title></circle>
+<circle cx="328.0" cy="232.6" r="5" fill="#17262E" class="f-ink"><title>worked example: m = 0.2, loss 0.598</title></circle>
+<text x="324.5" y="200.7" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">start: m = 0, loss = ln 2 = 0.693</text>
+<text x="340.0" y="236.6" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">34.3&#x27;s example: m = 0.2, loss 0.598</text>
+<text x="390.0" y="306.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">margin m: how much more the policy prefers the chosen answer than the reference did</text>
+<text x="421.0" y="170.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">the loss never reaches 0: it keeps pushing the margin up</text>
+</svg>

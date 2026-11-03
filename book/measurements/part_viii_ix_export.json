@@ -1,0 +1,88 @@
+{
+  "release_files": {
+    "config.json": 2301,
+    "configuration_anulm.py": 3124,
+    "model.py": 61044,
+    "model.safetensors": 796522272,
+    "modeling_anulm.py": 12275,
+    "README.md": 6946,
+    "tokenizer.json": 1533692,
+    "tokenizer.multi32k.json": 413097,
+    "tokenizer_config.json": 232
+  },
+  "release_header": {
+    "metadata": {
+      "format": "pt",
+      "exported_from": "ckpt_base_v2.pt"
+    },
+    "header_bytes": 176344,
+    "tensors": {
+      "F32": 138,
+      "BF16": 1413
+    },
+    "bytes": {
+      "F32": 2049600,
+      "BF16": 794296320
+    },
+    "file_bytes": 796522272,
+    "float32_kinds": {
+      "norm gains": 81,
+      "router expert_bias": 19,
+      "router load_counts": 19,
+      "router weight": 19
+    }
+  },
+  "router_bias": {
+    "mean_range": [
+      216.0081787109375,
+      798.1443481445312
+    ],
+    "span_range": [
+      0.0179443359375,
+      0.2811279296875
+    ],
+    "distinct_after_bf16": [
+      1,
+      2
+    ]
+  },
+  "greedy_distinct_share": {
+    "native .pt, fp32": 0.2178,
+    "native .pt, whole model .to(bfloat16)": 0.2266
+  },
+  "heldout_loss": {
+    "native .pt, fp32": 3.3790755,
+    "exported folder (bf16 matrices), fp32 compute": 3.37903335,
+    "  + router biases rounded to bf16": 3.38219051,
+    "  + router biases set to zero": 3.38572251,
+    "  + biases centred per layer, then bf16": 3.37904581,
+    "native .pt, whole model .to(bfloat16)": 3.3828477
+  },
+  "expert_sets_changed_vs_native": {
+    "native .pt, fp32": {
+      "median": 0.0,
+      "max": 0.0
+    },
+    "exported folder (bf16 matrices), fp32 compute": {
+      "median": 0.0089,
+      "max": 0.0152
+    },
+    "  + router biases rounded to bf16": {
+      "median": 0.5087,
+      "max": 0.9939
+    },
+    "  + router biases set to zero": {
+      "median": 0.5184,
+      "max": 0.9939
+    },
+    "  + biases centred per layer, then bf16": {
+      "median": 0.0115,
+      "max": 0.0291
+    },
+    "native .pt, whole model .to(bfloat16)": {
+      "median": 0.5091,
+      "max": 0.9938
+    }
+  },
+  "sample": "64 windows of 512 from data/v2/val.u16, numpy default_rng(0), targets after EOS 32767 ungraded; moe_impl sparse; prompts for greedy = first 64 tokens of the first 8 windows"
+}

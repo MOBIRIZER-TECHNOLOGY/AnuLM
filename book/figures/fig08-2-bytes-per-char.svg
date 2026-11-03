@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 8.2 · Bytes per character, by script</title>
+<desc id="d">Hindi 2.62, English 1.00, Tamil 2.66, Kannada 2.76, Bengali 2.70, Hinglish 1.00, Hindi with English words 1.86, English 1.00. A dashed line marks 2.48, the Hindi corpus average.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">UTF-8 bytes per character, line by line</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">the eight lines of train.FALLBACK · characters are code points · verified</text>
+<line x1="190.0" y1="72.0" x2="190.0" y2="320.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="190.0" y="336.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<line x1="340.0" y1="72.0" x2="340.0" y2="320.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="340.0" y="336.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1</text>
+<line x1="490.0" y1="72.0" x2="490.0" y2="320.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="490.0" y="336.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">2</text>
+<line x1="640.0" y1="72.0" x2="640.0" y2="320.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="640.0" y="336.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3</text>
+<text x="415.0" y="354.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">bytes per character</text>
+<text x="178.0" y="97.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">Hindi (Devanagari)</text>
+<rect x="190.0" y="85.0" width="392.3" height="18.0" rx="3" fill="#D9A13B" class="f-gold"><title>Hindi (Devanagari): 2.62 bytes per character</title></rect>
+<text x="590.3" y="99.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">2.62</text>
+<text x="178.0" y="127.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">English (Latin)</text>
+<rect x="190.0" y="115.0" width="150.0" height="18.0" rx="3" fill="#D9A13B" class="f-gold"><title>English (Latin): 1.00 bytes per character</title></rect>
+<text x="348.0" y="129.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">1.00</text>
+<text x="178.0" y="157.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">Tamil</text>
+<rect x="190.0" y="145.0" width="398.3" height="18.0" rx="3" fill="#D9A13B" class="f-gold"><title>Tamil: 2.66 bytes per character</title></rect>
+<text x="596.3" y="159.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">2.66</text>
+<text x="178.0" y="187.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">Kannada</text>
+<rect x="190.0" y="175.0" width="414.0" height="18.0" rx="3" fill="#D9A13B" class="f-gold"><title>Kannada: 2.76 bytes per character</title></rect>
+<text x="612.0" y="189.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">2.76</text>
+<text x="178.0" y="217.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">Bengali</text>
+<rect x="190.0" y="205.0" width="405.0" height="18.0" rx="3" fill="#D9A13B" class="f-gold"><title>Bengali: 2.70 bytes per character</title></rect>
+<text x="603.0" y="219.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">2.70</text>
+<text x="178.0" y="247.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">Hinglish (Latin)</text>
+<rect x="190.0" y="235.0" width="150.0" height="18.0" rx="3" fill="#D9A13B" class="f-gold"><title>Hinglish (Latin): 1.00 bytes per character</title></rect>
+<text x="348.0" y="249.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">1.00</text>
+<text x="178.0" y="277.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">Hindi + English</text>
+<rect x="190.0" y="265.0" width="279.7" height="18.0" rx="3" fill="#D9A13B" class="f-gold"><title>Hindi + English: 1.86 bytes per character</title></rect>
+<text x="477.7" y="279.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">1.86</text>
+<text x="178.0" y="307.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">English (Latin)</text>
+<rect x="190.0" y="295.0" width="150.0" height="18.0" rx="3" fill="#D9A13B" class="f-gold"><title>English (Latin): 1.00 bytes per character</title></rect>
+<text x="348.0" y="309.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">1.00</text>
+<line x1="562.0" y1="66.0" x2="562.0" y2="320.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5" stroke-dasharray="3 3"/>
+<text x="558.0" y="62.0" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">2.48: the RESULTS §2 Hindi corpus (measured)</text>
+</svg>

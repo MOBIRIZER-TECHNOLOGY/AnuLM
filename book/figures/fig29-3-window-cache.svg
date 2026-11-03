@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 320" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 29.3 · Cache per layer, with and without trimming</title>
+<desc id="d">All 20 layers cache 1,024 positions today: 30.00 MiB. Trimming layers 0 to 9 to 256 positions, an extension, would make it 18.75 MiB, 37.5% less.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Positions each layer caches at a full 1,024-token context</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">released model · bars: the repository today · dashed: windowed layers trimmed to 256 (EXTENSION)</text>
+<line x1="80.0" y1="240.0" x2="720.0" y2="240.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="244.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0</text>
+<line x1="80.0" y1="202.5" x2="720.0" y2="202.5" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="206.5" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">256</text>
+<line x1="80.0" y1="165.0" x2="720.0" y2="165.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="169.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">512</text>
+<line x1="80.0" y1="127.5" x2="720.0" y2="127.5" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="131.5" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">768</text>
+<line x1="80.0" y1="90.0" x2="720.0" y2="90.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="94.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">1024</text>
+<rect x="84.0" y="90.0" width="24.0" height="150.0" rx="2" fill="#D9A13B" class="f-gold" fill-opacity="0.35"><title>layer 0: 1,024 positions</title></rect>
+<rect x="84.0" y="202.5" width="24.0" height="37.5" rx="2" fill="none" stroke="#17262E" stroke-width="1.5" stroke-dasharray="4 3" class="f-ink-stroke"><title>layer 0, trimmed: 256 positions</title></rect>
+<text x="96.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<rect x="116.0" y="90.0" width="24.0" height="150.0" rx="2" fill="#D9A13B" class="f-gold" fill-opacity="0.35"><title>layer 1: 1,024 positions</title></rect>
+<rect x="116.0" y="202.5" width="24.0" height="37.5" rx="2" fill="none" stroke="#17262E" stroke-width="1.5" stroke-dasharray="4 3" class="f-ink-stroke"><title>layer 1, trimmed: 256 positions</title></rect>
+<text x="128.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1</text>
+<rect x="148.0" y="90.0" width="24.0" height="150.0" rx="2" fill="#D9A13B" class="f-gold" fill-opacity="0.35"><title>layer 2: 1,024 positions</title></rect>
+<rect x="148.0" y="202.5" width="24.0" height="37.5" rx="2" fill="none" stroke="#17262E" stroke-width="1.5" stroke-dasharray="4 3" class="f-ink-stroke"><title>layer 2, trimmed: 256 positions</title></rect>
+<text x="160.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">2</text>
+<rect x="180.0" y="90.0" width="24.0" height="150.0" rx="2" fill="#D9A13B" class="f-gold" fill-opacity="0.35"><title>layer 3: 1,024 positions</title></rect>
+<rect x="180.0" y="202.5" width="24.0" height="37.5" rx="2" fill="none" stroke="#17262E" stroke-width="1.5" stroke-dasharray="4 3" class="f-ink-stroke"><title>layer 3, trimmed: 256 positions</title></rect>
+<text x="192.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3</text>
+<rect x="212.0" y="90.0" width="24.0" height="150.0" rx="2" fill="#D9A13B" class="f-gold" fill-opacity="0.35"><title>layer 4: 1,024 positions</title></rect>
+<rect x="212.0" y="202.5" width="24.0" height="37.5" rx="2" fill="none" stroke="#17262E" stroke-width="1.5" stroke-dasharray="4 3" class="f-ink-stroke"><title>layer 4, trimmed: 256 positions</title></rect>
+<text x="224.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">4</text>
+<rect x="244.0" y="90.0" width="24.0" height="150.0" rx="2" fill="#D9A13B" class="f-gold" fill-opacity="0.35"><title>layer 5: 1,024 positions</title></rect>
+<rect x="244.0" y="202.5" width="24.0" height="37.5" rx="2" fill="none" stroke="#17262E" stroke-width="1.5" stroke-dasharray="4 3" class="f-ink-stroke"><title>layer 5, trimmed: 256 positions</title></rect>
+<text x="256.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">5</text>
+<rect x="276.0" y="90.0" width="24.0" height="150.0" rx="2" fill="#D9A13B" class="f-gold" fill-opacity="0.35"><title>layer 6: 1,024 positions</title></rect>
+<rect x="276.0" y="202.5" width="24.0" height="37.5" rx="2" fill="none" stroke="#17262E" stroke-width="1.5" stroke-dasharray="4 3" class="f-ink-stroke"><title>layer 6, trimmed: 256 positions</title></rect>
+<text x="288.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">6</text>
+<rect x="308.0" y="90.0" width="24.0" height="150.0" rx="2" fill="#D9A13B" class="f-gold" fill-opacity="0.35"><title>layer 7: 1,024 positions</title></rect>
+<rect x="308.0" y="202.5" width="24.0" height="37.5" rx="2" fill="none" stroke="#17262E" stroke-width="1.5" stroke-dasharray="4 3" class="f-ink-stroke"><title>layer 7, trimmed: 256 positions</title></rect>
+<text x="320.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">7</text>
+<rect x="340.0" y="90.0" width="24.0" height="150.0" rx="2" fill="#D9A13B" class="f-gold" fill-opacity="0.35"><title>layer 8: 1,024 positions</title></rect>
+<rect x="340.0" y="202.5" width="24.0" height="37.5" rx="2" fill="none" stroke="#17262E" stroke-width="1.5" stroke-dasharray="4 3" class="f-ink-stroke"><title>layer 8, trimmed: 256 positions</title></rect>
+<text x="352.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">8</text>
+<rect x="372.0" y="90.0" width="24.0" height="150.0" rx="2" fill="#D9A13B" class="f-gold" fill-opacity="0.35"><title>layer 9: 1,024 positions</title></rect>
+<rect x="372.0" y="202.5" width="24.0" height="37.5" rx="2" fill="none" stroke="#17262E" stroke-width="1.5" stroke-dasharray="4 3" class="f-ink-stroke"><title>layer 9, trimmed: 256 positions</title></rect>
+<text x="384.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">9</text>
+<rect x="404.0" y="90.0" width="24.0" height="150.0" rx="2" fill="#D9A13B" class="f-gold" fill-opacity="0.9"><title>layer 10: 1,024 positions</title></rect>
+<text x="416.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">10</text>
+<rect x="436.0" y="90.0" width="24.0" height="150.0" rx="2" fill="#D9A13B" class="f-gold" fill-opacity="0.9"><title>layer 11: 1,024 positions</title></rect>
+<text x="448.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">11</text>
+<rect x="468.0" y="90.0" width="24.0" height="150.0" rx="2" fill="#D9A13B" class="f-gold" fill-opacity="0.9"><title>layer 12: 1,024 positions</title></rect>
+<text x="480.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">12</text>
+<rect x="500.0" y="90.0" width="24.0" height="150.0" rx="2" fill="#D9A13B" class="f-gold" fill-opacity="0.9"><title>layer 13: 1,024 positions</title></rect>
+<text x="512.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">13</text>
+<rect x="532.0" y="90.0" width="24.0" height="150.0" rx="2" fill="#D9A13B" class="f-gold" fill-opacity="0.9"><title>layer 14: 1,024 positions</title></rect>
+<text x="544.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">14</text>
+<rect x="564.0" y="90.0" width="24.0" height="150.0" rx="2" fill="#D9A13B" class="f-gold" fill-opacity="0.9"><title>layer 15: 1,024 positions</title></rect>
+<text x="576.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">15</text>
+<rect x="596.0" y="90.0" width="24.0" height="150.0" rx="2" fill="#D9A13B" class="f-gold" fill-opacity="0.9"><title>layer 16: 1,024 positions</title></rect>
+<text x="608.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">16</text>
+<rect x="628.0" y="90.0" width="24.0" height="150.0" rx="2" fill="#D9A13B" class="f-gold" fill-opacity="0.9"><title>layer 17: 1,024 positions</title></rect>
+<text x="640.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">17</text>
+<rect x="660.0" y="90.0" width="24.0" height="150.0" rx="2" fill="#D9A13B" class="f-gold" fill-opacity="0.9"><title>layer 18: 1,024 positions</title></rect>
+<text x="672.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">18</text>
+<rect x="692.0" y="90.0" width="24.0" height="150.0" rx="2" fill="#D9A13B" class="f-gold" fill-opacity="0.9"><title>layer 19: 1,024 positions</title></rect>
+<text x="704.0" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">19</text>
+<text x="400.0" y="274.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">layer (0–9 windowed, 256 tokens)</text>
+<text x="80.0" y="298.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">cache per 1,024-token sequence: 30.00 MiB now, 18.75 MiB trimmed (37.5% less), fp32 keys and bf16 values</text>
+</svg>

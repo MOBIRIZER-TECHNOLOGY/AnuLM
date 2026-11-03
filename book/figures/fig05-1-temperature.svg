@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 5.1 · Temperature reshapes, never reorders</title>
+<desc id="d">Probabilities of three tokens with logits 2.0, 1.0, 0.1: at T = 0.5 they are 0.864, 0.117, 0.019; at T = 1, 0.659, 0.242, 0.099; at T = 2, 0.502, 0.304, 0.194.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">One set of logits, three temperatures</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">logits (2.0, 1.0, 0.1), illustrative · softmax(z / T) · bar height = probability</text>
+<text x="165.0" y="270.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">token 0  (z = 2.0)</text>
+<rect x="90.0" y="103.2" width="44.0" height="146.8" rx="2" fill="#A8701A" class="f-gold"><title>T = 0.5, token 0: p = 0.8638</title></rect>
+<text x="112.0" y="97.2" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.86</text>
+<rect x="140.0" y="138.0" width="44.0" height="112.0" rx="2" fill="#D9A13B" class="f-gold"><title>T = 1.0, token 0: p = 0.6590</title></rect>
+<text x="162.0" y="132.0" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.66</text>
+<rect x="190.0" y="164.7" width="44.0" height="85.3" rx="2" fill="#ECCB8A" class="f-gold"><title>T = 2.0, token 0: p = 0.5017</title></rect>
+<text x="212.0" y="158.7" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.50</text>
+<text x="385.0" y="270.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">token 1  (z = 1.0)</text>
+<rect x="310.0" y="230.1" width="44.0" height="19.9" rx="2" fill="#A8701A" class="f-gold"><title>T = 0.5, token 1: p = 0.1169</title></rect>
+<text x="332.0" y="224.1" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.12</text>
+<rect x="360.0" y="208.8" width="44.0" height="41.2" rx="2" fill="#D9A13B" class="f-gold"><title>T = 1.0, token 1: p = 0.2424</title></rect>
+<text x="382.0" y="202.8" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.24</text>
+<rect x="410.0" y="198.3" width="44.0" height="51.7" rx="2" fill="#ECCB8A" class="f-gold"><title>T = 2.0, token 1: p = 0.3043</title></rect>
+<text x="432.0" y="192.3" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.30</text>
+<text x="605.0" y="270.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">token 2  (z = 0.1)</text>
+<rect x="530.0" y="246.7" width="44.0" height="3.3" rx="2" fill="#A8701A" class="f-gold"><title>T = 0.5, token 2: p = 0.0193</title></rect>
+<text x="552.0" y="240.7" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.02</text>
+<rect x="580.0" y="233.2" width="44.0" height="16.8" rx="2" fill="#D9A13B" class="f-gold"><title>T = 1.0, token 2: p = 0.0986</title></rect>
+<text x="602.0" y="227.2" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.10</text>
+<rect x="630.0" y="217.0" width="44.0" height="33.0" rx="2" fill="#ECCB8A" class="f-gold"><title>T = 2.0, token 2: p = 0.1940</title></rect>
+<text x="652.0" y="211.0" class="f-ink" fill="#17262E" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0.19</text>
+<rect x="560.0" y="64.0" width="14.0" height="14.0" rx="2" fill="#A8701A" class="f-gold"></rect>
+<text x="578.0" y="76.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">T = 0.5</text>
+<rect x="622.0" y="64.0" width="14.0" height="14.0" rx="2" fill="#D9A13B" class="f-gold"></rect>
+<text x="640.0" y="76.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">T = 1.0</text>
+<rect x="684.0" y="64.0" width="14.0" height="14.0" rx="2" fill="#ECCB8A" class="f-gold"></rect>
+<text x="702.0" y="76.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">T = 2.0</text>
+<line x1="80.0" y1="250.0" x2="720.0" y2="250.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1"/>
+</svg>

@@ -1,0 +1,18 @@
+{
+ "uniform": 5.545177444479562,
+ "unigram": 3.3474955558776855,
+ "bigram_counts": 2.493145227432251,
+ "bigram_teacher": 2.6263818740844727,
+ "zero_block_anulm": 2.487055778503418,
+ "zero_block_params": 33216,
+ "course_tiny_transformer": 1.7505,
+ "course_bigram": 2.4931,
+ "zero_block_move": 0.0,
+ "tiny_move": 0.08765078336000443,
+ "data": "data/input.txt",
+ "split": "first 90% train, last 10% held out",
+ "steps": 1500,
+ "seed": 0,
+ "bigram_add_0.5": 2.4877724647521973,
+ "bigram_add_0.1": 2.4850218296051025
+}

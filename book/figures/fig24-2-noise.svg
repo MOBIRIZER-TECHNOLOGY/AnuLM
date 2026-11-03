@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 360" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 24.2 · How much a val loss moves with its windows</title>
+<desc id="d">Ten random sets of 80 windows give val losses from 3.2508 to 3.4436, each with about ± 0.067. Three random sets of 400 windows give 3.353 to 3.391 with about ± 0.029. The recorded strided set gives 3.3523 ± 0.0491, and a per-source stratified estimate 3.3680 ± 0.0169.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">The released model&#x27;s val loss on fifteen window sets</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">ckpt_base_v2.pt on its own held-out split · 1,024-token windows · bf16 · each bar is ± one standard error as evaluate() reports it</text>
+<line x1="250.0" y1="292.0" x2="250.0" y2="296.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="250.0" y="310.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3.15</text>
+<line x1="310.0" y1="292.0" x2="310.0" y2="296.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="310.0" y="310.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3.20</text>
+<line x1="370.0" y1="292.0" x2="370.0" y2="296.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="370.0" y="310.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3.25</text>
+<line x1="430.0" y1="292.0" x2="430.0" y2="296.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="430.0" y="310.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3.30</text>
+<line x1="490.0" y1="292.0" x2="490.0" y2="296.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="490.0" y="310.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3.35</text>
+<line x1="550.0" y1="292.0" x2="550.0" y2="296.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="550.0" y="310.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3.40</text>
+<line x1="610.0" y1="292.0" x2="610.0" y2="296.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="610.0" y="310.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3.45</text>
+<line x1="670.0" y1="292.0" x2="670.0" y2="296.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="670.0" y="310.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3.50</text>
+<line x1="730.0" y1="292.0" x2="730.0" y2="296.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="730.0" y="310.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3.55</text>
+<line x1="250.0" y1="296.0" x2="730.0" y2="296.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="490.0" y="328.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">val loss, nats per token</text>
+<text x="236.0" y="106.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">random · 80 windows · 10 seeds</text>
+<line x1="309.3" y1="85.8" x2="432.6" y2="85.8" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1"/>
+<circle cx="370.9" cy="85.8" r="4.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>random · 80 windows · 10 seeds, seed 0: 3.2508 ± 0.0514</title></circle>
+<line x1="495.5" y1="89.4" x2="685.0" y2="89.4" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1"/>
+<circle cx="590.2" cy="89.4" r="4.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>random · 80 windows · 10 seeds, seed 1: 3.4335 ± 0.0789</title></circle>
+<line x1="528.1" y1="93.0" x2="676.6" y2="93.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1"/>
+<circle cx="602.4" cy="93.0" r="4.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>random · 80 windows · 10 seeds, seed 2: 3.4436 ± 0.0619</title></circle>
+<line x1="510.9" y1="96.6" x2="646.8" y2="96.6" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1"/>
+<circle cx="578.9" cy="96.6" r="4.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>random · 80 windows · 10 seeds, seed 3: 3.4240 ± 0.0566</title></circle>
+<line x1="354.9" y1="100.2" x2="517.7" y2="100.2" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1"/>
+<circle cx="436.3" cy="100.2" r="4.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>random · 80 windows · 10 seeds, seed 4: 3.3052 ± 0.0679</title></circle>
+<line x1="381.3" y1="103.8" x2="546.9" y2="103.8" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1"/>
+<circle cx="464.1" cy="103.8" r="4.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>random · 80 windows · 10 seeds, seed 5: 3.3284 ± 0.0690</title></circle>
+<line x1="526.8" y1="107.4" x2="677.1" y2="107.4" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1"/>
+<circle cx="602.0" cy="107.4" r="4.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>random · 80 windows · 10 seeds, seed 6: 3.4433 ± 0.0626</title></circle>
+<line x1="410.1" y1="111.0" x2="609.4" y2="111.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1"/>
+<circle cx="509.8" cy="111.0" r="4.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>random · 80 windows · 10 seeds, seed 7: 3.3665 ± 0.0831</title></circle>
+<line x1="426.7" y1="114.6" x2="625.8" y2="114.6" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1"/>
+<circle cx="526.2" cy="114.6" r="4.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>random · 80 windows · 10 seeds, seed 8: 3.3802 ± 0.0830</title></circle>
+<line x1="404.5" y1="118.2" x2="548.2" y2="118.2" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1"/>
+<circle cx="476.4" cy="118.2" r="4.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>random · 80 windows · 10 seeds, seed 9: 3.3386 ± 0.0599</title></circle>
+<text x="236.0" y="158.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">random · 400 windows · 3 seeds</text>
+<line x1="504.7" y1="150.4" x2="574.3" y2="150.4" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1"/>
+<circle cx="539.5" cy="150.4" r="4.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>random · 400 windows · 3 seeds, seed 100: 3.3912 ± 0.0290</title></circle>
+<line x1="456.7" y1="154.0" x2="529.6" y2="154.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1"/>
+<circle cx="493.2" cy="154.0" r="4.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>random · 400 windows · 3 seeds, seed 101: 3.3526 ± 0.0304</title></circle>
+<line x1="484.0" y1="157.6" x2="550.5" y2="157.6" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1"/>
+<circle cx="517.3" cy="157.6" r="4.5" fill="#C4532F" stroke="#FFFFFF" stroke-width="1.2" class="f-coral f-ring"><title>random · 400 windows · 3 seeds, seed 102: 3.3727 ± 0.0277</title></circle>
+<text x="236.0" y="210.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">strided · 400 windows (recorded)</text>
+<line x1="433.8" y1="206.0" x2="551.7" y2="206.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1"/>
+<circle cx="492.7" cy="206.0" r="4.5" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>strided · 400 windows (recorded), batch 4: 3.3523 ± 0.0491</title></circle>
+<text x="236.0" y="262.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">per source · 1,100 windows</text>
+<line x1="491.3" y1="258.0" x2="531.8" y2="258.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1"/>
+<circle cx="511.6" cy="258.0" r="4.5" fill="#0E9488" stroke="#FFFFFF" stroke-width="1.2" class="f-teal f-ring"><title>per source · 1,100 windows, stratified: 3.3680 ± 0.0169</title></circle>
+<text x="20.0" y="350.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">80-window sets span 3.2508 to 3.4436; the recorded number is 3.3523 ± 0.0491.</text>
+</svg>

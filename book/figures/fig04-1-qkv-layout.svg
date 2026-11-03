@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 260" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 4.1 · One row of qkv, cut into heads</title>
+<desc id="d">Columns 0-31 are four query heads of 8, columns 32-47 two key heads, columns 48-63 two value heads.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">One position&#x27;s 64 outputs of query_key_value, cut into heads</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">tiny(): H = 4 query heads, Hkv = 2 key and 2 value heads, Dh = 8 · view(B, S, 8, 8), then split([4, 2, 2])</text>
+<rect x="40.0" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 0: q0, dimension 0</title></rect>
+<rect x="50.6" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 1: q0, dimension 1</title></rect>
+<rect x="61.2" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 2: q0, dimension 2</title></rect>
+<rect x="71.8" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 3: q0, dimension 3</title></rect>
+<rect x="82.4" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 4: q0, dimension 4</title></rect>
+<rect x="93.0" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 5: q0, dimension 5</title></rect>
+<rect x="103.6" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 6: q0, dimension 6</title></rect>
+<rect x="114.2" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 7: q0, dimension 7</title></rect>
+<text x="82.4" y="102.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">q0</text>
+<text x="40.0" y="158.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<rect x="124.8" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 8: q1, dimension 0</title></rect>
+<rect x="135.4" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 9: q1, dimension 1</title></rect>
+<rect x="146.0" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 10: q1, dimension 2</title></rect>
+<rect x="156.6" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 11: q1, dimension 3</title></rect>
+<rect x="167.2" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 12: q1, dimension 4</title></rect>
+<rect x="177.8" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 13: q1, dimension 5</title></rect>
+<rect x="188.4" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 14: q1, dimension 6</title></rect>
+<rect x="199.0" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 15: q1, dimension 7</title></rect>
+<text x="167.2" y="102.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">q1</text>
+<text x="124.8" y="158.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">8</text>
+<rect x="209.6" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 16: q2, dimension 0</title></rect>
+<rect x="220.2" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 17: q2, dimension 1</title></rect>
+<rect x="230.8" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 18: q2, dimension 2</title></rect>
+<rect x="241.4" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 19: q2, dimension 3</title></rect>
+<rect x="252.0" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 20: q2, dimension 4</title></rect>
+<rect x="262.6" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 21: q2, dimension 5</title></rect>
+<rect x="273.2" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 22: q2, dimension 6</title></rect>
+<rect x="283.8" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 23: q2, dimension 7</title></rect>
+<text x="252.0" y="102.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">q2</text>
+<text x="209.6" y="158.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">16</text>
+<rect x="294.4" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 24: q3, dimension 0</title></rect>
+<rect x="305.0" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 25: q3, dimension 1</title></rect>
+<rect x="315.6" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 26: q3, dimension 2</title></rect>
+<rect x="326.2" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 27: q3, dimension 3</title></rect>
+<rect x="336.8" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 28: q3, dimension 4</title></rect>
+<rect x="347.4" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 29: q3, dimension 5</title></rect>
+<rect x="358.0" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 30: q3, dimension 6</title></rect>
+<rect x="368.6" y="110.0" width="9.6" height="30.0" rx="1" fill="#56676C" class="f-slate"><title>column 31: q3, dimension 7</title></rect>
+<text x="336.8" y="102.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">q3</text>
+<text x="294.4" y="158.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">24</text>
+<rect x="379.2" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 32: k0, dimension 0</title></rect>
+<rect x="389.8" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 33: k0, dimension 1</title></rect>
+<rect x="400.4" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 34: k0, dimension 2</title></rect>
+<rect x="411.0" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 35: k0, dimension 3</title></rect>
+<rect x="421.6" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 36: k0, dimension 4</title></rect>
+<rect x="432.2" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 37: k0, dimension 5</title></rect>
+<rect x="442.8" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 38: k0, dimension 6</title></rect>
+<rect x="453.4" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 39: k0, dimension 7</title></rect>
+<text x="421.6" y="102.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">k0</text>
+<text x="379.2" y="158.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">32</text>
+<rect x="464.0" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 40: k1, dimension 0</title></rect>
+<rect x="474.6" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 41: k1, dimension 1</title></rect>
+<rect x="485.2" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 42: k1, dimension 2</title></rect>
+<rect x="495.8" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 43: k1, dimension 3</title></rect>
+<rect x="506.4" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 44: k1, dimension 4</title></rect>
+<rect x="517.0" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 45: k1, dimension 5</title></rect>
+<rect x="527.6" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 46: k1, dimension 6</title></rect>
+<rect x="538.2" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 47: k1, dimension 7</title></rect>
+<text x="506.4" y="102.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">k1</text>
+<text x="464.0" y="158.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">40</text>
+<rect x="548.8" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 48: v0, dimension 0</title></rect>
+<rect x="559.4" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 49: v0, dimension 1</title></rect>
+<rect x="570.0" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 50: v0, dimension 2</title></rect>
+<rect x="580.6" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 51: v0, dimension 3</title></rect>
+<rect x="591.2" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 52: v0, dimension 4</title></rect>
+<rect x="601.8" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 53: v0, dimension 5</title></rect>
+<rect x="612.4" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 54: v0, dimension 6</title></rect>
+<rect x="623.0" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 55: v0, dimension 7</title></rect>
+<text x="591.2" y="102.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">v0</text>
+<text x="548.8" y="158.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">48</text>
+<rect x="633.6" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 56: v1, dimension 0</title></rect>
+<rect x="644.2" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 57: v1, dimension 1</title></rect>
+<rect x="654.8" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 58: v1, dimension 2</title></rect>
+<rect x="665.4" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 59: v1, dimension 3</title></rect>
+<rect x="676.0" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 60: v1, dimension 4</title></rect>
+<rect x="686.6" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 61: v1, dimension 5</title></rect>
+<rect x="697.2" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 62: v1, dimension 6</title></rect>
+<rect x="707.8" y="110.0" width="9.6" height="30.0" rx="1" fill="#F0F2F1" class="f-card"><title>column 63: v1, dimension 7</title></rect>
+<text x="676.0" y="102.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">v1</text>
+<text x="633.6" y="158.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">56</text>
+<text x="718.4" y="158.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">64</text>
+<line x1="42.0" y1="172.0" x2="376.2" y2="172.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<text x="209.6" y="190.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">queries: H · Dh = 32</text>
+<line x1="381.2" y1="172.0" x2="545.8" y2="172.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<text x="464.0" y="190.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">keys: 16</text>
+<line x1="550.8" y1="172.0" x2="715.4" y2="172.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.5"/>
+<text x="633.6" y="190.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">values: 16</text>
+<text x="40.0" y="222.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">query head h = x @ W[h·Dh : (h+1)·Dh].T ; key head j = x @ W[(H+j)·Dh : (H+j+1)·Dh].T</text>
+</svg>

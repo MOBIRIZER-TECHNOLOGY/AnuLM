@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 20.2 · Where the parameters are</title>
+<desc id="d">Routed experts 269.0M (67.6%), embedding and output head 67.1M, attention 52.4M, dense layer 0 8.7M, routers 0.47M, norms under 0.05M. Per token, 173.5M are active by num_params() and 224.1M of expert weights sit idle.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Where the 397.7M parameters are</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">AnuLM-Base-v2-400M · computed from the configuration · verified against num_params()</text>
+<line x1="220.0" y1="70.0" x2="220.0" y2="280.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="220.0" y="296.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0M</text>
+<line x1="297.8" y1="70.0" x2="297.8" y2="280.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="297.8" y="296.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">50M</text>
+<line x1="375.6" y1="70.0" x2="375.6" y2="280.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="375.6" y="296.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">100M</text>
+<line x1="453.3" y1="70.0" x2="453.3" y2="280.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="453.3" y="296.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">150M</text>
+<line x1="531.1" y1="70.0" x2="531.1" y2="280.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="531.1" y="296.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">200M</text>
+<line x1="608.9" y1="70.0" x2="608.9" y2="280.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="608.9" y="296.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">250M</text>
+<text x="208.0" y="91.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">routed experts</text>
+<path d="M220,78 h414.4 a4,4 0 0 1 4,4 v10 a4,4 0 0 1 -4,4 h-414.4 z" fill="#D9A13B" class="f-gold"><title>routed experts: 268,959,744</title></path>
+<text x="646.4" y="91.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">269.0M  67.6%</text>
+<text x="208.0" y="121.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">embedding + output head</text>
+<path d="M220,108 h100.4 a4,4 0 0 1 4,4 v10 a4,4 0 0 1 -4,4 h-100.4 z" fill="#D9A13B" class="f-gold"><title>embedding + output head: 67,108,864</title></path>
+<text x="332.4" y="121.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">67.1M  16.9%</text>
+<text x="208.0" y="151.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">attention</text>
+<path d="M220,138 h77.6 a4,4 0 0 1 4,4 v10 a4,4 0 0 1 -4,4 h-77.6 z" fill="#D9A13B" class="f-gold"><title>attention: 52,428,800</title></path>
+<text x="309.6" y="151.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">52.4M  13.2%</text>
+<text x="208.0" y="181.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">dense layer 0</text>
+<path d="M220,168 h9.5 a4,4 0 0 1 4,4 v10 a4,4 0 0 1 -4,4 h-9.5 z" fill="#D9A13B" class="f-gold"><title>dense layer 0: 8,650,752</title></path>
+<text x="241.5" y="181.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">8.7M  2.2%</text>
+<text x="208.0" y="211.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">routers</text>
+<path d="M220,198 h-2.0 a4,4 0 0 1 4,4 v10 a4,4 0 0 1 -4,4 h2.0 z" fill="#D9A13B" class="f-gold"><title>routers: 466,944</title></path>
+<text x="230.0" y="211.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">466,944</text>
+<text x="208.0" y="241.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">RMSNorm gains</text>
+<path d="M220,228 h-2.0 a4,4 0 0 1 4,4 v10 a4,4 0 0 1 -4,4 h2.0 z" fill="#D9A13B" class="f-gold"><title>RMSNorm gains: 41,984</title></path>
+<text x="230.0" y="241.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">41,984</text>
+<text x="208.0" y="271.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">QK-norm gains</text>
+<path d="M220,258 h-2.0 a4,4 0 0 1 4,4 v10 a4,4 0 0 1 -4,4 h2.0 z" fill="#D9A13B" class="f-gold"><title>QK-norm gains: 2,560</title></path>
+<text x="230.0" y="271.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">2,560</text>
+<text x="20.0" y="318.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">For one token</text>
+<rect x="20.0" y="330.0" width="269.5" height="22.0" rx="4" fill="#D9A13B" class="f-gold"><title>active by num_params(): 173,526,528</title></rect>
+<rect x="291.5" y="330.0" width="348.5" height="22.0" rx="4" fill="#DCE1DF" class="f-rule-fill"><title>idle experts: 224,133,120</title></rect>
+<text x="155.3" y="345.0" class="f-onfill" fill="#13232A" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">active 173.5M (43.6%)</text>
+<text x="465.3" y="345.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">idle experts 224.1M</text>
+<text x="20.0" y="374.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">Of the active 173.5M, 33.6M is the input embedding table, of which a token reads one row:</text>
+<text x="20.0" y="390.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">about 140M weights are actually multiplied per token.</text>
+</svg>

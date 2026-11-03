@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 620" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 20.1 · The whole model</title>
+<desc id="d">Token ids become a (B, S, D) residual stream through the embedding table. Layer 0 adds attention and a dense SwiGLU; layers 1 to 19 add attention and a mixture of experts whose router picks 4 of 24. A final RMSNorm and lm_head produce (B, S, V) logits for the loss or for sampling.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">AnuLM-Base-v2-400M, one forward pass</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">the residual stream runs down the left; every sublayer reads it and adds to it</text>
+<rect x="60.0" y="66.0" width="144.0" height="46.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="74.0" y="88.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">token ids</text>
+<text x="74.0" y="106.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">(B, S)</text>
+<line x1="132.0" y1="112.0" x2="132.0" y2="128.0" stroke="#17262E" class="f-ink-stroke" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="60.0" y="130.0" width="144.0" height="46.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="74.0" y="152.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">embedding</text>
+<text x="74.0" y="170.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">V × D table</text>
+<line x1="132.0" y1="176.0" x2="132.0" y2="556.0" stroke="#17262E" class="f-ink-stroke" stroke-width="4"/>
+<text x="118.0" y="300.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle" transform="rotate(-90 118 300)">residual stream (B, S, D)</text>
+<rect x="176.0" y="194.0" width="560.0" height="134.0" rx="10" fill="#F0F2F1" class="f-card" fill-opacity="0.55"></rect>
+<text x="190.0" y="214.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">layer 0</text>
+<rect x="300.0" y="206.0" width="300.0" height="52.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="314.0" y="228.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">RMSNorm → attention</text>
+<text x="314.0" y="246.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">16 query heads share 4 key/value · window 256</text>
+<line x1="141.0" y1="232.0" x2="298.0" y2="232.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.2" marker-end="url(#arrow)"/>
+<circle cx="132" cy="232" r="9" fill="#FFFFFF" stroke="#17262E" stroke-width="1.5" class="f-paper f-ink-stroke"/>
+<line x1="127.0" y1="232.0" x2="137.0" y2="232.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5"/>
+<line x1="132.0" y1="227.0" x2="132.0" y2="237.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5"/>
+<rect x="300.0" y="266.0" width="300.0" height="52.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="314.0" y="288.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">RMSNorm → SwiGLU</text>
+<text x="314.0" y="306.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">dense, inner width I = 2,816</text>
+<line x1="141.0" y1="292.0" x2="298.0" y2="292.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.2" marker-end="url(#arrow)"/>
+<circle cx="132" cy="292" r="9" fill="#FFFFFF" stroke="#17262E" stroke-width="1.5" class="f-paper f-ink-stroke"/>
+<line x1="127.0" y1="292.0" x2="137.0" y2="292.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5"/>
+<line x1="132.0" y1="287.0" x2="132.0" y2="297.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5"/>
+<rect x="188.0" y="334.0" width="560.0" height="170.0" rx="10" fill="#F0F2F1" class="f-card" fill-opacity="0.35"></rect>
+<rect x="182.0" y="340.0" width="560.0" height="170.0" rx="10" fill="#F0F2F1" class="f-card" fill-opacity="0.35"></rect>
+<rect x="176.0" y="346.0" width="560.0" height="170.0" rx="10" fill="#F0F2F1" class="f-card" fill-opacity="0.55"></rect>
+<text x="190.0" y="366.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">layers 1–19</text>
+<text x="190.0" y="382.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">(× 19)</text>
+<rect x="300.0" y="358.0" width="300.0" height="52.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="314.0" y="380.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">RMSNorm → attention</text>
+<text x="314.0" y="398.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">same shape · window on layers 1–9</text>
+<line x1="141.0" y1="384.0" x2="298.0" y2="384.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.2" marker-end="url(#arrow)"/>
+<circle cx="132" cy="384" r="9" fill="#FFFFFF" stroke="#17262E" stroke-width="1.5" class="f-paper f-ink-stroke"/>
+<line x1="127.0" y1="384.0" x2="137.0" y2="384.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5"/>
+<line x1="132.0" y1="379.0" x2="132.0" y2="389.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5"/>
+<rect x="300.0" y="420.0" width="420.0" height="84.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#D9A13B" stroke-width="2.5"></rect>
+<text x="314.0" y="442.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">RMSNorm → router → experts</text>
+<text x="314.0" y="460.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">4 of 24 experts per token</text>
+<line x1="141.0" y1="446.0" x2="298.0" y2="446.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1.2" marker-end="url(#arrow)"/>
+<circle cx="132" cy="446" r="9" fill="#FFFFFF" stroke="#17262E" stroke-width="1.5" class="f-paper f-ink-stroke"/>
+<line x1="127.0" y1="446.0" x2="137.0" y2="446.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5"/>
+<line x1="132.0" y1="441.0" x2="132.0" y2="451.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1.5"/>
+<rect x="314.0" y="474.0" width="13.0" height="9.0" rx="2" fill="#DCE1DF" class="f-rule-fill"><title>an idle expert</title></rect>
+<rect x="331.0" y="474.0" width="13.0" height="9.0" rx="2" fill="#DCE1DF" class="f-rule-fill"><title>an idle expert</title></rect>
+<rect x="348.0" y="474.0" width="13.0" height="9.0" rx="2" fill="#DCE1DF" class="f-rule-fill"><title>an idle expert</title></rect>
+<rect x="365.0" y="474.0" width="13.0" height="9.0" rx="2" fill="#D9A13B" class="f-gold"><title>an expert chosen for this token</title></rect>
+<rect x="382.0" y="474.0" width="13.0" height="9.0" rx="2" fill="#DCE1DF" class="f-rule-fill"><title>an idle expert</title></rect>
+<rect x="399.0" y="474.0" width="13.0" height="9.0" rx="2" fill="#DCE1DF" class="f-rule-fill"><title>an idle expert</title></rect>
+<rect x="416.0" y="474.0" width="13.0" height="9.0" rx="2" fill="#DCE1DF" class="f-rule-fill"><title>an idle expert</title></rect>
+<rect x="433.0" y="474.0" width="13.0" height="9.0" rx="2" fill="#DCE1DF" class="f-rule-fill"><title>an idle expert</title></rect>
+<rect x="450.0" y="474.0" width="13.0" height="9.0" rx="2" fill="#DCE1DF" class="f-rule-fill"><title>an idle expert</title></rect>
+<rect x="467.0" y="474.0" width="13.0" height="9.0" rx="2" fill="#D9A13B" class="f-gold"><title>an expert chosen for this token</title></rect>
+<rect x="484.0" y="474.0" width="13.0" height="9.0" rx="2" fill="#DCE1DF" class="f-rule-fill"><title>an idle expert</title></rect>
+<rect x="501.0" y="474.0" width="13.0" height="9.0" rx="2" fill="#DCE1DF" class="f-rule-fill"><title>an idle expert</title></rect>
+<rect x="314.0" y="486.0" width="13.0" height="9.0" rx="2" fill="#DCE1DF" class="f-rule-fill"><title>an idle expert</title></rect>
+<rect x="331.0" y="486.0" width="13.0" height="9.0" rx="2" fill="#DCE1DF" class="f-rule-fill"><title>an idle expert</title></rect>
+<rect x="348.0" y="486.0" width="13.0" height="9.0" rx="2" fill="#D9A13B" class="f-gold"><title>an expert chosen for this token</title></rect>
+<rect x="365.0" y="486.0" width="13.0" height="9.0" rx="2" fill="#DCE1DF" class="f-rule-fill"><title>an idle expert</title></rect>
+<rect x="382.0" y="486.0" width="13.0" height="9.0" rx="2" fill="#DCE1DF" class="f-rule-fill"><title>an idle expert</title></rect>
+<rect x="399.0" y="486.0" width="13.0" height="9.0" rx="2" fill="#DCE1DF" class="f-rule-fill"><title>an idle expert</title></rect>
+<rect x="416.0" y="486.0" width="13.0" height="9.0" rx="2" fill="#DCE1DF" class="f-rule-fill"><title>an idle expert</title></rect>
+<rect x="433.0" y="486.0" width="13.0" height="9.0" rx="2" fill="#DCE1DF" class="f-rule-fill"><title>an idle expert</title></rect>
+<rect x="450.0" y="486.0" width="13.0" height="9.0" rx="2" fill="#D9A13B" class="f-gold"><title>an expert chosen for this token</title></rect>
+<rect x="467.0" y="486.0" width="13.0" height="9.0" rx="2" fill="#DCE1DF" class="f-rule-fill"><title>an idle expert</title></rect>
+<rect x="484.0" y="486.0" width="13.0" height="9.0" rx="2" fill="#DCE1DF" class="f-rule-fill"><title>an idle expert</title></rect>
+<rect x="501.0" y="486.0" width="13.0" height="9.0" rx="2" fill="#DCE1DF" class="f-rule-fill"><title>an idle expert</title></rect>
+<text x="530.0" y="488.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">gold: the 4 chosen</text>
+<rect x="560.0" y="66.0" width="176.0" height="46.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-dasharray="4 3"></rect>
+<text x="574.0" y="88.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">rotary cos, sin</text>
+<text x="574.0" y="104.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">(S, Dh), cached</text>
+<line x1="648.0" y1="112.0" x2="560.0" y2="204.0" stroke="#5E6E72" class="f-muted-stroke" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+<rect x="60.0" y="558.0" width="144.0" height="46.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="74.0" y="580.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">final RMSNorm</text>
+<line x1="204.0" y1="581.0" x2="268.0" y2="581.0" stroke="#17262E" class="f-ink-stroke" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="270.0" y="558.0" width="180.0" height="46.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="284.0" y="580.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">lm_head</text>
+<text x="284.0" y="598.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">→ (B, S, V) logits</text>
+<line x1="450.0" y1="581.0" x2="504.0" y2="581.0" stroke="#17262E" class="f-ink-stroke" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="506.0" y="558.0" width="230.0" height="46.0" rx="8" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"></rect>
+<text x="520.0" y="580.0" class="f-ink" fill="#17262E" font-size="13" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">loss, or the next token</text>
+<text x="520.0" y="598.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">softmax · cross-entropy</text>
+</svg>

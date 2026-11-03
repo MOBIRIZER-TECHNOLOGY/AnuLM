@@ -46,3 +46,6 @@ runs/
 checkpoints/
 /*_curve.csv
 /*.jsonl
+
+# The book's HTML/PDF preview is build output (book/tools/build_preview.py).
+book/preview/

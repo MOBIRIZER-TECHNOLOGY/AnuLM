@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 27.2 · Prefill, decode and the slide</title>
+<desc id="d">Five calls: a prefill of 6 tokens, decode steps at positions 6 and 7, then two rebuilds that each run the last 8 tokens at positions 0 to 7.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">What each call of generate runs, block_size = 8</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">prompt of 6 tokens, 5 new · teal: run in this call · grey: read from the cache · the first 3 calls fill the context, then every call rebuilds</text>
+<text x="167.0" y="84.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">t0</text>
+<text x="201.0" y="84.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">t1</text>
+<text x="235.0" y="84.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">t2</text>
+<text x="269.0" y="84.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">t3</text>
+<text x="303.0" y="84.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">t4</text>
+<text x="337.0" y="84.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">t5</text>
+<text x="371.0" y="84.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">t6</text>
+<text x="405.0" y="84.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">t7</text>
+<text x="439.0" y="84.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">t8</text>
+<text x="473.0" y="84.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">t9</text>
+<text x="507.0" y="84.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">t10</text>
+<text x="138.0" y="113.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">call 1: prefill</text>
+<rect x="151.0" y="93.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t0 at position 0: run</title></rect>
+<text x="167.0" y="113.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">0</text>
+<rect x="185.0" y="93.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t1 at position 1: run</title></rect>
+<text x="201.0" y="113.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">1</text>
+<rect x="219.0" y="93.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t2 at position 2: run</title></rect>
+<text x="235.0" y="113.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">2</text>
+<rect x="253.0" y="93.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t3 at position 3: run</title></rect>
+<text x="269.0" y="113.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">3</text>
+<rect x="287.0" y="93.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t4 at position 4: run</title></rect>
+<text x="303.0" y="113.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">4</text>
+<rect x="321.0" y="93.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t5 at position 5: run</title></rect>
+<text x="337.0" y="113.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">5</text>
+<text x="538.0" y="113.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">start=0, S=6</text>
+<text x="138.0" y="155.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">call 2: decode</text>
+<rect x="151.0" y="135.0" width="32.0" height="32.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token t0 at position 0: cached</title></rect>
+<text x="167.0" y="155.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<rect x="185.0" y="135.0" width="32.0" height="32.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token t1 at position 1: cached</title></rect>
+<text x="201.0" y="155.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1</text>
+<rect x="219.0" y="135.0" width="32.0" height="32.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token t2 at position 2: cached</title></rect>
+<text x="235.0" y="155.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">2</text>
+<rect x="253.0" y="135.0" width="32.0" height="32.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token t3 at position 3: cached</title></rect>
+<text x="269.0" y="155.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3</text>
+<rect x="287.0" y="135.0" width="32.0" height="32.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token t4 at position 4: cached</title></rect>
+<text x="303.0" y="155.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">4</text>
+<rect x="321.0" y="135.0" width="32.0" height="32.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token t5 at position 5: cached</title></rect>
+<text x="337.0" y="155.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">5</text>
+<rect x="355.0" y="135.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t6 at position 6: run</title></rect>
+<text x="371.0" y="155.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">6</text>
+<text x="538.0" y="155.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">start=6, S=1</text>
+<text x="138.0" y="197.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">call 3: decode</text>
+<rect x="151.0" y="177.0" width="32.0" height="32.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token t0 at position 0: cached</title></rect>
+<text x="167.0" y="197.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<rect x="185.0" y="177.0" width="32.0" height="32.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token t1 at position 1: cached</title></rect>
+<text x="201.0" y="197.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1</text>
+<rect x="219.0" y="177.0" width="32.0" height="32.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token t2 at position 2: cached</title></rect>
+<text x="235.0" y="197.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">2</text>
+<rect x="253.0" y="177.0" width="32.0" height="32.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token t3 at position 3: cached</title></rect>
+<text x="269.0" y="197.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3</text>
+<rect x="287.0" y="177.0" width="32.0" height="32.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token t4 at position 4: cached</title></rect>
+<text x="303.0" y="197.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">4</text>
+<rect x="321.0" y="177.0" width="32.0" height="32.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token t5 at position 5: cached</title></rect>
+<text x="337.0" y="197.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">5</text>
+<rect x="355.0" y="177.0" width="32.0" height="32.0" rx="4" fill="#F0F2F1" class="f-card" stroke="#DCE1DF" stroke-width="1"><title>token t6 at position 6: cached</title></rect>
+<text x="371.0" y="197.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">6</text>
+<rect x="389.0" y="177.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t7 at position 7: run</title></rect>
+<text x="405.0" y="197.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">7</text>
+<text x="538.0" y="197.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">start=7, S=1</text>
+<text x="138.0" y="239.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">call 4: rebuild</text>
+<rect x="151.0" y="219.0" width="32.0" height="32.0" rx="4" fill="#FFFFFF" class="f-paper" stroke="#DCE1DF" stroke-width="1"><title>token t0: outside the context</title></rect>
+<rect x="185.0" y="219.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t1 at position 0: run</title></rect>
+<text x="201.0" y="239.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">0</text>
+<rect x="219.0" y="219.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t2 at position 1: run</title></rect>
+<text x="235.0" y="239.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">1</text>
+<rect x="253.0" y="219.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t3 at position 2: run</title></rect>
+<text x="269.0" y="239.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">2</text>
+<rect x="287.0" y="219.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t4 at position 3: run</title></rect>
+<text x="303.0" y="239.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">3</text>
+<rect x="321.0" y="219.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t5 at position 4: run</title></rect>
+<text x="337.0" y="239.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">4</text>
+<rect x="355.0" y="219.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t6 at position 5: run</title></rect>
+<text x="371.0" y="239.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">5</text>
+<rect x="389.0" y="219.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t7 at position 6: run</title></rect>
+<text x="405.0" y="239.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">6</text>
+<rect x="423.0" y="219.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t8 at position 7: run</title></rect>
+<text x="439.0" y="239.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">7</text>
+<text x="538.0" y="239.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">start=0, S=8</text>
+<text x="138.0" y="281.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">call 5: rebuild</text>
+<rect x="151.0" y="261.0" width="32.0" height="32.0" rx="4" fill="#FFFFFF" class="f-paper" stroke="#DCE1DF" stroke-width="1"><title>token t0: outside the context</title></rect>
+<rect x="185.0" y="261.0" width="32.0" height="32.0" rx="4" fill="#FFFFFF" class="f-paper" stroke="#DCE1DF" stroke-width="1"><title>token t1: outside the context</title></rect>
+<rect x="219.0" y="261.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t2 at position 0: run</title></rect>
+<text x="235.0" y="281.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">0</text>
+<rect x="253.0" y="261.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t3 at position 1: run</title></rect>
+<text x="269.0" y="281.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">1</text>
+<rect x="287.0" y="261.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t4 at position 2: run</title></rect>
+<text x="303.0" y="281.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">2</text>
+<rect x="321.0" y="261.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t5 at position 3: run</title></rect>
+<text x="337.0" y="281.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">3</text>
+<rect x="355.0" y="261.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t6 at position 4: run</title></rect>
+<text x="371.0" y="281.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">4</text>
+<rect x="389.0" y="261.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t7 at position 5: run</title></rect>
+<text x="405.0" y="281.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">5</text>
+<rect x="423.0" y="261.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t8 at position 6: run</title></rect>
+<text x="439.0" y="281.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">6</text>
+<rect x="457.0" y="261.0" width="32.0" height="32.0" rx="4" fill="#0E9488" class="f-teal"><title>token t9 at position 7: run</title></rect>
+<text x="473.0" y="281.0" class="f-onfill" fill="#FFFFFF" font-size="10.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="middle">7</text>
+<text x="538.0" y="281.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">start=0, S=8</text>
+<text x="150.0" y="316.0" class="f-muted" fill="#5E6E72" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">numbers are positions; the rebuilds re-run the last 8 tokens at positions 0–7</text>
+</svg>

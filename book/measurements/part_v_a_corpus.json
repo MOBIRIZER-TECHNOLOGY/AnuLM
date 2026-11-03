@@ -1,0 +1,54 @@
+{
+  "train_tokens": 11312144198,
+  "val_tokens": 113221976,
+  "bytes_per_token": 6.397,
+  "sources": {
+    "english": {
+      "train_share": 0.5304541390182163,
+      "val_share": 0.5295641810738226,
+      "held_out": 0.009893240867550016,
+      "bytes_per_token": 4.426,
+      "docs": 5665000,
+      "over_budget": 573711.0
+    },
+    "hindi_web": {
+      "train_share": 0.39780463572906094,
+      "val_share": 0.4036922302080296,
+      "held_out": 0.01005489319584643,
+      "bytes_per_token": 9.371,
+      "docs": 6918000,
+      "over_budget": 23402.0
+    },
+    "hindi_wiki": {
+      "train_share": 0.005834899895606865,
+      "val_share": 0.005366890964701058,
+      "held_out": 0.009122109855062713,
+      "bytes_per_token": 9.341,
+      "docs": 126879
+    },
+    "python": {
+      "train_share": 0.06590632535711599,
+      "val_share": 0.061376697753446736,
+      "held_out": 0.009234915189628828,
+      "bytes_per_token": 4.039,
+      "docs": 1663520
+    }
+  },
+  "val_bytes_per_token": 6.424883565439628,
+  "train_file_bytes": 22624288396,
+  "tail_split": {
+    "python": 0.6590632534546368,
+    "hindi_wiki": 0.058348998945752475,
+    "hindi_web": 0.2825877475996107,
+    "english": 0.0
+  },
+  "windows_per_epoch": 11047015,
+  "epochs_at_1p9M_steps": 0.6879686503548696,
+  "val_docs": 143364,
+  "val_doc_tokens_mean": 789.7517926397143,
+  "val_doc_tokens_median": 480.0,
+  "val_docs_longer_than_S": 0.18621132222873246,
+  "windows_checked": 400,
+  "windows_with_a_boundary": 0.66,
+  "positions_seeing_an_earlier_document": 0.42630126953125
+}

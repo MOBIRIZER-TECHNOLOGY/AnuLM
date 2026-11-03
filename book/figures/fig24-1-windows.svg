@@ -1,0 +1,182 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 280" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 24.1 · Random and strided windows</title>
+<desc id="d">The held-out split drawn as four source bands, English, Hindi web, Hindi Wikipedia and Python. Eighty random windows (seed 0) fall unevenly across it; eighty strided windows are evenly spaced, so each source receives windows in proportion to its share. Window counts per source are printed below.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Where 80 evaluation windows land in the released model&#x27;s held-out split</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">data/v2/val.u16, 113.2M tokens, written one source after another · positions computed by train.py</text>
+<rect x="30.0" y="120.0" width="370.7" height="70.0" rx="0" fill="#F0F2F1" class="f-card"><title>english: tokens 0 to 59,958,303 (53.0%)</title></rect>
+<text x="215.3" y="112.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">English 53.0%</text>
+<rect x="400.7" y="120.0" width="282.6" height="70.0" rx="0" fill="#DCE1DF" class="f-rule-fill"><title>hindi_web: tokens 59,958,303 to 105,665,135 (40.4%)</title></rect>
+<text x="542.0" y="112.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">Hindi web 40.4%</text>
+<rect x="683.3" y="120.0" width="3.8" height="70.0" rx="0" fill="#F0F2F1" class="f-card"><title>hindi_wiki: tokens 105,665,135 to 106,272,785 (0.5%)</title></rect>
+<rect x="687.0" y="120.0" width="43.0" height="70.0" rx="0" fill="#DCE1DF" class="f-rule-fill"><title>python: tokens 106,272,785 to 113,221,976 (6.1%)</title></rect>
+<text x="708.5" y="112.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">Python 6.1%</text>
+<text x="681.3" y="205.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">Hindi Wikipedia 0.5% ↑</text>
+<text x="30.0" y="92.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="start">token 0</text>
+<text x="730.0" y="92.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">token 113,221,976</text>
+<rect x="30.0" y="222.0" width="10.0" height="10.0" rx="0" fill="#C4532F" class="f-coral"></rect>
+<text x="46.0" y="231.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">upper row: random, eval_windows(seed 0), 20 batches × 4</text>
+<rect x="410.0" y="222.0" width="10.0" height="10.0" rx="0" fill="#0E9488" class="f-teal"></rect>
+<text x="426.0" y="231.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">lower row: strided, strided_windows(n = 80)</text>
+<rect x="602.2" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 92,717,024</title></rect>
+<rect x="371.4" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 55,387,317</title></rect>
+<rect x="120.2" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 14,749,256</title></rect>
+<rect x="47.7" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 3,023,328</title></rect>
+<rect x="634.8" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 97,988,041</title></rect>
+<rect x="410.9" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 61,777,947</title></rect>
+<rect x="497.9" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 75,836,407</title></rect>
+<rect x="127.0" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 15,848,071</title></rect>
+<rect x="78.8" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 8,048,281</title></rect>
+<rect x="487.2" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 74,103,810</title></rect>
+<rect x="380.1" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 56,791,277</title></rect>
+<rect x="435.9" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 65,813,552</title></rect>
+<rect x="448.7" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 67,887,540</title></rect>
+<rect x="229.8" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 32,470,938</title></rect>
+<rect x="609.2" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 93,844,495</title></rect>
+<rect x="135.0" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 17,138,474</title></rect>
+<rect x="418.2" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 62,945,820</title></rect>
+<rect x="269.1" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 38,840,358</title></rect>
+<rect x="410.9" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 61,775,480</title></rect>
+<rect x="113.0" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 13,578,915</title></rect>
+<rect x="52.5" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 3,804,596</title></rect>
+<rect x="595.4" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 91,609,589</title></rect>
+<rect x="73.3" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 7,167,371</title></rect>
+<rect x="174.3" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 23,509,136</title></rect>
+<rect x="412.9" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 62,092,853</title></rect>
+<rect x="659.0" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 101,904,527</title></rect>
+<rect x="107.4" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 12,673,984</title></rect>
+<rect x="530.3" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 81,081,488</title></rect>
+<rect x="515.3" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 78,655,647</title></rect>
+<rect x="588.2" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 90,454,068</title></rect>
+<rect x="242.6" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 34,554,628</title></rect>
+<rect x="440.6" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 66,574,188</title></rect>
+<rect x="565.9" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 86,837,363</title></rect>
+<rect x="707.3" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 109,712,997</title></rect>
+<rect x="438.4" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 66,225,514</title></rect>
+<rect x="245.4" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 34,995,849</title></rect>
+<rect x="392.2" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 58,750,243</title></rect>
+<rect x="255.9" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 36,697,244</title></rect>
+<rect x="31.4" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 382,328</title></rect>
+<rect x="33.4" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 704,905</title></rect>
+<rect x="115.3" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 13,958,591</title></rect>
+<rect x="705.2" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 109,374,876</title></rect>
+<rect x="249.9" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 35,731,366</title></rect>
+<rect x="296.4" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 43,256,959</title></rect>
+<rect x="383.2" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 57,282,604</title></rect>
+<rect x="549.8" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 84,235,688</title></rect>
+<rect x="455.2" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 68,939,704</title></rect>
+<rect x="556.0" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 85,241,620</title></rect>
+<rect x="369.7" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 55,100,978</title></rect>
+<rect x="264.7" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 38,127,994</title></rect>
+<rect x="221.5" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 31,137,016</title></rect>
+<rect x="84.0" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 8,895,047</title></rect>
+<rect x="335.6" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 49,592,918</title></rect>
+<rect x="298.4" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 43,581,421</title></rect>
+<rect x="613.8" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 94,588,826</title></rect>
+<rect x="573.3" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 88,042,652</title></rect>
+<rect x="586.2" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 90,123,434</title></rect>
+<rect x="41.3" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 1,985,902</title></rect>
+<rect x="540.0" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 82,645,211</title></rect>
+<rect x="705.0" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 109,342,160</title></rect>
+<rect x="54.0" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 4,048,189</title></rect>
+<rect x="76.9" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 7,744,669</title></rect>
+<rect x="288.1" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 41,900,784</title></rect>
+<rect x="697.2" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 108,073,797</title></rect>
+<rect x="241.6" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 34,394,608</title></rect>
+<rect x="179.3" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 24,309,092</title></rect>
+<rect x="423.2" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 63,765,247</title></rect>
+<rect x="119.6" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 14,652,877</title></rect>
+<rect x="527.9" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 80,701,568</title></rect>
+<rect x="236.3" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 33,523,600</title></rect>
+<rect x="329.7" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 48,642,404</title></rect>
+<rect x="503.5" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 76,743,890</title></rect>
+<rect x="182.6" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 24,849,237</title></rect>
+<rect x="332.5" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 49,095,472</title></rect>
+<rect x="311.1" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 45,629,475</title></rect>
+<rect x="491.9" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 74,864,207</title></rect>
+<rect x="589.3" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 90,633,834</title></rect>
+<rect x="196.7" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 27,118,582</title></rect>
+<rect x="634.1" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 97,872,106</title></rect>
+<rect x="77.0" y="126.0" width="2.2" height="26.0" rx="0" fill="#C4532F" class="f-coral"><title>random window at token 7,764,323</title></rect>
+<rect x="33.4" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 707,630</title></rect>
+<rect x="42.1" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 2,122,892</title></rect>
+<rect x="50.9" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 3,538,154</title></rect>
+<rect x="59.6" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 4,953,416</title></rect>
+<rect x="68.4" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 6,368,678</title></rect>
+<rect x="77.1" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 7,783,940</title></rect>
+<rect x="85.9" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 9,199,202</title></rect>
+<rect x="94.6" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 10,614,464</title></rect>
+<rect x="103.4" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 12,029,726</title></rect>
+<rect x="112.1" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 13,444,987</title></rect>
+<rect x="120.9" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 14,860,249</title></rect>
+<rect x="129.6" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 16,275,511</title></rect>
+<rect x="138.4" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 17,690,773</title></rect>
+<rect x="147.1" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 19,106,035</title></rect>
+<rect x="155.9" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 20,521,297</title></rect>
+<rect x="164.6" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 21,936,559</title></rect>
+<rect x="173.4" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 23,351,821</title></rect>
+<rect x="182.1" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 24,767,083</title></rect>
+<rect x="190.9" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 26,182,344</title></rect>
+<rect x="199.6" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 27,597,606</title></rect>
+<rect x="208.4" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 29,012,868</title></rect>
+<rect x="217.1" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 30,428,130</title></rect>
+<rect x="225.9" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 31,843,392</title></rect>
+<rect x="234.6" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 33,258,654</title></rect>
+<rect x="243.4" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 34,673,916</title></rect>
+<rect x="252.1" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 36,089,178</title></rect>
+<rect x="260.9" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 37,504,440</title></rect>
+<rect x="269.6" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 38,919,701</title></rect>
+<rect x="278.4" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 40,334,963</title></rect>
+<rect x="287.1" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 41,750,225</title></rect>
+<rect x="295.9" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 43,165,487</title></rect>
+<rect x="304.6" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 44,580,749</title></rect>
+<rect x="313.4" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 45,996,011</title></rect>
+<rect x="322.1" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 47,411,273</title></rect>
+<rect x="330.9" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 48,826,535</title></rect>
+<rect x="339.6" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 50,241,797</title></rect>
+<rect x="348.4" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 51,657,058</title></rect>
+<rect x="357.1" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 53,072,320</title></rect>
+<rect x="365.9" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 54,487,582</title></rect>
+<rect x="374.6" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 55,902,844</title></rect>
+<rect x="383.4" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 57,318,106</title></rect>
+<rect x="392.1" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 58,733,368</title></rect>
+<rect x="400.9" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 60,148,630</title></rect>
+<rect x="409.6" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 61,563,892</title></rect>
+<rect x="418.4" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 62,979,153</title></rect>
+<rect x="427.1" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 64,394,415</title></rect>
+<rect x="435.9" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 65,809,677</title></rect>
+<rect x="444.6" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 67,224,939</title></rect>
+<rect x="453.4" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 68,640,201</title></rect>
+<rect x="462.1" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 70,055,463</title></rect>
+<rect x="470.9" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 71,470,725</title></rect>
+<rect x="479.6" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 72,885,987</title></rect>
+<rect x="488.4" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 74,301,249</title></rect>
+<rect x="497.1" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 75,716,510</title></rect>
+<rect x="505.9" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 77,131,772</title></rect>
+<rect x="514.6" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 78,547,034</title></rect>
+<rect x="523.4" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 79,962,296</title></rect>
+<rect x="532.1" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 81,377,558</title></rect>
+<rect x="540.9" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 82,792,820</title></rect>
+<rect x="549.6" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 84,208,082</title></rect>
+<rect x="558.4" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 85,623,344</title></rect>
+<rect x="567.1" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 87,038,606</title></rect>
+<rect x="575.9" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 88,453,867</title></rect>
+<rect x="584.6" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 89,869,129</title></rect>
+<rect x="593.4" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 91,284,391</title></rect>
+<rect x="602.1" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 92,699,653</title></rect>
+<rect x="610.9" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 94,114,915</title></rect>
+<rect x="619.6" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 95,530,177</title></rect>
+<rect x="628.4" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 96,945,439</title></rect>
+<rect x="637.1" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 98,360,701</title></rect>
+<rect x="645.9" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 99,775,963</title></rect>
+<rect x="654.6" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 101,191,224</title></rect>
+<rect x="663.4" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 102,606,486</title></rect>
+<rect x="672.1" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 104,021,748</title></rect>
+<rect x="680.9" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 105,437,010</title></rect>
+<rect x="689.6" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 106,852,272</title></rect>
+<rect x="698.4" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 108,267,534</title></rect>
+<rect x="707.1" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 109,682,796</title></rect>
+<rect x="715.9" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 111,098,058</title></rect>
+<rect x="724.6" y="158.0" width="2.2" height="26.0" rx="0" fill="#0E9488" class="f-teal"><title>strided window at token 112,513,320</title></rect>
+<text x="30.0" y="258.0" class="f-muted" fill="#5E6E72" font-size="10.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">windows per source · random: english 44, hindi_web 32, hindi_wiki 0, python 4 · strided: english 42, hindi_web 33, hindi_wiki 0, python 5</text>
+</svg>

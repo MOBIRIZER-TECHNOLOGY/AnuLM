@@ -1,0 +1,206 @@
+{
+ "checkpoint": "ckpt_base_v2.pt",
+ "step": 1899999,
+ "V": 32768,
+ "D": 1024,
+ "held_out_tokens": 113221976,
+ "ids_never_in_held_out": 247,
+ "init_row_norm": 0.64,
+ "buckets": [
+  {
+   "bucket": "0",
+   "ids": 247,
+   "in_norm": 0.013,
+   "out_norm": 0.508,
+   "cos_same": 0.0
+  },
+  {
+   "bucket": "1-9",
+   "ids": 399,
+   "in_norm": 0.064,
+   "out_norm": 0.508,
+   "cos_same": -0.005
+  },
+  {
+   "bucket": "10-999",
+   "ids": 17008,
+   "in_norm": 0.367,
+   "out_norm": 0.513,
+   "cos_same": 0.0
+  },
+  {
+   "bucket": "1k-100k",
+   "ids": 15031,
+   "in_norm": 0.666,
+   "out_norm": 0.472,
+   "cos_same": 0.0
+  },
+  {
+   "bucket": "100k+",
+   "ids": 83,
+   "in_norm": 0.783,
+   "out_norm": 0.365,
+   "cos_same": -0.014
+  }
+ ],
+ "cos_in_out_same_token_mean": 0.0004,
+ "cos_in_out_random_pair_mean": -0.0001,
+ "top10_neighbour_overlap": 0.0491,
+ "top10_overlap_chance": 0.000305,
+ "eos": {
+  "id": 32767,
+  "count": 143364,
+  "in_norm": 0.727,
+  "out_norm": 0.358
+ },
+ "neighbours": {
+  " dog": [
+   [
+    " dogs",
+    0.385
+   ],
+   [
+    " Dog",
+    0.354
+   ],
+   [
+    " car,",
+    0.205
+   ],
+   [
+    " car",
+    0.2
+   ],
+   [
+    " animal",
+    0.19
+   ]
+  ],
+  " India": [
+   [
+    " India.",
+    0.436
+   ],
+   [
+    " India,",
+    0.41
+   ],
+   [
+    " Asia",
+    0.307
+   ],
+   [
+    " China",
+    0.307
+   ],
+   [
+    " इण्डिया",
+    0.306
+   ]
+  ],
+  " भारत": [
+   [
+    "\nभारत",
+    0.522
+   ],
+   [
+    "भारत",
+    0.511
+   ],
+   [
+    " केंद्र",
+    0.314
+   ],
+   [
+    " देश",
+    0.299
+   ],
+   [
+    " we",
+    0.257
+   ]
+  ],
+  "def": [
+   [
+    "_def",
+    0.31
+   ],
+   [
+    "Def",
+    0.288
+   ],
+   [
+    "DEF",
+    0.267
+   ],
+   [
+    " Def",
+    0.264
+   ],
+   [
+    " def",
+    0.244
+   ]
+  ],
+  " the": [
+   [
+    " The",
+    0.677
+   ],
+   [
+    "\nThe",
+    0.638
+   ],
+   [
+    " कि",
+    0.252
+   ],
+   [
+    " की",
+    0.242
+   ],
+   [
+    " और",
+    0.201
+   ]
+  ],
+  " 1": [
+   [
+    " 2",
+    0.299
+   ],
+   [
+    "\n1",
+    0.29
+   ],
+   [
+    " one",
+    0.268
+   ],
+   [
+    " एक",
+    0.237
+   ],
+   [
+    " (1",
+    0.234
+   ]
+  ]
+ },
+ "merge_tree_nnz_multi32k": 393657,
+ "optimizer_groups": [
+  {
+   "weight_decay": 0.1,
+   "tensors": 1432,
+   "fused": true
+  },
+  {
+   "weight_decay": 0.0,
+   "tensors": 81,
+   "fused": true
+  }
+ ],
+ "decay_only_log10_factor": -45.8,
+ "released_init_loss": 10.621,
+ "released_init_logit_std": 0.64
+}

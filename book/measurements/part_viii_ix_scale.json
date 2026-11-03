@@ -1,0 +1,19 @@
+{
+  "whisper_small_frames": {
+    "3.0": 151,
+    "10.0": 501,
+    "30.0": 1500,
+    "40.0": 1500
+  },
+  "base_v2_text_embedding_norm_mean": 0.4989,
+  "omni_text_embedding_norm_mean": 0.3856,
+  "omni_new_row_norm_mean": 0.0463,
+  "omni_vision_proj_output_norm_mean": 9.6928,
+  "siglip_patch_norm_mean": 48.3898,
+  "omni_audio_proj_ln_expected_norm": 3.125,
+  "omni_vision_proj_ln_expected_norm": 8.1266,
+  "fresh_over_base_text": 64.1,
+  "fresh_over_omni_text": 83.0,
+  "trained_vision_over_omni_text": 25.1,
+  "sample": "64 images of data/omni/caption_train.feats.f16, numpy default_rng(0); checkpoints ckpt_base_v2.pt, ckpt_omni.pt"
+}

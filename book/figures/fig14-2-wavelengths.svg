@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 14.2 · How fast each pair turns</title>
+<desc id="d">Both bases start at 6.28 tokens per turn for pair 0. At θ = 10,000 the slowest pair turns once in 47,117 tokens and 18 pairs complete a turn within 1,024 tokens; at θ = 1,000,000 the slowest takes 4,080,185 tokens and 12 pairs complete a turn.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Tokens per full turn, for each of a head&#x27;s 32 pairs</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">wavelength 2π/ω_i, ω_i = θ^(−2i/64) · log scale · verified from Rotary._build_inv_freq</text>
+<circle cx="84" cy="64" r="5" fill="#C4532F" class="f-coral"/>
+<text x="94.0" y="68.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">θ = 10,000</text>
+<circle cx="194" cy="64" r="5" fill="#0E9488" class="f-teal"/>
+<text x="204.0" y="68.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">θ = 1,000,000 (released)</text>
+<line x1="80.0" y1="240.0" x2="730.0" y2="240.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="244.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">1</text>
+<line x1="80.0" y1="217.1" x2="730.0" y2="217.1" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="221.1" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">10</text>
+<line x1="80.0" y1="194.3" x2="730.0" y2="194.3" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="198.3" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">10^2</text>
+<line x1="80.0" y1="171.4" x2="730.0" y2="171.4" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="175.4" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">10^3</text>
+<line x1="80.0" y1="148.6" x2="730.0" y2="148.6" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="152.6" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">10^4</text>
+<line x1="80.0" y1="125.7" x2="730.0" y2="125.7" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="129.7" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">10^5</text>
+<line x1="80.0" y1="102.9" x2="730.0" y2="102.9" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="106.9" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">10^6</text>
+<line x1="80.0" y1="80.0" x2="730.0" y2="80.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="72.0" y="84.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">10^7</text>
+<line x1="80.0" y1="171.2" x2="730.0" y2="171.2" stroke="#17262E" class="f-ink-stroke" stroke-width="1.3" stroke-dasharray="4 3"/>
+<text x="86.0" y="165.2" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">1,024: the released context</text>
+<circle cx="90.2" cy="221.8" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 0: 6.3 tokens per turn</title></circle>
+<circle cx="110.5" cy="218.9" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 1: 8.4 tokens per turn</title></circle>
+<circle cx="130.8" cy="216.0" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 2: 11.2 tokens per turn</title></circle>
+<circle cx="151.1" cy="213.2" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 3: 14.9 tokens per turn</title></circle>
+<circle cx="171.4" cy="210.3" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 4: 19.9 tokens per turn</title></circle>
+<circle cx="191.7" cy="207.5" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 5: 26.5 tokens per turn</title></circle>
+<circle cx="212.0" cy="204.6" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 6: 35.3 tokens per turn</title></circle>
+<circle cx="232.3" cy="201.8" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 7: 47.1 tokens per turn</title></circle>
+<circle cx="252.7" cy="198.9" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 8: 62.8 tokens per turn</title></circle>
+<circle cx="273.0" cy="196.0" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 9: 83.8 tokens per turn</title></circle>
+<circle cx="293.3" cy="193.2" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 10: 111.7 tokens per turn</title></circle>
+<circle cx="313.6" cy="190.3" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 11: 149.0 tokens per turn</title></circle>
+<circle cx="333.9" cy="187.5" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 12: 198.7 tokens per turn</title></circle>
+<circle cx="354.2" cy="184.6" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 13: 265.0 tokens per turn</title></circle>
+<circle cx="374.5" cy="181.8" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 14: 353.3 tokens per turn</title></circle>
+<circle cx="394.8" cy="178.9" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 15: 471.2 tokens per turn</title></circle>
+<circle cx="415.2" cy="176.0" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 16: 628.3 tokens per turn</title></circle>
+<circle cx="435.5" cy="173.2" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 17: 837.9 tokens per turn</title></circle>
+<circle cx="455.8" cy="170.3" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 18: 1,117.3 tokens per turn</title></circle>
+<circle cx="476.1" cy="167.5" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 19: 1,490.0 tokens per turn</title></circle>
+<circle cx="496.4" cy="164.6" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 20: 1,986.9 tokens per turn</title></circle>
+<circle cx="516.7" cy="161.8" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 21: 2,649.6 tokens per turn</title></circle>
+<circle cx="537.0" cy="158.9" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 22: 3,533.3 tokens per turn</title></circle>
+<circle cx="557.3" cy="156.0" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 23: 4,711.7 tokens per turn</title></circle>
+<circle cx="577.7" cy="153.2" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 24: 6,283.2 tokens per turn</title></circle>
+<circle cx="598.0" cy="150.3" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 25: 8,378.8 tokens per turn</title></circle>
+<circle cx="618.3" cy="147.5" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 26: 11,173.3 tokens per turn</title></circle>
+<circle cx="638.6" cy="144.6" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 27: 14,899.8 tokens per turn</title></circle>
+<circle cx="658.9" cy="141.8" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 28: 19,869.2 tokens per turn</title></circle>
+<circle cx="679.2" cy="138.9" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 29: 26,496.0 tokens per turn</title></circle>
+<circle cx="699.5" cy="136.0" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 30: 35,332.9 tokens per turn</title></circle>
+<circle cx="719.8" cy="133.2" r="4" fill="#C4532F" class="f-coral"><title>θ = 10,000, pair 31: 47,117.2 tokens per turn</title></circle>
+<circle cx="90.2" cy="221.8" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 0: 6.3 tokens per turn</title></circle>
+<circle cx="110.5" cy="217.5" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 1: 9.7 tokens per turn</title></circle>
+<circle cx="130.8" cy="213.2" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 2: 14.9 tokens per turn</title></circle>
+<circle cx="151.1" cy="208.9" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 3: 22.9 tokens per turn</title></circle>
+<circle cx="171.4" cy="204.6" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 4: 35.3 tokens per turn</title></circle>
+<circle cx="191.7" cy="200.3" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 5: 54.4 tokens per turn</title></circle>
+<circle cx="212.0" cy="196.0" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 6: 83.8 tokens per turn</title></circle>
+<circle cx="232.3" cy="191.8" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 7: 129.0 tokens per turn</title></circle>
+<circle cx="252.7" cy="187.5" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 8: 198.7 tokens per turn</title></circle>
+<circle cx="273.0" cy="183.2" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 9: 306.0 tokens per turn</title></circle>
+<circle cx="293.3" cy="178.9" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 10: 471.2 tokens per turn</title></circle>
+<circle cx="313.6" cy="174.6" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 11: 725.6 tokens per turn</title></circle>
+<circle cx="333.9" cy="170.3" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 12: 1,117.3 tokens per turn</title></circle>
+<circle cx="354.2" cy="166.0" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 13: 1,720.6 tokens per turn</title></circle>
+<circle cx="374.5" cy="161.8" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 14: 2,649.6 tokens per turn</title></circle>
+<circle cx="394.8" cy="157.5" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 15: 4,080.2 tokens per turn</title></circle>
+<circle cx="415.2" cy="153.2" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 16: 6,283.2 tokens per turn</title></circle>
+<circle cx="435.5" cy="148.9" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 17: 9,675.6 tokens per turn</title></circle>
+<circle cx="455.8" cy="144.6" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 18: 14,899.8 tokens per turn</title></circle>
+<circle cx="476.1" cy="140.3" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 19: 22,944.6 tokens per turn</title></circle>
+<circle cx="496.4" cy="136.0" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 20: 35,332.9 tokens per turn</title></circle>
+<circle cx="516.7" cy="131.8" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 21: 54,410.1 tokens per turn</title></circle>
+<circle cx="537.0" cy="127.5" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 22: 83,787.6 tokens per turn</title></circle>
+<circle cx="557.3" cy="123.2" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 23: 129,026.8 tokens per turn</title></circle>
+<circle cx="577.7" cy="118.9" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 24: 198,691.8 tokens per turn</title></circle>
+<circle cx="598.0" cy="114.6" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 25: 305,970.8 tokens per turn</title></circle>
+<circle cx="618.3" cy="110.3" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 26: 471,172.4 tokens per turn</title></circle>
+<circle cx="638.6" cy="106.0" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 27: 725,570.9 tokens per turn</title></circle>
+<circle cx="658.9" cy="101.8" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 28: 1,117,325.9 tokens per turn</title></circle>
+<circle cx="679.2" cy="97.5" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 29: 1,720,599.9 tokens per turn</title></circle>
+<circle cx="699.5" cy="93.2" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 30: 2,649,597.2 tokens per turn</title></circle>
+<circle cx="719.8" cy="88.9" r="4" fill="#0E9488" class="f-teal"><title>θ = 1,000,000, pair 31: 4,080,185.2 tokens per turn</title></circle>
+<text x="90.2" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<text x="171.4" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">4</text>
+<text x="252.7" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">8</text>
+<text x="333.9" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">12</text>
+<text x="415.2" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">16</text>
+<text x="496.4" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">20</text>
+<text x="577.7" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">24</text>
+<text x="658.9" y="256.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">28</text>
+<text x="405.0" y="274.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">pair i (dimensions i and i + 32)</text>
+</svg>

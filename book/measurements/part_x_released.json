@@ -1,0 +1,229 @@
+{
+ "checkpoint": "C:\\workspace\\AnuLM\\ckpt_base_v2.pt",
+ "data": "data/v2/val.u16",
+ "windows": 8,
+ "seq": 512,
+ "seed": 0,
+ "device": "cuda",
+ "precision": "fp32 weights and activations, moe_impl sparse, no autocast",
+ "positions": 4092,
+ "config": {
+  "differs_from_released()": {
+   "tokenizer_path": [
+    null,
+    "data/multi32k.json"
+   ],
+   "bias_update_rate": [
+    0.001,
+    0.003
+   ],
+   "moe_impl": [
+    "sparse",
+    "grouped"
+   ],
+   "seq_balance_alpha": [
+    0.0,
+    0.0001
+   ],
+   "router_z_alpha": [
+    0.0,
+    0.001
+   ],
+   "yarn_original_context": [
+    256,
+    1024
+   ]
+  },
+  "differs_from_defaults": {
+   "vocab_size": [
+    259,
+    32768
+   ],
+   "block_size": [
+    256,
+    1024
+   ],
+   "tokenizer_path": [
+    null,
+    "data/multi32k.json"
+   ],
+   "n_layer": [
+    8,
+    20
+   ],
+   "hidden_size": [
+    384,
+    1024
+   ],
+   "n_head": [
+    6,
+    16
+   ],
+   "n_kv_head": [
+    2,
+    4
+   ],
+   "sliding_window": [
+    null,
+    256
+   ],
+   "max_window_layers": [
+    0,
+    10
+   ],
+   "num_experts": [
+    16,
+    24
+   ],
+   "num_experts_per_tok": [
+    2,
+    4
+   ],
+   "num_shared_experts": [
+    1,
+    0
+   ],
+   "moe_intermediate_size": [
+    96,
+    192
+   ],
+   "intermediate_size": [
+    768,
+    2816
+   ],
+   "bias_update_rate": [
+    0.001,
+    0.003
+   ],
+   "moe_impl": [
+    "sparse",
+    "grouped"
+   ],
+   "seq_balance_alpha": [
+    0.0,
+    0.0001
+   ],
+   "router_z_alpha": [
+    0.0,
+    0.001
+   ],
+   "rope_theta": [
+    10000.0,
+    1000000.0
+   ],
+   "yarn_original_context": [
+    256,
+    1024
+   ]
+  }
+ },
+ "num_params": [
+  397659648,
+  173526528
+ ],
+ "nucleus": {
+  "0.5": {
+   "percentiles": {
+    "10": 1,
+    "25": 1,
+    "50": 3,
+    "75": 15,
+    "90": 61
+   },
+   "max": 1973,
+   "min": 1,
+   "share_size_1": 0.3460410557184751,
+   "share_over_50": 0.11656891495601172,
+   "hist_upper_edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    512,
+    1024,
+    2048,
+    4096,
+    8192,
+    16384,
+    32768
+   ],
+   "hist": [
+    1416,
+    506,
+    472,
+    378,
+    334,
+    352,
+    234,
+    190,
+    122,
+    63,
+    17,
+    8,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  "0.9": {
+   "percentiles": {
+    "10": 1,
+    "25": 6,
+    "50": 501,
+    "75": 3633,
+    "90": 7138
+   },
+   "max": 19060,
+   "min": 1,
+   "share_size_1": 0.13147605083088953,
+   "share_over_50": 0.6439393939393939,
+   "hist_upper_edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    512,
+    1024,
+    2048,
+    4096,
+    8192,
+    16384,
+    32768
+   ],
+   "hist": [
+    538,
+    219,
+    188,
+    147,
+    144,
+    136,
+    142,
+    154,
+    174,
+    209,
+    256,
+    376,
+    500,
+    624,
+    271,
+    14
+   ]
+  }
+ },
+ "top50_mass": {
+  "10": 0.4800267279148102,
+  "50": 0.8153126537799835,
+  "90": 0.993717759847641
+ }
+}

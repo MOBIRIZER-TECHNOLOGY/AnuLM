@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 270" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 25.1 · What a resume point holds</title>
+<desc id="d">The best-val file holds 1.59 GB of weights and buffers. The resume point holds the same 1.59 GB plus AdamW&#x27;s two moment tensors, 1.59 GB each, and the sampler&#x27;s 84 MiB window order: 4.86 GB on disk.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">What the released run keeps in its two checkpoint files</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">ckpt_base_v2.pt (best val, --out) and ckpt_base_v2.pt.last (resume point) · step 1,900,000 · read memory-mapped</text>
+<line x1="150.0" y1="70.0" x2="150.0" y2="180.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="150.0" y="196.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0 GB</text>
+<line x1="266.0" y1="70.0" x2="266.0" y2="180.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="266.0" y="196.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1 GB</text>
+<line x1="382.0" y1="70.0" x2="382.0" y2="180.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="382.0" y="196.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">2 GB</text>
+<line x1="498.0" y1="70.0" x2="498.0" y2="180.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="498.0" y="196.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3 GB</text>
+<line x1="614.0" y1="70.0" x2="614.0" y2="180.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="614.0" y="196.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">4 GB</text>
+<line x1="730.0" y1="70.0" x2="730.0" y2="180.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="730.0" y="196.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">5 GB</text>
+<text x="138.0" y="103.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">ckpt_base_v2.pt</text>
+<rect x="150.0" y="84.0" width="183.5" height="28.0" rx="2" fill="#D9A13B" class="f-gold"><title>weights + buffers: 1.59 GB</title></rect>
+<text x="242.3" y="102.0" class="f-onfill" fill="#13232A" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">weights + buffers 1.59</text>
+<text x="138.0" y="153.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">….pt.last</text>
+<rect x="150.0" y="134.0" width="183.5" height="28.0" rx="2" fill="#D9A13B" class="f-gold"><title>weights + buffers: 1.59 GB</title></rect>
+<text x="242.3" y="152.0" class="f-onfill" fill="#13232A" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">weights + buffers 1.59</text>
+<rect x="334.5" y="134.0" width="183.5" height="28.0" rx="2" fill="#0E9488" class="f-teal"><title>AdamW exp_avg: 1.59 GB</title></rect>
+<text x="426.8" y="152.0" class="f-onfill" fill="#13232A" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">AdamW exp_avg 1.59</text>
+<rect x="519.0" y="134.0" width="183.5" height="28.0" rx="2" fill="#C4532F" class="f-coral"><title>AdamW exp_avg_sq: 1.59 GB</title></rect>
+<text x="611.3" y="152.0" class="f-onfill" fill="#13232A" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">AdamW exp_avg_sq 1.59</text>
+<rect x="703.5" y="134.0" width="9.3" height="28.0" rx="2" fill="#17262E" class="f-ink"><title>sampler order: 0.09 GB</title></rect>
+<text x="150.0" y="222.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">The sampler&#x27;s order tensor is 84 MiB, too thin to label: 11,047,015 window starts, of which 7,600,000 had been used.</text>
+<text x="150.0" y="240.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">AdamW keeps two moments per weight, so the optimizer state is twice the model.</text>
+</svg>

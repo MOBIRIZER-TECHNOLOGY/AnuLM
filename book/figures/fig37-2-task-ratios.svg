@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 400" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 37.2 · The score improved; chat did not</title>
+<desc id="d">Seven lines of held-out loss divided by step-0 loss over 100,000 steps. Chat jumps to 1.70 by step 10,000 and ends at 1.65; reading ends at 0.88, VQA 0.62, captions 0.44, Hindi speech 0.33, English speech 0.16, intents 0.03. The dashed score, their mean, falls from 1.0 to 0.587.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Held-out loss ÷ step-0 loss, per task, over the first joint run</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">logs/omni_one/6_train.log · lower is better · the score is the mean of the seven</text>
+<line x1="70.0" y1="340.0" x2="600.0" y2="340.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="344.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0.0</text>
+<line x1="70.0" y1="265.0" x2="600.0" y2="265.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="269.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0.5</text>
+<line x1="70.0" y1="190.0" x2="600.0" y2="190.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1" stroke-dasharray="3 3"/>
+<text x="62.0" y="194.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">1.0</text>
+<line x1="70.0" y1="115.0" x2="600.0" y2="115.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="119.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">1.5</text>
+<text x="70.0" y="358.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0k</text>
+<text x="176.0" y="358.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">20k</text>
+<text x="282.0" y="358.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">40k</text>
+<text x="388.0" y="358.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">60k</text>
+<text x="494.0" y="358.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">80k</text>
+<text x="600.0" y="358.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">100k</text>
+<text x="335.0" y="376.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">training step</text>
+<polyline points="70.0,190.0 123.0,85.2 176.0,83.2 229.0,80.4 282.0,80.6 335.0,83.0 388.0,88.6 441.0,87.5 494.0,89.0 547.0,92.3 600.0,92.3" fill="none" stroke="#C4532F" class="f-coral-stroke" stroke-width="3"/>
+<circle cx="70.0" cy="190.0" r="3" fill="#C4532F" class="f-coral"><title>chat at step 0: 1.000</title></circle>
+<circle cx="123.0" cy="85.2" r="3" fill="#C4532F" class="f-coral"><title>chat at step 10000: 1.699</title></circle>
+<circle cx="176.0" cy="83.2" r="3" fill="#C4532F" class="f-coral"><title>chat at step 20000: 1.712</title></circle>
+<circle cx="229.0" cy="80.4" r="3" fill="#C4532F" class="f-coral"><title>chat at step 30000: 1.731</title></circle>
+<circle cx="282.0" cy="80.6" r="3" fill="#C4532F" class="f-coral"><title>chat at step 40000: 1.729</title></circle>
+<circle cx="335.0" cy="83.0" r="3" fill="#C4532F" class="f-coral"><title>chat at step 50000: 1.713</title></circle>
+<circle cx="388.0" cy="88.6" r="3" fill="#C4532F" class="f-coral"><title>chat at step 60000: 1.676</title></circle>
+<circle cx="441.0" cy="87.5" r="3" fill="#C4532F" class="f-coral"><title>chat at step 70000: 1.683</title></circle>
+<circle cx="494.0" cy="89.0" r="3" fill="#C4532F" class="f-coral"><title>chat at step 80000: 1.673</title></circle>
+<circle cx="547.0" cy="92.3" r="3" fill="#C4532F" class="f-coral"><title>chat at step 90000: 1.651</title></circle>
+<circle cx="600.0" cy="92.3" r="3" fill="#C4532F" class="f-coral"><title>chat at step 100000: 1.651</title></circle>
+<text x="610.0" y="96.3" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">chat 1.65</text>
+<polyline points="70.0,190.0 123.0,185.8 176.0,192.3 229.0,191.5 282.0,194.3 335.0,196.8 388.0,202.2 441.0,202.1 494.0,203.2 547.0,205.3 600.0,208.3" fill="none" stroke="#56676C" class="f-slate-stroke" stroke-width="1.2" stroke-opacity="0.7"/>
+<circle cx="70.0" cy="190.0" r="2" fill="#56676C" class="f-slate"><title>read at step 0: 1.000</title></circle>
+<circle cx="123.0" cy="185.8" r="2" fill="#56676C" class="f-slate"><title>read at step 10000: 1.028</title></circle>
+<circle cx="176.0" cy="192.3" r="2" fill="#56676C" class="f-slate"><title>read at step 20000: 0.985</title></circle>
+<circle cx="229.0" cy="191.5" r="2" fill="#56676C" class="f-slate"><title>read at step 30000: 0.990</title></circle>
+<circle cx="282.0" cy="194.3" r="2" fill="#56676C" class="f-slate"><title>read at step 40000: 0.971</title></circle>
+<circle cx="335.0" cy="196.8" r="2" fill="#56676C" class="f-slate"><title>read at step 50000: 0.955</title></circle>
+<circle cx="388.0" cy="202.2" r="2" fill="#56676C" class="f-slate"><title>read at step 60000: 0.919</title></circle>
+<circle cx="441.0" cy="202.1" r="2" fill="#56676C" class="f-slate"><title>read at step 70000: 0.919</title></circle>
+<circle cx="494.0" cy="203.2" r="2" fill="#56676C" class="f-slate"><title>read at step 80000: 0.912</title></circle>
+<circle cx="547.0" cy="205.3" r="2" fill="#56676C" class="f-slate"><title>read at step 90000: 0.898</title></circle>
+<circle cx="600.0" cy="208.3" r="2" fill="#56676C" class="f-slate"><title>read at step 100000: 0.878</title></circle>
+<text x="610.0" y="212.3" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">read 0.88</text>
+<polyline points="70.0,190.0 123.0,328.8 176.0,329.8 229.0,331.1 282.0,334.0 335.0,334.8 388.0,334.6 441.0,335.2 494.0,335.4 547.0,335.9 600.0,335.1" fill="none" stroke="#56676C" class="f-slate-stroke" stroke-width="1.2" stroke-opacity="0.7"/>
+<circle cx="70.0" cy="190.0" r="2" fill="#56676C" class="f-slate"><title>intent at step 0: 1.000</title></circle>
+<circle cx="123.0" cy="328.8" r="2" fill="#56676C" class="f-slate"><title>intent at step 10000: 0.075</title></circle>
+<circle cx="176.0" cy="329.8" r="2" fill="#56676C" class="f-slate"><title>intent at step 20000: 0.068</title></circle>
+<circle cx="229.0" cy="331.1" r="2" fill="#56676C" class="f-slate"><title>intent at step 30000: 0.059</title></circle>
+<circle cx="282.0" cy="334.0" r="2" fill="#56676C" class="f-slate"><title>intent at step 40000: 0.040</title></circle>
+<circle cx="335.0" cy="334.8" r="2" fill="#56676C" class="f-slate"><title>intent at step 50000: 0.034</title></circle>
+<circle cx="388.0" cy="334.6" r="2" fill="#56676C" class="f-slate"><title>intent at step 60000: 0.036</title></circle>
+<circle cx="441.0" cy="335.2" r="2" fill="#56676C" class="f-slate"><title>intent at step 70000: 0.032</title></circle>
+<circle cx="494.0" cy="335.4" r="2" fill="#56676C" class="f-slate"><title>intent at step 80000: 0.030</title></circle>
+<circle cx="547.0" cy="335.9" r="2" fill="#56676C" class="f-slate"><title>intent at step 90000: 0.027</title></circle>
+<circle cx="600.0" cy="335.1" r="2" fill="#56676C" class="f-slate"><title>intent at step 100000: 0.033</title></circle>
+<text x="610.0" y="339.1" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">intent 0.03</text>
+<polyline points="70.0,190.0 123.0,304.1 176.0,308.2 229.0,308.8 282.0,311.6 335.0,310.9 388.0,312.7 441.0,314.1 494.0,314.8 547.0,315.6 600.0,316.1" fill="none" stroke="#56676C" class="f-slate-stroke" stroke-width="1.2" stroke-opacity="0.7"/>
+<circle cx="70.0" cy="190.0" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 0: 1.000</title></circle>
+<circle cx="123.0" cy="304.1" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 10000: 0.239</title></circle>
+<circle cx="176.0" cy="308.2" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 20000: 0.212</title></circle>
+<circle cx="229.0" cy="308.8" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 30000: 0.208</title></circle>
+<circle cx="282.0" cy="311.6" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 40000: 0.189</title></circle>
+<circle cx="335.0" cy="310.9" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 50000: 0.194</title></circle>
+<circle cx="388.0" cy="312.7" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 60000: 0.182</title></circle>
+<circle cx="441.0" cy="314.1" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 70000: 0.172</title></circle>
+<circle cx="494.0" cy="314.8" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 80000: 0.168</title></circle>
+<circle cx="547.0" cy="315.6" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 90000: 0.163</title></circle>
+<circle cx="600.0" cy="316.1" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 100000: 0.159</title></circle>
+<text x="610.0" y="326.1" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">asr_en 0.16</text>
+<polyline points="70.0,190.0 123.0,276.5 176.0,278.5 229.0,280.5 282.0,282.1 335.0,285.7 388.0,286.9 441.0,287.0 494.0,287.7 547.0,289.6 600.0,290.3" fill="none" stroke="#56676C" class="f-slate-stroke" stroke-width="1.2" stroke-opacity="0.7"/>
+<circle cx="70.0" cy="190.0" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 0: 1.000</title></circle>
+<circle cx="123.0" cy="276.5" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 10000: 0.423</title></circle>
+<circle cx="176.0" cy="278.5" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 20000: 0.410</title></circle>
+<circle cx="229.0" cy="280.5" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 30000: 0.397</title></circle>
+<circle cx="282.0" cy="282.1" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 40000: 0.386</title></circle>
+<circle cx="335.0" cy="285.7" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 50000: 0.362</title></circle>
+<circle cx="388.0" cy="286.9" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 60000: 0.354</title></circle>
+<circle cx="441.0" cy="287.0" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 70000: 0.353</title></circle>
+<circle cx="494.0" cy="287.7" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 80000: 0.348</title></circle>
+<circle cx="547.0" cy="289.6" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 90000: 0.336</title></circle>
+<circle cx="600.0" cy="290.3" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 100000: 0.331</title></circle>
+<text x="610.0" y="292.3" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">asr_hi 0.33</text>
+<polyline points="70.0,190.0 123.0,261.5 176.0,265.0 229.0,266.1 282.0,266.9 335.0,267.8 388.0,270.3 441.0,272.1 494.0,272.5 547.0,273.7 600.0,273.4" fill="none" stroke="#56676C" class="f-slate-stroke" stroke-width="1.2" stroke-opacity="0.7"/>
+<circle cx="70.0" cy="190.0" r="2" fill="#56676C" class="f-slate"><title>caption at step 0: 1.000</title></circle>
+<circle cx="123.0" cy="261.5" r="2" fill="#56676C" class="f-slate"><title>caption at step 10000: 0.524</title></circle>
+<circle cx="176.0" cy="265.0" r="2" fill="#56676C" class="f-slate"><title>caption at step 20000: 0.500</title></circle>
+<circle cx="229.0" cy="266.1" r="2" fill="#56676C" class="f-slate"><title>caption at step 30000: 0.492</title></circle>
+<circle cx="282.0" cy="266.9" r="2" fill="#56676C" class="f-slate"><title>caption at step 40000: 0.487</title></circle>
+<circle cx="335.0" cy="267.8" r="2" fill="#56676C" class="f-slate"><title>caption at step 50000: 0.481</title></circle>
+<circle cx="388.0" cy="270.3" r="2" fill="#56676C" class="f-slate"><title>caption at step 60000: 0.465</title></circle>
+<circle cx="441.0" cy="272.1" r="2" fill="#56676C" class="f-slate"><title>caption at step 70000: 0.453</title></circle>
+<circle cx="494.0" cy="272.5" r="2" fill="#56676C" class="f-slate"><title>caption at step 80000: 0.450</title></circle>
+<circle cx="547.0" cy="273.7" r="2" fill="#56676C" class="f-slate"><title>caption at step 90000: 0.442</title></circle>
+<circle cx="600.0" cy="273.4" r="2" fill="#56676C" class="f-slate"><title>caption at step 100000: 0.444</title></circle>
+<text x="610.0" y="283.4" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">caption 0.44</text>
+<polyline points="70.0,190.0 123.0,235.7 176.0,237.3 229.0,238.1 282.0,241.3 335.0,243.8 388.0,247.8 441.0,247.8 494.0,247.5 547.0,247.8 600.0,247.8" fill="none" stroke="#56676C" class="f-slate-stroke" stroke-width="1.2" stroke-opacity="0.7"/>
+<circle cx="70.0" cy="190.0" r="2" fill="#56676C" class="f-slate"><title>vqa at step 0: 1.000</title></circle>
+<circle cx="123.0" cy="235.7" r="2" fill="#56676C" class="f-slate"><title>vqa at step 10000: 0.696</title></circle>
+<circle cx="176.0" cy="237.3" r="2" fill="#56676C" class="f-slate"><title>vqa at step 20000: 0.685</title></circle>
+<circle cx="229.0" cy="238.1" r="2" fill="#56676C" class="f-slate"><title>vqa at step 30000: 0.679</title></circle>
+<circle cx="282.0" cy="241.3" r="2" fill="#56676C" class="f-slate"><title>vqa at step 40000: 0.658</title></circle>
+<circle cx="335.0" cy="243.8" r="2" fill="#56676C" class="f-slate"><title>vqa at step 50000: 0.641</title></circle>
+<circle cx="388.0" cy="247.8" r="2" fill="#56676C" class="f-slate"><title>vqa at step 60000: 0.615</title></circle>
+<circle cx="441.0" cy="247.8" r="2" fill="#56676C" class="f-slate"><title>vqa at step 70000: 0.614</title></circle>
+<circle cx="494.0" cy="247.5" r="2" fill="#56676C" class="f-slate"><title>vqa at step 80000: 0.616</title></circle>
+<circle cx="547.0" cy="247.8" r="2" fill="#56676C" class="f-slate"><title>vqa at step 90000: 0.615</title></circle>
+<circle cx="600.0" cy="247.8" r="2" fill="#56676C" class="f-slate"><title>vqa at step 100000: 0.615</title></circle>
+<text x="610.0" y="245.8" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">vqa 0.61</text>
+<polyline points="70.0,190.0 123.0,239.6 176.0,242.0 229.0,242.3 282.0,244.4 335.0,246.1 388.0,249.0 441.0,249.4 494.0,250.0 547.0,251.5 600.0,251.9" fill="none" stroke="#7B5E8E" class="f-plum-stroke" stroke-width="3" stroke-dasharray="7 4"/>
+<text x="610.0" y="263.9" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">score 0.587</text>
+<text x="229.0" y="68.5" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">chat: 3.27 → 5.39, above 1 at every evaluation</text>
+</svg>

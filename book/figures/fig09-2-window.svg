@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 260" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 9.2 · Characters in a 1,024-token window</title>
+<desc id="d">Mostly Devanagari text: 410 characters as bytes, 3,855 with multi32k. Mostly Latin text: 1,016 as bytes, 4,507 with multi32k.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Characters of text in a 1,024-token window</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">3,000 held-out documents of data/v2/val.u16, split by majority script · measured</text>
+<rect x="170.0" y="60.0" width="12.0" height="12.0" rx="2" fill="#C4532F" class="f-coral"></rect>
+<text x="188.0" y="70.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">bytes (V = 259)</text>
+<rect x="310.0" y="60.0" width="12.0" height="12.0" rx="2" fill="#0E9488" class="f-teal"></rect>
+<text x="328.0" y="70.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">multi32k BPE (V = 32,768)</text>
+<line x1="170.0" y1="84.0" x2="170.0" y2="224.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="170.0" y="240.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<line x1="256.0" y1="84.0" x2="256.0" y2="224.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="256.0" y="240.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1,000</text>
+<line x1="342.0" y1="84.0" x2="342.0" y2="224.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="342.0" y="240.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">2,000</text>
+<line x1="428.0" y1="84.0" x2="428.0" y2="224.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="428.0" y="240.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">3,000</text>
+<line x1="514.0" y1="84.0" x2="514.0" y2="224.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="514.0" y="240.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">4,000</text>
+<line x1="600.0" y1="84.0" x2="600.0" y2="224.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="600.0" y="240.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">5,000</text>
+<text x="158.0" y="120.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">mostly Devanagari</text>
+<rect x="170.0" y="94.0" width="35.3" height="20.0" rx="3" fill="#C4532F" class="f-coral"><title>mostly Devanagari, bytes_devanagari: 410 characters</title></rect>
+<text x="213.3" y="109.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">410</text>
+<rect x="170.0" y="118.0" width="331.5" height="20.0" rx="3" fill="#0E9488" class="f-teal"><title>mostly Devanagari, multi32k_devanagari: 3,855 characters</title></rect>
+<text x="509.5" y="133.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">3,855</text>
+<text x="158.0" y="190.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">mostly Latin</text>
+<rect x="170.0" y="164.0" width="87.4" height="20.0" rx="3" fill="#C4532F" class="f-coral"><title>mostly Latin, bytes_latin: 1,016 characters</title></rect>
+<text x="265.4" y="179.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">1,016</text>
+<rect x="170.0" y="188.0" width="387.6" height="20.0" rx="3" fill="#0E9488" class="f-teal"><title>mostly Latin, multi32k_latin: 4,507 characters</title></rect>
+<text x="565.6" y="203.0" class="f-ink" fill="#17262E" font-size="12" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">4,507</text>
+</svg>

@@ -1,0 +1,126 @@
+{
+ "ckpt_base_v2.pt": {
+  "file_bytes": 1591281456,
+  "keys": [
+   "model",
+   "cfg",
+   "step",
+   "val_loss",
+   "val_sem",
+   "eval_spec"
+  ],
+  "tensor_bytes": {
+   "model": 1590642240,
+   "cfg": 0,
+   "step": 0,
+   "val_loss": 0,
+   "val_sem": 0,
+   "eval_spec": 0
+  },
+  "step": 1899999,
+  "val_loss": 3.3522820472717285,
+  "best_val": null,
+  "eval_spec": {
+   "mode": "strided",
+   "windows": 400,
+   "block_size": 1024
+  },
+  "model_numel": 397660560,
+  "model_dtypes": [
+   "torch.float32"
+  ]
+ },
+ "ckpt_base_v2.pt.last": {
+  "file_bytes": 4862324329,
+  "keys": [
+   "model",
+   "opt",
+   "cfg",
+   "step",
+   "val_loss",
+   "val_sem",
+   "eval_spec",
+   "best_val",
+   "sampler"
+  ],
+  "tensor_bytes": {
+   "model": 1590642240,
+   "opt": 3181283236,
+   "cfg": 0,
+   "step": 0,
+   "val_loss": 0,
+   "val_sem": 0,
+   "eval_spec": 0,
+   "best_val": 0,
+   "sampler": 88381176
+  },
+  "step": 1899999,
+  "val_loss": 3.3522820472717285,
+  "best_val": 3.3522820472717285,
+  "eval_spec": {
+   "mode": "strided",
+   "windows": 400,
+   "block_size": 1024
+  },
+  "optimizers": 1,
+  "opt_state_kinds": [
+   "exp_avg",
+   "exp_avg_sq",
+   "step"
+  ],
+  "opt_param_groups": [
+   {
+    "weight_decay": 0.1,
+    "lr": 6.000174192986483e-05,
+    "betas": [
+     0.9,
+     0.95
+    ],
+    "eps": 1e-08,
+    "amsgrad": false,
+    "maximize": false,
+    "foreach": null,
+    "capturable": false,
+    "differentiable": false,
+    "fused": true,
+    "decoupled_weight_decay": true
+   },
+   {
+    "weight_decay": 0.0,
+    "lr": 6.000174192986483e-05,
+    "betas": [
+     0.9,
+     0.95
+    ],
+    "eps": 1e-08,
+    "amsgrad": false,
+    "maximize": false,
+    "foreach": null,
+    "capturable": false,
+    "differentiable": false,
+    "fused": true,
+    "decoupled_weight_decay": true
+   }
+  ],
+  "opt_bytes_by_kind": {
+   "exp_avg": 1590638592,
+   "exp_avg_sq": 1590638592,
+   "step": 6052
+  },
+  "sampler": {
+   "epoch": 0,
+   "pos": 7600000,
+   "windows_per_epoch": 11047015,
+   "order_bytes": 88376120,
+   "generator_state_bytes": 5056
+  },
+  "model_numel": 397660560,
+  "model_dtypes": [
+   "torch.float32"
+  ]
+ },
+ "same_weights": {
+  "tensors": 1551,
+  "all_equal": true
+ }
+}
