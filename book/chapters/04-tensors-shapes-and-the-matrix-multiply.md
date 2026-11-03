@@ -381,7 +381,7 @@ inner axes must match and disappear. *verified*: shapes from `ch04_shapes.py`.
 ## 4.8  Exercises
 
 1. What is the shape of `query_key_value.weight` in the released model?
-2. For the released model, what are the strides of `q` after line 432, for a
+2. For the released model, what are the strides of `q` after line 461, for a
    batch of S = 1,024 positions?
 3. Which key/value head does query head 13 of the released model use?
 

@@ -540,8 +540,8 @@ the two to agree to 10⁻⁶.
   training the released model's batch gradients measure 4.25–4.60, so a clip
   at 1.0 acts on all four batches measured.
 - Muon orthogonalises each hidden matrix's update; it was the largest gain in
-  a small proxy, and at 400M a combined recipe including it kept only about one
-  standard error of lead.
+  a small proxy, and at 400M a combined recipe including it led by only about
+  one standard error.
 
 > **In one breath.** AnuLM trains with AdamW: per-parameter steps from
 > bias-corrected averages of the gradient and its square, weight decay on

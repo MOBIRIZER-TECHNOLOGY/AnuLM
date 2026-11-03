@@ -23,7 +23,7 @@ part_i_ii_released.json in the current directory, or in book/measurements/ with 
 
 Precision: fp32 with no autocast, except the experts. The checkpoint's
 configuration has moe_impl='grouped', whose kernel runs the experts in bf16
-(model.py lines 716 and 743), as in Chapter 20's measurement.
+(model.py lines 756 and 784), as in Chapter 20's measurement.
 """
 
 from __future__ import annotations
@@ -90,7 +90,7 @@ def main():
     q = torch.quantile(s.float(), torch.tensor([0.1, 0.25, 0.5, 0.75, 0.9])).tolist()
     lnV = math.log(cfg.vocab_size)
     res = {"checkpoint": "ckpt_base_v2.pt", "data": "data/v2/val.u16", "windows": WINDOWS, "seq": SEQ,
-           "seed": SEED, "graded_tokens": n_tok, "precision": "fp32, no autocast, except the experts: the checkpoint's moe_impl='grouped' runs them in bf16 (model.py 716, 743), as in Chapter 20",
+           "seed": SEED, "graded_tokens": n_tok, "precision": "fp32, no autocast, except the experts: the checkpoint's moe_impl='grouped' runs them in bf16 (model.py 756, 784), as in Chapter 20",
            "loss": mean, "ln_vocab": lnV, "perplexity": math.exp(mean),
            "quantiles": dict(zip(["p10", "p25", "p50", "p75", "p90"], q)),
            "frac_below_0.1": (s < 0.1).double().mean().item(),

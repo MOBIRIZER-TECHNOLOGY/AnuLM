@@ -20,7 +20,7 @@ piece, picks one and appends it, over and over. This chapter writes that loop
 by hand, finds it in AnuLM's code, runs it on the released model, and tours the
 repository the rest of the book reads.
 
-**New words.** Part I starts here; these terms recur through the book.
+**New words.** Part I starts here; these terms recur throughout the book.
 
 | Term | Meaning |
 |---|---|
@@ -67,7 +67,7 @@ def four_steps(model: AnuLM, ids: torch.Tensor, n: int, show: bool = False) -> t
   reads the longer sequence again.
 
 The example runs it beside the repository's own loop, `generate`, with
-`top_k=1`, which leaves only the best id possible:
+`top_k=1`, which leaves the best id as the only possible pick:
 
 ```python
     torch.manual_seed(0)
@@ -236,6 +236,7 @@ The model class builds everything in its first twelve lines:
 
 ```python
 class AnuLM(nn.Module):
+    # ...
     def __init__(self, cfg: AnuLMConfig):
         super().__init__()
         self.cfg = cfg
@@ -532,7 +533,7 @@ used only for the claim in its register row:
 Repository evidence, all at @fdbb09a:
 - `anulm/model.py`: banner lines 36, 222, 257, 422, 498, 582, 794;
   `AnuLMConfig.nano_30b` 159–171; `AnuLM.__init__` 827–843;
-  `AnuLM.forward` 915–918; `AnuLM.generate` 1116–1180 (loop 1144–1173;
+  `AnuLM.forward` 915–918; `AnuLM.generate` 1115–1180 (loop 1144–1173;
   the `temperature <= 0` greedy branch 1161–1162).
 - `tests/test_model.py`: `tiny` 44–49; `generation_is_deterministic_at_top_k_1` 398.
 - `anulm/inference/sample.py`: `main` 26–93 (defaults 34–35, generation 69–77).

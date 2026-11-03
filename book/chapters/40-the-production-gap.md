@@ -227,7 +227,7 @@ weights are never quantised.
 
 ![Figure 40.2 · A 16 GiB card for the released model](../figures/fig40-2-memory.svg)
 
-*Figure 40.2 · A 16 GiB card for the released model*, as served and in
+*Figure 40.2 · A 16 GiB card for the released model.* As served and in
 hypothetical lower precisions. *verified* arithmetic from
 `ch40_gap_arithmetic.py`.
 
@@ -290,7 +290,7 @@ its parallelism [S08]. What a tiled kernel never writes out:
 6. one layer's scores for one 1,024-token sequence: H x S x S x 4 B = 64 MiB in fp32; x 20 layers = 1.25 GiB if all were kept
 ```
 
-*verified* arithmetic. That is the documentation. On this machine Chapter 11
+*verified* arithmetic. That is what the documentation says. On this machine Chapter 11
 (11.9) observed PyTorch 2.11 choosing a fused flash kernel even on the CPU,
 for causal and boolean-mask calls. A fused kernel may already run; the
 repository neither chooses nor writes one.
@@ -299,7 +299,7 @@ repository neither chooses nor writes one.
 
 ## 40.6  Distributed training
 
-`anulm/training/train.py` builds one optimizer for one device:
+`anulm/training/train.py` builds one optimiser for one device:
 
 > **In the repo** · `anulm/training/train.py` · `make_optimizer` · lines 463–471 · @fdbb09a
 
@@ -438,7 +438,7 @@ What is still missing:
 Retrieved passages enter the prompt with the same standing as the question,
 so a passage holding instructions can steer the reply: indirect prompt
 injection, through data likely to be retrieved [R63]. Its
-effect here is *not measured*.
+effect on this model is *not measured here*.
 
 `IN THE REPO` (the key check, the warning, the caps, error ids, the lock) · `NOT IN THE REPO` (per-user auth, rate limits, metrics, filters)
 

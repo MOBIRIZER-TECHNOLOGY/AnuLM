@@ -16,7 +16,7 @@ chapter. Only the integrator acts on these.
 | 9 | all writers | Register proposals in `register-additions/` (Part III: RFC 3629 and two optional; Part V-a: Kalamkar 2019) | **fixed** 2026-11-03: R54 (RFC 3629), R57 (Kalamkar), S17 (Press & Wolf) verified and cited; Gage 1994 rejected (no primary source) |
 | 10 | Part III writer | `sample.py` lines 83–84: the comment says ids 256–258 never appear in training data; EOS (257) does | report to the user (repository comment); Ch 8 already says so |
 | 11 | Part III writer | Page budget: chapters print at about twice the BOOK_PLAN figures | **decided** 2026-11-01: the budget is a guide; the user's 300–400 is a floor |
-| 12 | integrator | Ch 11 and Ch 20 were rewritten code-first after their Stage 5 reviews | recorded in `claims-review.md` 2026-11-03; open: re-review the rewritten Ch 11 and Ch 20 sections |
+| 12 | integrator | Ch 11 and Ch 20 were rewritten code-first after their Stage 5 reviews | **fixed** 2026-11-03: re-reviewed by an independent technical reviewer; 16 findings fixed (`claims-review.md`) |
 | 13 | Part VII writer | `make_chat.py` leaks 4 of 300 held-out questions into training (2 with the same answer): the split uses `id(r)`, not content | report to the user (repository bug); Ch 30 states it |
 | 14 | Part VII writer | `lora_starts_as_the_base_model_and_merges_back_exactly` never calls `update_expert_biases()`, so the `if` at `test_model.py` 1104 skips its bias assertion | report to the user (test gap); Ch 31 explains it; Appendix C's entry must say so |
 | 15 | Part VII writer | released router biases are 216–798 in magnitude, spread within a layer 0.018–0.281 | passed to the Ch 16–19 writer to verify |

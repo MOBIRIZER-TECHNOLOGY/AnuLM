@@ -15,7 +15,7 @@ forward hooks, for every layer:
 - the mean absolute value of each RMSNorm's learned gain.
 
 Precision: fp32 with no autocast, except the experts, which the released
-configuration runs in bf16 on its grouped path (`model.py` 716, 743).
+configuration runs in bf16 on its grouped path (`model.py` 756, 784).
 
 Only statistics are saved; no held-out text is printed.
 With --save, results go to book/measurements/part_iv_a_stream.json.
@@ -82,7 +82,7 @@ def main() -> None:
         h.remove()
     n = WINDOWS // BATCH
     res = {"checkpoint": "ckpt_base_v2.pt", "data": "data/v2/val.u16", "windows": WINDOWS, "seq": SEQ, "seed": SEED,
-           "precision": "fp32, no autocast, except the experts: bf16 on the released grouped path (model.py 716, 743)", "device": dev,
+           "precision": "fp32, no autocast, except the experts: bf16 on the released grouped path (model.py 756, 784)", "device": dev,
            "note": "index L (=20) of 'stream' is the input to the final norm"}
     for k in names:
         res[k] = (acc[k][:, 0] / n).tolist()

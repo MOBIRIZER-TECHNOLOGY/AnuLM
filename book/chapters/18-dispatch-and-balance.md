@@ -211,8 +211,8 @@ dense   vs naive loop: 1.8e-07
 grouped vs sparse, both under bf16 autocast: 0.0e+00; grouped vs fp32 loop: 3.8e-03 (output scale 0.71)
 ```
 
-So do the tests: `moe_matches_naive_per_token_loop` (`tests/test_model.py` line
-180), `dense_and_sparse_moe_agree` (line 474), and the grouped test, which
+So do the tests: `moe_matches_naive_per_token_loop` (`tests/test_model.py`
+line 180), `dense_and_sparse_moe_agree` (line 474), and the grouped test, which
 is skipped on a PyTorch without `F.grouped_mm`:
 
 > **In the repo** · `tests/test_model.py` · `grouped_moe_matches_sparse_under_bf16` · lines 694–711 · @fdbb09a
@@ -240,8 +240,8 @@ def grouped_moe_matches_sparse_under_bf16():
 
 Without `F.grouped_mm` the test raises `unittest.SkipTest`, and the runner
 prints SKIP and counts it as skipped, not passed; on this machine's PyTorch
-2.11.0 the test runs. **At real scale**, `ch16_measure_trained.py` runs the three paths on
-layer 10's inputs, 2,048 held-out tokens, on an RTX 5070 Ti (*measured*):
+2.11.0 the test runs. **At real scale**, `ch16_measure_trained.py` runs the
+three paths on layer 10's inputs, 2,048 held-out tokens, on an RTX 5070 Ti (*measured*):
 
 | | value |
 |---|---|
@@ -508,13 +508,13 @@ IV's N and T: 32 flat tokens become 8 sequences of 4, each row of `f` compared
 with P = 0.25. No test checks the z-loss's value:
 `router_regularisers_are_off_by_default_and_work_when_on` (`tests/test_model.py`
 line 750) checks only that the regularisers reach the loss and the router's
-gradient. The example's second line checks the value.
+gradient. The second line of the example's output checks the value.
 
 The released run set α = 10⁻⁴ and 10⁻³. On the held-out sample (*measured*),
 Σ f·P has median 1.19 (0.99 to 1.62) and the squared logsumexp 0.035 (0.015
 to 0.107). Summed over the 19 MoE layers with those weights, the aux is
-0.00319 (0.00234 balance, 0.00085 z) against an LM loss of 3.38. The training log `v2_train_run.log`, read by the same script, shows
-0.2129 at step 0 and 0.0036 on average over its last 100 entries. The z-loss
+0.00319 (0.00234 balance, 0.00085 z) against an LM loss of 3.38. The training
+log `v2_train_run.log`, read by the same script, shows 0.2129 at step 0 and 0.0036 on average over its last 100 entries. The z-loss
 is smallest where Σ e<sup>logit</sup> = 1; the trained scores sum to 0.993
 (Chapter 17), consistent with that but not shown to be caused by it.
 
@@ -593,7 +593,7 @@ used only for the claim in its register row:
 Repository evidence, all at @fdbb09a:
 - `anulm/model.py`: `Router._gate` 647–652, 653–670; `MoE._route_sparse` 709–727,
   `_route_dense` 729–738, `_stacked_weights` 750–759, `_route_grouped`
-  775–790; `AnuLM.update_expert_biases` 1081–1101.
+  775–790; `AnuLM.update_expert_biases` 1071–1101.
 - `anulm/training/train.py`: `main` 876–878. `anulm/hf/export_hf.py`: `main` 328–338.
   `anulm/hf/modeling_anulm.py` 120–133; `docs/DEVELOPING.md` line 302.
 - `tests/test_model.py`: `moe_matches_naive_per_token_loop` 180,

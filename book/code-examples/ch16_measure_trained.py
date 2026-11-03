@@ -9,7 +9,7 @@ routers do on held-out text.
 
 Runs `ckpt_base_v2.pt` through `model.py` unchanged, with no autocast: fp32
 except the experts, which the released configuration's grouped path
-(`moe_impl="grouped"`, model.py 716 and 743) runs in bf16 even so,
+(`moe_impl="grouped"`, model.py 756 and 784) runs in bf16 even so,
 over 64 windows of 512 tokens drawn with seed 0 from the base run's held-out
 split (`data/v2/val.u16`), the same draw as `measure_attention.py`. Forward
 hooks only watch; nothing in the model is changed. It records:

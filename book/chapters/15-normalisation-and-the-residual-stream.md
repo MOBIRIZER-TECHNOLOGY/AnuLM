@@ -48,8 +48,7 @@ RMSNorm drops the re-centring and divides by the root mean square alone
 ```
 
 *illustrative*, printed by `book/code-examples/ch15_norms.py`. RMSNorm keeps
-each direction and sets the RMS to 1.
-LayerNorm subtracts the mean first, which in two dimensions leaves ±(1, −1)
+each direction and sets the RMS to 1. LayerNorm subtracts the mean first, which in two dimensions leaves ±(1, −1)
 or zero: *bit*, [1, 1], vanishes. At width 1,024 re-centring discards one
 direction of 1,024. `anulm/model.py`'s RMSNorm matches PyTorch's `F.rms_norm`.
 
@@ -75,12 +74,14 @@ bring encoder features to the scale the blocks expect (Chapter 36):
 
 ```python
 class RMSNorm(nn.Module):
+    # ...
     def __init__(self, dim: int, eps: float = 1e-6):
         super().__init__()
         self.weight = nn.Parameter(torch.ones(dim))
         self.eps = eps
 
     def forward(self, x):
+        # ...
         dtype = x.dtype
         x = x.float()
         x = x * torch.rsqrt(x.pow(2).mean(-1, keepdim=True) + self.eps)
@@ -164,8 +165,8 @@ and uses them like this:
         return x + h, aux
 ```
 
-Line 775, inside out: normalise a copy of `x`, attend, add the result to `x`.
-Lines 777–779 do the same for the feed-forward half. The norm never replaces
+Line 820, inside out: normalise a copy of `x`, attend, add the result to `x`.
+Lines 822–824 do the same for the feed-forward half. The norm never replaces
 the stream, so the stream is a plain sum, (B, S, D) throughout: the embedding
 plus every sublayer's output. Each sublayer reads everything before it, and
 the gradient reaches every layer directly through the additions. One more
@@ -205,7 +206,7 @@ in the repository.
 `ch15_measure_stream.py` runs `ckpt_base_v2.pt` on 16 held-out windows of 512
 tokens (`data/v2/val.u16`, seed 0), in fp32 without autocast except the
 experts, which the released configuration computes in bf16 (`anulm/model.py` lines
-749 and 777). Forward hooks record each token's RMS entering every layer and
+756 and 784). Forward hooks record each token's RMS entering every layer and
 of what each half adds, position 0 apart:
 
 ```python
@@ -295,7 +296,8 @@ The loop then redraws the *last* matrix of every residual branch, `dense`
 (`o_proj` in MLA) and every `down_proj`, with standard deviation
 0.02/√(2L): two branches per layer. The comment credits nanoGPT; GPT-2's
 report describes the same 1/√N rule for N residual layers [R04]. The example
-runs one random batch through the freshly built released model, then again with those matrices at 0.02:
+runs one random batch through the freshly built released model, then again
+with those matrices at 0.02:
 
 ```python
     for label in ("scaled (model.py)", "all 0.02"):
@@ -338,7 +340,8 @@ def initial_loss_is_ln_vocab():
             f"{attn}: init loss {loss.item():.3f}, expected ~{expected:.3f} -- init is off"
 ```
 
-The lab book found that embeddings fifty times too large pass it; so here:
+The lab book found that embeddings fifty times too large pass it, and they
+do here:
 
 ```python
         model = M.AnuLM(cfg).eval()

@@ -322,3 +322,16 @@ where the parameters are; 20.3, the expert loads.
   `CITATION.cff`; no personal name is given anywhere in the repository.
 
 **Open:** the book's own text licence is not chosen.
+
+## Re-review of the code-first rewrites (2026-11-03)
+
+An independent technical reviewer read Chapters 11 and 20 in full at @fdbb09a
+(integration item 12), re-ran their CPU examples, and recomputed the worked
+numbers, tables and parameter counts; all matched. It found 16 issues (4 wrong,
+4 misleading, 8 unclear or style), none changing what the chapters teach. All
+were fixed in the proofreading follow-up: Ch 11 items 9, 11, 16, 17, 22-24, 27
+(including Cauchy-Schwarz in the score bound, "almost no gradient", "checks"
+not "proves", the 215/288 visible-key means, `# ...` elision marks); Ch 20
+items 10, 14, 15, 18, 25, 26, 28 (the untied head at 841-843 and 117, the
+gain-vector widths per preset, the ln V noise note, hook return value, tracing
+of plain functions). Verdict after fixes: both chapters ready.

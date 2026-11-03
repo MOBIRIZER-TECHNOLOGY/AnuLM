@@ -94,6 +94,7 @@ class SwiGLU(nn.Module):
         self.down_proj = nn.Linear(intermediate_size, hidden_size, bias=False)
 
     def forward(self, x):
+        # ...
         return self.down_proj(F.silu(self.gate_proj(x)) * self.up_proj(x))
 ```
 

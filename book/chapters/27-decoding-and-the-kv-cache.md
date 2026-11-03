@@ -173,7 +173,7 @@ last position, cached vs full forward: max |difference| 4.5e-08
 
 > **Details.** Latent attention caches its latent `c`, (B, T, `kv_lora_rank`),
 > and one rotary key `k_pe` shared by all heads (`MLAttention.forward`, lines
-> 520–529; Chapter 19).
+> 555–564; Chapter 19).
 
 `IN THE REPO`
 
@@ -332,7 +332,7 @@ drop-the-oldest cache vs the rebuild: max |logit difference| 9.0e-03
 ```
 
 The rotations are not the problem: scores depend only on relative position
-(Chapter 14). The cached entries are: from layer 1 on, each was computed while
+(Chapter 14). The cached entries are the problem: from layer 1 on, each was computed while
 the dropped token was visible. The error is five orders of magnitude above
 rounding, so the repository rebuilds: past `block_size`, each step is a full
 forward of `bs` tokens.

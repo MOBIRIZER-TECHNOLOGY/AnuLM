@@ -277,8 +277,8 @@ What should match, and how closely:
 - **The validation loss: 1.52 ± 0.03 after 1,000 steps.** `docs/TUTORIAL.md`
   gives "around 1.52" (§3) and ±0.03 as the noise of a 20-window reading. Its
   section "How much does the machine matter?" has the 50-step run at 2.7868,
-  2.7867 and 2.7865 on three machines: further off than the noise, suspect the
-  data or the flags, not the hardware. The `+/-` that `anulm/training/train.py` prints is the
+  2.7867 and 2.7865 on three machines. If your run lands further off than the
+  noise, suspect the data or the flags, not the hardware. The `+/-` that `anulm/training/train.py` prints is the
   standard error over its fixed evaluation windows, not a run-to-run
   tolerance (`docs/RESULTS.md` §26).
 - **The imbalance column** rose to 5.19× at step 50 in the recorded run, then
@@ -469,7 +469,7 @@ def wrong_no_renorm(probs, p):
     return probs * keep
 ```
 
-**Three tests.** Chapter 28.7 tests its patch on the kept set, the sum and
+**Three tests.** Chapter 28 (28.7) tests its patch on the kept set, the sum and
 p = 1. These take that test further: two use a four-token toy you can check by
 hand, and the third samples.
 
@@ -647,7 +647,7 @@ def main():
 
 A failure is caught, printed and counted, and the run goes on. A test that
 cannot run raises `unittest.SkipTest`, prints SKIP and is counted apart
-(Chapter 26.10). The return value is the exit status (line 2296), so CI
+(Chapter 26, 26.10). The return value is the exit status (line 2296), so CI
 stops on any failure. At the pin:
 
 ```
@@ -685,8 +685,8 @@ python -m unittest discover -s tests -p "test_quality_*.py" -t .
   instead, with its large tensors in bf16, the default `--weights-dtype mixed`
   (`anulm/hf/export_hf.py` lines 328–339; `--weights-dtype float32`, lines
   231–233, keeps every weight as trained);
-  `--ckpt <folder>` accepts it. This machine's local export gives a median of
-  507 at p = 0.9 below, not 501. The Hub copy itself was not compared.
+  `--ckpt <folder>` accepts it. On this machine's local export, the median at
+  p = 0.9 below is 507, not 501. The Hub copy itself was not compared.
 - **`data/v2/val.u16`**, the held-out split, which `experiments/build_v2.py`
   rebuilds (`docs/DATASETS.md`).
 
@@ -803,7 +803,7 @@ extensions, on the released model:
   dict and the `torch.cat` lines in `GQAttention.forward`;
   `incremental_forward_matches_full_forward` and
   `cached_generation_matches_uncached` already test the result (Chapter 40).
-- **INT8 weight-only inference.** Keep the routers, norms and router bias in
+- **Int8 weight-only inference.** Keep the routers, norms and router bias in
   fp32, as `anulm/hf/export_hf.py` does: the model card warns that a 16-bit router bias
   changes which experts fire. Write the test first: expert choices before and
   after quantising must match.
@@ -913,7 +913,7 @@ Repository evidence, all at @fdbb09a:
   `WindowSampler` 104–160, `lr_at` 375–400, `evaluate` 477–533; defaults:
   `--steps` 2000 (line 548), `--warmup` 100 (554), `--device` (575–576).
 - `.github/workflows/tests.yml` line 132: the CI's 50-step run.
-- `anulm/model.py`: `AnuLM.generate` 1116–1180 (greedy and sampling 1161–1169),
+- `anulm/model.py`: `AnuLM.generate` 1115–1180 (greedy and sampling 1161–1169),
   `AnuLM.num_params` 1104–1113, `MoE._route_grouped` 766–790 (bf16 casts at
   756 and 784).
 - `tests/test_model.py`: `initial_loss_is_ln_vocab` 349,

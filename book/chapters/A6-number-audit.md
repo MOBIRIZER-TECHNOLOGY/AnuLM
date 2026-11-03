@@ -52,7 +52,7 @@ not hold:
 
 - the released checkpoint `ckpt_base_v2.pt`. The Hugging Face repository holds
   an export whose large tensors are stored in bf16, which moves some
-  measurements in the last digits (Chapter 41.5);
+  measurements in the last digits (Chapter 41, 41.5);
 - for statistics on held-out text, the split `data/v2/val.u16`, which
   `experiments/build_v2.py` rebuilds (`docs/DATASETS.md`).
 
@@ -114,7 +114,7 @@ three things.
 ```
 Appendix C: 76 rows against 76 tests at @fdbb09a: ok
 Appendix B.1: 42 configuration rows recomputed: ok
-Appendix E: 66 rows against 66 register entries: ok
+Appendix E: 80 rows against 80 register entries: ok
 Appendix A: 47 distinct concrete shapes, 0 not in ch41_shapes.py's output
 ```
 
@@ -127,7 +127,7 @@ Appendix A: 47 distinct concrete shapes, 0 not in ch41_shapes.py's output
 **It takes an inventory of evidence.** For each chapter it counts how many
 passages carry each label and how many references the chapter cites. It also
 lists every paragraph labelled *illustrative*, with the script that paragraph
-names. At the time of writing 32 of 39 such paragraphs named no script in the
+names. At the last run 2 of 39 such paragraphs named no script in the
 paragraph itself. A reviewer can then check each of those against its
 chapter's example.
 
@@ -139,11 +139,9 @@ the list names a file that does not exist. A new example runs unless someone add
 
 It exits with status 1 if an appendix check fails or an example run fails.
 
-*verified*: the four lines above are the script's output at the time of
-writing. At @fdbb09a the lines for Appendices C, E and A were rerun and are
-unchanged; the B.1 line needs `ckpt_base_v2.pt` and was not rerun, but its
-Line column was recomputed from `anulm/model.py` at the pin and still
-matches.
+*verified*: the four lines above are the script's output at @fdbb09a, rerun
+on a CPU with `ckpt_base_v2.pt` present (the B.1 line needs it). The run
+printed `0 problems`.
 
 ## F.5  Everything, in order
 

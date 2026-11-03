@@ -297,7 +297,7 @@ Each assertion stops a failure that training would not notice:
 - **two EOS:** one per document, none for the empty piece at the end.
 - **no `\r`:** CRLF was normalised.
 - **the body:** the bytes between the EOS ids are the documents joined (the
-  `.replace("\n", "\n")` is a harmless no-op);
+  `.replace("\n", "\n")` is a harmless no-op).
 - **the last line:** a file without a separator stays `uint8`.
 
 `IN THE REPO`

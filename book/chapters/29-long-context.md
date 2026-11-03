@@ -48,8 +48,8 @@ scores 3.89 and 5.23 nats on the two quarters past 1,024, against 3.07 and
 ## 29.2  NTK-by-parts: stretch only the slow pairs
 
 Position interpolation scales every position down by the factor s, so position
-2,000 looks like 1,000 [S02]. By our arithmetic, not the papers' rows, that
-also slows the fast pairs: neighbours then differ by ω<sub>i</sub>/s instead
+2,000 looks like 1,000 [S02]. By our own arithmetic, not a claim cited from
+the papers, that also slows the fast pairs: neighbours then differ by ω<sub>i</sub>/s instead
 of ω<sub>i</sub>. YaRN's NTK-by-parts interpolation (NTK: the "neural tangent
 kernel" analysis the method's name comes from; nothing here depends on it)
 divides only the slow frequencies by s, keeps the fast ones and ramps between

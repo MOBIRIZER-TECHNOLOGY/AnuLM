@@ -437,7 +437,7 @@ base in fp32. The lab book's Chapter 10 writes NF4 from scratch.
 
 *verified*: 3 by running `apply_lora(AnuLM(tiny()))`; the rest is arithmetic
 from 31.3 and `update_expert_biases` (`anulm/model.py` lines
-1059–1089).
+1071–1101).
 
 > **Build it.** The lab book's Chapter 10 (`course/ch10-lora-qlora`) builds
 > LoRA and NF4 QLoRA from stubs and teaches the Shakespeare model Hindi, with

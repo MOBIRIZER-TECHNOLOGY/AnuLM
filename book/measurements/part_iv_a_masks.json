@@ -4,7 +4,7 @@
  "windows": 32,
  "seq": 1024,
  "seed": 0,
- "precision": "fp32, no autocast, except the experts: bf16 on the released grouped path (model.py 716, 743)",
+ "precision": "fp32, no autocast, except the experts: bf16 on the released grouped path (model.py 756, 784)",
  "device": "cuda",
  "as_trained": {
   "all": 3.350813241629297,

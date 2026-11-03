@@ -340,9 +340,8 @@ otherwise fill with −∞ experts:
 `check` (lines 129–131) raises `ValueError`, a real exception rather than an
 assert, so `python -O` cannot remove it; `config_rejects_unreachable_topk`
 (`tests/test_model.py` line 423) expects that `ValueError`. The released model
-has `n_group = 1`, so lines 629–638 never run in
-it; `nano_105b` keeps 2 of 4 groups per token, after Sarvam's 105B code of March
-2026, which Sarvam later changed to remove grouping [R49]. DeepSeek-V3 limits
+has `n_group = 1`, so lines 629–638 never run in it; `nano_105b` keeps 2 of 4
+groups per token, after Sarvam's 105B code of March 2026, which Sarvam later changed to remove grouping [R49]. DeepSeek-V3 limits
 routing by machine, a related idea [R20].
 
 `IN THE REPO`
@@ -388,8 +387,9 @@ logit -1.48: sigmoid 0.1860, exp 0.2285, exp/sigmoid = 1.229
   same four logits by 0.013 per weight on average (weights summing to 1;
   median over layers, 0.007 to 0.020). So the weights act nearly like such a
   softmax.
-- **The 4th and 5th choices are close**, 0.061 against 0.052; the bias, which
-  spans 0.02 to 0.28 within a layer (Chapter 18), can reorder them.
+- **The 4th and 5th choices are close**, 0.061 against 0.052; the bias can reorder
+  them: its spread within one layer (largest minus smallest) ranges from 0.02
+  to 0.28 across the 19 layers (Chapter 18).
 - **Layer 3 specialises:** its top expert takes 1.74 of the 2.5 on average.
 
 Whether sigmoid routing beats softmax routing here is *not measured here*.

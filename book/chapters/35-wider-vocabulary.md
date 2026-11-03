@@ -68,8 +68,8 @@ nor the new total, and `grow_checkpoint` refuses such a checkpoint (lines
 
 ![Figure 35.1 · The grown vocabulary](../figures/fig35-1-vocab-layout.svg)
 
-*Figure 35.1 · The grown vocabulary of the released model's size, drawn to
-scale.* *verified*: the ids are printed by `ch35_wider_vocab.py`.
+*Figure 35.1 · The grown vocabulary.* The released model's size, drawn to
+scale. *verified*: the ids are printed by `ch35_wider_vocab.py`.
 
 > **Details.** The module docstring still says three control tokens and
 > 28,675 new ids. The code adds five and 28,677. Quote the code.
@@ -384,7 +384,7 @@ def text_only_generation(big: M.AnuLM) -> None:
 ```
 
 *verified*: on the grown, untrained `tiny()`, 28,677 of 28,741 rows are not
-text. Only the mask guarantees that no audio id reaches the detokeniser.
+text. Only the mask guarantees that no audio id reaches the detokenizer.
 
 `IN THE REPO`
 
@@ -466,7 +466,7 @@ every token, for GQA and MLA, with and without the n-gram block and penalty.
 
 ## 35.7  Exercises
 
-1. A checkpoint's text vocabulary is 259 bytes. What ids do `<|speech|>` and
+1. A checkpoint's text vocabulary is 259 ids. What ids do `<|speech|>` and
    `<|/image|>` get after growing?
 2. Why does `grow_checkpoint` refuse a checkpoint whose `vocab_size` is
    neither the text size nor the grown size?

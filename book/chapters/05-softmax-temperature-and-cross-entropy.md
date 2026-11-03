@@ -423,14 +423,6 @@ true token 0: p, y and p − y. *illustrative*. The arithmetic: logits (2.0, 1.0
 0.1) give e<sup>z</sup> = (7.389, 2.718, 1.105), which sum to 11.212, so
 p = (0.659, 0.242, 0.099); with y = (1, 0, 0), p − y = (−0.341, 0.242, 0.099).
 The figure script, `book/tools/figures/part_i_ii.py`, recomputes it and checks
-it against autograd. The arithmetic: logits (2.0, 1.0,
-0.1) give e<sup>z</sup> = (7.389, 2.718, 1.105), which sum to 11.212, so
-p = (0.659, 0.242, 0.099); with y = (1, 0, 0), p − y = (−0.341, 0.242, 0.099).
-The figure script, `book/tools/figures/part_i_ii.py`, recomputes it and checks
-it against autograd. The arithmetic: logits (2.0, 1.0,
-0.1) give e<sup>z</sup> = (7.389, 2.718, 1.105), which sum to 11.212, so
-p = (0.659, 0.242, 0.099); with y = (1, 0, 0), p − y = (−0.341, 0.242, 0.099).
-The figure script, `book/tools/figures/part_i_ii.py`, recomputes it and checks
 it against autograd.
 
 `IN THE REPO`

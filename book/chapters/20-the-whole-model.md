@@ -29,8 +29,12 @@ calls after a module runs.
         hooks.append(module.register_forward_hook(hook))
 ```
 
-A hook gets the module's inputs and output and must return `None`; returning
-anything would replace the output. This one only logs shapes.
+A hook gets the module's inputs and output. It may return a value, and a
+value it returns replaces the output; this one returns `None`, so it only
+observes and logs shapes. `apply_rope` and `_sdpa` are plain functions, not
+modules, so they take no hooks: the script swaps each name in `anulm.model` for
+a wrapper that logs the shapes and calls the original, and puts the originals
+back after the forward pass.
 
 ---
 
@@ -144,7 +148,7 @@ The model's constructor builds everything this chapter traces:
 | 837–839 | **one** `Rotary`, handed to every `Block` |
 | 840–843 | the final norm and the (D → V) output head; untied in both models (`tie_word_embeddings = False`) |
 | 845–848, 852–858 | switches for checkpointing and chunked loss (20.5, 20.6) and the merge tree, off here (Chapter 10); a bad `merge_tree` raises `ValueError` |
-| 849–851 | three attributes other code fills in later, declared here as `None` so every reader finds them on any model: the router's auxiliary loss (20.6), the median imbalance (Chapter 18), the text vocabulary of a grown model (Chapter 28) |
+| 849–851 | three attributes other code fills in later, declared here as `None` so every reader finds them on any model: the router's auxiliary loss (20.6), the median imbalance (Chapter 18), the text vocabulary of a grown model (Chapters 28, 35) |
 | 859–863 | initialisation: every layer's output projection is shrunk by √(2L) (Chapter 15) |
 
 `AnuLM.forward` takes `idx`, a (B, S) tensor of ids:
@@ -164,8 +168,8 @@ The model's constructor builds everything this chapter traces:
 ```
 
 Text takes the `else` branch: each id selects a row, (B, S) → (B, S, D). A call
-past `block_size` raises `ValueError`; an `assert` would vanish under `python -O`. The `if` branch is for audio and
-images, which arrive as vectors (Chapter 35). The rotary tables are built once
+past `block_size` raises `ValueError`; an `assert` would vanish under
+`python -O`. The `if` branch is for audio and images, which arrive as vectors (Chapter 35). The rotary tables are built once
 and only sliced per call:
 
 > **In the repo** · `anulm/model.py` · `Rotary._grow`, `Rotary.forward` · lines 324–343 · @fdbb09a
@@ -245,7 +249,7 @@ thing.
 
 Each half normalises a copy of `x`, transforms it and **adds** the result:
 the residual stream, (B, S, D) from first layer to last. Normalising first is
-pre-norm (Chapter 15); GPT-2 moved layer norm to each sub-block's input [R04],
+pre-norm (Chapter 15); GPT-2 moved layer normalisation to each sub-block's input [R04],
 and RMSNorm drops LayerNorm's re-centring [R08]. Line 823 unpacks an MoE's
 `(output, regulariser)` pair, or pairs a dense output with `None`, so every
 block returns the same shape.
@@ -320,6 +324,7 @@ class SwiGLU(nn.Module):
         self.down_proj = nn.Linear(intermediate_size, hidden_size, bias=False)
 
     def forward(self, x):
+        # ...
         return self.down_proj(F.silu(self.gate_proj(x)) * self.up_proj(x))
 ```
 
@@ -367,11 +372,10 @@ N = B·S rows. It runs with autocast off:
 Autocast runs chosen operations, chiefly matrix multiplies, in 16-bit while
 norms, softmaxes and losses stay 32-bit; the repository uses it in training and
 serving (Chapter 23). Picking experts is discrete, so the comment records that
-16-bit routing changed the chosen set for 3.2% of tokens. Chapter 23 measures
+16-bit routing changed 3.2% of expert sets. Chapter 23 measures
 it on the released checkpoint: 3.17% of token-layer choices (19,717 of
 622,592) over 32 held-out windows of 1,024 tokens, from 1.69% in layer 19 to
-10.95% in layer 1 (*measured*; Chapter 17 finds 3.18% in a different
-setting). The choice itself:
+10.95% in layer 1 (*measured*). The choice itself:
 
 > **In the repo** · `anulm/model.py` · `Router._gate` · lines 624–672 · @fdbb09a
 
@@ -400,10 +404,11 @@ setting). The choice itself:
 > `sparse` (the default, `tiny()`'s), `dense` (every expert on every token,
 > for `torch.compile`) and `grouped` (one `F.grouped_mm` per projection over
 > groups of different sizes, in bf16; the released model's).
-> `dense_and_sparse_moe_agree` (`tests/test_model.py` line 474) holds the first two
-> together to 10⁻⁵. `grouped_moe_matches_sparse_under_bf16` (line 694) holds
+> `dense_and_sparse_moe_agree` (`tests/test_model.py` line 474) holds the
+> first two together to 10⁻⁵. `grouped_moe_matches_sparse_under_bf16` (line 694) holds
 > grouped to sparse within 5% of the largest output; on a PyTorch without
-> `F.grouped_mm` it is skipped, and reported as SKIP rather than a pass (Chapter 18).
+> `F.grouped_mm` it is skipped, and reported as SKIP rather than a pass
+> (Chapter 18).
 
 ```
 layer 1 mlp.router               in  (10, 32)  -> expert ids (10, 2), weights (10, 2)  (N, A)
@@ -414,8 +419,8 @@ layer 1 output x                   (2, 5, 32)
 
 *verified*: printed by `trace_forward.py`. `aux=None` because the model is in
 evaluation mode and `tiny()`'s regularisers are off. The released run trained
-with both on: a sequence-balance loss with weight 1e-4 (`seq_balance_alpha`)
-and a router z-loss with weight 1e-3 (`router_z_alpha`) (Chapter 18).
+with both on: a sequence-balance loss with weight 10⁻⁴ (`seq_balance_alpha`)
+and a router z-loss with weight 10⁻³ (`router_z_alpha`); see Chapter 18.
 
 `IN THE REPO`
 
@@ -447,7 +452,7 @@ and a router z-loss with weight 1e-3 (`router_z_alpha`) (Chapter 18).
 |---|---|---|
 | 915–918 | without targets, only the last position is projected: (B, 1, V), skipping B·(S − 1) rows of a V-wide multiply; with a KV cache each decode step already has S = 1, so the saving is on the prompt's first pass | 27 |
 | 919–921 | with chunked loss in training (`--ce-chunk`), the head and loss run a few thousand positions at a time and the logits are `None` | 23 |
-| 922 | `lm_head` is not tied to the embedding table, so the arithmetic counts 2·V·D | 10 |
+| 922 | `_head` makes the logits. `lm_head` is its own matrix, not tied to the embedding table (lines 841–843 tie only when `tie_word_embeddings` is set, and line 117 defaults it to `False`), so the arithmetic counts 2·V·D | 10 |
 | 923–925 | cross-entropy in fp32; targets of −1 are not graded, which is how fine-tuning grades only answers | 30 |
 
 The model does not shift the targets; the caller does:
@@ -477,10 +482,11 @@ loss                               4.1550  (ln V = 4.1589)
 without targets: logits            (2, 1, 64)  (B, 1, V): the last position only
 ```
 
-*verified*: printed by `trace_forward.py`, on random targets. An untrained model
-guesses almost uniformly, so its loss starts near ln V (Chapter 3 shows why it
-sits slightly above); `initial_loss_is_ln_vocab` (`tests/test_model.py` line 349)
-requires it within 0.35. Here 4.1550 is 0.004 from ln 64.
+*verified*: printed by `trace_forward.py`, on random targets. An untrained
+model guesses almost uniformly, so its loss starts near ln V. On average it
+sits slightly above (Chapter 3 shows why); 10 random targets are one noisy
+draw, and this one lands 0.004 below ln 64. `initial_loss_is_ln_vocab`
+(`tests/test_model.py` line 349) requires it within 0.35.
 
 The released model shows what training buys. On 64 windows of 512 held-out
 tokens (seed 0; 32,732 graded, as the 36 targets after an end-of-document
@@ -601,8 +607,8 @@ only idle experts, so the whole input table counts as active.
 uses. *verified*: the figure's script asserts the sum against `num_params()`.
 
 *verified*: recomputed by `trace_forward.py` from `released()`, which builds
-`AnuLMConfig.nano_350m`, one of `anulm/model.py`'s presets, with the released run's
-settings. It matches every field of `ckpt_base_v2.pt`'s configuration that
+`AnuLMConfig.nano_350m`, one of `anulm/model.py`'s presets, with the released
+run's settings. It matches every field of `ckpt_base_v2.pt`'s configuration that
 sets a shape or a parameter count. Six training and serving settings differ:
 `tokenizer_path`, `bias_update_rate` (0.003 in the run), `moe_impl`
 (`grouped`), the two regulariser weights (20.5) and `yarn_original_context`
@@ -639,11 +645,11 @@ With 16 key/value heads instead of 4 every row would be four times larger
 
 > **In the repo** · `tests/test_model.py` · `param_count_matches_analysis` · line 410 · @fdbb09a
 
-It builds two more presets, `nano_30b` and `nano_105b`, small models shaped like
-Sarvam's 30B and 105B, and requires 17,440,384 parameters (6,602,368 active)
+It builds two more presets, `nano_30b` and `nano_105b`, small models shaped
+like Sarvam's 30B and 105B, and requires 17,440,384 parameters (6,602,368 active)
 and 47,389,728 (13,327,392 active), each within 1,000. That catches a missing
-matrix, the smallest being 6,144 numbers, but not a missing gain vector of 64
-or 384. `all_parameters_receive_gradients` (line 336) catches a parameter that
+matrix, the smallest being 6,144 numbers, but not a missing gain vector (64 or 384
+numbers in `nano_30b`, 48, 72 or 384 in `nano_105b`). `all_parameters_receive_gradients` (line 336) catches a parameter that
 is built but never used, and `initial_loss_is_ln_vocab` (line 349) a badly
 scaled initialisation. To print the trace:
 
@@ -742,7 +748,7 @@ Repository evidence, all at @fdbb09a:
   - `GQAttention.forward` 451–494, `Router.forward` 611–622,
     `Router._gate` 624–672, `MoE.forward` 696–707, `Block.forward` 816–824;
   - `AnuLM.__init__` 833–863, `AnuLM.forward` 877–928,
-    `AnuLM.num_params` 1104–1113, `AnuLM.generate` 1116–1180.
+    `AnuLM.num_params` 1104–1113, `AnuLM.generate` 1115–1180.
 - `anulm/training/train.py`: `make_batch` 237–250.
 - `tests/test_model.py`:
   - `tiny` 44–49;

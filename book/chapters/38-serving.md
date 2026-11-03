@@ -218,7 +218,8 @@ GPU = threading.Lock()                # one request on the device at a time
 
 The lock also covers the first load of each model: `Generation.__init__` asks
 for the chat engine under it (lines 396–397), so two first requests cannot
-load the model twice. The book example confirms the first point, and the lock in 38.6:
+load the model twice. The book example confirms that `top_p` is accepted and
+never reaches `Generation`; 38.6 checks the lock:
 
 ```
 5. ChatRequest(top_p=0.1).top_p = 0.1; Generation takes ['prompt', 'max_tokens', 'temperature', 'top_k', 'repetition_penalty', 'seed', 'stops']
@@ -465,9 +466,9 @@ stop lists, and `['H', 'i', ' ', '�']` for the cut.
 
 Generation runs in its own thread and puts each released piece on a queue. The
 async generator `events` polls the queue every 5 ms and yields each piece as an
-SSE `data:` line. The cancellation path depends on the web stack. By reading
-Starlette 1.6.0's `StreamingResponse`, the version installed here with uvicorn
-0.52.2: under ASGI HTTP spec versions below 2.4 it listens for the disconnect
+SSE `data:` line. The cancellation path depends on the web stack. Reading
+Starlette 1.6.0's `StreamingResponse` (the version installed here, with uvicorn
+0.52.2) shows this: under ASGI HTTP spec versions below 2.4 it listens for the disconnect
 and cancels the stream, so `events` is cancelled at its `await`, `finally` sets
 `gen.cancelled`, and `on_token` returns True at the next token. Under spec 2.4
 or later it waits for a send to fail instead, so the stop comes at the next
@@ -610,8 +611,8 @@ message (line 483, in 38.6's excerpt).
    on; a subset is accepted, and any other option raises `ValueError`
    (`anulm/multimodal/omni.py` `Intent.choices`, lines 131–139).
 
-`Intent.__call__` used to take `(message, top=3)`. Line 704 passes the options
-second, so on the joint model every `/v1/decide` request failed with a
+`Intent.__call__` used to take `(message, top=3)`. Because line 704 passes the
+options second, every `/v1/decide` request on the joint model failed with a
 `TypeError` and a 500.
 
 The Gradio demo, `anulm/apps/app_omni.py`, serves visitors from a thread pool

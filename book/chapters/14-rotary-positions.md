@@ -99,7 +99,7 @@ def rotate(v, angle):
 
 *illustrative*, printed by `book/code-examples/ch14_rope.py`. The query moves
 with the shift; its scores do not. Against
-*dog* it was 4 unrotated (Chapter 11) and is 3.844 here; against itself it
+*dog* the score was 4 unrotated (Chapter 11) and is 3.844 here; against itself it
 stays 3, and the length is preserved.
 
 ![Figure 14.1 · A rotation by position](../figures/fig14-1-rope-toy.svg)
@@ -390,8 +390,8 @@ is relative to its largest output. Expert sets are counted over 155,648
   because a large angle is stored with a larger absolute error. The control
   run is bit-identical, so the changes come from the shift.
 - **Discrete routing amplifies it.** On the fp32 path at offset 1,024 one
-  token in one layer switches experts, and one logit moves by 0.92. With bf16 experts, whose outputs feed the next layers' routers, 623
-  expert sets change and 0.4% of predictions differ.
+  token in one layer switches experts, and one logit moves by 0.92. With bf16 experts, whose outputs feed the next
+  layers' routers, 623 expert sets change and 0.4% of predictions differ.
 
 `MEASURED` · `IMPLEMENTATION-DEPENDENT`
 

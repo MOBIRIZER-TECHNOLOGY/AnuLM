@@ -91,8 +91,8 @@ Each document then goes to one file:
 - **Raw bytes.** `tobytes()` writes `uint16` ids with no header: two bytes per
   token.
 
-Text corpora mark the same boundary with `DOC_SEP` (Chapter 8). So an exact
-duplicate cannot land in both splits, but a near-duplicate that differs within
+Text corpora mark the same boundary with `DOC_SEP` (Chapter 8). Because the
+split is by hash, an exact duplicate cannot land in both splits, but a near-duplicate that differs within
 its first 200 characters can, and nothing here removes copies inside the
 training split. `NOT IN THE REPO`
 
@@ -382,6 +382,7 @@ held-out documents: 143,364; tokens per document mean 790, median 480; longer th
 So 42.6% of predictions see an unrelated document; only the EOS id says it no
 longer matters. Some training stacks mask attention at every EOS. This one does
 not: `_attn_mask` (line 365) knows only causality and the sliding window.
+
 `NOT IN THE REPO` · `MEASURED`
 
 ## 21.8  Splits: why the tail lies
@@ -460,8 +461,8 @@ writes the sources.
 ## 21.9  What data is worth, measured
 
 On earlier Hindi models, one seed each: cleaning the corpus bought 0.054 bits
-per byte (`docs/RESULTS.md` §8), 3.3× the unique text at the same steps 0.007
-(§11), and a prose filter cost 0.023 (§13).
+per byte (`docs/RESULTS.md` §8), 3.3× the unique text at the same steps bought
+0.007 (§11), and a prose filter cost 0.023 (§13).
 
 `MEASURED`
 

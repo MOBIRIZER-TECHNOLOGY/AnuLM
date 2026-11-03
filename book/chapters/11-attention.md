@@ -248,7 +248,7 @@ It scores 2,000 random queries against the same 256 random keys. For each
 row of weights it records three things: the largest weight; the *keys in play*,
 e<sup>H</sup> with H = −Σ p log p, which is 256 for uniform weights and 1 for
 one-hot; and whether the largest weight exceeds 0.99. Each is averaged over the
-rows (*illustrative*, seed 0; `book/code-examples/attention_by_hand.py`, 11.4):
+rows (*illustrative*, seed 0; `book/code-examples/attention_by_hand.py`):
 
 | d | std of q·k | √d | largest weight, unscaled | keys in play, unscaled | rows above 0.99, unscaled | largest weight, ÷√d | keys in play, ÷√d |
 |---|---|---|---|---|---|---|---|
@@ -265,7 +265,8 @@ scale. *illustrative*; `tools/make_figures.py` repeats the seeded draw of
 Unscaled, a random width-64 head uses 2.5 of 256 keys, and one row in eight is
 nearly one-hot. There ∂p<sub>i</sub>/∂s<sub>j</sub> =
 p<sub>i</sub>(δ<sub>ij</sub> − p<sub>j</sub>) (δ<sub>ij</sub> = 1 if i = j,
-else 0) is near 0, so no gradient flows through the scores. Scaled, every
+else 0) is near 0, so almost no gradient flows through the scores on those
+rows. Scaled, every
 width behaves alike. 11.8 measures the trained model.
 
 `IN THE REPO` (the scale is set in 11.6)
@@ -332,6 +333,7 @@ The forward pass first makes the queries, keys and values for every head:
 ```python
     def forward(self, x, cos, sin, cache: Optional[dict] = None, start: int = 0,
                 window: Optional[int] = None, bidir_mask: Optional[torch.Tensor] = None):
+        # ...
         B, S, _ = x.shape
         qkv = self.query_key_value(x)
         qkv = qkv.view(B, S, self.n_head + 2 * self.n_kv_head, self.head_dim)
@@ -509,12 +511,14 @@ its kind.
 
 ```python
 class RMSNorm(nn.Module):
+    # ...
     def __init__(self, dim: int, eps: float = 1e-6):
         super().__init__()
         self.weight = nn.Parameter(torch.ones(dim))
         self.eps = eps
 
     def forward(self, x):
+        # ...
         dtype = x.dtype
         x = x.float()
         x = x * torch.rsqrt(x.pow(2).mean(-1, keepdim=True) + self.eps)
@@ -525,7 +529,8 @@ Line 238 makes the mean squared component 1, so the length is √64 = 8 (less a
 hair for ε); line 231 starts γ at ones. RoPE then rotates without changing
 length (`rope_preserves_norms`, `tests/test_model.py` line 120).
 
-So a scaled score is at most 8 · 8 · 0.125 = 8. A released-size layer,
+Since |q·k| ≤ ‖q‖ ‖k‖ (the Cauchy–Schwarz inequality), a scaled score is at
+most 8 · 8 · 0.125 = 8. A released-size layer,
 initialised as `AnuLM._init_weights` does and fed a random input of 256
 tokens, agrees (*illustrative*, seed 0, `attention_by_hand.py`):
 
@@ -597,8 +602,8 @@ code**) runs `ckpt_base_v2.pt` unchanged on 64 held-out windows of 512 tokens
         assert err < 1e-3, f"layer {layer}: recomputed attention differs from _sdpa by {err:.2e}"
 ```
 
-This is 11.4's `attention()` beside the real call, and the assertion proves the
-weights are the ones the model used (largest difference 3.1·10⁻⁵). The
+This is 11.4's `attention()` beside the real call, and the assertion checks that the
+weights are the ones the model used (largest difference 3.1 × 10⁻⁵). The
 statistics read them for queries from position 64 on:
 
 ```python
@@ -615,14 +620,14 @@ statistics read them for queries from position 64 on:
 `gather` takes each query's weight one position back; column 0 is the first
 position, and `sees0` keeps queries whose window still includes it. Loss 3.379
 nats against ln V = 10.397 (fp32, but the grouped experts run in bf16, lines
-756, 784; §39's 3.3523 used 400 bf16 windows). *measured*, `book/measurements/`:
+756, 784; `docs/RESULTS.md` §39's 3.3523 used 400 bf16 windows). *measured*, `book/measurements/`:
 
 | Finding | Numbers |
 |---|---|
 | a few heads copy the previous token | 6 of 320 heads put over half their weight there: layer 9 head 14 0.881, layer 4 head 15 0.797, layer 4 head 14 0.717, layer 5 head 9 0.612, layer 14 head 3 0.584, one in layer 3 |
 | many deep heads look at the first position | layers 10–18 put 40% to 67% there on average; 97 of 320 heads over half; strongest layer 17 head 15, 0.860 |
 | … starting at layer 8, where it is visible | on queries that can still see position 0: layers 0–7 at most 0.007, about uniform; layers 8 and 9 0.263 and 0.158; one layer-8 head 0.643 |
-| width of attention changes with depth | keys in play: layer 0 191.6 of 215; layers 1–2 89.8 and 97.1; layers 3–9 35.7 to 80.1; layers 10–18 5.7 to 26.0 of 288; layer 19 181.2; single heads 1.4 to 208.0 |
+| width of attention changes with depth | keys in play, against the mean number of keys a query at positions 64–511 can see (215.07 in the windowed layers 0–9, 288.5 in the full layers 10–19): layer 0 191.6 of 215; layers 1–2 89.8 and 97.1; layers 3–9 35.7 to 80.1; layers 10–18 5.7 to 26.0 of 288; layer 19 181.2; single heads 1.4 to 208.0 |
 
 The windows start at random offsets, so the first-position weight follows the
 position, not a word. Whether later layers use the previous-token heads is not
@@ -718,7 +723,7 @@ an inverted output never reaches it (Chapter 12 inverts the whole function).
 
 **Answers.**
 1. Scores (0, 8) → (0, 5.657); weights (0.003, 0.997); output [1.993, 0.003].
-2. Weights (0.00034, 0.99966); every ∂p<sub>i</sub>/∂s<sub>j</sub> ≤ 0.00034.
+2. Weights (0.00034, 0.99966); every |∂p<sub>i</sub>/∂s<sub>j</sub>| ≤ 0.00034.
 3. The mask leaves one key, and a softmax over one entry is 1.
 4. √128 · √128 / √128 = √128 ≈ 11.31.
 5. 16 · 2,048² · 2 bytes = 128 MiB.
@@ -771,7 +776,7 @@ Repository evidence, all at @fdbb09a:
 - `anulm/model.py`:
   - `RMSNorm` 225–239, `Rotary.__init__` line 298;
   - `_attn_mask` 365–381, `NATIVE_GQA` 387, `_sdpa` 414–418;
-  - `GQAttention.__init__` 430–449, `GQAttention.forward` 465–467, 477–494.
+  - `GQAttention.__init__` 430–449, `GQAttention.forward` 451–494.
 - `tests/test_model.py`:
   - `causal_mask_does_not_leak_future` 57, `rope_preserves_norms` 120;
   - `yarn_temperature_reaches_attention` 144–164;

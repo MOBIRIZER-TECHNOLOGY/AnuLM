@@ -169,9 +169,9 @@ Three readings:
   0.281. At that size bfloat16 keeps too few bits to tell them apart: they
   round to one or two values per layer, which is the same as no bias at all.
   About half the expert choices change, and the loss rises 0.003 nats; zeroing
-  the biases costs 0.007. Centring each layer's biases first, which does not
-  change any choice, since top-k ignores a shift shared by every expert, makes
-  the rounding free.
+  the biases costs 0.007. Centring each layer's biases first makes the
+  rounding free, and the centring itself changes no choice, since top-k
+  ignores a shift shared by every expert.
 - **A whole-bfloat16 model does not collapse.** Casting every parameter and
   buffer to bfloat16 and computing in it cost 0.004 nats, and greedy
   continuations do not fall into one repeated token: their distinct-token
@@ -180,17 +180,17 @@ Three readings:
 
 ![Figure 39.2 · What the released file stores](../figures/fig39-2-dtypes.svg)
 
-*Figure 39.2 · What the released file stores*, per group of tensors, on a
+*Figure 39.2 · What the released file stores.* Per group of tensors, on a
 logarithmic axis. *measured*: `book/measurements/part_viii_ix_export.json`.
 
 > **Details.** The exporter's comment (lines 328–331) and the wrapper's
 > warning (`anulm/hf/modeling_anulm.py` lines 120–133) say that 16-bit router biases
-> make the output collapse into repeated tokens. Neither reproduces at
+> make the output collapse into repeated tokens. Neither claim reproduces at
 > @fdbb09a with this checkpoint: the measured costs are 0.003 and 0.004 nats.
 > What does collapse is the biases, to one or two values per layer, and so
 > the expert choices: about half of them change (Chapter 18). The choices
 > change a lot; the loss barely moves.
-> They probably predate the fix that runs the router in float32 (Chapter 17);
+> The comment and the warning probably predate the fix that runs the router in float32 (Chapter 17);
 > that history is *not verified here*. Keeping the small tensors in float32
 > remains the safe choice, since it is exact and costs 2 MB. An export that
 > must reproduce the `.pt` bit for bit uses `--weights-dtype float32`, and its
@@ -319,7 +319,7 @@ def _inside(root, value: str, what: str) -> str:
     return str(full)
 ```
 
-Two tests, then a join. The first refuses a drive or root (`C:/…`, `/etc/…`)
+Two tests around a join. The first refuses a drive or root (`C:/…`, `/etc/…`)
 and any `..` part, on either slash. The second resolves the joined path,
 following symlinks, and requires it still to lie under the folder. The
 exporter writes `tokenizer_path` and `hf_backbone` as bare relative names, so

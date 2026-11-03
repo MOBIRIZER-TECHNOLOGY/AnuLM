@@ -22,7 +22,7 @@ Test functions defined in `tests/test_model.py` at the pin: 80.
 
 ## Drift between the pin and the working tree
 
-- none
+- `tests/test_model.py`:  1 file changed, 208 insertions(+), 35 deletions(-)
 
 ## Claims recomputed from the code and the released checkpoint
 

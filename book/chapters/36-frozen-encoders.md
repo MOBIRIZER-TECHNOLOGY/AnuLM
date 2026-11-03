@@ -283,7 +283,8 @@ outlined in plum, are trained. *verified*: shapes from `ch36_projectors.py`.
 
 The backbone was trained only on rows of its embedding table. The projectors'
 docstrings say the final LayerNorm is there on purpose, to give the pre-norm
-blocks a fixed scale. Which scale was not chosen: it is the LayerNorm's. At its initial gain of 1 and bias of 0, each output vector has
+blocks a fixed scale. The scale itself was not chosen: it is the
+LayerNorm's. At its initial gain of 1 and bias of 0, each output vector has
 mean 0 and variance 1 over its D entries, so its length is √D = 32. A text
 token's embedding row is far shorter:
 
@@ -336,7 +337,7 @@ Whether that hurts the text tasks is *not measured here*.
 
 ![Figure 36.2 · The scale a projector hands over](../figures/fig36-2-scale.svg)
 
-*Figure 36.2 · The scale a projector hands over*, on a logarithmic axis.
+*Figure 36.2 · The scale a projector hands over.* On a logarithmic axis.
 *measured*: `book/measurements/part_viii_ix_scale.json`.
 
 > **Details.** Starting a projector at the text embeddings' scale is in the
@@ -512,7 +513,7 @@ def whisper_window_rows(rows: list[dict], name: str = "asr") -> list[dict]:
 `clip_seconds` takes the manifest's recorded duration, or reads only the WAV
 header. `whisper_window_rows` keeps the clips of at most 30 seconds and prints
 how many it dropped. Both trainers call it on their training rows:
-`speech_encoder.py`'s `train` (line 216) and the joint trainer
+`speech_encoder.py`'s `train` (the call is line 249) and the joint trainer
 (`anulm/multimodal/omni_train.py` line 99, Chapter 37). Its docstring gives the reason: cropping a long clip would
 pair part of the audio with the whole transcript, a wrong label; five
 FLEURS Hindi training clips run 31 to 36 seconds, and they stopped the first

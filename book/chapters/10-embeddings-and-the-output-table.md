@@ -55,10 +55,11 @@ which costs D numbers per token instead of V × D multiplies.
 
 ## 10.2  Two tables, built untied
 
-> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 827–844 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 827–843 · @fdbb09a
 
 ```python
 class AnuLM(nn.Module):
+    # ...
     def __init__(self, cfg: AnuLMConfig):
         super().__init__()
         self.cfg = cfg
@@ -508,7 +509,7 @@ and at 400M the full recipe's early lead did not hold (*measured*).
 
 > **In one breath.** Each id selects a row of a (V, D) table at the input, and
 > an untied (V, D) head scores every id at the output. Both start small enough
-> that the first loss is ln V. Training leaves rare input rows near zero, and
+> that the first loss is near ln V. Training leaves rare input rows near zero, and
 > an optional merge tree lets rare tokens borrow rows from their BPE parts.
 
 ## References

@@ -173,7 +173,7 @@ def main():
             h.remove()
 
     res = {"checkpoint": "ckpt_base_v2.pt", "data": "data/v2/val.u16", "windows": WINDOWS, "seq": SEQ, "seed": SEED,
-           "precision": "fp32 without autocast, except the experts: the checkpoint's moe_impl='grouped' runs them in bf16 (model.py 716, 743)", "queries_from_position": 64, "graded_tokens": tokens,
+           "precision": "fp32 without autocast, except the experts: the checkpoint's moe_impl='grouped' runs them in bf16 (model.py 756, 784)", "queries_from_position": 64, "graded_tokens": tokens,
            "ungraded_after_eos": WINDOWS * SEQ - tokens, "loss": sum(losses) / tokens,
            "ln_vocab": math.log(cfg.vocab_size), "max_recompute_error": rec.max_err}
     res.update(st)

@@ -20,7 +20,7 @@ python book/code-examples/ch41_shapes.py --tiny   # the two small ones only
 
 Each model gets a prompt of B = 2 sequences of S = 5 tokens, with a KV cache
 and no targets. Then it takes one decode step: S = 1 new token against
-T = 6 cached positions. The symbols are Chapter 20's:
+T = 6 key positions, the 5 cached and the new one. The symbols are Chapter 20's:
 
 | | B | S | T | D | H | H<sub>kv</sub> | D<sub>h</sub> | V | E | A | I | I<sub>e</sub> |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|

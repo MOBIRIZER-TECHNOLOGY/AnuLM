@@ -63,8 +63,8 @@ CHUNK_RE = re.compile(r"\s*\S+|\s+")
 
 `\s*\S+` is non-space characters with the whitespace before them; `\s+`
 catches trailing whitespace. Every character lands in exactly one chunk, so
-the chunks join back into the text. A leading space stays with its word, so
-`' dog'` and `'dog'` are different tokens, and so do newlines and indentation:
+the chunks join back into the text. A leading space stays with its word, as
+do newlines and indentation, so `' dog'` and `'dog'` are different tokens and
 `'\n    return'` is one token of `multi32k` (9.6). Training skips long chunks:
 
 > **In the repo** · `anulm/bpe.py` · `MAX_TRAIN_CHUNK_BYTES` · lines 46–48 · @fdbb09a
@@ -444,7 +444,7 @@ not passed (lines 1355–1358):
 
 `conv.build` (`anulm/hf/hf_tokenizer.py`) writes the same regex as a `Split`
 pre-tokeniser and the merges in rank order. The test uses a small tokenizer,
-so the book example checks the released files on five files at the pin
+so the book example checks the released tokenizer on five files at the pin
 (*verified*):
 
 ```
@@ -579,8 +579,8 @@ Does compression help the model? `docs/RESULTS.md` measured it:
 - `multi32k` has 32,511 merges, EOS 32,767 and V = 32,768; `tokenizer.json`
   and `anulm/bpe.py` agree token for token on every text checked.
 - In mostly-Devanagari held-out documents a token averages 9.41 bytes; in
-  mostly-Latin, 4.44. §7 measured the switch from bytes worth 0.162 bits per
-  byte.
+  mostly-Latin, 4.44. §7 measured the switch from bytes as worth 0.162 bits
+  per byte.
 
 > **In one breath.** Split text into words with their leading space, then
 > merge the most frequent byte pair, again and again, keeping the counts

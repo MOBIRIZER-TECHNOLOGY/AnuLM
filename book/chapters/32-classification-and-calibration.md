@@ -193,7 +193,7 @@ every real key. `anulm/model.py` uses it in place of the causal mask:
 `adapt` (lines 56–105) hides 20% of tokens and predicts each from the
 position before it. It was tested on BANKING77, a public set of banking
 support messages labelled with 77 intents: trained on that set, and
-zero-shot, that is trained only on other label sets and tested on BANKING77's
+zero-shot, that is, trained only on other label sets and tested on BANKING77's
 unseen intents. It did not help: 89.5% against the decoder's 89.2% trained,
 +0.3 points and within noise by RESULTS' reading; 41.6% against 43.2%
 zero-shot (*measured*, RESULTS §36).

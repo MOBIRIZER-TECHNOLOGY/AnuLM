@@ -247,7 +247,7 @@ shape. Three things to read in it:
   mask, so the second answer attends to the whole first example; only the EOS
   between them marks the boundary. Positions run on too: the second example
   starts at position 22, not 0, so its rotary angles (Chapter 14) are those of
-  position 22 onwards. The difference is small here and on untrained weights.
+  position 22 onwards. Here, on untrained weights, the difference is small.
   What it costs a trained model is *not measured here*.
 
 `IN THE REPO`

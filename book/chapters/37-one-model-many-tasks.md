@@ -16,7 +16,7 @@ first full run, from October 2026, whose score improved at every evaluation
 while the skill it was meant to keep got worse.
 
 Every excerpt is quoted at @fdbb09a. The October run used an earlier version
-of the trainer, at commit `773b6a8`, with one batch per optimizer step; the
+of the trainer, at commit `773b6a8`, with one batch per optimiser step; the
 book example loads that version to check the run's log. Where the two differ,
 the text says so. A new run with the current recipe is training now. Its
 results are not in this chapter: they are pending.
@@ -144,7 +144,7 @@ In order:
    context, and passes speech rows through Chapter 36's `whisper_window_rows`,
    so no training clip is longer than Whisper's 30-second window.
 2. **Held-out set.** With `--held`, a separate file is loaded and every row
-   whose input training also sees is dropped (`disjoint_held`, below).
+   whose input also appears in training is dropped (`disjoint_held`, below).
    Without it, `split_rows` holds out the first 2% of distinct inputs.
 3. **Check.** `check_split` (lines 139–144) refuses an empty side, or an input
    on both sides.
@@ -193,8 +193,8 @@ def disjoint_held(training, held, kind, name):
 
 Its docstring gives the case that prompted it: the release data's chat train
 and held-out files share some prompts, and a held-out score over prompts seen
-in training is optimistic. Such rows are dropped with a count rather than
-refusing to train.
+in training is optimistic. The function drops such rows and prints a count
+rather than refusing to train.
 
 > **Details.** The October run's code split by rows, `rows[:cut]` with
 > `cut = max(1, int(len(rows) * 0.02))`, and did not compare a `--held` file
@@ -271,13 +271,13 @@ In order:
 
 1. **Weights to probabilities.** `w /= w.sum()`.
 2. **Schedule.** Linear warmup, then a cosine down to 10%, applied as one factor
-   to every parameter group (Chapter 7). It counts optimizer steps.
-3. **Microbatches.** `--accum` times: draw a task with probability w, take its
+   to every parameter group (Chapter 7). It counts optimiser steps.
+3. **Micro-batches.** `--accum` times: draw a task with probability w, take its
    next batch (`next_batch`, lines 309–320, restarts a task's iterator with a
    new shuffle when it runs out, and raises if a fresh one yields nothing),
    run it with `embeds=` under bf16 autocast, and refuse a non-finite loss.
    Each draw is independent, so one step can hold several tasks.
-4. **Sum.** `(loss / args.accum).backward()` adds each microbatch's gradient
+4. **Sum.** `(loss / args.accum).backward()` adds each micro-batch's gradient
    into the same `.grad`, so after the loop it is the mean of the `accum`
    batch gradients. `seen` counts batches, not steps.
 5. **One update.** Clip at 1.0, step, clear the gradients, and nudge the router
@@ -289,7 +289,7 @@ batch moves the shared decoder as far as a full chat batch. Summing batches
 makes each step an average over several. `--accum` defaults to 1, and `main`
 refuses 0 (lines 505 and 517–518).
 
-The optimizer has the backbone in one group and each projector in another,
+The optimiser has the backbone in one group and each projector in another,
 at `--lr` (default 5e-5) and `--proj-lr` (1e-3) (lines 372–376, 494–495), as
 in Chapter 36.
 
@@ -337,7 +337,7 @@ It is stored in `<out>.last` at every evaluation (lines 474–476). A resume und
 different accumulation, learning rate, schedule, projector scale or task mix
 stops with the names of the settings that changed; a `.last` written before
 recipes were recorded gets a warning. Otherwise the run reloads the model,
-both projectors, the optimizer and the step-0 losses, and continues at the
+both projectors, the optimiser and the step-0 losses, and continues at the
 next step with a new shuffle per task (lines 404–414).
 
 > **Details.** `--stop-after N` (line 506) ends the run at step N while keeping
@@ -394,7 +394,7 @@ def replay_draw(names, w, resumed_at, last_step) -> dict:
 *verified*: `ch37_task_mix.py` against the October run's
 `logs/omni_one/6_train.log`. The run was interrupted and resumed at step
 90,000, and a resume reseeds the draw with the new `start`. The match confirms
-that this run executed one batch per optimizer step. Chat got 7,017 of
+that this run executed one batch per optimiser step. Chat got 7,017 of
 100,000 steps.
 
 ![Figure 37.1 · One training step](../figures/fig37-1-one-step.svg)
@@ -587,8 +587,8 @@ def chat_loss(m, tok, path, device):
 It feeds ids, one example at a time, and takes its own log-softmax over the
 whole held-out file. Its threshold, 3.3, was set from `ckpt_chat_v3.pt`'s
 3.146 under that same scorer (comment, `omni_one.py` line 100), measured before
-the vocabulary was grown. They measure the same held-out file in different
-ways, and the trainer's version now drops prompts seen in training (37.2), so
+the vocabulary was grown. The two scorers measure the same held-out file in
+different ways, and the trainer's version now drops prompts seen in training (37.2), so
 compare each only with its own kind.
 
 `IN THE REPO` · `MEASURED`
@@ -596,7 +596,7 @@ compare each only with its own kind.
 ## 37.7  The recipe after October
 
 Short probes after the October run pointed to the cause in 37.3: one batch per
-optimizer step. The release recipe now reads:
+optimiser step. The release recipe now reads:
 
 > **In the repo** · `experiments/omni_one.py` · `ACCUM` · lines 65–87 · @fdbb09a
 
@@ -696,11 +696,11 @@ yes; their gradients are averaged into one update.
 ## Key points
 
 - `anulm/multimodal/omni_train.py` turns every task into (embeds, targets) with −1 off the
-  answer, so one optimizer and one backbone serve text, speech and images.
+  answer, so one optimiser and one backbone serve text, speech and images.
 - A task is `name=kind:path[:weight[:batch]]`; held-out sets are split by
   input group, a `--held` file loses any input training sees, and speech
   clips over 30 seconds are dropped from training.
-- Each optimizer step sums `--accum` batches, each task drawn by weight; the
+- Each optimiser step sums `--accum` batches, each task drawn by weight; the
   seeds and a recorded recipe make a run repeatable and a resume checked.
 - The checkpoint score is the mean of held-out losses divided by their step-0
   values, so a task with a large loss cannot drown out one with a small loss.

@@ -1,5 +1,5 @@
 device cuda; 20 layers × 16 heads; window of attention on layers 0–9: 256
-loss on 32,732 held-out tokens (36 targets after an end of document not graded; fp32 without autocast, except the experts: the checkpoint's moe_impl='grouped' runs them in bf16 (model.py 716, 743)): 3.3790 nats (ln V = 10.3972)
+loss on 32,732 held-out tokens (36 targets after an end of document not graded; fp32 without autocast, except the experts: the checkpoint's moe_impl='grouped' runs them in bf16 (model.py 756, 784)): 3.3790 nats (ln V = 10.3972)
 recomputed weights · v against _sdpa's output: largest difference 3.1e-05
 first-position weight over the queries that can see position 0, mean over heads [max head]: L0 0.007 [0.008]; L1 0.006 [0.009]; L2 0.005 [0.007]; L3 0.004 [0.010]; L4 0.003 [0.005]; L5 0.003 [0.007]; L6 0.003 [0.007]; L7 0.004 [0.010]; L8 0.263 [0.643]; L9 0.158 [0.257]; L10 0.396 [0.703]; L11 0.613 [0.753]; L12 0.406 [0.634]; L13 0.539 [0.689]; L14 0.481 [0.693]; L15 0.563 [0.728]; L16 0.652 [0.838]; L17 0.661 [0.860]; L18 0.674 [0.835]; L19 0.029 [0.129]
 per layer: mean over heads [max head] of: previous-token weight | first-token weight | keys in play (uniform) | mean distance

@@ -5,7 +5,7 @@
  "seq": 512,
  "seed": 0,
  "queries_from_position": 64,
- "precision": "fp32, no autocast, except the experts: bf16 on the released grouped path (model.py 716, 743)",
+ "precision": "fp32, no autocast, except the experts: bf16 on the released grouped path (model.py 756, 784)",
  "device": "cuda",
  "pairs_within": 24,
  "pairs_across": 96,

@@ -7,8 +7,8 @@ pinned: "@fdbb09a"
 
 # 22  The training loop, line by line
 
-`anulm/training/train.py`'s `main()` (lines 536–924) produced the released model. This chapter
-reads it in order: how a command line becomes a model, how one optimiser step
+`anulm/training/train.py`'s `main()` (lines 536–924) produced the released
+model. This chapter reads it in order: how a command line becomes a model, how one optimiser step
 is built from M micro-batches, and what is logged, evaluated and saved.
 
 The book example is `book/code-examples/ch22_one_step.py` (**Book example, not
@@ -107,8 +107,8 @@ optimizer: AdamW, 397.7M params
 
 *verified*: printed by `ch22_one_step.py`. The released run's log printed the
 same parameter line with `device=cuda dtype=torch.bfloat16`, and
-`optimizer: AdamW (fused)`. That `dtype` is autocast's compute dtype (lines 646
-to 650); the weights were created in fp32 and stayed so (line 736, Chapter
+`optimizer: AdamW (fused)`. That `dtype` is autocast's compute dtype (lines
+646–650); the weights were created in fp32 and stayed so (line 736, Chapter
 23).
 
 `IN THE REPO`
@@ -145,16 +145,15 @@ a host compiler, which it discovers only then. That is Inductor's CPU code; on
 CUDA it generates Triton kernels, and this machine's PyTorch has no Triton
 (`import triton` fails). Either way the failure comes at the first real
 forward. So `main` calls it once on 8 zero ids; if that fails, the run
-continues uncompiled instead of crashing at step 1.
-`IMPLEMENTATION-DEPENDENT` The probe runs in eval mode because a training-mode forward would
-add 8 tokens to every router's `load_counts`, the expert loads behind the next
-bias update (Chapter 18).
+continues uncompiled instead of crashing at step 1. The probe runs in eval
+mode because a training-mode forward would add 8 tokens to every router's
+`load_counts`, the expert loads behind the next bias update (Chapter 18).
 
 From here on `model` is what the loop calls, compiled or not, and `raw_model`
 is the module: the optimiser, the bias update and the saves use it. The
 released run did not compile (Chapter 23).
 
-`IN THE REPO`
+`IN THE REPO` · `IMPLEMENTATION-DEPENDENT`
 
 ## 22.4  One step: M micro-batches
 
@@ -257,9 +256,8 @@ def step(model, opt, batches, args, step_no, divide=True):
 ```
 
 It runs three copies of one small model, the example's own configuration with
-`test_model.tiny()`'s sizes and the router regularisers on:
-two micro-batches of 4 windows, one batch of 8, and two micro-batches
-without the division.
+`test_model.tiny()`'s sizes and the router regularisers on: two micro-batches
+of 4 windows, one batch of 8, and two micro-batches without the division.
 
 ```text
 M=2, divided      | loss 4.1701 | aux 0.0100 | lr 3.00e-06 | imbalance 1.41x | grad norm 0.8003
@@ -492,8 +490,9 @@ no reason to record the graph and keep activations for it.
 - The compile probe catches a missing compiler at step 0 and falls back to
   eager; `raw_model` is the module the optimiser, the bias update and the saves
   use.
-- One step: set the rate, zero, run M micro-batches each backward-ing loss / M,
-  clip the global norm, step, then update the expert biases out of band.
+- One step: set the rate, zero, run M micro-batches, each calling backward on
+  loss / M, clip the global norm, step, then update the expert biases out of
+  band.
 - The logged loss is cross-entropy alone, from one step's batch: noisy. The
   validation loss, with its standard error, is the measure.
 - Every evaluation writes `<out>.last` with optimiser and sampler state, and

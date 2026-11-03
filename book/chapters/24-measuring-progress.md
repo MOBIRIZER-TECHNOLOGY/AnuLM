@@ -27,7 +27,7 @@ bare "§n" is a section of `docs/RESULTS.md`.
 Every window has its own loss, and the number you want is the mean over every
 window of the split. `main` makes the split (lines 689–695): the build's
 held-out file, every tenth chunk with `--val-interleave`, or the last 10%. The
-released model's holds 113,221,976 tokens. The log prints a sample mean over a
+released model's split holds 113,221,976 tokens. The log prints a sample mean over a
 few windows, whose standard error is s/√n for n values with spread s.
 
 `IN THE REPO`
@@ -172,8 +172,9 @@ For random sets the bar is honest about the *level*: ten default sets spread
 with sd 0.0658, each reporting about ± 0.067. It is not the error of a *move*:
 every evaluation in a run reuses seed 0's windows, so a change between two is
 paired (24.5), with an error from per-batch differences that is not printed.
-§25 called a 0.015 "plateau" on the coder run noise against six window sets'
-sd of 0.125, the level's error; the plateau was read against no valid bar.
+§25 called a 0.015 "plateau" on the coder run noise, against an sd of 0.125
+across six window sets; that sd is the level's error, so the plateau was read
+against no valid bar.
 
 Random starts also clump. On the released split that does not explain the
 spread. `ch24_error_bars.py` recomputes each default set's windows, counts them
@@ -309,7 +310,8 @@ of these.
 
 ## 24.6  Bits per byte: one axis across tokenizers
 
-On the same Hindi, bytes scored 0.5975 nats per token and a 16k BPE 4.6795,
+On the same Hindi, the byte model scored 0.5975 nats per token and a 16k BPE
+model 4.6795,
 yet the BPE model was better: 0.700 bits per byte against 0.862 (§7).
 
 > **In the repo** · `anulm/training/train.py` · `main` · lines 906–908 · @fdbb09a

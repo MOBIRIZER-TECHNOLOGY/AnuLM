@@ -184,7 +184,8 @@ the order of magnitude a transformer reaches, not to the third decimal.
 
 Frequency alone is worth 2.20 nats; one byte of order adds 0.85. The
 zero-block AnuLM lands 0.006 below the count table, and smoothing accounts
-for that: less of it moves the table below the zero-block model.
+for that. Add-0.5 brings the table to 2.4878, still 0.0007 above the
+zero-block model; add-0.1 brings it to 2.4850, 0.0021 below.
 
 ```python
     smooth = {a: bigram_loss(train, val, alpha=a) for a in (0.5, 0.1)}
@@ -361,7 +362,7 @@ predict each one from the position before it:
 Hidden tokens are replaced by a placeholder id; targets are kept only where a
 token was hidden, −1 elsewhere, so only the hidden tokens are graded. Did it
 help? On BANKING77 intent classification, the bidirectional version scored
-+0.3 points trained and 1.6 points worse zero-shot: within noise, so making
+0.3 points better when trained and 1.6 points worse zero-shot: within noise, so making
 AnuLM bidirectional did not help there (`docs/RESULTS.md` §36).
 
 `IN THE REPO`

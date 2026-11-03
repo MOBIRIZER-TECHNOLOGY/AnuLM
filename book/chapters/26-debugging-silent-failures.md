@@ -281,7 +281,7 @@ autocast, small rounding changes can swap which experts win.
 
 The input is (N, D), with N here the tokens in the batch, flattened. `torch.autocast(..., enabled=False)`
 switches autocast off for everything inside, so `_gate`'s `F.linear` and
-sigmoid run in fp32; the weights come back in the caller's dtype. The comment
+sigmoid run in fp32; the combine weights come back in the caller's dtype. The comment
 says why the earlier fix, casting `x_flat` to fp32, did nothing:
 
 ```

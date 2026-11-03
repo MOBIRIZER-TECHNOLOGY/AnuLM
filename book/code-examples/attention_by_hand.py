@@ -9,12 +9,12 @@ Each part is labelled with the chapter section it feeds:
 
 11.3  The 2-D toy `The dog bit`: every number of the by-hand calculation, then
       the same inputs through PyTorch's SDPA and through `model.py`'s `_sdpa`.
-11.4  Why divide by √d: random unit-variance queries against shared random
+11.5  Why divide by √d: random unit-variance queries against shared random
       keys at widths 2, 8 and 64, with and without the scale (seeded).
-11.6  The scale in the real model: a released-size attention layer, initialised
+11.7  The scale in the real model: a released-size attention layer, initialised
       as AnuLM._init_weights does, where QK-norm bounds every scaled score;
       then the same bound computed from the trained gains in ckpt_base_v2.pt.
-11.8  The cost of the score matrix at the released size (arithmetic), and
+11.9  The cost of the score matrix at the released size (arithmetic), and
       which SDPA kernel this machine's PyTorch picks on the CPU.
 
 The toy vectors and the random inputs are made up for teaching. `model.py` is
@@ -84,7 +84,7 @@ def toy() -> None:
 
 
 def why_scale() -> None:
-    print("\n11.4  Why divide by √d (random unit-variance vectors, seed 0; illustrative)")
+    print("\n11.5  Why divide by √d (random unit-variance vectors, seed 0; illustrative)")
     g = torch.Generator().manual_seed(0)
     n_q, n_k = 2000, 256
     print(f"  {n_q} queries against the same {n_k} keys; components drawn from N(0, 1)")
@@ -109,7 +109,7 @@ def why_scale() -> None:
 
 
 def real_scale() -> None:
-    print("\n11.6  The scale in the released configuration (fresh weights, random input; illustrative)")
+    print("\n11.7  The scale in the released configuration (fresh weights, random input; illustrative)")
     cfg = released()
     torch.manual_seed(0)
     rot = M.Rotary(cfg, cfg.head_dim)
@@ -138,7 +138,7 @@ def real_scale() -> None:
 
 
 def trained_gains() -> None:
-    print("\n11.6  The same bound in the trained model (QK-norm gains read from ckpt_base_v2.pt)")
+    print("\n11.7  The same bound in the trained model (QK-norm gains read from ckpt_base_v2.pt)")
     ck = torch.load(ROOT / "ckpt_base_v2.pt", map_location="cpu", weights_only=False, mmap=True)
     sd, cfg = ck["model"], ck["cfg"]
     scale = cfg.head_dim ** -0.5
@@ -156,7 +156,7 @@ def trained_gains() -> None:
 
 
 def kernels() -> None:
-    print("\n11.8  Which SDPA implementation this PyTorch picks on this machine's CPU")
+    print("\n11.9  Which SDPA implementation this PyTorch picks on this machine's CPU")
     print(f"  torch {torch.__version__}; backends it names: "
           + ", ".join(n for n in dir(torch.nn.attention.SDPBackend) if n.isupper() and n not in ("ERROR", "OVERRIDEABLE")))
     q = torch.randn(1, 16, 256, 64)
@@ -177,7 +177,7 @@ def kernels() -> None:
 
 
 def cost() -> None:
-    print("\n11.8  The score matrix at the released size (arithmetic)")
+    print("\n11.9  The score matrix at the released size (arithmetic)")
     cfg = released()
     H, Dh, D, Hkv = cfg.n_head, cfg.head_dim, cfg.hidden_size, cfg.n_kv_head
     for S in (1024, 4096):

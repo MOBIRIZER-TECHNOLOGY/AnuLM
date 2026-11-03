@@ -301,8 +301,8 @@ def saved_bytes(m, x, y):
 ```
 
 *verified*: printed by `ch23_precision.py`; the gradients match the plain path.
-On the released model, checkpointing cut the peak from 12.26 to 6.64 GiB
-(23.4), 5.62 GiB. The time cost was +30% on this card (`docs/RESULTS.md` §32), which is
+On the released model, checkpointing cut the peak from 12.26 GiB (23.4) to
+6.64 GiB, a saving of 5.62 GiB. The time cost was +30% on this card (`docs/RESULTS.md` §32), which is
 why the released run, which fitted without it, did not use it.
 
 `IN THE REPO` · `MEASURED`
@@ -355,7 +355,7 @@ last chunk.
 
 On Windows the display driver (WDDM) pages GPU memory to system RAM instead of
 failing. In `docs/RESULTS.md` §6, on an 8 GB card, a 443M model without
-checkpointing "works" at 31,573 ms per step; with checkpointing it ran at 2,716
+checkpointing "works" at 31,573 ms per step; with checkpointing it ran at 2,716 ms
 and still spilled. Two pieces of code answer it:
 
 > **In the repo** · `anulm/training/train.py` · `warn_if_spilling` · lines 227–234 · @fdbb09a
@@ -408,7 +408,7 @@ plain step here.
 ## 23.8  Speed: `torch.compile` and the MoE paths
 
 Chapter 18's three dispatch paths compute the same thing at different speeds.
-In eager mode `nano_30b` took 574 ms per step with `sparse` and 1,350 with
+In eager mode `nano_30b` took 574 ms per step with `sparse` and 1,350 ms with
 `dense`. But `sparse` uses `nonzero`, whose output shape depends on the data.
 Under `torch.compile` [R52] the model is captured as graphs of operations; a
 **graph break** is a point where capture stops and Python runs the code instead:
@@ -469,9 +469,7 @@ SDPA kernels on this machine (torch 2.11.0+cu128, bf16, head width 64):
 
 *verified*: printed by `ch23_measure.py --report`.
 
-`IMPLEMENTATION-DEPENDENT`
-
-`IN THE REPO` · `MEASURED`
+`IN THE REPO` · `MEASURED` · `IMPLEMENTATION-DEPENDENT`
 
 ## 23.9  Exercises
 

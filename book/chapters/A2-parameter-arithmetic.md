@@ -92,7 +92,7 @@ builds `nano_350m` with the released run's architecture. It differs from the
 checkpoint in six fields, none of which changes a parameter's shape:
 `tokenizer_path`, `bias_update_rate`, `moe_impl`, `seq_balance_alpha`,
 `router_z_alpha` and `yarn_original_context`
-(`ch41_checkpoints.py released`, Chapter 41.5). Every count below holds for
+(`ch41_checkpoints.py released`, Chapter 41, 41.5). Every count below holds for
 both.
 
 ## B.2  Parameters, term by term
@@ -193,7 +193,7 @@ checkpoint: weights, two moments, and the sampler's shuffled list of
 
 ## B.6  Three extensions, as arithmetic
 
-None of these is in the repository (Chapter 41.6).
+None of these is in the repository (Chapter 41, 41.6).
 
 ```
 paged KV cache: a 16-token block, all 20 layers, holds 327,680 B (320 KiB) in bf16, 491,520 B (480 KiB) with the fp32 keys autocast leaves; a full 1024-token context 20 MiB in bf16

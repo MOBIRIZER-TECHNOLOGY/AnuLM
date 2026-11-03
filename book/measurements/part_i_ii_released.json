@@ -5,7 +5,7 @@
  "seq": 512,
  "seed": 0,
  "graded_tokens": 32732,
- "precision": "fp32, no autocast, except the experts: the checkpoint's moe_impl='grouped' runs them in bf16 (model.py 716, 743), as in Chapter 20",
+ "precision": "fp32, no autocast, except the experts: the checkpoint's moe_impl='grouped' runs them in bf16 (model.py 756, 784), as in Chapter 20",
  "loss": 3.3789522642328764,
  "ln_vocab": 10.39720770839918,
  "perplexity": 29.34001442114286,

@@ -8,7 +8,7 @@ pinned: "@fdbb09a"
 # 13  Many heads, shared keys: multi-head and grouped-query attention
 
 Chapter 11 followed one head; the released model runs 16 per layer, and
-Chapter 11 measured them doing different jobs. This chapter reads
+that chapter measured them doing different jobs. This chapter reads
 `GQAttention` line by line: one fused projection cut into heads, the
 reshapes, the cache, and how 16 query heads share 4 key/value heads.
 
@@ -74,7 +74,7 @@ The released model's preset sets `head_dim=64` explicitly (`nano_350m`, line
   (16 + 8)·64 = 1,536: one matrix multiply instead of three.
 - **`dense`** maps the heads' outputs, H·D<sub>h</sub> wide, back to D.
 - **QK-norm** is one RMSNorm over D<sub>h</sub> for queries, one for keys
-  (11.6). The scale, line 449, is Chapter 11's.
+  (11.7). The scale, line 449, is Chapter 11's.
 
 Which rows make which head? The book example checks each D<sub>h</sub>-row
 slice against `forward`'s split, on `tiny()` (**Book example, not repository
@@ -115,6 +115,7 @@ weight row: query heads first, then key heads, then value heads.
 ```python
     def forward(self, x, cos, sin, cache: Optional[dict] = None, start: int = 0,
                 window: Optional[int] = None, bidir_mask: Optional[torch.Tensor] = None):
+        # ...
         B, S, _ = x.shape
         qkv = self.query_key_value(x)
         qkv = qkv.view(B, S, self.n_head + 2 * self.n_kv_head, self.head_dim)
@@ -231,8 +232,8 @@ reads key/value head h // `n_rep`. A tiled `repeat` pairs them differently:
 *verified*: `enable_gqa` groups the heads the same way; the tiled pairing
 differs by 2.93 without any error. PyTorch's documentation says the same: with
 `enable_gqa=True` its reference implementation repeats each key and value head
-with `repeat_interleave`, and it calls GQA an experimental feature [R50]. After attention, `transpose` and `view` lay
-the H outputs side by side, (B, S, H·D<sub>h</sub>), for `dense`.
+with `repeat_interleave`, and it calls GQA an experimental feature [R50]. After attention, `transpose` and `view`
+lay the H outputs side by side, (B, S, H·D<sub>h</sub>), for `dense`.
 
 The other branch is a switch:
 
@@ -277,7 +278,7 @@ def native_gqa_matches_repeat_interleave():
 ```
 
 With `n_kv_head=1` every query head reads the same key/value head, so a native
-path that tiled would pass it; the example's grouping check would not.
+path that tiled would pass it; the example's grouping check would catch it.
 
 `IN THE REPO` · `IMPLEMENTATION-DEPENDENT` (which is faster)
 
@@ -322,7 +323,7 @@ computes in bf16 (`anulm/model.py` lines 756 and 784).
 - **Shared keys pull heads together, mildly**: 0.494 within groups, 0.570
   across, over all layers; closer within in 19 of 20 layers.
 - **Layer 0's grouped heads are nearly identical**, 0.038 against 0.238.
-  Its query gains are tiny (11.6), which is consistent with this, not shown
+  Its query gains are tiny (11.7), which is consistent with this, not shown
   to cause it.
 - **Elsewhere sharing keys does not make heads redundant**: within a group,
   layers average 0.33 to 0.68.

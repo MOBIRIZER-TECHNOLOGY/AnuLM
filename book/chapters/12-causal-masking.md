@@ -66,7 +66,7 @@ def before_and_after() -> None:
 
 Zeroed afterwards, *The* keeps 0.401 of its attention; the rest went to keys
 it may not see. And a row with *no* allowed key is 0/0. A causal row always
-keeps its own key; the configuration refuses a window of 0, which would not:
+keeps its own key. A window of 0 would not, so the configuration refuses it:
 
 > **In the repo** · `anulm/model.py` · `AnuLMConfig.__post_init__` · lines 138–140 · @fdbb09a
 
@@ -281,7 +281,7 @@ split at position 256. *measured*, on a sample of 32,738 graded tokens;
   beyond, layers 0–9 meet keys they
   never saw in training, and the loss rises 1.08 nats.
 - **The future does not help a model trained without it**: the loss more than
-  doubles. A leak's danger is in *training*, where a model could learn to use
+  doubles. A leak's danger lies in *training*, where a model could learn to use
   it (*not measured here*).
 
 `IN THE REPO` · `MEASURED`
@@ -441,8 +441,8 @@ namespace on every call. `tests` holds the four tests.
 
 *verified*. The causality test catches only the last: a mask that is always
 built reaches its call, while the first three leave its `None` path intact.
-The cache test passes a window one too wide, and a reversed mask: both its
-runs share the wrong mask, and an agreement test cannot see a bug both sides
+`sliding_window_agrees_with_cache` passes a window one too wide and a
+reversed mask: both its runs share the wrong mask, and an agreement test cannot see a bug both sides
 have.
 
 `IN THE REPO`

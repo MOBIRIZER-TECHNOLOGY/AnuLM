@@ -16,7 +16,7 @@ tokens from the base run's held-out split (`data/v2/val.u16`), drawn with seed
 
 It records the loss over all graded positions and over positions 0–255 and
 256–1,023 separately. Precision: fp32 with no autocast, except the experts, which the released
-configuration runs in bf16 on its grouped path (`model.py` 716, 743).
+configuration runs in bf16 on its grouped path (`model.py` 756, 784).
 
 Only statistics are saved; no held-out text is printed.
 With --save, results go to book/measurements/part_iv_a_masks.json.
@@ -79,7 +79,7 @@ def losses(m, dev):
 def main() -> None:
     m, cfg, dev = load()
     res = {"checkpoint": "ckpt_base_v2.pt", "data": "data/v2/val.u16", "windows": WINDOWS, "seq": SEQ,
-           "seed": SEED, "precision": "fp32, no autocast, except the experts: bf16 on the released grouped path (model.py 716, 743)", "device": dev}
+           "seed": SEED, "precision": "fp32, no autocast, except the experts: bf16 on the released grouped path (model.py 756, 784)", "device": dev}
     res["as_trained"] = losses(m, dev)
     windows = [layer.window for layer in m.layers]
     for layer in m.layers:

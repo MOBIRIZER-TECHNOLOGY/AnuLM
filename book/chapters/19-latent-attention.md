@@ -12,8 +12,8 @@ The KV cache stores every past token's keys and values, layer by layer
 (Chapter 13). Multi-head latent attention, MLA, caches instead one small latent
 vector per token and rebuilds every head's keys and values from it. That is far
 smaller than every head keeping its own keys and values; against GQA it need
-not be smaller (19.5). `anulm/model.py` has MLA as `MLAttention`, lines 501–578, selected with
-`attn="mla"`. **The released model does not use it** (it is GQA), but the
+not be smaller (19.5). `anulm/model.py` has MLA as `MLAttention`, lines
+501–578, selected with `attn="mla"`. **The released model does not use it** (it is GQA), but the
 `nano_105b` preset does, after Sarvam's 105B. Every shape below is at
 `nano_105b`'s sizes.
 
@@ -145,8 +145,8 @@ and `AnuLM.__init__` builds the rotary tables only D<sub>r</sub> wide
         compressed = self.kv_a_layernorm(compressed)              # (B, S, Lkv)
 ```
 
-- **Queries**, (B, H, S, D<sub>n</sub> + D<sub>r</sub>), normalised per head, then
-  split into `q_nope` and `q_pe`.
+- **Queries**, (B, H, S, D<sub>n</sub> + D<sub>r</sub>), normalised per head,
+  then split into `q_nope` and `q_pe`.
 - **`compressed`**, (B, S, D<sub>c</sub> + D<sub>r</sub>), split into the latent
   and `k_pe`, which becomes (B, 1, S, D<sub>r</sub>): one head.
 - **`apply_rope`** rotates only `q_pe` and `k_pe`; the latent is normalised and

@@ -140,8 +140,8 @@ values in Chapter 20.
 | w<sub>i</sub> | the combine weight of expert i; a token's weights sum to the routed scaling factor | | |
 | n<sub>e</sub> | (token, slot) pairs that reach expert e in one call (Appendix A) | data-dependent | data-dependent |
 | n<sub>shared</sub> | shared experts per MoE layer, `num_shared_experts` | 1 | 0 |
-| r | MLA latent width, `kv_lora_rank` (Chapter 19, Appendix A.3) | 16 in A.3 | no MLA |
-| d<sub>n</sub>, d<sub>r</sub>, d<sub>v</sub> | MLA's non-rotated q/k width, rotated q/k width and value width | 8, 8, 8 in A.3 | no MLA |
+| D<sub>c</sub> | MLA latent width, `kv_lora_rank` (Chapter 19; Appendix A.3 writes it r) | 16 in A.3 | no MLA |
+| D<sub>n</sub>, D<sub>r</sub>, D<sub>v</sub> | MLA's non-rotated q/k width, rotated q/k width and value width (Chapter 19; Appendix A.3 writes them d<sub>n</sub>, d<sub>r</sub>, d<sub>v</sub>) | 8, 8, 8 in A.3 | no MLA |
 | p | top-p's probability threshold (Chapters 28, 41) | | |
 
 **Letters that mean different things in different parts.** The notation is
@@ -151,7 +151,7 @@ fixed within a part, not across the book:
 |---|---|---|
 | B | sequences in a batch | **B**, bold: LoRA's out × r matrix, which starts at zero (Chapter 31) |
 | A | experts active per token | **A**, bold: LoRA's r × in matrix (Chapter 31) |
-| r | (not used) | MLA's latent width (Chapter 19, Appendix A.3); LoRA's rank (Chapter 31) |
+| r | (not used; Chapter 19 writes MLA's latent width D<sub>c</sub>) | MLA's latent width in Appendix A.3; LoRA's rank (Chapter 31) |
 | **M**, M | **M**, bold: the attention mask added to the scores (Chapter 11) | M, plain: micro-batches per optimiser step, `--grad-accum` (Chapters 21–22) |
 | **V**, V | **V**, bold: the value matrix; V, plain: the vocabulary size | |
 | p | a probability, as in p<sub>b,s</sub> | top-p's threshold (Chapters 28, 41) |

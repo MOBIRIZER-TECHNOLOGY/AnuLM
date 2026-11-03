@@ -14,7 +14,7 @@ The class `ModelTests` at the end of the file wraps each one as a `unittest`
 method, so `python -m unittest tests.test_model` and pytest run the same 76.
 Most build `tiny()` (line 44) with a few fields changed. On the book's machine,
 `python -m tests.test_model` at the pin passed all 76 in 46 s on a CPU, with
-the GPU hidden (`CUDA_VISIBLE_DEVICES=-1`; Chapter 41.5;
+the GPU hidden (`CUDA_VISIBLE_DEVICES=-1`; Chapter 41, 41.5;
 `book/measurements/part_x_tests.json`). `README.md` gives the same count, 76.
 
 The table lists every test in file order, with the line of its `def`, what it
@@ -94,7 +94,7 @@ summary line counts it as skipped, not passed.
 | `golden_items_are_well_formed_and_the_scorer_runs` | 1465 | golden-set items satisfy their contract and the scorer runs on a byte checkpoint | 24 |
 | `qa_packing_masks_prompts_and_keeps_examples_whole` | 1511 | SFT packing labels exactly the answer tokens, never splits an example, and drops one longer than the block | 30 |
 | `chunked_loss_matches_the_full_loss_and_its_gradients` | 1548 | chunked cross-entropy gives the same loss and gradients, with ignored targets and a short last chunk | 23 |
-| `cached_embeds_decoding_matches_prefix_replay` | 1577 | `decode_from_embeds` with the cache emits what re-running the prefix emits (both) | 36 |
+| `cached_embeds_decoding_matches_prefix_replay` | 1577 | `decode_from_embeds` with the cache emits what re-running the prefix emits (both) | 35 |
 | `native_gqa_matches_repeat_interleave` | 1602 | `NATIVE_GQA` and `repeat_interleave` agree on full, cached and windowed paths | 13 |
 | `wsd_schedule_is_flat_then_decays_to_min_lr` | 1627 | over 100 steps: warmup to the peak by step 9, flat over steps 10–79, strictly falling over 80–99, and `min_lr` at step 100 | 7 |
 | `merge_tree_composes_trains_and_bakes_losslessly` | 1640 | merge-tree rows compose as defined, gradients reach ancestors, and baking changes no output | 10 |

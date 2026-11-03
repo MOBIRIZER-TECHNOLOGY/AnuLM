@@ -5,7 +5,7 @@
  "seq": 512,
  "seed": 0,
  "device": "cuda",
- "precision": "no autocast; sparse run: fp32 throughout; grouped run: fp32 except the experts, bf16 (model.py 716, 743); the router is fp32 on both",
+ "precision": "no autocast; sparse run: fp32 throughout; grouped run: fp32 except the experts, bf16 (model.py 756, 784); the router is fp32 on both",
  "sparse": {
   "0": {
    "loss": 3.1759662773906454,

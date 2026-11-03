@@ -260,7 +260,8 @@ With `--resume`, `main` reads the resume point before the first step:
 ```
 
 1. **To the CPU**, then `del ck`. Loading the 4.6 GB blob onto an 8 GB GPU and
-   keeping it spilled to system memory: 210 tokens per second, not about 4,400 (§8).
+   keeping it there spilled to system memory: 210 tokens per second, not about
+   4,400 (§8).
 2. **Refuse, or fall back.** `safe_load` (25.7) reads the file without
    running any code in it. A file it *refuses*, because it holds a Python
    object outside the allow-list, re-raises `UnsafeCheckpointError` and stops
@@ -287,8 +288,8 @@ the next invocation passes `--resume`:
 ```
 
 `--steps` still sets the schedule. The book example runs `anulm/training/train.py`
-unchanged on a byte corpus: A straight through 60 steps; B stopped at 30 and
-resumed; C as B, with its resume point cut in half first.
+unchanged on a byte corpus: A runs straight through 60 steps; B stops at 30 and
+resumes; C does as B, with its resume point cut in half first.
 
 ```python
 def run(folder: Path, *extra: str, env: dict | None = None) -> subprocess.CompletedProcess:
@@ -463,6 +464,7 @@ Part 3. a readable resume point that holds a Python object
 trusted one resumes at step 30. The run's own resume points need no escape:
 weights, an optimizer state dict, the sampler's generator state (a byte
 tensor) and the configuration are all inside the allow-list.
+
 The repository's own test of the refusal uses a class whose `__setstate__`,
 called during a full unpickle, sets a flag:
 

@@ -100,6 +100,7 @@ class SwiGLU(nn.Module):
         self.down_proj = nn.Linear(intermediate_size, hidden_size, bias=False)
 
     def forward(self, x):
+        # ...
         return self.down_proj(F.silu(self.gate_proj(x)) * self.up_proj(x))
 ```
 
@@ -216,7 +217,7 @@ Two readings (*verified*):
 - **The 2/3 rule, roughly.** A third matrix makes a gated FFN 1.5 times as
   large, so the SwiGLU paper shrank the width by 2/3 to keep parameters and
   computation constant [R11]. Against a two-matrix FFN of width 4·D, that
-  width is 2,730.67; I = 2,816 is it rounded up to a multiple of 256. The code
+  width is 2,730.67; I = 2,816 is that width rounded up to a multiple of 256. The code
   does not say that this is how it was chosen.
 
 > **Details.** The smaller presets set I to 2·D (`nano_30b`, line 166) and
@@ -328,10 +329,10 @@ how often each channel is a token's largest. *measured*, over 32,768 tokens:
   layer's structure.
 - **Layer 0 writes most of the stream:** its output is 16.5 times the stream
   entering it. These are L2 norms over D = 1,024, 32 times an RMS: 0.378 and
-  0.023 as RMS, the figures of Chapter 15's Table (positions 1–511 there; all
+  0.023 as RMS, the figures in Chapter 15's table (positions 1–511 there; all
   positions here). Layer 10's MoE output is 0.15 times its stream, but that
-  ratio includes position 0, whose stream Chapter 15 shows is about 100 times
-  larger from layer 7 on.
+  ratio includes position 0, whose stream Chapter 15 shows has RMS about 100
+  entering layers 8 through 18 (layer 7's feed-forward half puts it there).
 
 ![Figure 16.3 · How few channels carry a token](../figures/fig16-3-channels.svg)
 
@@ -366,11 +367,11 @@ output scale 0.4609; gate/up swapped: max difference 0.1585; gate transposed: 0.
 - **A forgotten transpose** changed the output by more than its own scale
   (0.5985 against 0.4609), without an error. *Catch it:* test with D ≠ I, where
   the shapes no longer fit.
-- **Swapped `gate_proj` and `up_proj`** changed it by about a third of its scale
-  (0.1585). Both are (I, D), so no shape test sees it. *Catch it:* compare
+- **Swapped `gate_proj` and `up_proj`** changed it by about a third of its
+  scale (0.1585). Both are (I, D), so no shape test sees it. *Catch it:* compare
   outputs with the source on the same input, as
-  `transformers_wrapper_matches_the_native_model` (`tests/test_model.py` line 1285)
-  does. That test returns early, and counts as a pass, when `transformers` is
+  `transformers_wrapper_matches_the_native_model` (`tests/test_model.py`
+  line 1285) does. That test returns early, and counts as a pass, when `transformers` is
   not installed.
 - **A projection built but never used** still lets the loss fall. *Catch it:*
   `all_parameters_receive_gradients` (`tests/test_model.py` line 336).

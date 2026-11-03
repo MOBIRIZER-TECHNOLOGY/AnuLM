@@ -25,7 +25,7 @@ it records, against offset 0:
 
 Offset 0 is run twice; the second run is a determinism control. It does all
 this twice: with the experts on the released configuration's own path,
-`moe_impl = "grouped"`, which runs them in bf16 (`model.py` 716, 743), and on
+`moe_impl = "grouped"`, which runs them in bf16 (`model.py` 756, 784), and on
 the `"sparse"` path, which keeps the whole forward pass in fp32. The router
 itself runs in fp32 on both paths (580–586). A router's choice is discrete,
 so a tiny change upstream can switch an expert.
@@ -94,7 +94,7 @@ def main() -> None:
     res = {"checkpoint": "ckpt_base_v2.pt", "data": "data/v2/val.u16", "windows": WINDOWS, "seq": SEQ,
            "seed": SEED, "device": dev,
            "precision": "no autocast; sparse run: fp32 throughout; grouped run: fp32 except the experts, "
-                        "bf16 (model.py 716, 743); the router is fp32 on both"}
+                        "bf16 (model.py 756, 784); the router is fp32 on both"}
     for impl in ("sparse", "grouped"):
         for layer in m.layers:
             if layer.is_moe:

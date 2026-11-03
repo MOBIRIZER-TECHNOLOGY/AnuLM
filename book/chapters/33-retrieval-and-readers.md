@@ -58,7 +58,7 @@ BM25 scores a passage d for a query q as a sum over the query's words
   score(q, d) = Σ<sub>w ∈ q</sub> idf(w) · tf·(k<sub>1</sub> + 1) /
   (tf + k<sub>1</sub>·(1 − b + b·|d| / avgdl))
 
-where tf counts w in d, |d| is d's length in words, and avgdl the mean length.
+where tf counts w in d, |d| is d's length in words, and avgdl is the mean length.
 A word's weight grows with tf but saturates (k<sub>1</sub>), and long passages
 are discounted (b). `anulm/inference/rag.py` computes every (word, passage) weight once, when
 it builds the index:
@@ -143,7 +143,7 @@ query 'What is the capital of India?': rag.bm25 ranks ['Delhi', 'Tokyo', 'Ganga'
 data/rag/meta.json: 932,648 chunks, 56,442,861 postings, avgdl 91.5 hashed words, k1 1.2, b 0.75, 16,777,216 buckets
 ```
 
-*verified*: printed by the example; the differences are float16 storage. The
+*verified*: printed by the example; the differences come from float16 storage. The
 last line reads the real index's metadata. Tokyo, Ganga and Vaishali each
 match four query words with the same idf; the length discount orders them,
 shortest first.
@@ -175,13 +175,13 @@ scaled to unit length, so a dot product is a cosine. Passages are embedded once
 as `"passage: {title}. {text}"`, questions as `"query: {question}"` (lines
 216 and 228);
 a search is one (932,648 × 384) matrix–vector product and a top-k.
-`self.device` is where e5 runs: `Dense(device)` falls back to CUDA when it is
+`self.device` is where E5 runs: `Dense(device)` falls back to CUDA when it is
 available and no device is given (line 187), in fp16 there and fp32 on the
 CPU. `Retriever(root, device)` keeps the device it is given and builds
 `Dense(self.device)` on first use (line 271, in the excerpt below), and the
 readers pass their own model's device (`RagQA`, line 342), so `--device cpu`
 keeps retrieval off a GPU another job owns. At the book's previous pin they
-built `Retriever()` and `Dense()`, so e5 went to the GPU whatever the reader's
+built `Retriever()` and `Dense()`, so E5 went to the GPU whatever the reader's
 device.
 
 > **Details.** The 384 is multilingual-e5-small's hidden size, read from the
@@ -278,7 +278,7 @@ reader prompt (en), 241 characters:
 
 *verified*: printed by the example. The reader decodes greedily (`read`,
 lines 354–364). Trained on 59,400 examples, it learned the format and to say
-"not found", not to read: F1 4.9 on SQuAD English, against 3.4 untuned
+"not found", but it did not learn to read: F1 4.9 on SQuAD English, against 3.4 untuned
 (RESULTS §33). Two causes are recorded there: the question comes after the
 passages, so no passage token knows what to look for; and only about 1% of
 positions carried loss.
@@ -399,8 +399,8 @@ def best_span(s, e, n):
 ```
 
 `S[i, j]` is start score i plus end score j, every pair at once by
-broadcasting. `ok` keeps spans that end at or after their start, under
-`MAX_ANS` = 30 tokens. `divmod` turns the flat `argmax` back into (row,
+broadcasting. `ok` keeps spans that end at or after their start and are at most
+`MAX_ANS` = 30 tokens long. `divmod` turns the flat `argmax` back into (row,
 column); the + 1 undoes the skipped position 0. If no span beats s[0] + e[0],
 there is no answer. The example checks it against a loop over all spans:
 
@@ -515,7 +515,7 @@ backbone, not in the method.
 > **In one breath.** Hash words, store BM25 weights at build time and add them
 > up per query, or embed by meaning with a borrowed encoder and fuse the two
 > by rank; then put the question first and let a start/end head point at the
-> answer, which a model this size can do far better than generate it.
+> answer, which a model this size does far better than generating it.
 
 ## References
 

@@ -181,7 +181,7 @@ asserted at m = 0 and m = 0.2 by the figure script.
 
 Two passes through the frozen reference without gradients, two through the
 policy; `sft_weight` adds the chosen answers' SFT loss; then the router-bias
-update of Chapter 31. The port to `anulm/model.py` swaps in `answer_logprob`:
+update of Chapter 18 (18.5). The port to `anulm/model.py` swaps in `answer_logprob`:
 
 ```python
 def dpo_step(policy, opt, prompt, chosen, rejected, ref_c, ref_r, beta=0.1):
@@ -204,8 +204,8 @@ step 20: loss 0.3025  margin +1.041  log p chosen  -8.085  rejected -18.263
 *illustrative*: twenty steps on `tiny()`, one made-up pair, printed by
 `book/code-examples/ch34_preferences.py`. The chosen answer
 rises here, but the loss sees only the difference: both can fall while it
-falls. The lab book's Chapter 11 reports that on its sums task, cured by the
-SFT term; here it is *not measured here*.
+falls. The lab book's Chapter 11 reports both falling on its sums task, cured
+by the SFT term; whether that happens on `anulm/model.py` is *not measured here*.
 
 `NOT IN THE REPO`
 
@@ -377,11 +377,11 @@ reach the reference; watching only the DPO loss; all-equal GRPO groups.
 - RLHF, DPO and GRPO are not in the repository's main code; the lab book
   implements DPO and GRPO from scratch.
 - Every method needs an answer's log-probability: Chapter 30's masked loss,
-  summed. On `anulm/model.py` it needs targets, or only the last position returns.
+  summed. On `anulm/model.py` it needs targets, or only the last position's logits come back.
 - DPO minimises −log σ(β·margin), the margin comparing how much the policy
   raised the chosen and the rejected answer against a frozen reference.
 - The DPO loss starts at ln 2 and can fall while both answers fall.
-- GRPO scores sampled answers against their own group, needs no value model,
+- GRPO scores sampled answers against their own group, needs no critic,
   and learns nothing from all-equal groups; e<sup>d</sup> − d − 1 keeps its KL
   penalty non-negative.
 - Adding them here is `anulm/training/finetune.py`'s loop with a new loss, a reference, and
