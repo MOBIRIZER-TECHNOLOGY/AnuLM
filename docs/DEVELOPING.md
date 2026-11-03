@@ -5,7 +5,7 @@
 ```bash
 python -m anulm quickstart                   # what this machine can run, and how to fix what it cannot
 pip install -r requirements.txt        # torch, safetensors; pyarrow for the parquet converters
-python -m tests.test_model                   # 66 tests, ~2 min — run this first
+python -m tests.test_model                   # 76 tests, ~2 min — run this first
 ```
 
 Everything runs from the repository root (this file lives in `docs/`, the
@@ -105,8 +105,16 @@ and backward, prints parameter counts and loss against `ln(V)`.
 ## Testing
 
 ```bash
-python -m tests.test_model
+python -m tests.test_model                         # the core suite, ~2 min
+python -m unittest tests.test_training_pipeline tests.test_multimodal_contracts
+python -m tools.smoke                              # every main command end to end, ~1-2 min on CPU
 ```
+
+`tools.smoke` is the check to run before handing the code to someone else: it
+trains a tokenizer and a tiny model, samples, fine-tunes on question-answer
+pairs, asks questions, scores held-out text, exports a Hugging Face folder and
+loads it with this repository out of reach, and serves the model over HTTP,
+each as its own process exactly as documented, then prints a pass/fail table.
 
 The tests target **what training would not catch**. A leaky causal mask still
 converges — it just cheats. Broken RoPE still converges — it just loses

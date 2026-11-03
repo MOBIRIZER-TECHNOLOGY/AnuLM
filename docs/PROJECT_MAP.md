@@ -94,15 +94,15 @@ the model has to *learn* the representation.
 
 | path | file | representation | new parameters | status |
 | --- | --- | --- | --- | --- |
-| audio out (and in) | `audio_codec.py`, `speech_vocab.py` | SNAC codes as 28,672 new vocabulary ids | **58.7M** embeddings, from scratch | acoustics work, alignment does not |
-| audio in | `speech_encoder.py` | frozen Whisper encoder, 50 Hz × 768, stacked 4→12.1 Hz | 12.6M projector | shape-checked only |
-| image in | `vision_encoder.py` | frozen SigLIP ViT-B/16, 196 patches → 49 after 2×2 pooling | 12.6M projector | **works** |
+| audio out (and in) | `anulm/multimodal/audio_codec.py`, `anulm/multimodal/speech_vocab.py` | SNAC codes as 28,672 new vocabulary ids | **58.7M** embeddings, from scratch | acoustics work, alignment does not |
+| audio in | `anulm/multimodal/speech_encoder.py` | frozen Whisper encoder, 50 Hz × 768, stacked 4→12.1 Hz | 12.6M projector | shape-checked only |
+| image in | `anulm/multimodal/vision_encoder.py` | frozen SigLIP ViT-B/16, 196 patches → 49 after 2×2 pooling | 12.6M projector | **works** |
 
 `AnuLM.forward(..., embeds=)` is the single hook that makes the continuous paths
 possible: twelve lines that bypass the embedding table so a projector's output
 can enter the backbone directly, since a continuous feature has no id to look up.
 
-The vocabulary layout, grown once by `speech_vocab.py` so no id ever shifts:
+The vocabulary layout, grown once by `anulm/multimodal/speech_vocab.py` so no id ever shifts:
 
 ```
 [0, V)                text tokens the checkpoint was trained on

@@ -112,7 +112,7 @@ python -m anulm quickstart --train         # ... or just trains a 17M model now 
 python -m anulm quickstart --demo          # ... or downloads a released 400M model and serves it
 
 pip install -r requirements.txt      # torch, safetensors; pyarrow only for the parquet converters
-python -m tests.test_model                 # 66 tests, ~2 min, no pytest needed
+python -m tests.test_model                 # 76 tests, ~2 min, no pytest needed
 python -m anulm model                      # shape + param sanity check, no data needed
 python -m anulm train --preset 30b         # GQA, high rope_theta  (Sarvam 30B's shape); downloads tinyshakespeare
 python -m anulm train --preset 105b        # MLA, YaRN-ready       (Sarvam 105B's shape)
@@ -562,7 +562,7 @@ set is a builder away.
 ## Tests
 
 ```bash
-python -m tests.test_model        # 66 tests, ~2 min, no pytest needed
+python -m tests.test_model        # 76 tests, ~2 min, no pytest needed
 ```
 
 They target what training would not catch. A leaky causal mask still converges,
