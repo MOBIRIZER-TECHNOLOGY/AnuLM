@@ -12,18 +12,19 @@ does. The **softmax** turns V logits into probabilities. The **temperature**
 reshapes those probabilities before sampling. **Cross-entropy** scores them
 against the true token, and its gradient, p − y, is what training follows.
 `book/code-examples/ch05_softmax.py` (**Book example, not repository code**)
-computes each by hand and checks it against PyTorch and `anulm/model.py`; its
-driver runs the checks in this chapter's order:
+computes each by hand and checks it against PyTorch and `anulm/model.py`.
 
-```python
-if __name__ == "__main__":
-    by_hand()
-    p = top_k_cut(torch.tensor([[2.0, 1.0, 0.1, -1.0]]), 2)
-    print(f"top-2 of [2.0, 1.0, 0.1, -1.0]: p {[round(v, 4) for v in p[0].tolist()]}")
-    bf16_cost()
-    temperature_zero_is_greedy()
-    gradient_is_p_minus_y()
-```
+> **Details.** The example's driver runs the checks in this chapter's order:
+>
+> ```python
+> if __name__ == "__main__":
+>     by_hand()
+>     p = top_k_cut(torch.tensor([[2.0, 1.0, 0.1, -1.0]]), 2)
+>     print(f"top-2 of [2.0, 1.0, 0.1, -1.0]: p {[round(v, 4) for v in p[0].tolist()]}")
+>     bf16_cost()
+>     temperature_zero_is_greedy()
+>     gradient_is_p_minus_y()
+> ```
 
 ---
 
@@ -100,63 +101,59 @@ vocabulary:
 ```
 
 Under bf16 autocast the head's output is bf16, which keeps 8 significant bits,
-between 2 and 3 decimal digits. Where does that cost accuracy? The example
-separates the three places a bf16 cross-entropy can lose it, on random logits
-of the released vocabulary's width:
+between 2 and 3 decimal digits. Rounding the logits themselves costs little:
+on random logits of the released vocabulary's width it moves the mean loss by
+1.2 × 10⁻⁵. What costs more is doing the cross-entropy's sums in bf16:
+`F.cross_entropy` on bf16 tensors was 0.08 nats off on this CPU (*verified*,
+in the Details below). Under autocast
+PyTorch runs `cross_entropy` in fp32 by itself, and training runs under
+autocast whenever the GPU supports bf16 (`anulm/training/train.py` `main`
+lines 645–650; Chapter 23, 23.2, quotes them and explains autocast).
 
-```python
-def bf16_cost(seed: int = 0) -> None:
-    """Where a bf16 cross-entropy goes wrong: the logits, the log-softmax, or the mean."""
-    torch.manual_seed(seed)
-    z = torch.randn(4096, 32768) * 3.0                  # a batch of logit rows, V = 32,768
-    t = torch.randint(0, 32768, (4096,))
-    exact = F.cross_entropy(z.double(), t).item()
-    rounded = F.cross_entropy(z.bfloat16().double(), t).item() - exact          # bf16 logits, fp64 maths
-    lp16 = F.log_softmax(z.bfloat16(), -1)                                        # bf16 log-softmax
-    lsm = -lp16.double().gather(1, t[:, None]).mean().item() - exact              # ... averaged in fp64
-    whole = F.cross_entropy(z.bfloat16(), t).item() - exact                       # bf16 in, bf16 mean
-    with torch.autocast("cpu", dtype=torch.bfloat16):
-        auto = F.cross_entropy(z.bfloat16(), t)                                   # autocast upcasts it
-    print(f"cross-entropy over 4,096 rows, fp64: {exact:.6f}; error from bf16 logits {rounded:+.1e}, "
-          f"bf16 log-softmax {lsm:+.1e}, F.cross_entropy on bf16 {whole:+.4f}; "
-          f"under autocast: {auto.dtype}, {auto.item() - exact:+.1e}")
-    err = (lp16.double() - F.log_softmax(z.double(), -1)).abs()
-    i = int(err.argmax())
-    print(f"largest bf16 log-prob error {err.max().item():.2f}, at log-prob "
-          f"{F.log_softmax(z.double(), -1).flatten()[i].item():.1f}")
-```
-
-```text
-cross-entropy over 4,096 rows, fp64: 14.856146; error from bf16 logits -1.2e-05, bf16 log-softmax -4.9e-04, F.cross_entropy on bf16 +0.0814; under autocast: torch.float32, -1.2e-05
-largest bf16 log-prob error 0.12, at log-prob -25.0
-```
-
-*verified*: printed by `ch05_softmax.py` (random logits with standard deviation
-3, seed 0). Read it in order:
-
-- **Rounding the logits** to bf16 moves the mean loss by 1.2 × 10⁻⁵.
-- **A bf16 log-softmax**, averaged in fp64, is off by 5 × 10⁻⁴. Single entries
-  err by up to 0.12, at log-probabilities near −25, where bf16's spacing is
-  0.125.
-- **`F.cross_entropy` on bf16 tensors** is off by +0.081, and almost all of
-  that is its mean: the sum of 4,096 losses, about 60,800, held in bf16, whose
-  spacing there is 256. That is this CPU's reduction; on this machine's GPU
-  the same call was off by +0.019.
-- **Under autocast** PyTorch runs `cross_entropy` in fp32 by itself, on CPU
-  and, checked the same way, on CUDA; the error is back to 10⁻⁵.
-
-Training runs under autocast whenever the GPU supports bf16:
-
-> **In the repo** · `anulm/training/train.py` · `main` · lines 645–650 · @fdbb09a
-
-```python
-    torch.manual_seed(args.seed)
-    dtype = (torch.bfloat16 if args.device.startswith("cuda")
-             and torch.cuda.is_bf16_supported() else torch.float32)
-    args.autocast = (torch.autocast(device_type="cuda", dtype=dtype)
-                     if args.device.startswith("cuda") and dtype is torch.bfloat16
-                     else torch.autocast(device_type="cpu", enabled=False))
-```
+> **Details.** Where a bf16 cross-entropy loses accuracy. The example
+> separates the three places, on random logits of the released vocabulary's
+> width:
+>
+> ```python
+> def bf16_cost(seed: int = 0) -> None:
+>     """Where a bf16 cross-entropy goes wrong: the logits, the log-softmax, or the mean."""
+>     torch.manual_seed(seed)
+>     z = torch.randn(4096, 32768) * 3.0                  # a batch of logit rows, V = 32,768
+>     t = torch.randint(0, 32768, (4096,))
+>     exact = F.cross_entropy(z.double(), t).item()
+>     rounded = F.cross_entropy(z.bfloat16().double(), t).item() - exact          # bf16 logits, fp64 maths
+>     lp16 = F.log_softmax(z.bfloat16(), -1)                                        # bf16 log-softmax
+>     lsm = -lp16.double().gather(1, t[:, None]).mean().item() - exact              # ... averaged in fp64
+>     whole = F.cross_entropy(z.bfloat16(), t).item() - exact                       # bf16 in, bf16 mean
+>     with torch.autocast("cpu", dtype=torch.bfloat16):
+>         auto = F.cross_entropy(z.bfloat16(), t)                                   # autocast upcasts it
+>     print(f"cross-entropy over 4,096 rows, fp64: {exact:.6f}; error from bf16 logits {rounded:+.1e}, "
+>           f"bf16 log-softmax {lsm:+.1e}, F.cross_entropy on bf16 {whole:+.4f}; "
+>           f"under autocast: {auto.dtype}, {auto.item() - exact:+.1e}")
+>     err = (lp16.double() - F.log_softmax(z.double(), -1)).abs()
+>     i = int(err.argmax())
+>     print(f"largest bf16 log-prob error {err.max().item():.2f}, at log-prob "
+>           f"{F.log_softmax(z.double(), -1).flatten()[i].item():.1f}")
+> ```
+>
+> ```text
+> cross-entropy over 4,096 rows, fp64: 14.856146; error from bf16 logits -1.2e-05, bf16 log-softmax -4.9e-04, F.cross_entropy on bf16 +0.0814; under autocast: torch.float32, -1.2e-05
+> largest bf16 log-prob error 0.12, at log-prob -25.0
+> ```
+>
+> *verified*: printed by `ch05_softmax.py` (random logits with standard deviation
+> 3, seed 0). Read it in order:
+>
+> - **Rounding the logits** to bf16 moves the mean loss by 1.2 × 10⁻⁵.
+> - **A bf16 log-softmax**, averaged in fp64, is off by 5 × 10⁻⁴. Single entries
+>   err by up to 0.12, at log-probabilities near −25, where bf16's spacing is
+>   0.125.
+> - **`F.cross_entropy` on bf16 tensors** is off by +0.081, and almost all of
+>   that is its mean: the sum of 4,096 losses, about 60,800, held in bf16, whose
+>   spacing there is 256. That is this CPU's reduction; on this machine's GPU
+>   the same call was off by +0.019.
+> - **Under autocast** PyTorch runs `cross_entropy` in fp32 by itself, on CPU
+>   and, checked the same way, on CUDA; the error is back to 10⁻⁵.
 
 On a CPU everything stays fp32. So the `.float()` at line 924 is insurance:
 it matters in bf16 without autocast (bf16 weights, say). In `generate` the
@@ -202,10 +199,9 @@ As T falls toward 0, all the probability goes to the largest logit: at
 T = 10⁻⁵ a gap of 10⁻³ becomes 100 nats, so the draw is the argmax unless two
 logits nearly tie. T = 0 itself would divide by zero, so `generate` does not
 divide at all; it takes the limit directly with `argmax`, which is exact even
-for near-ties and does not touch the random generator. (Until November 2026
-the code clamped T to 10⁻⁵ and still sampled, so near-ties could go either way.)
-The example checks T = 0 against `top_k` = 1, which samples from a
-distribution with one nonzero entry:
+for near-ties and does not touch the random generator. The example checks
+T = 0 against `top_k` = 1, which samples from a distribution with one nonzero
+entry:
 
 ```python
 def temperature_zero_is_greedy() -> None:
@@ -224,23 +220,24 @@ temperature 0 [18, 11, 25, 14, 29, 27, 25, 14, 17, 44]
 top_k 1       [18, 11, 25, 14, 29, 27, 25, 14, 17, 44]
 ```
 
-*verified*: printed by `ch05_softmax.py`. The serving API passes the
-request's temperature through unclamped:
+*verified*: printed by `ch05_softmax.py`. `anulm/inference/sample.py`
+defaults to T = 0.8 and `top_k` 50 (lines 34–35).
 
-> **In the repo** · `anulm/inference/api.py` · `Generation.run` · lines 446–448 · @fdbb09a
-
-```python
-                self.eng.model.generate(x, self.max_tokens, temperature=self.temperature,  # 0 = exact greedy
-                                        top_k=self.top_k or None, eos_id=eos,
-                                        repetition_penalty=self.rep, on_token=on_token)
-```
-
-Its field description says "0 = greedy" (line 218), and the field allows
-0 to 2 (`ge=0, le=2`), so a request's 0 reaches `generate` as 0 and takes the
-exact argmax branch. A small positive T still samples: at T = 10⁻³ a logit
-0.005 below the best gets e<sup>−5</sup> ≈ 0.7% of the best one's weight.
-`anulm/inference/sample.py` defaults to T = 0.8 and `top_k` 50
-(lines 34–35).
+> **Details.** The serving API passes the request's temperature through
+> unclamped:
+>
+> > **In the repo** · `anulm/inference/api.py` · `Generation.run` · lines 446–448 · @fdbb09a
+>
+> ```python
+>                 self.eng.model.generate(x, self.max_tokens, temperature=self.temperature,  # 0 = exact greedy
+>                                         top_k=self.top_k or None, eos_id=eos,
+>                                         repetition_penalty=self.rep, on_token=on_token)
+> ```
+>
+> Its field description says "0 = greedy" (line 218), and the field allows
+> 0 to 2 (`ge=0, le=2`), so a request's 0 reaches `generate` as 0 and takes the
+> exact argmax branch. A small positive T still samples: at T = 10⁻³ a logit
+> 0.005 below the best gets e<sup>−5</sup> ≈ 0.7% of the best one's weight.
 
 The `top_k` lines keep the k largest logits and set the rest to −∞, which the
 softmax turns into exactly 0:
@@ -257,30 +254,32 @@ def top_k_cut(z: torch.Tensor, k: int) -> torch.Tensor:
 top-2 of [2.0, 1.0, 0.1, -1.0]: p [0.7311, 0.2689, 0.0, 0.0]
 ```
 
-Greedy decoding needs no softmax, which keeps the logits' order. Like
-`generate`'s T ≤ 0 branch, the decoder for image and audio prompts takes the
-argmax of the raw scores:
+Greedy decoding needs no softmax, which keeps the logits' order: the largest
+logit is the most probable id.
 
-> **In the repo** · `anulm/model.py` · `AnuLM.decode_from_embeds` · lines 1038–1049 · @fdbb09a
-
-```python
-            scores = logits[0, -1].float()
-            if repetition_penalty != 1.0 and out:
-                ids = torch.tensor(sorted(set(out)), device=scores.device)
-                seen = scores[ids]
-                scores[ids] = torch.where(seen > 0, seen / repetition_penalty, seen * repetition_penalty)
-            n = no_repeat_ngram
-            if n and len(out) >= n - 1:
-                tail = tuple(out[len(out) - (n - 1):])
-                for j in range(len(out) - n + 1):
-                    if tuple(out[j:j + n - 1]) == tail:
-                        scores[out[j + n - 1]] = float("-inf")
-            nxt = int(scores.argmax())
-```
-
-The middle lines edit the scores before the choice: a repetition penalty on
-ids already emitted, and −∞ for any id that would repeat an n-gram
-(Chapter 28). The last line picks the largest score, no softmax needed.
+> **Details.** Like `generate`'s T ≤ 0 branch, the decoder for image and
+> audio prompts takes the argmax of the raw scores:
+>
+> > **In the repo** · `anulm/model.py` · `AnuLM.decode_from_embeds` · lines 1038–1049 · @fdbb09a
+>
+> ```python
+>             scores = logits[0, -1].float()
+>             if repetition_penalty != 1.0 and out:
+>                 ids = torch.tensor(sorted(set(out)), device=scores.device)
+>                 seen = scores[ids]
+>                 scores[ids] = torch.where(seen > 0, seen / repetition_penalty, seen * repetition_penalty)
+>             n = no_repeat_ngram
+>             if n and len(out) >= n - 1:
+>                 tail = tuple(out[len(out) - (n - 1):])
+>                 for j in range(len(out) - n + 1):
+>                     if tuple(out[j:j + n - 1]) == tail:
+>                         scores[out[j + n - 1]] = float("-inf")
+>             nxt = int(scores.argmax())
+> ```
+>
+> The middle lines edit the scores before the choice: a repetition penalty on
+> ids already emitted, and −∞ for any id that would repeat an n-gram
+> (Chapter 28). The last line picks the largest score, no softmax needed.
 
 ![Figure 5.1 · Temperature reshapes, never reorders](../figures/fig05-1-temperature.svg)
 
@@ -292,39 +291,49 @@ by `book/code-examples/ch05_softmax.py`.
 
 ## 5.4  What temperature does to the released model
 
-On Chapter 3's 64 held-out windows, the released model's distribution at each
-temperature:
+On Chapter 3's 64 held-out windows, the released model's distribution at five
+of the fifteen temperatures measured:
 
 | T | loss, nats | entropy, nats | probability of the top token |
 |---|---|---|---|
 | 0.5 | 4.713 | 0.937 | 0.724 |
 | 0.8 | 3.499 | 2.183 | 0.552 |
-| 0.9 | 3.390 | 2.876 | 0.490 |
-| 0.93 | 3.377 | 3.114 | 0.471 |
-| 0.95 | 3.373 | 3.279 | 0.458 |
 | **0.96** | **3.372** | 3.363 | 0.452 |
-| 0.97 | 3.373 | 3.449 | 0.445 |
-| 0.98 | 3.374 | 3.535 | 0.439 |
 | 1.0 | 3.379 | 3.712 | 0.426 |
-| 1.02 | 3.387 | 3.892 | 0.413 |
-| 1.05 | 3.406 | 4.167 | 0.394 |
-| 1.1 | 3.451 | 4.636 | 0.362 |
-| 1.25 | 3.678 | 6.043 | 0.271 |
-| 1.5 | 4.244 | 7.989 | 0.145 |
 | 2.0 | 5.449 | 9.733 | 0.030 |
 
-*measured*: `measure_part_i_ii.py`, 32,732 graded tokens, fp32 except the
-experts, which the checkpoint's grouped path runs in bf16;
-`book/measurements/part_i_ii_released.json`. For each batch of graded rows
-`z` with targets `t`, the script accumulates:
+*measured*: `measure_part_i_ii.py`, 32,732 graded tokens, at the settings of
+Appendix F, F.6; `book/measurements/part_i_ii_released.json`.
 
-```python
-            for T in TEMPS:
-                lp = F.log_softmax(z / T, -1)
-                ce[T] += -lp.gather(1, t[:, None]).sum().item()
-                ent[T] += -(lp.exp() * lp).sum(-1).sum().item()
-                pmax[T] += lp.max(-1).values.exp().sum().item()
-```
+> **Details.** All fifteen temperatures:
+>
+> | T | loss, nats | entropy, nats | probability of the top token |
+> |---|---|---|---|
+> | 0.5 | 4.713 | 0.937 | 0.724 |
+> | 0.8 | 3.499 | 2.183 | 0.552 |
+> | 0.9 | 3.390 | 2.876 | 0.490 |
+> | 0.93 | 3.377 | 3.114 | 0.471 |
+> | 0.95 | 3.373 | 3.279 | 0.458 |
+> | **0.96** | **3.372** | 3.363 | 0.452 |
+> | 0.97 | 3.373 | 3.449 | 0.445 |
+> | 0.98 | 3.374 | 3.535 | 0.439 |
+> | 1.0 | 3.379 | 3.712 | 0.426 |
+> | 1.02 | 3.387 | 3.892 | 0.413 |
+> | 1.05 | 3.406 | 4.167 | 0.394 |
+> | 1.1 | 3.451 | 4.636 | 0.362 |
+> | 1.25 | 3.678 | 6.043 | 0.271 |
+> | 1.5 | 4.244 | 7.989 | 0.145 |
+> | 2.0 | 5.449 | 9.733 | 0.030 |
+>
+> For each batch of graded rows `z` with targets `t`, the script accumulates:
+>
+> ```python
+>             for T in TEMPS:
+>                 lp = F.log_softmax(z / T, -1)
+>                 ce[T] += -lp.gather(1, t[:, None]).sum().item()
+>                 ent[T] += -(lp.exp() * lp).sum(-1).sum().item()
+>                 pmax[T] += lp.max(-1).values.exp().sum().item()
+> ```
 
 The entropy, −Σ p log p, is the average surprise the model expects of itself.
 

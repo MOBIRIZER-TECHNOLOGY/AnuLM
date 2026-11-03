@@ -48,26 +48,8 @@ The released model's preset sets `head_dim=64` explicitly (`nano_350m`, line
 
 ## 13.2  One fused projection
 
-> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 430–445 · @fdbb09a
-
-```python
-    def __init__(self, cfg: AnuLMConfig, rotary: Rotary):
-        super().__init__()
-        self.n_head = cfg.n_head
-        self.n_kv_head = cfg.n_kv_head
-        self.n_rep = cfg.n_head // cfg.n_kv_head
-        self.head_dim = cfg.head_dim
-        self.dropout = cfg.dropout
-        # One fused projection: (H + 2*Hkv) * Dh, exactly as the 30B does.
-        self.query_key_value = nn.Linear(
-            cfg.hidden_size, (cfg.n_head + 2 * cfg.n_kv_head) * cfg.head_dim, bias=False
-        )
-        self.dense = nn.Linear(cfg.n_head * cfg.head_dim, cfg.hidden_size, bias=False)
-        self.use_qk_norm = cfg.use_qk_norm
-        if cfg.use_qk_norm:
-            self.query_layernorm = RMSNorm(cfg.head_dim, cfg.rms_norm_eps)
-            self.key_layernorm = RMSNorm(cfg.head_dim, cfg.rms_norm_eps)
-```
+`GQAttention.__init__` (lines 430–449, quoted in 11.6) builds the layer's
+matrices:
 
 - **`n_rep`** is the group size, 16 / 4 = 4.
 - **`query_key_value`** maps D to (H + 2H<sub>kv</sub>)·D<sub>h</sub> =
@@ -110,27 +92,11 @@ weight row: query heads first, then key heads, then value heads.
 
 ## 13.3  Reshape, normalise, rotate
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 451–468 · @fdbb09a
-
-```python
-    def forward(self, x, cos, sin, cache: Optional[dict] = None, start: int = 0,
-                window: Optional[int] = None, bidir_mask: Optional[torch.Tensor] = None):
-        # ...
-        B, S, _ = x.shape
-        qkv = self.query_key_value(x)
-        qkv = qkv.view(B, S, self.n_head + 2 * self.n_kv_head, self.head_dim)
-        q, k, v = qkv.split([self.n_head, self.n_kv_head, self.n_kv_head], dim=-2)
-        q = q.transpose(1, 2)                         # (B, H,   S, Dh)
-        k = k.transpose(1, 2)                         # (B, Hkv, S, Dh)
-        v = v.transpose(1, 2)                         # (B, Hkv, S, Dh)
-
-        if self.use_qk_norm:                          # before RoPE, as in the 30B
-            q = self.query_layernorm(q)
-            k = self.key_layernorm(k)
-        q, k = apply_rope(q, k, cos, sin)
-```
-
-With `tiny()`'s B = 2, S = 5 (Chapter 20 prints these shapes):
+`GQAttention.forward` (lines 451–468, quoted in 11.6) first projects `x` once,
+`view`s the result as H + 2H<sub>kv</sub> slots of D<sub>h</sub>, `split`s
+the slots into queries, keys and values, transposes heads before positions,
+normalises queries and keys, and rotates them. With `tiny()`'s B = 2, S = 5
+(Chapter 20 prints these shapes):
 
 - **Project and `view`.** `qkv` (2, 5, 64) becomes (2, 5, 8, 8): 8 slots of
   8, the slices of 13.2. No data moves.
@@ -148,22 +114,12 @@ With `tiny()`'s B = 2, S = 5 (Chapter 20 prints these shapes):
 
 ## 13.4  The cache, and sharing the heads
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 470–477 · @fdbb09a
-
-```python
-        if cache is not None:
-            # Cache the Hkv heads, not their H broadcast copies -- that ratio
-            # (16:1 in the real 30B) is GQA's entire inference saving.
-            if "k" in cache:
-                k = torch.cat([cache["k"], k], dim=2)
-                v = torch.cat([cache["v"], v], dim=2)
-            cache["k"], cache["v"] = k, v
-        T = k.shape[2]
-```
-
-New keys and values are appended along positions, so `cache["k"]` is (B,
-H<sub>kv</sub>, T, D<sub>h</sub>), stored *after* QK-norm and RoPE; that is
-why `start` must give absolute positions (Chapter 14). The example checks,
+Lines 470–476 of `GQAttention.forward` (quoted in 11.6) append the new keys
+and values to the cache, if there is one, before any head is shared:
+`k = torch.cat([cache["k"], k], dim=2)`. New keys and values are appended
+along positions, so `cache["k"]` is (B, H<sub>kv</sub>, T, D<sub>h</sub>),
+stored *after* QK-norm and RoPE; that is why `start` must give absolute
+positions (Chapter 14). The example checks,
 then repeats the call under bf16 autocast, as the serving code runs:
 
 ```python
@@ -232,53 +188,56 @@ reads key/value head h // `n_rep`. A tiled `repeat` pairs them differently:
 *verified*: `enable_gqa` groups the heads the same way; the tiled pairing
 differs by 2.93 without any error. PyTorch's documentation says the same: with
 `enable_gqa=True` its reference implementation repeats each key and value head
-with `repeat_interleave`, and it calls GQA an experimental feature [R50]. After attention, `transpose` and `view`
-lay the H outputs side by side, (B, S, H·D<sub>h</sub>), for `dense`.
+with `repeat_interleave`, and it calls GQA an experimental feature [R50].
+After attention, `transpose` and `view` lay the H outputs side by side,
+(B, S, H·D<sub>h</sub>), for `dense`.
 
-The other branch is a switch:
+The other branch is a switch, `NATIVE_GQA` (line 387), off by default:
+`docs/RESULTS.md` §32 records it as written and tested but not yet measured on
+the GPU.
 
-> **In the repo** · `anulm/model.py` · `NATIVE_GQA` · lines 384–387 · @fdbb09a
-
-```python
-# GQA through SDPA's own `enable_gqa` instead of repeat_interleave. Same
-# maths; whether it is faster depends on which kernel accepts it, so it is a
-# switch, measured before it becomes the default (see docs/RESULTS.md).
-NATIVE_GQA = False
-```
-
-`train.py --native-gqa` turns it on (lines 637–643); `docs/RESULTS.md` §32
-records it as written and tested but not yet measured on the GPU, so it stays
-off. Its test:
-
-> **In the repo** · `tests/test_model.py` · `native_gqa_matches_repeat_interleave` · lines 1602–1623 · @fdbb09a
-
-```python
-def native_gqa_matches_repeat_interleave():
-    """NATIVE_GQA hands the Hkv heads to SDPA's enable_gqa instead of copying
-    them; outputs must agree on the full-sequence, cached and windowed paths."""
-    from anulm import model as M
-    torch.manual_seed(2)
-    m = AnuLM(tiny(n_kv_head=1, sliding_window=4, max_window_layers=1)).eval()
-    x = torch.randint(0, 64, (2, 12))
-    saved = M.NATIVE_GQA
-    try:
-        outs = []
-        for native in (False, True):
-            M.NATIVE_GQA = native
-            with torch.no_grad():
-                full, _ = m(x, x)
-                cache = m.new_cache()
-                m(x[:, :8], cache=cache)
-                step, _ = m(x[:, 8:], cache=cache, start=8)
-            outs.append((full, step))
-    finally:
-        M.NATIVE_GQA = saved
-    assert torch.allclose(outs[0][0], outs[1][0], atol=1e-5), "full-sequence logits differ"
-    assert torch.allclose(outs[0][1], outs[1][1], atol=1e-5), "cached-step logits differ"
-```
-
-With `n_kv_head=1` every query head reads the same key/value head, so a native
-path that tiled would pass it; the example's grouping check would catch it.
+> **Details.** The switch, and the test that keeps it honest.
+>
+> > **In the repo** · `anulm/model.py` · `NATIVE_GQA` · lines 384–387 · @fdbb09a
+>
+> ```python
+> # GQA through SDPA's own `enable_gqa` instead of repeat_interleave. Same
+> # maths; whether it is faster depends on which kernel accepts it, so it is a
+> # switch, measured before it becomes the default (see docs/RESULTS.md).
+> NATIVE_GQA = False
+> ```
+>
+> `train.py --native-gqa` turns it on (lines 637–643). Its test:
+>
+> > **In the repo** · `tests/test_model.py` · `native_gqa_matches_repeat_interleave` · lines 1602–1623 · @fdbb09a
+>
+> ```python
+> def native_gqa_matches_repeat_interleave():
+>     """NATIVE_GQA hands the Hkv heads to SDPA's enable_gqa instead of copying
+>     them; outputs must agree on the full-sequence, cached and windowed paths."""
+>     from anulm import model as M
+>     torch.manual_seed(2)
+>     m = AnuLM(tiny(n_kv_head=1, sliding_window=4, max_window_layers=1)).eval()
+>     x = torch.randint(0, 64, (2, 12))
+>     saved = M.NATIVE_GQA
+>     try:
+>         outs = []
+>         for native in (False, True):
+>             M.NATIVE_GQA = native
+>             with torch.no_grad():
+>                 full, _ = m(x, x)
+>                 cache = m.new_cache()
+>                 m(x[:, :8], cache=cache)
+>                 step, _ = m(x[:, 8:], cache=cache, start=8)
+>             outs.append((full, step))
+>     finally:
+>         M.NATIVE_GQA = saved
+>     assert torch.allclose(outs[0][0], outs[1][0], atol=1e-5), "full-sequence logits differ"
+>     assert torch.allclose(outs[0][1], outs[1][1], atol=1e-5), "cached-step logits differ"
+> ```
+>
+> With `n_kv_head=1` every query head reads the same key/value head, so a native
+> path that tiled would pass it; the example's grouping check would catch it.
 
 `IN THE REPO` · `IMPLEMENTATION-DEPENDENT` (which is faster)
 

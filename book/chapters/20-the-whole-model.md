@@ -16,25 +16,25 @@ test model and for the released 400M model.
 Every shape below was printed by running the model, with
 `book/code-examples/trace_forward.py` (**Book example, not repository code**).
 It runs `anulm/model.py` unchanged and attaches forward hooks: functions PyTorch
-calls after a module runs.
+calls after a module runs, which here only log shapes.
 
-```python
-    def watch(module, name, show_input=False):
-        def hook(mod, inp, out):
-            if show_input:
-                log.append(f"{name:<33}in  {shape(inp[0])}")
-            o = out[0] if isinstance(out, tuple) else out
-            log.append(f"{name:<33}out {shape(o)}" + (f"  aux={out[1]}" if isinstance(out, tuple) and len(out) == 2
-                                                       and not torch.is_tensor(out[1]) else ""))
-        hooks.append(module.register_forward_hook(hook))
-```
-
-A hook gets the module's inputs and output. It may return a value, and a
-value it returns replaces the output; this one returns `None`, so it only
-observes and logs shapes. `apply_rope` and `_sdpa` are plain functions, not
-modules, so they take no hooks: the script swaps each name in `anulm.model` for
-a wrapper that logs the shapes and calls the original, and puts the originals
-back after the forward pass.
+> **Details.** The harness. A hook gets the module's inputs and output. It may
+> return a value, and a value it returns replaces the output; this one returns
+> `None`, so it only observes and logs shapes. `apply_rope` and `_sdpa` are
+> plain functions, not modules, so they take no hooks: the script swaps each
+> name in `anulm.model` for a wrapper that logs the shapes and calls the
+> original, and puts the originals back after the forward pass.
+>
+> ```python
+>     def watch(module, name, show_input=False):
+>         def hook(mod, inp, out):
+>             if show_input:
+>                 log.append(f"{name:<33}in  {shape(inp[0])}")
+>             o = out[0] if isinstance(out, tuple) else out
+>             log.append(f"{name:<33}out {shape(o)}" + (f"  aux={out[1]}" if isinstance(out, tuple) and len(out) == 2
+>                                                        and not torch.is_tensor(out[1]) else ""))
+>         hooks.append(module.register_forward_hook(hook))
+> ```
 
 ---
 
@@ -104,43 +104,8 @@ that each layer adds to:
 
 ## 20.4  In: ids to vectors
 
-The model's constructor builds everything this chapter traces:
-
-> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 833–863 · @fdbb09a
-
-```python
-    def __init__(self, cfg: AnuLMConfig):
-        super().__init__()
-        self.cfg = cfg
-        self.embed_tokens = nn.Embedding(cfg.vocab_size, cfg.hidden_size)
-        rope_dim = cfg.qk_rope_head_dim if cfg.attn == "mla" else cfg.head_dim
-        self.rotary = Rotary(cfg, rope_dim)
-        self.layers = nn.ModuleList([Block(cfg, i, self.rotary) for i in range(cfg.n_layer)])
-        self.norm = RMSNorm(cfg.hidden_size, cfg.rms_norm_eps)
-        self.lm_head = nn.Linear(cfg.hidden_size, cfg.vocab_size, bias=False)
-        if cfg.tie_word_embeddings:
-            self.lm_head.weight = self.embed_tokens.weight
-
-        self.grad_ckpt = False          # set via enable_gradient_checkpointing()
-        self.ce_chunk = 0               # set via enable_chunked_loss()
-        self.merge_P = None             # sparse (V, V), see merge_tree_matrix()
-        self._merged = None             # eval-mode cache of composed tables
-        self.aux_loss = None            # set by forward(): the router regulariser, detached
-        self.imbalance_median = None    # set by update_expert_biases()
-        self.text_vocab = None          # set by loaders of a grown speech/image model
-        if cfg.merge_tree:
-            if cfg.merge_tree not in ("in", "out", "both"):
-                raise ValueError(f"merge_tree must be 'in', 'out' or 'both', not {cfg.merge_tree!r}")
-            import json as _json
-            with open(cfg.tokenizer_path, encoding="utf-8") as f:
-                merges = _json.load(f)["merges"]
-            self.merge_P = merge_tree_matrix(merges, cfg.vocab_size)
-        self.apply(self._init_weights)
-        # nanoGPT's scaled init for the residual output projections.
-        for name, p in self.named_parameters():
-            if name.endswith(("o_proj.weight", "dense.weight", "down_proj.weight")):
-                nn.init.normal_(p, mean=0.0, std=cfg.initializer_range / math.sqrt(2 * cfg.n_layer))
-```
+The model's constructor, `AnuLM.__init__` (lines 833–863; quoted in 10.2 and
+10.3), builds everything this chapter traces:
 
 | Lines | What they build |
 |---|---|
@@ -170,32 +135,8 @@ The model's constructor builds everything this chapter traces:
 Text takes the `else` branch: each id selects a row, (B, S) → (B, S, D). A call
 past `block_size` raises `ValueError`; an `assert` would vanish under
 `python -O`. The `if` branch is for audio and images, which arrive as vectors (Chapter 35). The rotary tables are built once
-and only sliced per call:
-
-> **In the repo** · `anulm/model.py` · `Rotary._grow`, `Rotary.forward` · lines 324–343 · @fdbb09a
-
-```python
-    def _grow(self, seq_len: int, device, dtype):
-        # Keyed on device and dtype as well as length: a model moved with .to()
-        # or run under a different autocast dtype must not be handed stale tables.
-        key = (device, dtype)
-        if seq_len <= self._cached_len and self._cached_key == key:
-            return
-        n = max(seq_len, self._cached_len)
-        t = torch.arange(n, device=device, dtype=torch.float32)
-        freqs = torch.outer(t, self.inv_freq.to(device))          # (T, dim/2)
-        emb = torch.cat((freqs, freqs), dim=-1)                   # (T, dim)
-        self.cos_cached = (emb.cos() * self.table_mscale).to(dtype)
-        self.sin_cached = (emb.sin() * self.table_mscale).to(dtype)
-        self._cached_len = n
-        self._cached_key = key
-
-    def forward(self, seq_len: int, device, dtype, start: int = 0):
-        """cos/sin for absolute positions [start, start + seq_len). `start` is
-        the number of tokens already in the KV cache when decoding; 0 otherwise."""
-        self._grow(start + seq_len, device, dtype)
-        return self.cos_cached[start:start + seq_len], self.sin_cached[start:start + seq_len]
-```
+and only sliced per call (`Rotary._grow` and `Rotary.forward`, lines 324–343,
+quoted in 14.5).
 
 Line 329 returns early when the cached tables are long enough for this device
 and dtype. Line 343 slices positions `start` … `start + S − 1`, which is how a
@@ -233,21 +174,8 @@ The first branch, activation checkpointing, recomputes activations in the
 backward pass instead of storing them (Chapter 23); both compute the same
 thing.
 
-> **In the repo** · `anulm/model.py` · `Block.forward` · lines 816–824 · @fdbb09a
-
-```python
-    def forward(self, x, cos, sin, cache: Optional[dict] = None, start: int = 0,
-                bidir_mask: Optional[torch.Tensor] = None):
-        """Returns (x, aux). aux is the MoE regulariser or None. With bidir_mask
-        the attention is bidirectional (the sliding window does not apply)."""
-        x = x + self.attn(self.input_layernorm(x), cos, sin,
-                          cache=cache, start=start, window=self.window, bidir_mask=bidir_mask)
-        h = self.mlp(self.post_attention_layernorm(x))
-        h, aux = h if self.is_moe else (h, None)
-        return x + h, aux
-```
-
-Each half normalises a copy of `x`, transforms it and **adds** the result:
+Each block is `Block.forward` (lines 816–824, quoted in 15.3). Each half
+normalises a copy of `x`, transforms it and **adds** the result:
 the residual stream, (B, S, D) from first layer to last. Normalising first is
 pre-norm (Chapter 15); GPT-2 moved layer normalisation to each sub-block's input [R04],
 and RMSNorm drops LayerNorm's re-centring [R08]. Line 823 unpacks an MoE's
@@ -256,41 +184,14 @@ block returns the same shape.
 
 ### Inside the attention half
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 458–494 · @fdbb09a
-
-```python
-        qkv = self.query_key_value(x)
-        qkv = qkv.view(B, S, self.n_head + 2 * self.n_kv_head, self.head_dim)
-        q, k, v = qkv.split([self.n_head, self.n_kv_head, self.n_kv_head], dim=-2)
-        q = q.transpose(1, 2)                         # (B, H,   S, Dh)
-        k = k.transpose(1, 2)                         # (B, Hkv, S, Dh)
-        v = v.transpose(1, 2)                         # (B, Hkv, S, Dh)
-
-        if self.use_qk_norm:                          # before RoPE, as in the 30B
-            q = self.query_layernorm(q)
-            k = self.key_layernorm(k)
-        q, k = apply_rope(q, k, cos, sin)
-        # ...
-        T = k.shape[2]
-        # ...
-        if NATIVE_GQA and self.n_rep > 1:
-            # SDPA broadcasts the Hkv heads itself: no (B, H, T, Dh) copies.
-            # ...
-        else:
-            # Broadcast each KV head across its query group explicitly.
-            k = k.repeat_interleave(self.n_rep, dim=1)    # (B, H, T, Dh)
-            v = v.repeat_interleave(self.n_rep, dim=1)
-            y = _sdpa(q, k, v, mask, S, self.scale, drop)                    # (B, H, S, Dh)
-        y = y.transpose(1, 2).contiguous().view(B, S, -1)
-        return self.dense(y)
-```
+`GQAttention.forward` (lines 451–494) is quoted in 11.6 and 13.3–13.4; in order:
 
 | Lines | What happens | `tiny()` | Released |
 |---|---|---|---|
 | 458–463 | one projection, (H + 2H<sub>kv</sub>)·D<sub>h</sub> wide; `view` cuts heads, `split` the roles, `transpose` puts heads first | 64 wide | 1,536 wide |
 | 465–468 | per-head QK-norm (Chapter 11, 11.7), then rotation, so attention depends on relative position [R06] | | |
-| first `# ...` | append to the KV cache, which holds the H<sub>kv</sub> heads (Chapter 27); T is then cached + new | | |
-| second `# ...` | build the mask (Chapter 11, 11.6) and the dropout rate | | |
+| 470–477 | append to the KV cache, which holds the H<sub>kv</sub> heads (Chapter 27); T is then cached + new | | |
+| 477–482 | build the mask (Chapter 11, 11.6) and the dropout rate | | |
 | 488–492 | grouped-query attention: query heads share a key/value head [R12]; with `NATIVE_GQA` off (line 387) each is copied to its group | 2 per group | 4 per group |
 | 493–494 | heads back side by side (`contiguous` makes the copy `view` needs), then `dense` | H·D<sub>h</sub> = 32 | 1,024 |
 
@@ -309,25 +210,7 @@ both models is a coincidence the code does not need.
 ### The second half: dense in layer 0, experts after
 
 Layer 0's feed-forward half, and every expert, is a SwiGLU, a gated
-feed-forward network [R11]:
-
-> **In the repo** · `anulm/model.py` · `SwiGLU` · lines 242–253 · @fdbb09a
-
-```python
-class SwiGLU(nn.Module):
-    """The expert body and the dense layer-0 MLP. 3 * D * I params."""
-
-    def __init__(self, hidden_size: int, intermediate_size: int):
-        super().__init__()
-        self.gate_proj = nn.Linear(hidden_size, intermediate_size, bias=False)
-        self.up_proj = nn.Linear(hidden_size, intermediate_size, bias=False)
-        self.down_proj = nn.Linear(intermediate_size, hidden_size, bias=False)
-
-    def forward(self, x):
-        # ...
-        return self.down_proj(F.silu(self.gate_proj(x)) * self.up_proj(x))
-```
-
+feed-forward network [R11] (`SwiGLU`, lines 242–253, quoted in 16.3).
 Three bias-free matrices, so 3·D·I numbers. The gate's SiLU scales the up
 projection element-wise before `down_proj` returns to width D (Chapter 16).
 From layer 1 on, the half is a mixture of experts:
@@ -350,48 +233,10 @@ From layer 1 on, the half is a mixture of experts:
 ```
 
 The router ignores which sequence a token came from, so the batch flattens to
-N = B·S rows. It runs with autocast off:
-
-> **In the repo** · `anulm/model.py` · `Router.forward` · lines 611–622 · @fdbb09a
-
-```python
-    def forward(self, x_flat, seq_len: Optional[int] = None):   # (N, D)
-        """Returns (topk_idx, combine weights, aux) -- aux is None unless one of
-        the regularisers is on and the module is training. `seq_len` lets the
-        sequence-wise balance loss see the (B, S) layout of a flat batch."""
-        # fp32 router: top-k is discrete, and bf16 rounding would flip choices.
-        # Casting the inputs is not enough -- autocast re-casts F.linear to
-        # bf16 whatever dtype it is handed, and every GPU run before this fix
-        # routed in bf16 (3.2% of expert sets differed from fp32 on a real
-        # checkpoint). Autocast has to be off for the whole gate.
-        with torch.autocast(device_type=x_flat.device.type, enabled=False):
-            topk_idx, w, aux = self._gate(x_flat.float(), seq_len)
-        return topk_idx, w.to(x_flat.dtype), aux
-```
-
-Autocast runs chosen operations, chiefly matrix multiplies, in 16-bit while
-norms, softmaxes and losses stay 32-bit; the repository uses it in training and
-serving (Chapter 23). Picking experts is discrete, so the comment records that
-16-bit routing changed 3.2% of expert sets. Chapter 23 measures
-it on the released checkpoint: 3.17% of token-layer choices (19,717 of
-622,592) over 32 held-out windows of 1,024 tokens, from 1.69% in layer 19 to
-10.95% in layer 1 (*measured*). The choice itself:
-
-> **In the repo** · `anulm/model.py` · `Router._gate` · lines 624–672 · @fdbb09a
-
-```python
-        logits = F.linear(x_flat, self.weight.float())             # (N, E)
-        scores = torch.sigmoid(logits)                             # independent, not softmax
-
-        scores_for_choice = scores + self.expert_bias[None, :]
-        # ...
-        topk_idx = scores_for_choice.topk(self.top_k, dim=-1)[1]           # (N, k)
-        # Gather from the UNBIASED scores: the bias picks, it never weights.
-        w = scores.gather(1, topk_idx)                                     # (N, k)
-        if self.top_k > 1:
-            w = w / (w.sum(-1, keepdim=True) + 1e-20)
-        w = w * self.routed_scaling_factor
-```
+N = B·S rows. `Router.forward` (lines 611–622, quoted in 17.4) runs the gate
+in fp32 with autocast off, because 16-bit rounding would flip discrete
+choices (Chapter 23, 23.3, measures how many). `Router._gate` (lines 624–672,
+quoted in 17.5) makes the choice:
 
 | Step | Code | Note |
 |---|---|---|
@@ -455,23 +300,8 @@ and a router z-loss with weight 10⁻³ (`router_z_alpha`); see Chapter 18.
 | 922 | `_head` makes the logits. `lm_head` is its own matrix, not tied to the embedding table (lines 841–843 tie only when `tie_word_embeddings` is set, and line 117 defaults it to `False`), so the arithmetic counts 2·V·D | 10 |
 | 923–925 | cross-entropy in fp32; targets of −1 are not graded, which is how fine-tuning grades only answers | 30 |
 
-The model does not shift the targets; the caller does:
-
-> **In the repo** · `anulm/training/train.py` · `make_batch` · lines 237–250 · @fdbb09a
-
-```python
-def make_batch(data: torch.Tensor, ix: torch.Tensor, block_size: int, device: str):
-    if isinstance(data, np.ndarray):            # a memory-mapped corpus (load_memmap)
-        rows = np.stack([data[i: i + block_size + 1] for i in ix.tolist()]).astype(np.int64)
-        x, y = torch.from_numpy(rows[:, :-1]), torch.from_numpy(rows[:, 1:])
-    else:
-        x = torch.stack([data[i: i + block_size] for i in ix]).long()
-        y = torch.stack([data[i + 1: i + 1 + block_size] for i in ix]).long()
-    if device.startswith("cuda"):
-        return x.pin_memory().to(device, non_blocking=True), y.pin_memory().to(device, non_blocking=True)
-    return x.to(device), y.to(device)
-```
-
+The model does not shift the targets; the caller does, in `make_batch`
+(`anulm/training/train.py` lines 237–250, quoted in 21.4).
 Each row is cut one token longer than the context; `x` drops the last token,
 `y` the first, so position s of `y` is the token after position s of `x`.
 
@@ -490,8 +320,7 @@ draw, and this one lands 0.004 below ln 64. `initial_loss_is_ln_vocab`
 
 The released model shows what training buys. On 64 windows of 512 held-out
 tokens (seed 0; 32,732 graded, as the 36 targets after an end-of-document
-token are not graded) its loss is 3.379 nats, in fp32 except the experts, which
-the checkpoint's grouped path runs in bf16 (`anulm/model.py` 756, 784), against
+token are not graded; settings in Appendix F, F.6) its loss is 3.379 nats, against
 ln 32,768 = 10.397: about as uncertain as a uniform choice among
 e<sup>3.379</sup> ≈ 29 tokens. *measured*: `measure_attention.py`, output in
 `book/measurements/`. `docs/RESULTS.md` §39's 3.3523 ± 0.049 was measured
@@ -501,21 +330,8 @@ differently (400 windows of 1,024 tokens, bf16).
 
 ## 20.7  One step further: from logits to a token
 
-> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1152–1169 · @fdbb09a
-
-```python
-            logits = logits[:, -1, :].float()
-            # ...
-            if temperature <= 0:
-                nxt = logits.argmax(dim=-1, keepdim=True)              # (B, 1), no draw
-            else:
-                logits = logits / temperature
-                if top_k is not None:
-                    v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
-                    logits[logits < v[:, [-1]]] = -float("inf")
-                probs = F.softmax(logits, dim=-1)
-                nxt = torch.multinomial(probs, num_samples=1)          # (B, 1)
-```
+`generate`'s sampling lines (`AnuLM.generate`, lines 1152–1169) are quoted and
+taken apart in 28.1; in short:
 
 | Line | Effect |
 |---|---|
@@ -626,18 +442,10 @@ sets a shape or a parameter count. Six training and serving settings differ:
 *measured*, from `book/measurements/attention.json`.
 
 The **KV cache** stores per token and layer one key and one value per
-key/value head: 20 · 2 · 4 · 64 = 10,240 numbers.
-
-| Stored as | Per token | 1,024-token sequence |
-|---|---|---|
-| all bf16 | 20 KiB | 20 MiB |
-| as served: `anulm/inference/serve.py`, `anulm/inference/sample.py` and `anulm/inference/api.py` run bf16 autocast over fp32 weights, and QK-norm's fp32 gain keeps keys fp32 | 30 KiB (fp32 keys, bf16 values) | 30 MiB |
-| all fp32, e.g. on a CPU | 40 KiB | 40 MiB |
-
-*verified*: dtypes checked under autocast. The 256-token window does not
-shrink this: `GQAttention.forward` appends and never trims (lines 470–476).
-With 16 key/value heads instead of 4 every row would be four times larger
-(Chapters 23, 27, 29).
+key/value head: 20 · 2 · 4 · 64 = 10,240 numbers. As served, under bf16
+autocast over fp32 weights, QK-norm's fp32 gain keeps the keys fp32: 30 KiB
+per token, 30 MiB per 1,024 tokens. Chapter 27 (27.6) tabulates the bytes for
+each storage choice; the 256-token window does not shrink them.
 
 `IN THE REPO` · `MEASURED`
 

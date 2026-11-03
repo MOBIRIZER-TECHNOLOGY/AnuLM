@@ -326,15 +326,12 @@ answer ids, stands in for a checker.
             if temperature <= 0:
                 nxt = logits.argmax(dim=-1, keepdim=True)              # (B, 1), no draw
             else:
-                logits = logits / temperature
-                if top_k is not None:
-                    v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
-                    logits[logits < v[:, [-1]]] = -float("inf")
-                probs = F.softmax(logits, dim=-1)
+                # ...
                 nxt = torch.multinomial(probs, num_samples=1)          # (B, 1)
 ```
 
-In the `else` branch each row of a (G, S) batch draws its own id, so one call
+These are the ends of `generate`'s sampling lines, quoted in full in Chapter
+28. In the `else` branch each row of a (G, S) batch draws its own id, so one call
 yields G different answers. The group needs a temperature above 0: at T ≤ 0
 every row takes the same argmax, the G copies of one prompt give G identical
 answers, and every advantage is 0. The example samples at T = 1. A
@@ -410,5 +407,4 @@ Repository evidence, all at @fdbb09a:
   `dpo_step` 40–63.
 - `anulm/model.py`: `AnuLM.forward` 915–921, `AnuLM.generate` 1161–1169.
 - `book/REPOSITORY_SOURCE_MAP.md` §4: DPO, RLHF and GRPO absent in the root.
-- The lab book's Chapter 19 (`course/ch19-rl`) was added after the pin
-  (commit d3f1d97); it is cross-linked, not quoted.
+- The lab book's Chapter 19 (`course/ch19-rl`) is cross-linked, not quoted.

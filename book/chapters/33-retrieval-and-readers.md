@@ -175,18 +175,16 @@ scaled to unit length, so a dot product is a cosine. Passages are embedded once
 as `"passage: {title}. {text}"`, questions as `"query: {question}"` (lines
 216 and 228);
 a search is one (932,648 × 384) matrix–vector product and a top-k.
-`self.device` is where E5 runs: `Dense(device)` falls back to CUDA when it is
-available and no device is given (line 187), in fp16 there and fp32 on the
-CPU. `Retriever(root, device)` keeps the device it is given and builds
-`Dense(self.device)` on first use (line 271, in the excerpt below), and the
-readers pass their own model's device (`RagQA`, line 342), so `--device cpu`
-keeps retrieval off a GPU another job owns. At the book's previous pin they
-built `Retriever()` and `Dense()`, so E5 went to the GPU whatever the reader's
-device.
 
 > **Details.** The 384 is multilingual-e5-small's hidden size, read from the
 > copy in `data/rag/e5-small/config.json`; the code takes it from
-> `self.m.config.hidden_size` (line 213).
+> `self.m.config.hidden_size` (line 213). `self.device` is where E5 runs:
+> `Dense(device)` falls back to CUDA when it is available and no device is
+> given (line 187), in fp16 there and fp32 on the CPU. `Retriever(root,
+> device)` keeps the device it is given and builds `Dense(self.device)` on
+> first use (line 271, in the excerpt below), and the readers pass their own
+> model's device (`RagQA`, line 342), so `--device cpu` keeps retrieval off a
+> GPU another job owns.
 
 Fusion combines the two rankings by reciprocal rank [R37]:
 
@@ -238,12 +236,17 @@ stable sort keeps the dense list's first-seen order, so Tokyo wins.
 ![Figure 33.2 · Retrievers on the demo questions](../figures/fig33-2-retrievers.svg)
 
 *Figure 33.2 · Retrievers on the demo questions.* Answer in the top passage:
-BM25 65%, dense 90%, hybrid 75%; answered end to end by RESULTS' "AnuLM 400M
-reader (ours)": 0, 5 and 2 of 20. *measured*: RESULTS §33. The section does not
-name that reader's file; its BM25 result, 0/20, is the pointer reader's
-(33.5). `Retriever` defaults to dense when the dense index exists (line 256;
-the comment at lines 253–254 gives the same 0/20 to 5/20). The dense 5/20 includes
-one false positive of the substring check, so strictly it is 4.
+BM25 65%, dense 90%, hybrid 75%; answered end to end by the pointer reader of
+33.5: 0, 5 and 2 of 20. *measured*: RESULTS §33.
+
+Dense retrieval found the answer most often and answered the most questions,
+so `Retriever` defaults to it when the dense index exists (line 256).
+
+> **Details.** RESULTS §33 labels the end-to-end reader "AnuLM 400M reader
+> (ours)" without naming its file; its BM25 result, 0/20, is the pointer
+> reader's (33.5). The comment at lines 253–254 gives the same 0/20 to 5/20.
+> The dense 5/20 includes one false positive of the substring check, so
+> strictly it is 4.
 
 `IN THE REPO` · `MEASURED`
 
@@ -352,33 +355,33 @@ it going with the answer (Chapter 30, 30.1), so `st` and `en` are exact. An
 example whose answer is not in the passages, or falls past `max_len`, is
 dropped; an unanswerable one, 15% of the data, points both ends at 0.
 
-`max_len` belongs to the reader, not the module:
-
+> **Details.** `max_len` belongs to the reader, not the module:
+>
 > **In the repo** · `anulm/tasks/rc_pointer.py` · `load` · lines 136–152 · @fdbb09a
+>
+> ```python
+> def load(ckpt, device, max_len: int | None = None):
+>     # ...
+>     ck = load_checkpoint(ckpt, "cpu")
+>     cfg = replace(ck["cfg"], moe_impl="grouped" if device.startswith("cuda") else "sparse")
+>     m = AnuLM(cfg)
+>     m.load_state_dict(ck["model"])
+>     p = Pointer(m)
+>     p.max_len = ck.get("max_len", max_len if max_len is not None else MAX_LEN)
+>     if "pointer_head" in ck:
+>         p.head.load_state_dict(ck["pointer_head"])
+>     from anulm.hf_tok import load_tokenizer
+>     return p.to(device), load_tokenizer(cfg.tokenizer_path), ck
+> ```
+>
+> A trained reader brings the `max_len` it was trained with; a plain backbone
+> takes the caller's, or `MAX_LEN` = 640 (line 43). It is stored on the
+> `Pointer`, and `PointerQA` passes `self.p.max_len` to every `encode` (lines
+> 267 and 279). `PointerMaxLen.test_two_readers_keep_their_own_max_len`
+> (`tests/test_quality_loading.py` line 281) loads two readers and checks the
+> module-level `MAX_LEN` is untouched and each keeps its own.
 
-```python
-def load(ckpt, device, max_len: int | None = None):
-    # ...
-    ck = load_checkpoint(ckpt, "cpu")
-    cfg = replace(ck["cfg"], moe_impl="grouped" if device.startswith("cuda") else "sparse")
-    m = AnuLM(cfg)
-    m.load_state_dict(ck["model"])
-    p = Pointer(m)
-    p.max_len = ck.get("max_len", max_len if max_len is not None else MAX_LEN)
-    if "pointer_head" in ck:
-        p.head.load_state_dict(ck["pointer_head"])
-    from anulm.hf_tok import load_tokenizer
-    return p.to(device), load_tokenizer(cfg.tokenizer_path), ck
-```
-
-A trained reader brings the `max_len` it was trained with; a plain backbone
-takes the caller's, or `MAX_LEN` = 640 (line 43). It is stored on the
-`Pointer`, and `PointerQA` passes `self.p.max_len` to every `encode` (lines
-267 and 279). At the book's previous pin `load` overwrote the module-level
-`MAX_LEN` instead, so a second reader loaded in the same process changed how
-the first one cut its input. `PointerMaxLen.test_two_readers_keep_their_own_max_len`
-(`tests/test_quality_loading.py` line 281) loads two readers and checks the
-global is untouched and each keeps its own. At inference:
+At inference, `best_span` picks the answer:
 
 > **In the repo** · `anulm/tasks/rc_pointer.py` · `best_span` · lines 120–133 · @fdbb09a
 

@@ -106,25 +106,8 @@ The natural log gives **nats**; divided by ln 2 they are **bits**.
 e<sup>loss</sup> is the **perplexity**: the size of an equally uncertain
 uniform choice. The measurement script runs the released model on 64 windows
 of 512 tokens drawn (numpy seed 0) from the held-out split of its own corpus,
-the same windows Chapter 20 uses, and keeps one surprise per graded token:
-
-```python
-            rows = np.stack([val[s: s + SEQ + 1] for s in starts[b: b + BATCH]]).astype(np.int64)
-            x = torch.from_numpy(rows[:, :-1]).to(dev)
-            y = torch.from_numpy(rows[:, 1:]).to(dev).masked_fill(torch.from_numpy(rows[:, :-1]).to(dev) == EOS, -1)
-            batches.append((x, y))
-            logits, loss = m(x, y)
-            keep = y != -1
-            z = logits[keep].float()                                    # (n, V) graded positions
-            t = y[keep]
-            logp = F.log_softmax(z, -1)
-            s = -logp.gather(1, t[:, None])[:, 0]
-            surprise.append(s.cpu())
-            top1.append((z.argmax(-1) == t).cpu())
-```
-
-Rows split as in `make_batch`; a target after an end-of-document id (32,767)
-is set to −1. The mean is 3.379 nats per token: 4.875 bits, perplexity 29.3,
+the same windows Chapter 20 uses, and keeps one surprise per graded token.
+The mean is 3.379 nats per token: 4.875 bits, perplexity 29.3,
 against V = 32,768. The spread is wide:
 
 | Tokens whose surprise is | Share of tokens | Share of the total loss |
@@ -141,12 +124,31 @@ against V = 32,768. The spread is wide:
 | largest surprise | 17.40 nats |
 | top guess right | 40.1% of tokens |
 
-*measured*: `ckpt_base_v2.pt`, 64 windows of 512 tokens of `data/v2/val.u16`,
-numpy seed 0, 32,732 graded tokens, fp32 except the experts, which the
-checkpoint's grouped path runs in bf16; `book/measurements/part_i_ii_released.json`.
+*measured*: `ckpt_base_v2.pt` on `data/v2/val.u16`, 32,732 graded tokens, at
+the settings of Appendix F, F.6; `book/measurements/part_i_ii_released.json`.
 `docs/RESULTS.md` §39's 3.3523 ± 0.049 was read differently, on 400 evenly
 spaced 1,024-token windows in bf16, so the two agree only to about the error
 bar.
+
+> **Details.** The script's loop, which keeps one surprise per graded token:
+>
+> ```python
+>             rows = np.stack([val[s: s + SEQ + 1] for s in starts[b: b + BATCH]]).astype(np.int64)
+>             x = torch.from_numpy(rows[:, :-1]).to(dev)
+>             y = torch.from_numpy(rows[:, 1:]).to(dev).masked_fill(torch.from_numpy(rows[:, :-1]).to(dev) == EOS, -1)
+>             batches.append((x, y))
+>             logits, loss = m(x, y)
+>             keep = y != -1
+>             z = logits[keep].float()                                    # (n, V) graded positions
+>             t = y[keep]
+>             logp = F.log_softmax(z, -1)
+>             s = -logp.gather(1, t[:, None])[:, 0]
+>             surprise.append(s.cpu())
+>             top1.append((z.argmax(-1) == t).cpu())
+> ```
+>
+> Rows split as in `make_batch`; a target after an end-of-document id (32,767)
+> is set to −1.
 
 ![Figure 3.1 · How surprised the released model is](../figures/fig03-1-surprise.svg)
 
@@ -155,13 +157,13 @@ half-nat bins: 23.9% of tokens fall in the first bin, and a long tail reaches
 past ln V. *measured*, same file.
 
 Most of the loss is in the tail: a fifth of the tokens carry over half of it.
-The script's shares, from the per-token surprises `s`:
 
-```python
-           "tail": {str(c): {"share_of_tokens": (s >= c).double().mean().item(),
-                             "share_of_loss": (s[s >= c].sum() / s.sum()).item()} for c in (4, 6, 8)},
-```
-
+> **Details.** The script's shares, from the per-token surprises `s`:
+>
+> ```python
+>            "tail": {str(c): {"share_of_tokens": (s >= c).double().mean().item(),
+>                              "share_of_loss": (s[s >= c].sum() / s.sum()).item()} for c in (4, 6, 8)},
+> ```
 
 `MEASURED`
 
@@ -274,31 +276,32 @@ For both attention types it builds `tiny()`, scores random ids against
 themselves (an untrained model cannot exploit that), and requires the loss
 within 0.35 of ln 64. A model initialised at std 1.0 misses by about 10.
 
-`anulm/model.py` runs the same check on its two presets when executed directly:
-
-> **In the repo** · `anulm/model.py` · `__main__` · lines 1196–1205 · @fdbb09a
-
-```python
-        x = torch.randint(0, cfg.vocab_size, (2, 64))
-        model.train()
-        logits, loss = model(x, x)
-        loss.backward()
-        # Smoke test: an untrained model should sit at ln(V), every parameter
-        # should have received a gradient, and the bias update should run.
-        no_grad = [n for n, p in model.named_parameters() if p.grad is None]
-        imbalance = model.update_expert_biases()
-        print(f"{'':18s}  logits {tuple(logits.shape)}  loss {loss.item():.4f}  "
-              f"(ln(V) = {math.log(cfg.vocab_size):.4f})")
-```
-
-```text
-nano_30b (GQA)      total  17.44M   active/token   6.60M (37.9%)   layers 8
-                    logits (2, 64, 259)  loss 5.6245  (ln(V) = 5.5568)
-                    [two more lines for nano_30b, and the nano_105b block, omitted]
-```
-
-*verified*: `python -m anulm model` at the pin, output trimmed. 5.6245 is ln V plus
-0.068, close to the σ²/2 = 0.077 of the table above.
+> **Details.** `anulm/model.py` runs the same check on its two presets when
+> executed directly:
+>
+> > **In the repo** · `anulm/model.py` · `__main__` · lines 1196–1205 · @fdbb09a
+>
+> ```python
+>         x = torch.randint(0, cfg.vocab_size, (2, 64))
+>         model.train()
+>         logits, loss = model(x, x)
+>         loss.backward()
+>         # Smoke test: an untrained model should sit at ln(V), every parameter
+>         # should have received a gradient, and the bias update should run.
+>         no_grad = [n for n, p in model.named_parameters() if p.grad is None]
+>         imbalance = model.update_expert_biases()
+>         print(f"{'':18s}  logits {tuple(logits.shape)}  loss {loss.item():.4f}  "
+>               f"(ln(V) = {math.log(cfg.vocab_size):.4f})")
+> ```
+>
+> ```text
+> nano_30b (GQA)      total  17.44M   active/token   6.60M (37.9%)   layers 8
+>                     logits (2, 64, 259)  loss 5.6245  (ln(V) = 5.5568)
+>                     [two more lines for nano_30b, and the nano_105b block, omitted]
+> ```
+>
+> *verified*: `python -m anulm model` at the pin, output trimmed. 5.6245 is ln V plus
+> 0.068, close to the σ²/2 = 0.077 of the table above.
 
 `IN THE REPO`
 
@@ -317,32 +320,35 @@ token covers one. Dividing by the bytes each token covers removes that:
 ```
 
 `val` is in nats per token. `bytes_per_token` starts at 1.0, right for byte
-data, and is replaced by the corpus's own figure for BPE data:
+data, and is replaced by the corpus's own figure for BPE data, read from the
+corpus's metadata. For the released model's corpus that `meta.json` says
+6.397; it is local corpus metadata, not part of the repository.
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 656–671 · @fdbb09a
+> **Details.** Where `main` reads the figure:
+>
+> > **In the repo** · `anulm/training/train.py` · `main` · lines 656–671 · @fdbb09a
+>
+> ```python
+>     tokenizer_path, vocab_size, args.bytes_per_token = None, 259, 1.0
+>     # ...
+>     split_encoded = bool(args.data and args.data.endswith("splits.json"))
+>     memmapped = bool(args.data and args.data.endswith("meta.json"))
+>     if split_encoded:
+>         train_data, val_data, test_data, meta = load_encoded_splits(args.data)
+>         # ...
+>         args.bytes_per_token = meta["bytes_per_token"]
+>         # ...
+>     elif memmapped:
+>         train_data, val_data, meta = load_memmap(args.data)
+>         vocab_size, tokenizer_path = meta["vocab_size"], meta["tokenizer"]
+>         args.bytes_per_token = meta["bytes_per_token"]
+> ```
+>
+> Both corpus formats carry the figure in their metadata: `splits.json`, a
+> document-grouped build with a test split, and `meta.json`, the format the
+> released model was trained from.
 
-```python
-    tokenizer_path, vocab_size, args.bytes_per_token = None, 259, 1.0
-    # ...
-    split_encoded = bool(args.data and args.data.endswith("splits.json"))
-    memmapped = bool(args.data and args.data.endswith("meta.json"))
-    if split_encoded:
-        train_data, val_data, test_data, meta = load_encoded_splits(args.data)
-        # ...
-        args.bytes_per_token = meta["bytes_per_token"]
-        # ...
-    elif memmapped:
-        train_data, val_data, meta = load_memmap(args.data)
-        vocab_size, tokenizer_path = meta["vocab_size"], meta["tokenizer"]
-        args.bytes_per_token = meta["bytes_per_token"]
-```
-
-Both corpus formats carry the figure in their metadata: `splits.json`, a
-document-grouped build with a test split, and `meta.json`, the format the
-released model was trained from. For the released model's corpus that
-`meta.json` says 6.397; it is local
-corpus metadata, not part of the repository. The example repeats the
-conversion:
+The example repeats the conversion:
 
 ```python
 def bits_per_byte(nats_per_token: float, bytes_per_token: float) -> float:

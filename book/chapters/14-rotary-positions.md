@@ -157,47 +157,28 @@ presets differ in more than θ.
 
 One `Rotary` serves every layer: `AnuLM.__init__` builds it (lines 837–839)
 and `AnuLM.forward` asks it once per call (line 899). It keeps the
-frequencies, and its tables (lines 301–302), as buffers that are not saved
-with the model:
-
-> **In the repo** · `anulm/model.py` · `Rotary.__init__` · lines 282–287 · @fdbb09a
-
-```python
-    def __init__(self, cfg: AnuLMConfig, dim: int):
-        super().__init__()
-        self.dim = dim
-        self.cfg = cfg
-        inv_freq = self._build_inv_freq(cfg, dim)
-        self.register_buffer("inv_freq", inv_freq, persistent=False)
-```
-
-A buffer moves with `.to(device)` but, with `persistent=False`, is left out of
-the state dict, so a checkpoint never carries stale tables. `_grow` fills them:
+frequencies and its cos/sin tables, and `_grow` fills the tables:
 
 > **In the repo** · `anulm/model.py` · `Rotary._grow` · lines 324–337 · @fdbb09a
 
 ```python
     def _grow(self, seq_len: int, device, dtype):
-        # Keyed on device and dtype as well as length: a model moved with .to()
-        # or run under a different autocast dtype must not be handed stale tables.
-        key = (device, dtype)
-        if seq_len <= self._cached_len and self._cached_key == key:
-            return
+        # ...
         n = max(seq_len, self._cached_len)
         t = torch.arange(n, device=device, dtype=torch.float32)
         freqs = torch.outer(t, self.inv_freq.to(device))          # (T, dim/2)
         emb = torch.cat((freqs, freqs), dim=-1)                   # (T, dim)
         self.cos_cached = (emb.cos() * self.table_mscale).to(dtype)
         self.sin_cached = (emb.sin() * self.table_mscale).to(dtype)
-        self._cached_len = n
-        self._cached_key = key
+        # ...
 ```
 
-- **Early return** unless a longer sequence, device or dtype arrives.
 - **`freqs`**, (T, 32), is every angle m·ω<sub>i</sub>, in fp32 whatever
   `dtype` is.
 - **`cat((freqs, freqs))`**, (T, 64), gives dimensions i and i + 32 the same
   angle: the split-halves layout (14.6). `table_mscale` is 1.0 without YaRN.
+- **The elided lines** return early unless a longer sequence, another device
+  or another dtype arrives, and record what was built.
 
 > **In the repo** · `anulm/model.py` · `Rotary.forward` · lines 339–343 · @fdbb09a
 
@@ -210,32 +191,62 @@ the state dict, so a checkpoint never carries stale tables. `_grow` fills them:
 ```
 
 The slice gives absolute positions `start` … `start + S − 1`, so a cached
-step rotates its new key by its true position (Chapter 13). Four calls on a
-fresh table:
+step rotates its new key by its true position (Chapter 13).
 
-```
-  rot( 8, float32 , start=0): returns (8, 8) float32; table now 8 rows, float32
-  rot( 4, float32 , start=2): returns (4, 8) float32; table now 8 rows, float32
-  rot( 8, bfloat16, start=0): returns (8, 8) bfloat16; table now 8 rows, bfloat16
-  rot(20, bfloat16, start=0): returns (20, 8) bfloat16; table now 20 rows, bfloat16
-```
-
-*verified*: a slice, a rebuild for the dtype, a growth. A test pins both:
-
-> **In the repo** · `tests/test_model.py` · `rotary_cache_tracks_dtype_and_positions` · lines 636–645 · @fdbb09a
-
-```python
-def rotary_cache_tracks_dtype_and_positions():
-    cfg = tiny()
-    rot = Rotary(cfg, dim=8)
-    c32, _ = rot(8, torch.device("cpu"), torch.float32)
-    assert c32.dtype == torch.float32
-    c16, _ = rot(8, torch.device("cpu"), torch.bfloat16)
-    assert c16.dtype == torch.bfloat16, "rotary handed back a stale-dtype table"
-    full, _ = rot(16, torch.device("cpu"), torch.float32)
-    tail, _ = rot(4, torch.device("cpu"), torch.float32, start=12)
-    assert torch.equal(tail, full[12:16]), "start offset does not index absolute positions"
-```
+> **Details.** How the tables are stored, and the checks that they never go
+> stale. `Rotary` keeps the frequencies, and its tables (lines 301–302), as
+> buffers that are not saved with the model:
+>
+> > **In the repo** · `anulm/model.py` · `Rotary.__init__` · lines 282–287 · @fdbb09a
+>
+> ```python
+>     def __init__(self, cfg: AnuLMConfig, dim: int):
+>         super().__init__()
+>         self.dim = dim
+>         self.cfg = cfg
+>         inv_freq = self._build_inv_freq(cfg, dim)
+>         self.register_buffer("inv_freq", inv_freq, persistent=False)
+> ```
+>
+> A buffer moves with `.to(device)` but, with `persistent=False`, is left out of
+> the state dict, so a checkpoint never carries stale tables. The tables are
+> keyed on device and dtype as well as length (`_grow`, lines 325–329):
+>
+> > **In the repo** · `anulm/model.py` · `Rotary._grow` · lines 324–337 · @fdbb09a
+>
+> ```python
+>         # Keyed on device and dtype as well as length: a model moved with .to()
+>         # or run under a different autocast dtype must not be handed stale tables.
+>         key = (device, dtype)
+>         if seq_len <= self._cached_len and self._cached_key == key:
+>             return
+> ```
+>
+> Four calls on a fresh table:
+>
+> ```
+>   rot( 8, float32 , start=0): returns (8, 8) float32; table now 8 rows, float32
+>   rot( 4, float32 , start=2): returns (4, 8) float32; table now 8 rows, float32
+>   rot( 8, bfloat16, start=0): returns (8, 8) bfloat16; table now 8 rows, bfloat16
+>   rot(20, bfloat16, start=0): returns (20, 8) bfloat16; table now 20 rows, bfloat16
+> ```
+>
+> *verified*: a slice, a rebuild for the dtype, a growth. A test pins both:
+>
+> > **In the repo** · `tests/test_model.py` · `rotary_cache_tracks_dtype_and_positions` · lines 636–645 · @fdbb09a
+>
+> ```python
+> def rotary_cache_tracks_dtype_and_positions():
+>     cfg = tiny()
+>     rot = Rotary(cfg, dim=8)
+>     c32, _ = rot(8, torch.device("cpu"), torch.float32)
+>     assert c32.dtype == torch.float32
+>     c16, _ = rot(8, torch.device("cpu"), torch.bfloat16)
+>     assert c16.dtype == torch.bfloat16, "rotary handed back a stale-dtype table"
+>     full, _ = rot(16, torch.device("cpu"), torch.float32)
+>     tail, _ = rot(4, torch.device("cpu"), torch.float32, start=12)
+>     assert torch.equal(tail, full[12:16]), "start offset does not index absolute positions"
+> ```
 
 `IN THE REPO`
 
@@ -352,46 +363,52 @@ of 24 small networks for each token (Chapters 17–18), a discrete choice.
 `ch14_measure_shift.py` shifts the positions of 16 held-out windows of 512
 tokens (`data/v2/val.u16`, seed 0) through `ckpt_base_v2.pt` with the experts
 on two paths: the released `grouped` path, which computes them in bf16
-(`anulm/model.py` lines 756 and 784), and the `sparse` path, fp32 throughout. It
-also records each token's chosen experts in every MoE layer, and repeats
-offset 0 as a control. A forward hook keeps each router's chosen ids, sorted
-so that two sets compare equal whatever their order:
-
-```python
-    routes = []
-    for i, layer in enumerate(m.layers):
-        if layer.is_moe:                     # Router.forward returns (topk_idx, topk_w, aux); keep the ids
-            layer.mlp.router.register_forward_hook(
-                lambda mod, inp, out, i=i: routes.append((i, out[0].sort(-1).values.cpu())))
-```
-
-The shift itself is one wrapper around the model's own `Rotary`:
-
-```python
-            m.rotary.forward = lambda S, device, dtype, start=0, off=off: real(S, device, dtype, start=start + off)
-            try:
-                loss, n, out, a, chosen = forward_all(m, val, starts, dev, att, routes)
-            finally:
-                m.rotary.forward = real
-```
-
-| offset | layer-0 attention change | sparse: expert sets changed | sparse: median logit change | sparse: top-1 changed | grouped: expert sets changed | grouped: median logit change | grouped: top-1 changed |
-|---|---|---|---|---|---|---|---|
-| 0, again | 0 | 0 | 0 | 0.00% | 0 | 0 | 0.00% |
-| 1,024 | 3.8·10⁻⁷ | 1 | 2.2·10⁻⁵ | 0.00% | 623 | 0.023 | 0.40% |
-| 65,536 | 1.5·10⁻⁵ | 303 | 0.0023 | 0.07% | 807 | 0.025 | 0.39% |
-| 1,048,576 | 4.2·10⁻⁴ | 1,659 | 0.028 | 0.59% | 1,868 | 0.040 | 0.73% |
-
-*measured*, `book/measurements/part_iv_a_shift.json`. The attention change
-is relative to its largest output. Expert sets are counted over 155,648
-(token, MoE layer) pairs. The loss stays between 3.1749 and 3.1760.
+(`anulm/model.py` lines 756 and 784), and the `sparse` path, fp32 throughout. It also records
+each token's chosen experts in every MoE layer, and repeats offset 0 as a
+control. *measured*, `book/measurements/part_iv_a_shift.json`; the loss stays
+between 3.1749 and 3.1760:
 
 - **RoPE is relative up to fp32 rounding**, which grows with the position,
   because a large angle is stored with a larger absolute error. The control
   run is bit-identical, so the changes come from the shift.
 - **Discrete routing amplifies it.** On the fp32 path at offset 1,024 one
-  token in one layer switches experts, and one logit moves by 0.92. With bf16 experts, whose outputs feed the next
-  layers' routers, 623 expert sets change and 0.4% of predictions differ.
+  token in one layer switches experts, and one logit moves by 0.92. With bf16
+  experts, whose outputs feed the next layers' routers, 623 expert sets change
+  and 0.4% of predictions differ. At an offset of 1,048,576 even the fp32 path
+  changes 1,659 expert sets and 0.59% of predictions.
+
+> **Details.** Every offset, and how the shift was made.
+>
+> | offset | layer-0 attention change | sparse: expert sets changed | sparse: median logit change | sparse: top-1 changed | grouped: expert sets changed | grouped: median logit change | grouped: top-1 changed |
+> |---|---|---|---|---|---|---|---|
+> | 0, again | 0 | 0 | 0 | 0.00% | 0 | 0 | 0.00% |
+> | 1,024 | 3.8·10⁻⁷ | 1 | 2.2·10⁻⁵ | 0.00% | 623 | 0.023 | 0.40% |
+> | 65,536 | 1.5·10⁻⁵ | 303 | 0.0023 | 0.07% | 807 | 0.025 | 0.39% |
+> | 1,048,576 | 4.2·10⁻⁴ | 1,659 | 0.028 | 0.59% | 1,868 | 0.040 | 0.73% |
+>
+> The attention change is relative to its largest output. Expert sets are
+> counted over 155,648 (token, MoE layer) pairs.
+>
+> A forward hook keeps each router's chosen ids, sorted so that two sets
+> compare equal whatever their order:
+>
+> ```python
+>     routes = []
+>     for i, layer in enumerate(m.layers):
+>         if layer.is_moe:                     # Router.forward returns (topk_idx, topk_w, aux); keep the ids
+>             layer.mlp.router.register_forward_hook(
+>                 lambda mod, inp, out, i=i: routes.append((i, out[0].sort(-1).values.cpu())))
+> ```
+>
+> The shift itself is one wrapper around the model's own `Rotary`:
+>
+> ```python
+>             m.rotary.forward = lambda S, device, dtype, start=0, off=off: real(S, device, dtype, start=start + off)
+>             try:
+>                 loss, n, out, a, chosen = forward_all(m, val, starts, dev, att, routes)
+>             finally:
+>                 m.rotary.forward = real
+> ```
 
 `MEASURED` · `IMPLEMENTATION-DEPENDENT`
 

@@ -24,7 +24,9 @@ This appendix lists the scripts that produce or check those numbers, says what
 each one actually checks, and gives the order to run them in. None trains a
 model. No single script recomputes every number: each chapter's examples
 recompute that chapter's, and the tools below check excerpts, citations,
-figures and four appendix tables.
+figures and four appendix tables. F.6 states once the settings the
+measurements share, and F.7 shows the code behind Chapter 1's repository
+counts and citation check.
 
 ## F.1  The repository at the pin
 
@@ -159,7 +161,137 @@ examples one at a time. Where a script supports it, write to a path of your
 own rather than to `book/measurements/`, and compare its output with the
 book's JSON. Results in bf16 can differ in the last digits from results in
 fp32. This includes the released model's experts on its own `grouped` path,
-which runs them in bf16 even without autocast. The pages that quote a
+which runs them in bf16 even without autocast (F.6). The pages that quote a
 measurement name its precision. A number that moves by more than its stated
 sampling error is a finding: report it with the script, the machine and the
 PyTorch version.
+
+## F.6  Measurement settings
+
+The book's measurements on the released model share one set of settings. A
+page that quotes a measurement points here and names only what differs.
+
+| Setting | Standard |
+|---|---|
+| model | `ckpt_base_v2.pt` (step 1,899,999), loaded through `anulm/model.py` unchanged, with the configuration stored in the checkpoint |
+| data | the base run's held-out split `data/v2/val.u16`; statistics only, no held-out text printed or saved |
+| windows | start positions drawn with `numpy.random.default_rng(0)`; 64 windows of 512 tokens, in batches of 4, for the main sample; 16 or 32 windows where a page says so |
+| grading | where a script computes a loss, the target after an end-of-document id (32,767) is not graded |
+| seeds | 0, for the window draw and for `torch.manual_seed` |
+| precision | fp32 weights and activations, no autocast, except the experts (below) |
+| machine | the book's GPU (an NVIDIA GeForce RTX 5070 Ti, 16 GB) when at least 4 GB is free, otherwise the CPU; PyTorch 2.11.0+cu128 |
+
+**The one exception to fp32.** The checkpoint's configuration sets
+`moe_impl="grouped"`, and that path runs the experts in bf16 even with
+autocast off: it casts the stacked expert weights to bf16 (`anulm/model.py`
+line 756) and the expert-sorted token vectors (line 784) before its grouped
+matrix multiplies. Everything else, the router included, stays in fp32. A
+measurement that needs the experts in fp32 as well sets `moe_impl="sparse"`,
+which picks the same experts and differs only by rounding.
+
+*verified*: the settings are the docstrings and constants of
+`measure_part_i_ii.py`, `measure_attention.py`, `ch12_measure_masks.py`,
+`ch13_measure_groups.py`, `ch14_measure_shift.py`, `ch15_measure_stream.py` and
+`ch16_measure_trained.py`, and the `precision`, `windows`, `seed` and `device`
+fields of their files in `book/measurements/`; lines 756 and 784 read at
+@fdbb09a.
+
+What differs, by measurement, as each page says:
+
+| Differs in | Where |
+|---|---|
+| sample size: 64 × 512 (Chapters 3, 5, 11, 16–18, 20); 32 × 1,024 (12); 16 × 512 (13–15) | each chapter's measurement script |
+| bf16 autocast, as `sample.py`, `serve.py` and `api.py` run the model | 1.3's sample; Chapter 28 (`part_vi_ch28_sampling.json`); Chapter 29 (`part_vi_ch29_context.json`); Chapter 27's bf16 half (`part_vi_ch27_cache.json`) |
+| bf16 autocast, as training ran: the router measured under it | Chapter 23 (`ch23_measure.py`) and Chapter 26 (`ch26_measure_router_bf16.py`), 32 windows of 1,024 |
+| bf16 autocast over the base run's own validation windows, 400 strided windows of 1,024 | Chapter 24 (`part_v_b_val_noise.json`) |
+| `moe_impl="sparse"`, so fp32 throughout | Chapter 27's fp32 half; Chapter 30's pair loss (CPU); Chapter 31 (`part_vii_lora.json`); Chapter 35 (`part_viii_ix_grow.json`); Chapter 39 (`part_viii_ix_export.json`); Chapter 41 (`part_x_released.json`) |
+| a training-shaped batch: 4 windows of 1,024, numpy seed 1, bf16 autocast, train mode | Chapter 7's gradient norms (`measure_part_i_ii.py`) |
+
+## F.7  Chapter 1's counts and the citation check
+
+`book/code-examples/ch01_four_steps.py` (**Book example, not repository
+code**) counts the repository by role for Chapter 1.5 and runs the check
+behind every code citation. Both read the tree at the pin with git, never the
+working tree. The roles are the book's grouping, by package folder, with each
+folder's `__init__.py` counted in it; the first test that matches wins:
+
+```python
+ROLES = [  # (role, test on the path at the pin); the first match wins
+    ("the model", lambda f: f == "anulm/model.py"),
+    ("tests", lambda f: f.startswith("tests/")),
+    ("training and tokenizer", lambda f: f.startswith("anulm/training/")
+     or f in ("anulm/bpe.py", "anulm/muon.py", "anulm/bigram_teacher.py")),
+    ("data", lambda f: f.startswith("anulm/data/")),
+    ("evaluation", lambda f: f.startswith("anulm/eval/")),
+    ("post-training", lambda f: f.startswith("anulm/tasks/") or f in ("anulm/lora.py", "anulm/bidirectional.py")),
+    ("speech and vision", lambda f: f.startswith("anulm/multimodal/")),
+    ("serving and apps", lambda f: f.startswith(("anulm/inference/", "anulm/apps/")) or f == "anulm/quickstart.py"),
+    ("export", lambda f: f.startswith("anulm/hf/") or f == "anulm/hf_tok.py"),
+    ("package entry", lambda f: f in ("anulm/__init__.py", "anulm/__main__.py", "model.py")),
+    ("tools", lambda f: f.startswith("tools/")),
+]
+```
+
+The tree is listed and counted by these functions; `at_pin` reads one file at
+the pin:
+
+```python
+def at_pin(path: str) -> list[str]:
+    out = subprocess.run(["git", "show", f"{PIN}:{path}"], cwd=ROOT, capture_output=True,
+                         text=True, encoding="utf-8", errors="replace", check=True).stdout
+    return out.splitlines()
+
+
+def tree_at_pin() -> list[str]:
+    names = subprocess.run(["git", "ls-tree", "-r", "--name-only", PIN], cwd=ROOT, capture_output=True,
+                           text=True, check=True).stdout.split()
+    return [f for f in names if f.endswith(".py")]
+
+
+def repo_map() -> dict:
+    """The package, its tests and tools (everything outside the five folders below), by role."""
+    files = [f for f in tree_at_pin() if not f.startswith(tuple(d + "/" for d in FOLDERS))]
+    groups: dict[str, list] = {}
+    for f in files:
+        role = next(r for r, test in ROLES if test(f))
+        groups.setdefault(role, []).append((f, len(at_pin(f))))
+    print(f"\nPython files in anulm/, tests/, tools/ and the root @{PIN}: {len(files)}")
+    for role, _ in ROLES:
+        fs = groups.get(role, [])
+        print(f"  {role:24s} {len(fs):3d} files {sum(n for _, n in fs):6,d} lines")
+    return groups
+
+
+def subdirectories() -> None:
+    """The rest of the Python: the lab book, run scripts, the reference code, examples, the book."""
+    py = tree_at_pin()
+    print(f"\nPython files in the whole tree @{PIN}: {len(py)}")
+    for d in FOLDERS:
+        fs = [f for f in py if f.startswith(d + "/")]
+        print(f"  {d + '/':24s} {len(fs):3d} files {sum(len(at_pin(f)) for f in fs):6,d} lines")
+```
+
+`FOLDERS` is `course`, `experiments`, `sarvam`, `examples` and `book`, the
+folders Chapter 1.5's table counts on rows of their own.
+
+The citation check is the core of what `verify_chapters.py` does for every
+excerpt (F.2):
+
+```python
+def citation_holds(path: str, first: int, last: int, quoted: list[str]) -> bool:
+    """What the book's checker does for every excerpt: each quoted line, stripped,
+    must occur inside the cited range of the file at the pin."""
+    window = [s.strip() for s in at_pin(path)[first - 1:last]]
+    return all(q.strip() in window for q in quoted if q.strip() and q.strip() != "# ...")
+```
+
+Three lines of 1.2's excerpt pass at 1164–1169 and fail at 1064–1069:
+
+```text
+citation anulm/model.py 1164-1169 holds: True
+citation anulm/model.py 1064-1069 holds: False
+```
+
+*verified*: printed by `ch01_four_steps.py`. The check tests membership, not
+order; a stricter check, that the lines appear in order and are contiguous
+except at `# ...`, also passes for every excerpt in Chapters 1–7.

@@ -135,7 +135,7 @@ it against a deliberately broken model on an export of the pin.
 | `initial_loss_is_ln_vocab` | the 0.35 tolerance lets a badly scaled embedding through | run with the embedding initialised at std 1.0: passes |
 | `native_gqa_matches_repeat_interleave` | uses `n_kv_head=1`, where every query head shares the one key/value head, so a wrong head pairing cannot show | line 1607 |
 | `lora_starts_as_the_base_model_and_merges_back_exactly` | its router-bias check never runs (C.3) | lines 1111–1115 |
-| the *optional* tests | do not run without their package or `F.grouped_mm`. Before the pin they returned early and counted as passes; now each raises `unittest.SkipTest`, so the gap shows as SKIP in the summary | lines 699, 720, 738 (`grouped_moe_*`), 1299 (`transformers`), 1358 (`tokenizers`) |
+| the *optional* tests | do not run without their package or `F.grouped_mm`; each raises `unittest.SkipTest`, so the gap shows as SKIP in the summary | lines 699, 720, 738 (`grouped_moe_*`), 1299 (`transformers`), 1358 (`tokenizers`) |
 | `the_demo_page_offers_the_right_modes_for_each_checkpoint` | without `safetensors` it skips after its first half has run, so a SKIP here still means part of it passed | line 901 |
 
 *verified*: names, lines and order against `tests/test_model.py` at @fdbb09a by

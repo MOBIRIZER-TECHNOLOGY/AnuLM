@@ -324,7 +324,8 @@ The layer that calls it sets up its projections and scale once:
 - **Line 449.** The scale is 1/√64 = 0.125, times a temperature that YaRN adds
   when the context is stretched (Chapter 29). Without YaRN, `attn_mscale` is
   1.0 (line 298), so the released scale is exactly 0.125. MLA and the band
-  blend in the comment belong to Chapters 19 and 29.
+  blend in the comment belong to Chapters 19 and 29; the test that pins the
+  YaRN temperature is in the Details at the end of this section.
 
 The forward pass first makes the queries, keys and values for every head:
 
@@ -371,10 +372,7 @@ KV cache (Chapter 27). Then comes the attention call:
         mask = bidir_mask if bidir_mask is not None else _attn_mask(S, T, start, window, x.device)
         drop = self.dropout if self.training else 0.0
         if NATIVE_GQA and self.n_rep > 1:
-            # SDPA broadcasts the Hkv heads itself: no (B, H, T, Dh) copies.
-            y = F.scaled_dot_product_attention(
-                q, k, v, attn_mask=mask, is_causal=(mask is None and S > 1),
-                scale=self.scale, dropout_p=drop, enable_gqa=True)
+            # ...
         else:
             # Broadcast each KV head across its query group explicitly.
             k = k.repeat_interleave(self.n_rep, dim=1)    # (B, H, T, Dh)
@@ -385,117 +383,72 @@ KV cache (Chapter 27). Then comes the attention call:
 ```
 
 - **Line 477.** T, the number of keys, includes any cached ones.
-- **Line 481.** The mask comes from `_attn_mask`, below. The bidirectional
-  mask is for the one place the repository reads text in both directions.
+- **Line 481.** The mask comes from `_attn_mask` (Chapter 12, 12.3, quotes
+  it): `None` when PyTorch's own causal mask is enough, a boolean (S, T) mask
+  for the windowed layers and for several new tokens against a cache. The
+  bidirectional mask is for the one place the repository reads text in both
+  directions.
 - **Line 482.** PyTorch applies whatever dropout it is given, in training or
   not [R50], so the layer passes 0.0 outside training. The released model has
   `dropout = 0.0`.
 - **Lines 483–492.** With `NATIVE_GQA` off, the default (line 387), each
-  key/value head is copied to its four query heads and `_sdpa` runs. The
+  key/value head is copied to its four query heads and `_sdpa` runs
+  (Chapter 13, 13.4, quotes the other branch). The
   (B, H, …) dimensions are the `...` of `attention()`: all sixteen heads in one
   call.
 - **Lines 493–494.** The heads are laid side by side again and projected back
   to width D.
 
-> **In the repo** · `anulm/model.py` · `_attn_mask` · lines 365–381 · @fdbb09a
-
-```python
-def _attn_mask(S: int, T: int, start: int, window: Optional[int], device):
-    """Boolean (S, T) mask, True = may attend. The S queries sit at absolute
-    positions start..start+S-1; the T keys at 0..T-1 (T == start + S).
-
-    Returns None whenever SDPA's built-in `is_causal` (or no mask at all, for a
-    single decode step) is enough, so the fused kernels keep their fast path.
-    An explicit mask is needed for a multi-token step against a non-empty cache
-    -- `is_causal` aligns top-left, which is wrong there -- and for windows.
-    """
-    if window is None and (start == 0 or S == 1):
-        return None
-    q_pos = torch.arange(start, start + S, device=device)[:, None]
-    k_pos = torch.arange(T, device=device)[None, :]
-    mask = k_pos <= q_pos
-    if window is not None:
-        mask &= k_pos > q_pos - window
-    return mask
-```
-
-Three cases follow from line 374:
-
-| Call | `_attn_mask` returns | `is_causal` | Who masks |
-|---|---|---|---|
-| several tokens, no cache, no window (layers 10–19 in training) | `None` | `True` | PyTorch's built-in causal mask |
-| one token against a cache, no window | `None` | `False` | nobody: the newest token may see every key |
-| a window (layers 0–9, always), or several tokens against a cache | a boolean (S, T) mask | `False` | the explicit mask, lines 376–380 |
-
-Line 378 is the causal rule in absolute positions, the same rule as
-`causal()` in 11.4. Lines 379–380 add the window: the last 256 tokens, the query's
-own included (Chapters 12 and 29). A test pins the window to the token:
-
-> **In the repo** · `tests/test_model.py` · `sliding_window_limits_reach` · lines 653–675 · @fdbb09a
-
-```python
-def sliding_window_limits_reach():
-    """On a windowed layer, a token more than `window` back must not influence
-    the output; one inside the window must. Checked on the attention module
-    directly (the residual stream would smear the effect across layers)."""
-    torch.manual_seed(0)
-    W = 4
-    for attn in ("gqa", "mla"):
-        cfg = tiny(attn=attn, sliding_window=W, max_window_layers=2)
-        m = AnuLM(cfg).eval()
-        a0, a2 = m.layers[0].attn, m.layers[2].attn      # windowed, and not
-        assert m.layers[0].window == W and m.layers[2].window is None
-        x = torch.randn(1, 12, cfg.hidden_size)
-        cos, sin = m.rotary(12, x.device, x.dtype)
-        with torch.no_grad():
-            base = a0(x, cos, sin, window=W)[0, 11]
-            far = x.clone(); far[0, 11 - W] += 3.0      # exactly W back: outside
-            near = x.clone(); near[0, 11 - W + 1] += 3.0  # W-1 back: inside
-            d_far = (a0(far, cos, sin, window=W)[0, 11] - base).abs().max().item()
-            d_near = (a0(near, cos, sin, window=W)[0, 11] - base).abs().max().item()
-            d_full = (a2(far, cos, sin)[0, 11] - a2(x, cos, sin)[0, 11]).abs().max().item()
-        assert d_far == 0.0, f"{attn}: token outside the window moved the output by {d_far:.2e}"
-        assert d_near > 1e-6, f"{attn}: token inside the window had no effect"
-        assert d_full > 1e-6, f"{attn}: the non-windowed layer lost its reach"
-```
-
-It nudges the token exactly W back, then the one W − 1 back. The first must
-change the last position's output by exactly zero, the second by something.
-It also checks that the unwindowed layer still sees the far token. Because it
-runs through `_attn_mask`'s explicit mask, it is one of the three tests that
-fail if that mask is inverted (11.10).
-
-The repository passes the scale explicitly because YaRN changes it, and the
-comment at lines 446–448 says what goes wrong otherwise. It did go wrong:
-
-> **In the repo** · `tests/test_model.py` · `yarn_temperature_reaches_attention` · lines 144–164 · @fdbb09a
-
-```python
-def yarn_temperature_reaches_attention():
-    """BOTH attention paths must carry the mscale**2 logit temperature.
-
-    YaRN is two halves: the band blend in the rotary tables and the softmax
-    temperature. Applying only the first is not YaRN, and it fails silently --
-    the model still runs, still extends, and reports numbers you would then
-    attribute to the wrong mechanism. GQA dropped this half until it was
-    caught by reading, not by any test, which is why this covers both.
-    """
-    mla = tiny(attn="mla", yarn=True, yarn_factor=40.0, qk_nope_head_dim=8,
-               qk_rope_head_dim=8, v_head_dim=8, kv_lora_rank=16)
-    a = MLAttention(mla, Rotary(mla, dim=8))
-    expected = (16 ** -0.5) * (yarn_mscale(40.0, 1.0) ** 2)
-    assert abs(a.scale - expected) < 1e-9, f"mla scale {a.scale} != {expected}"
-    assert a.scale > 16 ** -0.5, "mla: YaRN temperature term was dropped"
-
-    gqa = tiny(attn="gqa", yarn=True, yarn_factor=40.0, head_dim=8)
-    g = GQAttention(gqa, Rotary(gqa, dim=8))
-    expected = (8 ** -0.5) * (yarn_mscale(40.0, 1.0) ** 2)
-    assert abs(g.scale - expected) < 1e-9, f"gqa scale {g.scale} != {expected}"
-    assert g.scale > 8 ** -0.5, "gqa: YaRN temperature term was dropped"
-```
-
-It requires both attention types to carry the YaRN temperature; its docstring
-records that no test failed when the GQA path dropped it.
+> **Details.** Who masks, case by case, and the two tests behind this
+> section's window and scale.
+>
+> Three cases follow from `_attn_mask`'s early return (line 374) and `_sdpa`'s
+> `is_causal` (line 416):
+>
+> | Call | `_attn_mask` returns | `is_causal` | Who masks |
+> |---|---|---|---|
+> | several tokens, no cache, no window (layers 10–19 in training) | `None` | `True` | PyTorch's built-in causal mask |
+> | one token against a cache, no window | `None` | `False` | nobody: the newest token may see every key |
+> | a window (layers 0–9, always), or several tokens against a cache | a boolean (S, T) mask | `False` | the explicit mask, lines 376–380 |
+>
+> The explicit mask is the causal rule in absolute positions, the same rule as
+> `causal()` in 11.4, plus the window: the last 256 tokens, the query's own
+> included (Chapters 12 and 29). `sliding_window_limits_reach` (line 653,
+> quoted in 12.6) pins the window to the token: a token exactly W back must
+> change the last position's output by exactly zero, one W − 1 back by
+> something.
+>
+> The repository passes the scale explicitly because YaRN changes it, and the
+> comment at lines 446–448 says what goes wrong otherwise. It did go wrong:
+>
+> > **In the repo** · `tests/test_model.py` · `yarn_temperature_reaches_attention` · lines 144–164 · @fdbb09a
+>
+> ```python
+> def yarn_temperature_reaches_attention():
+>     """BOTH attention paths must carry the mscale**2 logit temperature.
+>
+>     YaRN is two halves: the band blend in the rotary tables and the softmax
+>     temperature. Applying only the first is not YaRN, and it fails silently --
+>     the model still runs, still extends, and reports numbers you would then
+>     attribute to the wrong mechanism. GQA dropped this half until it was
+>     caught by reading, not by any test, which is why this covers both.
+>     """
+>     mla = tiny(attn="mla", yarn=True, yarn_factor=40.0, qk_nope_head_dim=8,
+>                qk_rope_head_dim=8, v_head_dim=8, kv_lora_rank=16)
+>     a = MLAttention(mla, Rotary(mla, dim=8))
+>     expected = (16 ** -0.5) * (yarn_mscale(40.0, 1.0) ** 2)
+>     assert abs(a.scale - expected) < 1e-9, f"mla scale {a.scale} != {expected}"
+>     assert a.scale > 16 ** -0.5, "mla: YaRN temperature term was dropped"
+>
+>     gqa = tiny(attn="gqa", yarn=True, yarn_factor=40.0, head_dim=8)
+>     g = GQAttention(gqa, Rotary(gqa, dim=8))
+>     expected = (8 ** -0.5) * (yarn_mscale(40.0, 1.0) ** 2)
+>     assert abs(g.scale - expected) < 1e-9, f"gqa scale {g.scale} != {expected}"
+>     assert g.scale > 8 ** -0.5, "gqa: YaRN temperature term was dropped"
+> ```
+>
+> It requires both attention types to carry the YaRN temperature; its docstring
+> records that no test failed when the GQA path dropped it.
 
 `IN THE REPO`
 
@@ -583,51 +536,66 @@ the gains.
 
 `book/code-examples/measure_attention.py` (**Book example, not repository
 code**) runs `ckpt_base_v2.pt` unchanged on 64 held-out windows of 512 tokens
-(`data/v2/val.u16`, seed 0; statistics only). It wraps `_sdpa`:
+(`data/v2/val.u16`, seed 0; statistics only). It wraps `_sdpa`, recomputes
+each layer's attention weights with 11.4's `attention()`, checks that they
+reproduce the kernel's output (largest difference 3.1 × 10⁻⁵), and reads them
+for queries from position 64 on. Loss 3.379 nats against ln V = 10.397, at
+the settings of Appendix F, F.6 (`docs/RESULTS.md` §39's 3.3523 used 400 bf16
+windows). Three findings, *measured*, `book/measurements/`:
 
-```python
-    def __call__(self, q, k, v, mask, S, scale, drop):
-        y = self.orig(q, k, v, mask, S, scale, drop)
-        layer = self.calls % self.n_layer
-        self.calls += 1
-        T = k.shape[-2]
-        s = (q.float() @ k.float().transpose(-2, -1)) * scale                  # (B, H, S, T)
-        if mask is None:
-            mask = torch.ones(S, T, dtype=torch.bool, device=q.device).tril(T - S) if S > 1 else None
-        if mask is not None:
-            s = s.masked_fill(~mask, float("-inf"))
-        w = s.softmax(-1)
-        # the recomputed weights must reproduce the kernel's output, or every statistic below is wrong
-        err = ((w @ v.float()) - y.float()).abs().max().item()
-        assert err < 1e-3, f"layer {layer}: recomputed attention differs from _sdpa by {err:.2e}"
-```
+- **A few heads copy the previous token.** 6 of 320 heads put over half their
+  weight on it; the strongest, layer 9 head 14, puts 0.881.
+- **Many deep heads look at the first position.** Layers 10–18 put 40% to 67%
+  of their weight there on average, and 97 of 320 heads over half. It begins
+  at layer 8: on queries that can still see position 0, layers 0–7 put at
+  most 0.007 there.
+- **Attention narrows with depth.** Layer 0 spreads over 191.6 of the 215
+  keys a query can see on average; layers 10–18 keep only 5.7 to 26.0 of 288
+  in play, and layer 19 widens again to 181.2.
 
-This is 11.4's `attention()` beside the real call, and the assertion checks that the
-weights are the ones the model used (largest difference 3.1 × 10⁻⁵). The
-statistics read them for queries from position 64 on:
-
-```python
-        rows = w[:, :, self.lo:, :]                                                   # (B, H, S-lo, T)
-        qpos = pos[self.lo:]
-        self.prev[layer] += rows.gather(-1, (qpos - 1).view(1, 1, -1, 1).expand(B, H, -1, 1)).mean((0, 2, 3)).double().cpu()
-        self.first[layer] += rows[..., 0].mean((0, 2)).double().cpu()
-        sees0 = mask[self.lo:, 0] if mask is not None else torch.ones_like(qpos, dtype=torch.bool)
-        self.first_visible[layer] += rows[:, :, sees0, 0].mean((0, 2)).double().cpu()
-        ent = -(rows * rows.clamp_min(1e-30).log()).sum(-1)                           # (B, H, S-lo)
-        self.inplay[layer] += ent.exp().mean((0, 2)).double().cpu()
-```
-
-`gather` takes each query's weight one position back; column 0 is the first
-position, and `sees0` keeps queries whose window still includes it. Loss 3.379
-nats against ln V = 10.397 (fp32, but the grouped experts run in bf16, lines
-756, 784; `docs/RESULTS.md` §39's 3.3523 used 400 bf16 windows). *measured*, `book/measurements/`:
-
-| Finding | Numbers |
-|---|---|
-| a few heads copy the previous token | 6 of 320 heads put over half their weight there: layer 9 head 14 0.881, layer 4 head 15 0.797, layer 4 head 14 0.717, layer 5 head 9 0.612, layer 14 head 3 0.584, one in layer 3 |
-| many deep heads look at the first position | layers 10–18 put 40% to 67% there on average; 97 of 320 heads over half; strongest layer 17 head 15, 0.860 |
-| … starting at layer 8, where it is visible | on queries that can still see position 0: layers 0–7 at most 0.007, about uniform; layers 8 and 9 0.263 and 0.158; one layer-8 head 0.643 |
-| width of attention changes with depth | keys in play, against the mean number of keys a query at positions 64–511 can see (215.07 in the windowed layers 0–9, 288.5 in the full layers 10–19): layer 0 191.6 of 215; layers 1–2 89.8 and 97.1; layers 3–9 35.7 to 80.1; layers 10–18 5.7 to 26.0 of 288; layer 19 181.2; single heads 1.4 to 208.0 |
+> **Details.** The full table, and how it was measured.
+>
+> | Finding | Numbers |
+> |---|---|
+> | a few heads copy the previous token | 6 of 320 heads put over half their weight there: layer 9 head 14 0.881, layer 4 head 15 0.797, layer 4 head 14 0.717, layer 5 head 9 0.612, layer 14 head 3 0.584, one in layer 3 |
+> | many deep heads look at the first position | layers 10–18 put 40% to 67% there on average; 97 of 320 heads over half; strongest layer 17 head 15, 0.860 |
+> | … starting at layer 8, where it is visible | on queries that can still see position 0: layers 0–7 at most 0.007, about uniform; layers 8 and 9 0.263 and 0.158; one layer-8 head 0.643 |
+> | width of attention changes with depth | keys in play, against the mean number of keys a query at positions 64–511 can see (215.07 in the windowed layers 0–9, 288.5 in the full layers 10–19): layer 0 191.6 of 215; layers 1–2 89.8 and 97.1; layers 3–9 35.7 to 80.1; layers 10–18 5.7 to 26.0 of 288; layer 19 181.2; single heads 1.4 to 208.0 |
+>
+> The wrapper around `_sdpa`:
+>
+> ```python
+>     def __call__(self, q, k, v, mask, S, scale, drop):
+>         y = self.orig(q, k, v, mask, S, scale, drop)
+>         layer = self.calls % self.n_layer
+>         self.calls += 1
+>         T = k.shape[-2]
+>         s = (q.float() @ k.float().transpose(-2, -1)) * scale                  # (B, H, S, T)
+>         if mask is None:
+>             mask = torch.ones(S, T, dtype=torch.bool, device=q.device).tril(T - S) if S > 1 else None
+>         if mask is not None:
+>             s = s.masked_fill(~mask, float("-inf"))
+>         w = s.softmax(-1)
+>         # the recomputed weights must reproduce the kernel's output, or every statistic below is wrong
+>         err = ((w @ v.float()) - y.float()).abs().max().item()
+>         assert err < 1e-3, f"layer {layer}: recomputed attention differs from _sdpa by {err:.2e}"
+> ```
+>
+> The statistics read the weights for queries from position 64 on:
+>
+> ```python
+>         rows = w[:, :, self.lo:, :]                                                   # (B, H, S-lo, T)
+>         qpos = pos[self.lo:]
+>         self.prev[layer] += rows.gather(-1, (qpos - 1).view(1, 1, -1, 1).expand(B, H, -1, 1)).mean((0, 2, 3)).double().cpu()
+>         self.first[layer] += rows[..., 0].mean((0, 2)).double().cpu()
+>         sees0 = mask[self.lo:, 0] if mask is not None else torch.ones_like(qpos, dtype=torch.bool)
+>         self.first_visible[layer] += rows[:, :, sees0, 0].mean((0, 2)).double().cpu()
+>         ent = -(rows * rows.clamp_min(1e-30).log()).sum(-1)                           # (B, H, S-lo)
+>         self.inplay[layer] += ent.exp().mean((0, 2)).double().cpu()
+> ```
+>
+> `gather` takes each query's weight one position back; column 0 is the first
+> position, and `sees0` keeps queries whose window still includes it.
 
 The windows start at random offsets, so the first-position weight follows the
 position, not a word. Whether later layers use the previous-token heads is not
@@ -699,7 +667,7 @@ the formula.
 | scale applied twice | scores divided by 64 at width 64: nearly uniform attention | the same assertion |
 | softmax over queries | weights still look plausible | every row of weights sums to 1 over the keys |
 | dropout at evaluation | PyTorch applies any `dropout_p` it is given [R50] | pass 0.0 outside training (line 482); two evaluation passes must match |
-| boolean mask inverted | PyTorch's `True` means *may attend*; `nn.MultiheadAttention`'s padding mask means the opposite [R50] | `incremental_forward_matches_full_forward` (`tests/test_model.py` line 561), `sliding_window_limits_reach` (line 653, shown in 11.6) and `sliding_window_agrees_with_cache` fail with `_attn_mask`'s output inverted |
+| boolean mask inverted | PyTorch's `True` means *may attend*; `nn.MultiheadAttention`'s padding mask means the opposite [R50] | `incremental_forward_matches_full_forward` (`tests/test_model.py` line 561), `sliding_window_limits_reach` (line 653, shown in 12.6) and `sliding_window_agrees_with_cache` fail with `_attn_mask`'s output inverted |
 | comparing kernels exactly | sums in different orders differ in the last bits | compare with a tolerance suited to the dtype |
 
 The causal test, `causal_mask_does_not_leak_future` (line 57), does **not**

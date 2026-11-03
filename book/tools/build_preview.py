@@ -175,7 +175,20 @@ def render_body(md: str, refs: dict, cited: set) -> str:
         return '<div class="badges">' + "".join(pills) + "</div>" if pills else m.group(0)
     md = re.sub(r"(?m)^`(?:IN THE REPO|NOT IN THE REPO|MEASURED|ANALOGY|RULE OF THUMB|EXTENSION|"
                 r"IMPLEMENTATION-DEPENDENT)`.*$", badge_line, md)
+    # fenced code inside a blockquote (a Details box): fenced_code does not see fences behind "> ",
+    # so lift each one out, leave a placeholder paragraph in the quote, and render it after markdown
+    quoted_code: list[tuple[str, str]] = []
+
+    def lift(m):
+        lines = [re.sub(r"^[ \t]*> ?", "", l) for l in m.group(0).split("\n")]
+        lang = lines[0].strip().lstrip("`").strip() or "text"
+        quoted_code.append((lang, "\n".join(lines[1:-1])))
+        return f"{m.group(1)}> XQQUOTEDCODE{len(quoted_code) - 1}XQ"
+    md = re.sub(r"(?m)^([ \t]*)> ?```[^\n]*\n(?:[ \t]*>[^\n]*\n)*?[ \t]*> ?```[ \t]*$", lift, md)
     body = markdown.markdown(md, extensions=["tables", "fenced_code", "md_in_html"], output_format="html5")
+    body = re.sub(r"<p>XQQUOTEDCODE(\d+)XQ</p>",
+                  lambda m: '<pre><code class="language-{}">{}</code></pre>'.format(
+                      quoted_code[int(m.group(1))][0], html.escape(quoted_code[int(m.group(1))][1])), body)
 
     # code: python highlighted; mermaid handed to the viewer; plain blocks marked as output
     def code(m):

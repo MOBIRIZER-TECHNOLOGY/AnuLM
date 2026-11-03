@@ -190,8 +190,7 @@ AdamW on everything: 16 bytes/param -> 6.36 GB
 *verified*: printed by `ch07_optim.py`. `build_optimizers` keeps the
 embedding table, the output head, the routers and the 1-D gains on AdamW
 (`anulm/muon.py` lines 152–165), so the saving is 1.32 GB, not the 1.59 GB that
-"12 vs 16 bytes per parameter" (`docs/RESULTS.md` §6, and `anulm/muon.py`'s module
-docstring, lines 13–14) suggests. Every expert's state exists whether or not a token used
+12 bytes on every parameter would give. Every expert's state exists whether or not a token used
 it, which is why the `nano_350m` preset (353M parameters; the released
 configuration is that preset with `--cfg` overrides) was sized by peak memory
 on an 8 GB card (§6).
@@ -292,13 +291,13 @@ WSD decay starts at step 1,589,999
 
 *verified*: printed by `ch07_optim.py` (two rows omitted). For the last 16%
 of the run the cosine would already sit near its minimum while WSD is still
-at its peak. The decay starts at step 1,589,999, not the 1,590,000 the run
-script's comment computes. The cause is the seven-digit `--decay-frac
-0.1631579`, 5.3 × 10⁻⁹ above 31/190: 1,900,000 × (1 − 0.1631579) is
-1,589,999.99 exactly, and `int()` truncates it. One step early changes
-nothing. The last step trained is
-`steps − 1`, so the rate ends a hair above `min_lr`; the test below checks
-`min_lr` at step `steps` itself.
+at its peak. The last step trained is `steps − 1`, so the rate ends a hair
+above `min_lr`; the test below checks `min_lr` at step `steps` itself.
+
+> **Details.** The decay starts at step 1,589,999, not 1,590,000. The cause is
+> the seven-digit `--decay-frac 0.1631579`, 5.3 × 10⁻⁹ above 31/190:
+> 1,900,000 × (1 − 0.1631579) is 1,589,999.99 exactly, and `int()` truncates
+> it. One step early changes nothing.
 
 ![Figure 7.2 · Two schedules](../figures/fig07-2-schedules.svg)
 
@@ -380,12 +379,10 @@ regularisers on):
 released model, gradient norm per 4 x 1,024 batch: 4.25, 4.60, 4.25, 4.44; clip 1.0 scales by 0.22 to 0.24
 ```
 
-*measured*: `measure_part_i_ii.py`, four batches, numpy seed 1;
-`book/measurements/part_i_ii_released.json`; the model is fp32 except the
-experts, which the checkpoint's grouped path runs in bf16. Each of these
-batches' gradients would have been cut to under a quarter of its length. With
-Adam that matters
-less than it sounds: dividing by √v makes the step nearly independent of the
+*measured*: `measure_part_i_ii.py`, four batches, numpy seed 1, otherwise at
+the settings of Appendix F, F.6; `book/measurements/part_i_ii_released.json`.
+Each of these batches' gradients would have been cut to under a quarter of its
+length. With Adam that matters less than it sounds: dividing by √v makes the step nearly independent of the
 gradient's overall scale, so a clip that acts on every step changes the
 balance between this step and the running averages, not the step size
 directly. Whether clipping at 1.0 helped this run is *not measured here*.
@@ -397,95 +394,100 @@ directly. Whether clipping at 1.0 helped this run is *not measured here*.
 Muon is an optimiser for the hidden layers' matrices: it keeps one momentum
 buffer and replaces the update matrix by an orthogonalised version of it,
 computed with a Newton–Schulz iteration [R24]. Its source is a blog post, not
-a peer-reviewed paper. Any matrix G can be written U S Vᵀ, where U and V have
-orthonormal columns and S is diagonal; S's entries are the **singular
-values**, how much G stretches each direction. *Orthogonalising* G replaces it
-by U Vᵀ: the same directions, every stretch set to 1. `anulm/muon.py` approximates
-that:
+a peer-reviewed paper. Orthogonalising keeps the update's directions and sets
+how far it moves along each of them to about the same amount. The released
+run used AdamW. In the repository's measurements (`docs/RESULTS.md`) Muon was
+the largest single gain in an 88M proxy, −0.371 in held-out loss at 25M
+tokens, but at 400M parameters a combined recipe including it led plain AdamW
+by only about one standard error, at 43% more time per token, and the next
+run kept plain AdamW (§32).
 
-> **In the repo** · `anulm/muon.py` · `zeropower_via_newtonschulz5` · lines 35–56 · @fdbb09a
-
-```python
-def zeropower_via_newtonschulz5(G: torch.Tensor, steps: int = 5, eps: float = 1e-7):
-    """Approximate the orthogonal factor of G via a quintic Newton-Schulz iteration.
-
-    Returns a matrix close to `U @ V.T` where `G = U S V.T`, without ever forming
-    an SVD. The coefficients (3.4445, -4.7750, 2.0315) are tuned so the iteration
-    converges fast for singular values in [0, 1] while tolerating the sloppiness
-    of bf16 -- it does not converge to machine precision and is not meant to.
-    """
-    assert G.ndim == 2, "Muon operates on 2D parameters only"
-    a, b, c = 3.4445, -4.7750, 2.0315
-    X = G.bfloat16()
-    X = X / (X.norm() + eps)          # ensure top singular value <= 1
-    transposed = G.size(0) > G.size(1)
-    if transposed:                     # iterate on the smaller Gram matrix
-        X = X.T
-    for _ in range(steps):
-        A = X @ X.T
-        B = b * A + c * (A @ A)
-        X = a * X + B @ X
-    if transposed:
-        X = X.T
-    return X
-```
-
-`X.norm()` is the Frobenius norm, the square root of the sum of all squared
-entries; it is at least the largest singular value, so dividing by it puts
-every singular value in [0, 1]. Each
-iteration applies the polynomial aX + b(XXᵀ)X + c(XXᵀ)²X, which acts on each
-singular value separately and pushes it toward 1 while keeping the singular
-vectors. Five iterations in bf16 land close to, not exactly at, 1:
-
-```python
-def newton_schulz(seed: int = 0) -> None:
-    torch.manual_seed(seed)
-    G = torch.randn(64, 24) @ torch.diag(torch.logspace(-2, 0, 24))   # singular values over two decades
-    X = zeropower_via_newtonschulz5(G).float()
-    s_in, s_out = torch.linalg.svdvals(G), torch.linalg.svdvals(X)
-    print(f"Newton-Schulz on a (64, 24) update: singular values {s_in.min():.3f}..{s_in.max():.3f} -> "
-          f"{s_out.min():.3f}..{s_out.max():.3f}")
-```
-
-```text
-Newton-Schulz on a (64, 24) update: singular values 0.065..8.058 -> 0.680..1.193
-```
-
-*verified*: printed by `ch07_optim.py` on a random matrix with singular values
-spread over two decades. Every direction of the update then moves by about the
-same amount.
-
-In practice `Muon.step` (default `batched=True`) does not call this function
-for groups of same-shaped updates, such as all the experts' matrices of one
-projection. It stacks them and calls `zeropower_batched` (line 59), the same
-iteration over a batch of matrices:
-
-> **In the repo** · `anulm/muon.py` · `Muon.step` · lines 125–133 · @fdbb09a
-
-```python
-            by_shape: dict = {}
-            for p, d in todo:
-                by_shape.setdefault(tuple(d.shape) if self.batched else id(p), []).append((p, d))
-            for items in by_shape.values():
-                if len(items) > 1:
-                    outs = zeropower_batched(torch.stack([d for _, d in items]),
-                                             steps=group["ns_steps"]).unbind(0)
-                else:
-                    outs = [zeropower_via_newtonschulz5(items[0][1], steps=group["ns_steps"])]
-```
-
-The repository's measurements of Muon pull two ways (`docs/RESULTS.md`). On
-one 8 GB GPU at 443M parameters it fitted where AdamW did not, but ran 2.6×
-slower per step, orthogonalising hundreds of small matrices one at a time
-(§6). Batching cut the gap: in an 88M proxy Muon went from about a third of
-AdamW's speed to about four-fifths (61k against 78k tokens per second), and
-was the largest single gain, −0.371 in held-out loss at 25M tokens (§32). At
-400M parameters a combined recipe (Muon, tied embeddings, merge-tree
-embeddings and a bigram teacher) led plain AdamW by only about one standard
-error, at 43% more time per token, and the next run kept plain AdamW (§32).
-The batching is a pure speed change:
-`batched_muon_matches_per_matrix_muon` (`tests/test_model.py` line 1729) requires
-the two to agree to 10⁻⁶.
+> **Details.** How `anulm/muon.py` orthogonalises. Any matrix G can be
+> written U S Vᵀ, where U and V have orthonormal columns and S is diagonal;
+> S's entries are the **singular values**, how much G stretches each
+> direction. *Orthogonalising* G replaces it by U Vᵀ: the same directions,
+> every stretch set to 1. `anulm/muon.py` approximates that:
+>
+> > **In the repo** · `anulm/muon.py` · `zeropower_via_newtonschulz5` · lines 35–56 · @fdbb09a
+>
+> ```python
+> def zeropower_via_newtonschulz5(G: torch.Tensor, steps: int = 5, eps: float = 1e-7):
+>     """Approximate the orthogonal factor of G via a quintic Newton-Schulz iteration.
+>
+>     Returns a matrix close to `U @ V.T` where `G = U S V.T`, without ever forming
+>     an SVD. The coefficients (3.4445, -4.7750, 2.0315) are tuned so the iteration
+>     converges fast for singular values in [0, 1] while tolerating the sloppiness
+>     of bf16 -- it does not converge to machine precision and is not meant to.
+>     """
+>     assert G.ndim == 2, "Muon operates on 2D parameters only"
+>     a, b, c = 3.4445, -4.7750, 2.0315
+>     X = G.bfloat16()
+>     X = X / (X.norm() + eps)          # ensure top singular value <= 1
+>     transposed = G.size(0) > G.size(1)
+>     if transposed:                     # iterate on the smaller Gram matrix
+>         X = X.T
+>     for _ in range(steps):
+>         A = X @ X.T
+>         B = b * A + c * (A @ A)
+>         X = a * X + B @ X
+>     if transposed:
+>         X = X.T
+>     return X
+> ```
+>
+> `X.norm()` is the Frobenius norm, the square root of the sum of all squared
+> entries; it is at least the largest singular value, so dividing by it puts
+> every singular value in [0, 1]. Each
+> iteration applies the polynomial aX + b(XXᵀ)X + c(XXᵀ)²X, which acts on each
+> singular value separately and pushes it toward 1 while keeping the singular
+> vectors. Five iterations in bf16 land close to, not exactly at, 1:
+>
+> ```python
+> def newton_schulz(seed: int = 0) -> None:
+>     torch.manual_seed(seed)
+>     G = torch.randn(64, 24) @ torch.diag(torch.logspace(-2, 0, 24))   # singular values over two decades
+>     X = zeropower_via_newtonschulz5(G).float()
+>     s_in, s_out = torch.linalg.svdvals(G), torch.linalg.svdvals(X)
+>     print(f"Newton-Schulz on a (64, 24) update: singular values {s_in.min():.3f}..{s_in.max():.3f} -> "
+>           f"{s_out.min():.3f}..{s_out.max():.3f}")
+> ```
+>
+> ```text
+> Newton-Schulz on a (64, 24) update: singular values 0.065..8.058 -> 0.680..1.193
+> ```
+>
+> *verified*: printed by `ch07_optim.py` on a random matrix with singular values
+> spread over two decades. Every direction of the update then moves by about the
+> same amount.
+>
+> In practice `Muon.step` (default `batched=True`) does not call this function
+> for groups of same-shaped updates, such as all the experts' matrices of one
+> projection. It stacks them and calls `zeropower_batched` (line 59), the same
+> iteration over a batch of matrices:
+>
+> > **In the repo** · `anulm/muon.py` · `Muon.step` · lines 125–133 · @fdbb09a
+>
+> ```python
+>             by_shape: dict = {}
+>             for p, d in todo:
+>                 by_shape.setdefault(tuple(d.shape) if self.batched else id(p), []).append((p, d))
+>             for items in by_shape.values():
+>                 if len(items) > 1:
+>                     outs = zeropower_batched(torch.stack([d for _, d in items]),
+>                                              steps=group["ns_steps"]).unbind(0)
+>                 else:
+>                     outs = [zeropower_via_newtonschulz5(items[0][1], steps=group["ns_steps"])]
+> ```
+>
+> Speed, from `docs/RESULTS.md`: on one 8 GB GPU at 443M parameters Muon
+> fitted where AdamW did not, but ran 2.6× slower per step, orthogonalising
+> hundreds of small matrices one at a time (§6). Batching cut the gap: in the
+> 88M proxy Muon went from about a third of AdamW's speed to about
+> four-fifths (61k against 78k tokens per second; §32). The 400M combined
+> recipe was Muon, tied embeddings, merge-tree embeddings and a bigram
+> teacher (§32). The batching is a pure speed change:
+> `batched_muon_matches_per_matrix_muon` (`tests/test_model.py` line 1729) requires
+> the two to agree to 10⁻⁶.
 
 `IN THE REPO` · `MEASURED`
 
@@ -569,7 +571,7 @@ Repository evidence, all at @fdbb09a:
 - `anulm/training/train.py`: `lr_at` 375–400; `OptimizerSet` 403–444 (`set_lr_scale`
   416–420); `make_optimizer` 447–474; `main` defaults 555–556, schedule
   852–853, clip and step 874–878.
-- `anulm/muon.py`: module docstring 13–14; `zeropower_via_newtonschulz5` 35–56;
+- `anulm/muon.py`: `zeropower_via_newtonschulz5` 35–56;
   `zeropower_batched` 59–82; `Muon` 85–141 (`step` 125–133);
   `build_optimizers` 144–182 (split 152–165).
 - `tests/test_model.py`: `wsd_schedule_is_flat_then_decays_to_min_lr` 1627–1636;

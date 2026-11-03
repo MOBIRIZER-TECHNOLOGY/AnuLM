@@ -39,18 +39,16 @@ pair 16 at a distance of 2,000: 0.32 of a turn
 *verified*: `book/code-examples/ch29_long_context.py` (**Book example, not
 repository code**). The 20 slow pairs have seen only part of a turn: a key
 2,000 positions back turns pair 16 twice as far as training ever did, an input
-the model never learned. On the released model, plain RoPE at 2,048 tokens
-scores 3.89 and 5.23 nats on the two quarters past 1,024, against 3.07 and
-3.12 with YaRN (29.4).
+the model never learned. Section 29.4 measures what that costs the released
+model, once YaRN has been explained.
 
 `IN THE REPO`
 
 ## 29.2  NTK-by-parts: stretch only the slow pairs
 
 Position interpolation scales every position down by the factor s, so position
-2,000 looks like 1,000 [S02]. By our own arithmetic, not a claim cited from
-the papers, that also slows the fast pairs: neighbours then differ by ω<sub>i</sub>/s instead
-of ω<sub>i</sub>. YaRN's NTK-by-parts interpolation (NTK: the "neural tangent
+2,000 looks like 1,000 [S02]. That also slows the fast pairs: neighbours then
+differ by ω<sub>i</sub>/s instead of ω<sub>i</sub>. YaRN's NTK-by-parts interpolation (NTK: the "neural tangent
 kernel" analysis the method's name comes from; nothing here depends on it)
 divides only the slow frequencies by s, keeps the fast ones and ramps between
 [R07]. The ramp's
@@ -274,8 +272,8 @@ the same tokens, with standard error = standard deviation / √16:
         q = per[f"{L} yarn"][:, 0] - per[f"{L} naive"][:, 0]     # first quarter: inside the trained range
 ```
 
-- **Plain RoPE breaks past 1,024.** At 2,048 its third and fourth quarters are
-  0.8 and 2.1 nats worse than YaRN's.
+- **Plain RoPE breaks past 1,024.** At 2,048 its third and fourth quarters
+  score 3.89 and 5.23 nats against YaRN's 3.07 and 3.12: 0.8 and 2.1 nats worse.
 - **YaRN stays flat to 4×.** Paired over the same windows it beats plain RoPE
   by 0.725 ± 0.039 nats at 2,048 and 1.788 ± 0.064 at 4,096.
 - **It costs a little in range:** on the first quarter, paired, +0.012 ± 0.002

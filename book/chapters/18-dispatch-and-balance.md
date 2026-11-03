@@ -115,8 +115,7 @@ sparse path, tiny(), torch 2.11.0+cu128: 9 graph breaks, 10 graphs
 sparse path, nano_30b, torch 2.11.0+cu128: 10 graph breaks, 11 graphs
 ```
 
-`docs/RESULTS.md` §4 recorded 8 for `nano_30b` with the PyTorch of its day; the
-count depends on the version. The test `sparse_moe_breaks_the_graph_as_documented`
+The count depends on the PyTorch version; the test `sparse_moe_breaks_the_graph_as_documented`
 (`tests/test_model.py` line 506) asserts only that there is at least one.
 
 `IN THE REPO`
@@ -248,17 +247,25 @@ three paths on layer 10's inputs, 2,048 held-out tokens, on an RTX 5070 Ti (*mea
 | dense against sparse, fp32 | 2.9·10⁻⁶ |
 | grouped against sparse, both under bf16 autocast | 0 (identical) |
 | sparse in bf16 against sparse in fp32 | 2.5·10⁻² on outputs up to 5.86 |
-| time per call under bf16 autocast, median of 7 rounds [min, max]: sparse | 6.40 [6.31, 10.39] ms |
-| dense | 3.32 [3.22, 4.84] ms |
-| grouped | 1.54 [1.52, 2.25] ms |
 
 At equal precision, grouped changes only speed; the difference from fp32 is
-bf16's. Each round is 20 calls after 3 warm-ups, on a GPU shared with other
-work. Only "grouped is fastest" held in every run; sparse and dense swapped
-places between runs, and `docs/RESULTS.md` §4 found sparse faster than dense,
-574 against 1,350 ms a step, for the small `nano_30b` in eager mode. The
-grouped timing is in evaluation mode, where `_stacked_weights` reuses its
-cached copy (lines 753–754); in training it restacks the weights every step.
+bf16's. Grouped was the fastest of the three in every run.
+
+> **Details.** The timings, per call under bf16 autocast, median of 7 rounds
+> [min, max]:
+>
+> | path | time per call |
+> |---|---|
+> | sparse | 6.40 [6.31, 10.39] ms |
+> | dense | 3.32 [3.22, 4.84] ms |
+> | grouped | 1.54 [1.52, 2.25] ms |
+>
+> Each round is 20 calls after 3 warm-ups, on a GPU shared with other work.
+> Only "grouped is fastest" held in every run; sparse and dense swapped places
+> between runs, and `docs/RESULTS.md` §4 found sparse faster than dense, 574
+> against 1,350 ms a step, for the small `nano_30b` in eager mode. The grouped
+> timing is in evaluation mode, where `_stacked_weights` reuses its cached
+> copy (lines 753–754); in training it restacks the weights every step.
 
 `IN THE REPO` · `IMPLEMENTATION-DEPENDENT` (the timings)
 
@@ -395,38 +402,8 @@ those biases in bf16: [628.0, 628.0, 628.0, 628.0]
 Rounded to bf16, a layer's 24 biases become one value (two in layer 3), and the
 routing is close to having no bias at all: the share of changed expert sets
 matches the no-bias case to within 0.9 points in every layer (*measured*).
-Many choices change; the loss barely does. Chapter 39 measures it on the
-same held-out windows: rounding the biases to bf16 costs about 0.003 nats, and
-centring each layer's biases before rounding removes even that, since only
-the differences within a layer matter. (Rerunning the whole model, as Chapter
-39 does, changes slightly more expert sets than this chapter's gate-by-gate
-count, because changed choices alter the later layers' inputs.) The export
-script's comment, the wrapper's warning (`anulm/hf/modeling_anulm.py` lines 120–133)
-and `docs/DEVELOPING.md` line 302 say the output "collapses" into repeated
-tokens. What collapses is the biases, to one value per layer, and with them
-the expert choices; the output does not. Chapter 39 finds that the repeated
-tokens do not reproduce at the pin; the warning likely dates from before the
-router's fp32 fix (17.4). The comment:
-
-> **In the repo** · `anulm/hf/export_hf.py` · `main` · lines 328–338 · @fdbb09a
-
-```python
-            # Small tensors stay float32 on disk AND must be loaded that way: the
-            # router's per-expert bias decides which experts fire, and rounding it
-            # to bfloat16 changes the routing enough to collapse the output. So
-            # the export declares float32 and transformers honours it.
-            "dtype": "float32",
-            "torch_dtype": "float32",
-            "weights_dtype": ("bfloat16 on disk for the big tensors, float32 for the small "
-                              "ones (router bias, norms); load in float32 -- 16-bit weights "
-                              "change the expert routing and break the model")
-                             if args.weights_dtype == "mixed" else
-                             "float32 on disk: every weight exactly as trained",
-```
-
-The note describes the default, `--weights-dtype mixed`. With
-`--weights-dtype float32` every tensor, the router biases included, is written
-as trained, and the note says so (Chapter 39).
+Many choices change; the loss barely does: Chapter 39 (39.2) measures the cost
+of bf16 biases, about 0.003 nats, and why the export keeps them in fp32.
 
 `MEASURED`
 
@@ -503,9 +480,7 @@ def seq_balance_loss_matches_the_formula():
     assert abs(aux.item() - expected) < 1e-6, f"seq-balance loss {aux.item():.6f} != {expected:.6f}"
 ```
 
-In the test, `N` is the number of sequences and `T` their length, not Part
-IV's N and T: 32 flat tokens become 8 sequences of 4, each row of `f` compared
-with P = 0.25. No test checks the z-loss's value:
+No test checks the z-loss's value:
 `router_regularisers_are_off_by_default_and_work_when_on` (`tests/test_model.py`
 line 750) checks only that the regularisers reach the loss and the router's
 gradient. The second line of the example's output checks the value.
@@ -594,8 +569,7 @@ Repository evidence, all at @fdbb09a:
 - `anulm/model.py`: `Router._gate` 647–652, 653–670; `MoE._route_sparse` 709–727,
   `_route_dense` 729–738, `_stacked_weights` 750–759, `_route_grouped`
   775–790; `AnuLM.update_expert_biases` 1071–1101.
-- `anulm/training/train.py`: `main` 876–878. `anulm/hf/export_hf.py`: `main` 328–338.
-  `anulm/hf/modeling_anulm.py` 120–133; `docs/DEVELOPING.md` line 302.
+- `anulm/training/train.py`: `main` 876–878.
 - `tests/test_model.py`: `moe_matches_naive_per_token_loop` 180,
   `bias_update_recovers_from_collapse` 282, `expert_bias_is_not_trainable` 321,
   `dense_and_sparse_moe_agree` 474, `sparse_moe_breaks_the_graph_as_documented`

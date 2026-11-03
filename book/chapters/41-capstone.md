@@ -72,42 +72,45 @@ def lr_at(step: int, args, start_step: int = 0) -> float:
 
 `docs/TUTORIAL.md` reports this check's validation loss as 2.7868.
 
-`--preset 30b` picks a configuration, and `--cfg` can override any field of it:
+`--preset 30b` picks a configuration, and `--cfg KEY=VALUE` can override any
+field of it; a misspelt field is a usage error.
 
+> **Details.** How `train.py` builds the configuration:
+>
 > **In the repo** · `anulm/training/train.py` · `main` · lines 712–731 · @fdbb09a
-
-```python
-    builder = {"30b": AnuLMConfig.nano_30b,
-               "105b": AnuLMConfig.nano_105b,
-               "350m": AnuLMConfig.nano_350m}[args.preset]
-    overrides = {}
-    for kv in args.cfg:
-        key, _, val = kv.partition("=")
-        field = AnuLMConfig.__dataclass_fields__.get(key)
-        if field is None or not _:
-            p.error(f"--cfg: unknown field {kv!r}")
-        cast = {"int": int, "float": float, "bool": lambda s: s.lower() in ("1", "true", "yes"),
-                "str": str}.get(str(field.type).replace("Optional[", "").rstrip("]"), str)
-        overrides[key] = None if val.lower() == "none" else cast(val)
-    if overrides:
-        print(f"config overrides: {overrides}")
-    kw = dict(block_size=args.block_size, yarn=args.yarn,
-              yarn_original_context=args.block_size, moe_impl=args.moe_impl,
-              vocab_size=vocab_size, tokenizer_path=tokenizer_path,
-              seq_balance_alpha=args.seq_balance_alpha, router_z_alpha=args.router_z_alpha,
-              sliding_window=args.sliding_window, max_window_layers=args.max_window_layers)
-    kw.update(overrides)                      # --cfg wins over the named flags
-```
-
-- **Lines 712–714** map the preset name to an `AnuLMConfig` static method
-  (Appendix B lists every field).
-- **Lines 716–723** parse each `KEY=VALUE`. A misspelt field makes
-  `p.error` print the usage and exit with status 2 (a real error, which
-  `python -O` cannot strip as it would an `assert`); the field's declared
-  type picks the cast, so
-  `--cfg n_kv_head=1 sliding_window=None` gives an int and a `None`.
-- **Lines 726–731** add the command-line flags and the data's vocabulary
-  (259 for bytes), then let `--cfg` override them all.
+>
+> ```python
+>     builder = {"30b": AnuLMConfig.nano_30b,
+>                "105b": AnuLMConfig.nano_105b,
+>                "350m": AnuLMConfig.nano_350m}[args.preset]
+>     overrides = {}
+>     for kv in args.cfg:
+>         key, _, val = kv.partition("=")
+>         field = AnuLMConfig.__dataclass_fields__.get(key)
+>         if field is None or not _:
+>             p.error(f"--cfg: unknown field {kv!r}")
+>         cast = {"int": int, "float": float, "bool": lambda s: s.lower() in ("1", "true", "yes"),
+>                 "str": str}.get(str(field.type).replace("Optional[", "").rstrip("]"), str)
+>         overrides[key] = None if val.lower() == "none" else cast(val)
+>     if overrides:
+>         print(f"config overrides: {overrides}")
+>     kw = dict(block_size=args.block_size, yarn=args.yarn,
+>               yarn_original_context=args.block_size, moe_impl=args.moe_impl,
+>               vocab_size=vocab_size, tokenizer_path=tokenizer_path,
+>               seq_balance_alpha=args.seq_balance_alpha, router_z_alpha=args.router_z_alpha,
+>               sliding_window=args.sliding_window, max_window_layers=args.max_window_layers)
+>     kw.update(overrides)                      # --cfg wins over the named flags
+> ```
+>
+> - **Lines 712–714** map the preset name to an `AnuLMConfig` static method
+>   (Appendix B lists every field).
+> - **Lines 716–723** parse each `KEY=VALUE`. A misspelt field makes
+>   `p.error` print the usage and exit with status 2 (a real error, which
+>   `python -O` cannot strip as it would an `assert`); the field's declared
+>   type picks the cast, so
+>   `--cfg n_kv_head=1 sliding_window=None` gives an int and a `None`.
+> - **Lines 726–731** add the command-line flags and the data's vocabulary
+>   (259 for bytes), then let `--cfg` override them all.
 
 Before training you can check two things: the parameter count, which
 `param_count_matches_analysis` pins, and the untrained loss. A model that knows
@@ -686,7 +689,7 @@ python -m unittest discover -s tests -p "test_quality_*.py" -t .
   (`anulm/hf/export_hf.py` lines 328–339; `--weights-dtype float32`, lines
   231–233, keeps every weight as trained);
   `--ckpt <folder>` accepts it. On this machine's local export, the median at
-  p = 0.9 below is 507, not 501. The Hub copy itself was not compared.
+  p = 0.9 of Figure 41.3 is 507, not 501. The Hub copy itself was not compared.
 - **`data/v2/val.u16`**, the held-out split, which `experiments/build_v2.py`
   rebuilds (`docs/DATASETS.md`).
 
@@ -711,64 +714,19 @@ a 32,768-token vocabulary, not per byte, so 3.3523 and your 1.52 are not
 comparable.
 
 The same script counts the nucleus top-p would keep at every position of 8
-windows of 512 tokens from `data/v2/val.u16` (seed 0), printing statistics
-only. It runs in true fp32, which the checkpoint's own `moe_impl`, `grouped`,
-does not: it casts the experts' inputs, and their stacked weights (line 756),
-to bf16 even without autocast.
-
-> **In the repo** · `anulm/model.py` · `MoE._route_grouped` · lines 784–787 · @fdbb09a
-
-```python
-        xs = x_flat[order // k].to(torch.bfloat16)                          # (N*k, D) expert-sorted
-        w_gate, w_up, w_down = self._stacked_weights()
-        h = F.silu(F.grouped_mm(xs, w_gate, offs=offs)) * F.grouped_mm(xs, w_up, offs=offs)
-        ys = F.grouped_mm(h, w_down, offs=offs)                              # (N*k, D) expert-sorted
-```
-
-The (N·A, D) rows, one per token and chosen expert, become bf16 before the three grouped matrix
-multiplies, whatever dtype came in. So the script switches the loaded model to
-`sparse`, whose experts are ordinary fp32 `nn.Linear`s, and counts:
-
-```python
-    with torch.no_grad():
-        for s in starts:
-            row = torch.from_numpy(val[s: s + seq + 1].astype(np.int64))[None].to(dev)
-            x, y = row[:, :-1], row[:, 1:]
-            logits, _ = m(x, y)                                        # (1, seq, V): targets ask for every row
-            probs = F.softmax(logits[0].float(), dim=-1)               # (seq, V)
-            keep = x[0] != 32767                                       # skip the position after a document end
-            for p in sizes:
-                sizes[p] += (top_p(probs, p) > 0).sum(-1)[keep].tolist()
-            top50 += probs.topk(50, dim=-1).values.sum(-1)[keep].tolist()
-```
-
-Passing targets makes `forward` return all 512 rows of logits, not just the last
-(Chapter 20). The output:
-
-```
-data/v2/val.u16: 8 windows of 512 tokens, seed 0; fp32 weights and activations, moe_impl sparse, no autocast; cuda
-top-p 0.5: nucleus size percentiles {10: 1, 25: 1, 50: 3, 75: 15, 90: 61}, min 1, max 1973; size 1 at 34.6% of positions, over 50 at 11.7%
-top-p 0.9: nucleus size percentiles {10: 1, 25: 6, 50: 501, 75: 3633, 90: 7138}, min 1, max 19060; size 1 at 13.1% of positions, over 50 at 64.4%
-mass inside sample.py's default top-k 50: 10th pct 0.480, median 0.815, 90th pct 0.994  (4,092 positions)
-```
+windows of 512 tokens from `data/v2/val.u16`, in true fp32, printing
+statistics only:
 
 ![Figure 41.3 · Nucleus sizes on the released model](../figures/fig41-3-nucleus.svg)
 
 *Figure 41.3 · Nucleus sizes on the released model.* At p = 0.9, 13.1% of
 positions need one token and the median needs 501. *measured* on 4,092
 positions from 8 windows of 512 tokens of `data/v2/val.u16` (seed 0), in true
-fp32 (`moe_impl` `sparse`, no autocast); Chapter 28's Figure 28.2 is the
-reference measurement, in bf16 on 16 windows;
+fp32 (`moe_impl` `sparse`, no autocast);
 `book/measurements/part_x_released.json`.
 
-No fixed k fits both: where one token holds 90% of the mass, `top_k=50` still
-admits 49 more, and where the mass is spread, 50 tokens hold under 0.480 of it
-at one position in ten. Chapter 28's measurement (28.6) is the book's
-reference one. It differs from this one in three ways: 16 windows instead of
-8, bf16 autocast as the serving code runs instead of true fp32, and tokens
-tied at the boundary counted. It found a median of 341 at p = 0.9
-(`part_vi_ch28_sampling.json`). With a spread this wide, the median moves with
-the sample; the range, from 1 token to thousands, does not. Whether top-p's
+No fixed k fits both ends; Chapter 28 (28.6) makes the book's reference
+measurement of nucleus sizes and what it means for `top_k`. Whether top-p's
 samples are better is *not measured here*.
 
 `IN THE REPO` · `MEASURED`
@@ -804,8 +762,8 @@ extensions, on the released model:
   `incremental_forward_matches_full_forward` and
   `cached_generation_matches_uncached` already test the result (Chapter 40).
 - **Int8 weight-only inference.** Keep the routers, norms and router bias in
-  fp32, as `anulm/hf/export_hf.py` does: the model card warns that a 16-bit router bias
-  changes which experts fire. Write the test first: expert choices before and
+  fp32, as `anulm/hf/export_hf.py` does; Chapter 39 (39.2) measures what
+  rounding the router bias does to the expert choices. Write the test first: expert choices before and
   after quantising must match.
 - **DPO.** A preference loss against a frozen reference model [R40], built in
   the lab book (`course/ch11-dpo/lab.py`); the reference copy is the extra
@@ -813,8 +771,7 @@ extensions, on the released model:
 
 > **Build it.** The lab book's Chapter 8 trains the model you assembled from
 > stubs, Chapter 11 builds DPO, and Chapter 15 ships a checkpoint. The lab book
-> is the repository's `course/` folder, which the pin includes; it is not yet
-> on GitHub's `main` (`ae59238`).
+> is the repository's `course/` folder, which the pin includes.
 
 `NOT IN THE REPO` · `EXTENSION`
 
@@ -914,8 +871,7 @@ Repository evidence, all at @fdbb09a:
   `--steps` 2000 (line 548), `--warmup` 100 (554), `--device` (575–576).
 - `.github/workflows/tests.yml` line 132: the CI's 50-step run.
 - `anulm/model.py`: `AnuLM.generate` 1115–1180 (greedy and sampling 1161–1169),
-  `AnuLM.num_params` 1104–1113, `MoE._route_grouped` 766–790 (bf16 casts at
-  756 and 784).
+  `AnuLM.num_params` 1104–1113.
 - `tests/test_model.py`: `initial_loss_is_ln_vocab` 349,
   `generation_is_deterministic_at_top_k_1` 398, `param_count_matches_analysis`
   410, `gradient_accumulation_equals_large_batch` 448,

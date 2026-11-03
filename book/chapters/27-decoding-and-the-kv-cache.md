@@ -391,36 +391,14 @@ the same tokens, on held-out windows:
 Each of 8 windows gets a 512-token prefill and 15 decode steps, 16 compared
 positions, 128 in all. For fp32 the script switches the experts to the `sparse`
 path, because the checkpoint's `moe_impl = "grouped"` casts them to bf16 even
-without autocast (`anulm/model.py` lines 756 and 784). In fp32 the largest logit
+without autocast (Appendix F, F.6). In fp32 the largest logit
 difference is 5.1·10⁻⁵ and the top token agrees at all 128. Under bf16
 autocast, as served, it is 1.09, and the top token differs at 3.
 
 Greedy decoding needs care, because `top_k=1` keeps every logit tied with the
-first and draws with `torch.multinomial` (Chapter 28, 28.3). The script
-decodes 64 tokens after each of 8 held-out 256-token prompts, three ways. It
-was written before `generate` had an exact greedy branch, so for the third
-way it swaps `torch.multinomial` for an argmax; at @fdbb09a,
-`temperature=0` reaches the same argmax without the patch:
-
-```python
-    def run(row, cache, seed):
-        torch.manual_seed(seed)
-        with amp(dev, True):
-            return m.generate(row[None].clone(), new, top_k=1, use_cache=cache)
-
-    def first_div(a, b):
-        return None if torch.equal(a, b) else int((a != b).nonzero()[0, 1]) - prompt
-
-    out = {"prompts": n, "prompt_tokens": prompt, "new_tokens": new}
-    out["uncached_vs_uncached_other_seed"] = [first_div(run(r, False, 1), run(r, False, 2)) for r in x]
-    out["cached_vs_uncached_same_seed"] = [first_div(run(r, False, 1), run(r, True, 1)) for r in x]
-    orig = torch.multinomial
-    torch.multinomial = lambda p, num_samples: p.argmax(-1, keepdim=True)
-    try:
-        out["cached_vs_uncached_argmax"] = [first_div(run(r, False, 1), run(r, True, 1)) for r in x]
-    finally:
-        torch.multinomial = orig
-```
+first and draws with `torch.multinomial` (Chapter 28, 28.3); `temperature=0`
+takes the exact argmax. The script decodes 64 tokens after each of 8 held-out
+256-token prompts, three ways:
 
 - **The uncached path against itself, other seed:** 3 of 8 diverge, at new
   tokens 12, 33 and 57. These are bf16 ties at the top, broken by the draw.
@@ -431,6 +409,29 @@ So on the released model in bf16, the cache itself changes the greedy output
 of 1 or 2 prompts in 8; ties change more. The two paths run different kernel
 shapes, which round differently in bf16; the cause is not isolated further.
 *measured*, `book/measurements/part_vi_ch27_cache.json`.
+
+> **Details.** The harness. For the third way it swaps `torch.multinomial`
+> for an argmax, which is what `temperature=0` does in `generate`:
+>
+> ```python
+>     def run(row, cache, seed):
+>         torch.manual_seed(seed)
+>         with amp(dev, True):
+>             return m.generate(row[None].clone(), new, top_k=1, use_cache=cache)
+>
+>     def first_div(a, b):
+>         return None if torch.equal(a, b) else int((a != b).nonzero()[0, 1]) - prompt
+>
+>     out = {"prompts": n, "prompt_tokens": prompt, "new_tokens": new}
+>     out["uncached_vs_uncached_other_seed"] = [first_div(run(r, False, 1), run(r, False, 2)) for r in x]
+>     out["cached_vs_uncached_same_seed"] = [first_div(run(r, False, 1), run(r, True, 1)) for r in x]
+>     orig = torch.multinomial
+>     torch.multinomial = lambda p, num_samples: p.argmax(-1, keepdim=True)
+>     try:
+>         out["cached_vs_uncached_argmax"] = [first_div(run(r, False, 1), run(r, True, 1)) for r in x]
+>     finally:
+>         torch.multinomial = orig
+> ```
 
 **Time.** One step at batch 1, bf16, on an RTX 5070 Ti: the median of 25
 calls, and of three whole sweeps the lowest, because other jobs share the

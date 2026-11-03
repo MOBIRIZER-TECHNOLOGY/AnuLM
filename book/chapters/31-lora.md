@@ -164,9 +164,7 @@ adapter file: 5.90 MB of fp32 factors + 456 router biases
 ```
 
 *verified*: printed by the example. Per layer, 16·(1,024 + 1,536) +
-16·(1,024 + 1,024) = 73,728; times 20 layers (`n_layer`). RESULTS §29's file
-sizes are binary megabytes: 5,898,240 bytes are 5.63 MiB, its 5.7 with the
-biases and metadata, and four times that, 22.5 MiB, is its r = 64 row.
+16·(1,024 + 1,024) = 73,728; times 20 layers (`n_layer`).
 
 `IN THE REPO`
 
@@ -388,8 +386,7 @@ three LoRA runs, and by 0.512 (131 s, 1,517.6 MB) for the full fine-tune.
 
 The full fine-tune improves about 1.5 times as much as the best LoRA run
 (0.512 against 0.334, the table's 65%) in less time, and twice as much as the
-r = 16 attention run. RESULTS' prose, and `anulm/lora.py`'s docstring (line 34),
-say "twice" against the best run; the table gives 1.5.
+r = 16 attention run.
 LoRA buys size: 5.7 MB against 1,517.6 MB, and optimiser state that fits a
 small card. Adapting the experts is the worst trade, +0.049 for five times the
 wall clock: each expert trains only on the tokens routed to it.

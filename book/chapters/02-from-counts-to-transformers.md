@@ -40,36 +40,38 @@ def bigram_loss(train, val, V=256, alpha=1.0):
 Counts start at 1 (add-one smoothing), so no pair is impossible. `index_put_`
 with `accumulate=True` adds one at (previous, next) for every pair; dividing
 each row by its sum gives P(next | previous). The repository keeps one count
-model, as a training aid:
+model, `anulm/bigram_teacher.py`, as a training aid: training can pull the
+model toward its table early and fade it out (`docs/RESULTS.md` §32). The
+ladder in 2.3 scores it too.
 
-> **In the repo** · `anulm/bigram_teacher.py` · `build_bigram_teacher` · lines 42–51 · @fdbb09a
-
-```python
-    V = vocab_size
-    ids = train_ids.to(device).long()
-    uni = torch.bincount(ids, minlength=V).float() + 0.5
-    log_uni = (uni / uni.sum()).log()
-    pairs = ids[:-1] * V + ids[1:]
-    keys, cnt = torch.unique(pairs, return_counts=True)
-    prev, nxt = keys // V, keys % V
-    n = torch.bincount(ids[:-1], minlength=V).float()[prev]
-    lam = n / (n + 5.0)
-    p_bi = lam * cnt.float() / n.clamp(min=1) + (1 - lam) * uni[nxt] / uni.sum()
-```
-
-`bincount` counts unigrams. Each pair becomes one integer, `prev · V + next`,
-so `torch.unique` counts all pairs at once and keeps only those that occur; a
-dense (V, V) table at V = 32,768 would hold a billion entries. λ = n/(n + 5)
-blends in the unigram where the previous token is rare. Training can pull the
-model toward this table early and fade it out (`docs/RESULTS.md` §32).
-
-> **Details.** The ladder in 2.3 also scores this table as if it were a model,
-> normalised the way `teacher_kl` (lines 65–70) normalises it: a softmax over
-> scores in which each unseen pair keeps its full unigram score. That gives
-> unseen pairs more than the blend's (1 − λ) share, takes mass from seen
-> pairs, and costs 0.13 nats against the plain table: 2.6264 against 2.4931.
-> The table was built as a soft target that fades out during training, not as
-> a model.
+> **Details.** How `bigram_teacher.py` builds its table:
+>
+> > **In the repo** · `anulm/bigram_teacher.py` · `build_bigram_teacher` · lines 42–51 · @fdbb09a
+>
+> ```python
+>     V = vocab_size
+>     ids = train_ids.to(device).long()
+>     uni = torch.bincount(ids, minlength=V).float() + 0.5
+>     log_uni = (uni / uni.sum()).log()
+>     pairs = ids[:-1] * V + ids[1:]
+>     keys, cnt = torch.unique(pairs, return_counts=True)
+>     prev, nxt = keys // V, keys % V
+>     n = torch.bincount(ids[:-1], minlength=V).float()[prev]
+>     lam = n / (n + 5.0)
+>     p_bi = lam * cnt.float() / n.clamp(min=1) + (1 - lam) * uni[nxt] / uni.sum()
+> ```
+>
+> `bincount` counts unigrams. Each pair becomes one integer, `prev · V + next`,
+> so `torch.unique` counts all pairs at once and keeps only those that occur; a
+> dense (V, V) table at V = 32,768 would hold a billion entries. λ = n/(n + 5)
+> blends in the unigram where the previous token is rare.
+>
+> The ladder scores this table as if it were a model, normalised the way
+> `teacher_kl` (lines 65–70) normalises it: a softmax over scores in which
+> each unseen pair keeps its full unigram score. That gives unseen pairs more
+> than the blend's (1 − λ) share, takes mass from seen pairs, and costs 0.13
+> nats against the plain table: 2.6264 against 2.4931. The table was built as
+> a soft target that fades out during training, not as a model.
 
 `NOT IN THE REPO` (count models as models) · `IN THE REPO` (`anulm/bigram_teacher.py`)
 
@@ -77,14 +79,14 @@ model toward this table early and fade it out (`docs/RESULTS.md` §32).
 
 A count table shares nothing between tokens; learned vectors can. word2vec
 learned continuous vectors for words from large corpora [R03]. AnuLM begins
-with a table of vectors and ends with a matrix:
+with a table of vectors and ends with a matrix (Chapter 10 quotes the whole
+constructor):
 
 > **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 836–841 · @fdbb09a
 
 ```python
         self.embed_tokens = nn.Embedding(cfg.vocab_size, cfg.hidden_size)
-        rope_dim = cfg.qk_rope_head_dim if cfg.attn == "mla" else cfg.head_dim
-        self.rotary = Rotary(cfg, rope_dim)
+        # ...
         self.layers = nn.ModuleList([Block(cfg, i, self.rotary) for i in range(cfg.n_layer)])
         self.norm = RMSNorm(cfg.hidden_size, cfg.rms_norm_eps)
         self.lm_head = nn.Linear(cfg.hidden_size, cfg.vocab_size, bias=False)
@@ -313,57 +315,40 @@ position, and the cache would go stale (Chapter 27).
 For classification (Chapter 32), a causal model reads each option against the
 message and the options before it, never those after. `anulm/bidirectional.py`
 makes the decoder an encoder, following LLM2Vec's bidirectional attention and
-masked next-token prediction [R35]:
+masked next-token prediction [R35]. `bidir_hidden` repeats
+`AnuLM.forward`'s steps with one change: each block gets a mask that is
+`True` for every real token, used instead of the causal mask (Chapter 32,
+32.3, quotes it). Did it help? On BANKING77 intent classification, the
+bidirectional version scored 0.3 points better when trained and 1.6 points
+worse zero-shot: within noise, so making AnuLM bidirectional did not help
+there (`docs/RESULTS.md` §36).
 
-> **In the repo** · `anulm/bidirectional.py` · `bidir_hidden` · lines 40–53 · @fdbb09a
-
-```python
-def bidir_hidden(m: AnuLM, idx: torch.Tensor, attn: torch.Tensor | None = None) -> torch.Tensor:
-    """Final hidden states with bidirectional attention. `attn` (B, S) marks
-    real tokens; padding is never attended to."""
-    if attn is None:
-        attn = torch.ones_like(idx, dtype=torch.bool)
-    key = attn.bool()[:, None, None, :]
-    x = F.embedding(idx, m._table("in"))
-    cos, sin = m.rotary(idx.shape[1], x.device, x.dtype)
-    for layer in m.layers:
-        if m.grad_ckpt and m.training:
-            x, _ = torch.utils.checkpoint.checkpoint(layer, x, cos, sin, None, 0, key, use_reentrant=False)
-        else:
-            x, _ = layer(x, cos, sin, bidir_mask=key)
-    return m.norm(x)
-```
-
-It repeats `AnuLM.forward`'s steps with one change: each block gets
-`bidir_mask`, (B, 1, 1, S), `True` for every real token, which
-`GQAttention.forward` uses instead of the causal mask (line 481).
-`m._table("in")` is the input embedding table (Chapter 10). No cache, no
-head: it returns the normalised vectors, (B, S, D). The adaptation that
-follows is masked next-token prediction (MNTP): hide 20% of the tokens and
-predict each one from the position before it:
-
-> **In the repo** · `anulm/bidirectional.py` · `adapt` · lines 82–93 · @fdbb09a
-
-```python
-        masked = torch.rand(x.shape, device=x.device) < a.mask_frac
-        masked[:, 0] = False                              # position 0 has no previous position
-        inp = x.masked_fill(masked, mask_id)
-        lr = a.lr * min(1.0, (step + 1) / 100) * max(0.0, 1 - step / a.steps)
-        for g in opt.param_groups:
-            g["lr"] = lr
-        with ac:
-            h = bidir_hidden(m, inp)
-            # MNTP: the token at position i is predicted from position i-1
-            tgt = x[:, 1:].masked_fill(~masked[:, 1:], -1)
-            logits = m.lm_head(h[:, :-1])
-        loss = F.cross_entropy(logits.float().reshape(-1, logits.shape[-1]), tgt.reshape(-1), ignore_index=-1)
-```
-
-Hidden tokens are replaced by a placeholder id; targets are kept only where a
-token was hidden, −1 elsewhere, so only the hidden tokens are graded. Did it
-help? On BANKING77 intent classification, the bidirectional version scored
-0.3 points better when trained and 1.6 points worse zero-shot: within noise, so making
-AnuLM bidirectional did not help there (`docs/RESULTS.md` §36).
+> **Details.** The mask is `bidir_mask`, (B, 1, 1, S), which
+> `GQAttention.forward` uses instead of the causal mask (line 481).
+> `bidir_hidden` (`anulm/bidirectional.py` lines 40–53) has no cache and no
+> head: it returns the normalised vectors, (B, S, D). The adaptation that
+> follows is masked next-token prediction (MNTP): hide 20% of the tokens and
+> predict each one from the position before it:
+>
+> > **In the repo** · `anulm/bidirectional.py` · `adapt` · lines 82–93 · @fdbb09a
+>
+> ```python
+>         masked = torch.rand(x.shape, device=x.device) < a.mask_frac
+>         masked[:, 0] = False                              # position 0 has no previous position
+>         inp = x.masked_fill(masked, mask_id)
+>         lr = a.lr * min(1.0, (step + 1) / 100) * max(0.0, 1 - step / a.steps)
+>         for g in opt.param_groups:
+>             g["lr"] = lr
+>         with ac:
+>             h = bidir_hidden(m, inp)
+>             # MNTP: the token at position i is predicted from position i-1
+>             tgt = x[:, 1:].masked_fill(~masked[:, 1:], -1)
+>             logits = m.lm_head(h[:, :-1])
+>         loss = F.cross_entropy(logits.float().reshape(-1, logits.shape[-1]), tgt.reshape(-1), ignore_index=-1)
+> ```
+>
+> Hidden tokens are replaced by a placeholder id; targets are kept only where a
+> token was hidden, −1 elsewhere, so only the hidden tokens are graded.
 
 `IN THE REPO`
 

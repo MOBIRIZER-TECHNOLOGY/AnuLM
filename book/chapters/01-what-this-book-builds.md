@@ -7,18 +7,32 @@ pinned: "@fdbb09a"
 
 # 1  What this book builds
 
-AnuLM is a 400M-parameter language model trained from scratch on Hindi,
-English and Python on one consumer GPU. Its architecture follows the
+Give the model this book is about the words "The first railway line in India"
+and it carries on in fluent English:
+
+```text
+The first railway line in India was opened in 1889. The second was extended in 1895. The first rail line was opened in 1883 and the third in 1888.
+```
+
+*measured*: one sample, seed 0, run in 1.3. The first line opened in 1889, it
+says, and two sentences later in 1883. Nothing in the model checks a fact. It
+was trained to do one thing, give a probability to every possible next piece of
+text, and it does that well enough to sound sure of itself. This book shows how
+that one job is built, line by line, in a model you can download and run.
+
+That model is AnuLM, a 400M-parameter language model trained from scratch on
+Hindi, English and Python on one consumer GPU. Its architecture follows the
 configurations and modelling code of Sarvam AI's released 30B and 105B models
-[R49], scaled down. It is a mixture of experts: of its 397.7M parameters, about
-174M are used for any one token (Chapter 20). The released model is
+[R49], scaled down. It is a mixture of experts: of its 397.7M parameters,
+173.5M are used for any one token (Chapter 20). The released model is
 `AnuLM-Base-v2-400M`, the file `ckpt_base_v2.pt`, published on Hugging Face as
 `toonist/AnuLM-Base-v2-400M`.
 
 A language model reads some text, gives a probability to every possible next
 piece, picks one and appends it, over and over. This chapter writes that loop
-by hand, finds it in AnuLM's code, runs it on the released model, and tours the
-repository the rest of the book reads.
+by hand (1.1), finds it in AnuLM's code (1.2), runs it on the released model
+(1.3), draws the whole model on one page (1.4), and maps the repository and the
+rest of the book (1.5–1.7).
 
 **New words.** Part I starts here; these terms recur throughout the book.
 
@@ -101,8 +115,10 @@ two greedy runs to agree.
 
 ![Figure 1.1 · The four-step loop](../figures/fig01-1-loop.svg)
 
-*Figure 1.1 · The four-step loop.* One pass, with each tensor's shape.
-*verified*: shapes printed by `ch01_four_steps.py` on `tiny()`.
+*Figure 1.1 · The four-step loop.* One pass, with each tensor's shape. The
+pick is where the two loops differ: the hand loop above takes the argmax, and
+`generate` (1.2) draws with `torch.multinomial` unless the temperature is 0 or
+less. *verified*: shapes printed by `ch01_four_steps.py` on `tiny()`.
 
 `IN THE REPO`
 
@@ -206,9 +222,9 @@ Highway construction and maintenance of railway lines were carried out in India 
 ```
 
 *measured*: `anulm/inference/sample.py` at the pin, unchanged, on this machine's GPU, seed 0,
-bf16 autocast with the experts in bf16 (`moe_impl=grouped`); one sample, not
-a benchmark. The text is fluent and on topic, and its dates contradict each
-other (first opened in 1889, then in 1883). That is what a base model is: a
+bf16 autocast with the experts in bf16 (`moe_impl=grouped`; Appendix F.6); one sample, not
+a benchmark. This is the chapter's opening sample: fluent, on topic, and with
+dates that contradict each other. That is what a base model is: a
 next-token predictor with no notion of checking a fact. Its model card says
 the same (`docs/MODEL_CARD_BASE_V2.md`).
 
@@ -216,7 +232,38 @@ the same (`docs/MODEL_CARD_BASE_V2.md`).
 
 ## 1.4  A tour of `anulm/model.py`
 
-The architecture is one file of 1,364 lines, in banner sections:
+The loop's first step, `model(ids)`, is the whole model. Figure 1.3 draws it on
+one page; the rest of the book opens its boxes one at a time.
+
+![Figure 1.3 · The whole model at a glance](../figures/fig01-3-at-a-glance.svg)
+
+*Figure 1.3 · The whole model at a glance.* One forward pass of the released
+model, each box labelled with the chapter that teaches it. *verified*: the
+sizes are the released configuration's, and the boxes are the modules
+`AnuLM.__init__` and `Block.__init__` build, in order; `tools/figures/part_i_ii.py`
+asserts both.
+
+Read it from the top:
+
+- **In.** Each token id picks one row of the embedding table: a vector of
+  D = 1,024 numbers per token, so a (B, S) batch of ids becomes a (B, S, D)
+  tensor.
+- **The residual stream.** That tensor runs down the left of the figure through
+  all 20 layers. A layer never replaces it: it branches off twice, normalises a
+  copy (RMSNorm), computes something from it and adds the result back at a ⊕.
+- **Attention**, the first branch, lets each position mix in information from
+  the positions before it: 16 query heads share 4 key/value heads, and RoPE
+  rotates the vectors by position.
+- **The mixture of experts**, the second branch, is a feed-forward network per
+  token, but sparse: a router scores 24 small networks and runs only 4 of them.
+  This is why only 173.5M of the 397.7M parameters work on any one token.
+  Layer 0 uses one dense feed-forward network instead.
+- **Out.** A final RMSNorm, then the output head maps each D-vector to V =
+  32,768 logits; softmax and a pick give the next token.
+
+Chapter 20 traces the same path with every shape and writes it as six
+equations (20.3). In the file, the architecture is 1,364 lines in banner
+sections:
 
 | Banner | Starts at | What it holds | In one line | Chapters |
 |---|---|---|---|---|
@@ -282,64 +329,17 @@ Grouped by role, as `ch01_four_steps.py` counts them at the pin:
 | `book/` | 84 | 16,733 | this book's examples and figure tools | every chapter |
 
 *verified*: 294 Python files, 93 of them in `anulm/`, `tests/`, `tools/` and
-the root, counted by `ch01_four_steps.py`. The roles are the book's grouping,
-by package folder, with each folder's `__init__.py` counted in it; the first
-test that matches wins:
-
-```python
-ROLES = [  # (role, test on the path at the pin); the first match wins
-    ("the model", lambda f: f == "anulm/model.py"),
-    ("tests", lambda f: f.startswith("tests/")),
-    ("training and tokenizer", lambda f: f.startswith("anulm/training/")
-     or f in ("anulm/bpe.py", "anulm/muon.py", "anulm/bigram_teacher.py")),
-    ("data", lambda f: f.startswith("anulm/data/")),
-    ("evaluation", lambda f: f.startswith("anulm/eval/")),
-    ("post-training", lambda f: f.startswith("anulm/tasks/") or f in ("anulm/lora.py", "anulm/bidirectional.py")),
-    ("speech and vision", lambda f: f.startswith("anulm/multimodal/")),
-    ("serving and apps", lambda f: f.startswith(("anulm/inference/", "anulm/apps/")) or f == "anulm/quickstart.py"),
-    ("export", lambda f: f.startswith("anulm/hf/") or f == "anulm/hf_tok.py"),
-    ("package entry", lambda f: f in ("anulm/__init__.py", "anulm/__main__.py", "model.py")),
-    ("tools", lambda f: f.startswith("tools/")),
-]
-```
+the root, counted by `ch01_four_steps.py` with `git ls-tree` at the pin. The
+roles are the book's grouping, by package folder; Appendix F.7 shows the code
+that counts them.
 
 `anulm/__main__.py` is what makes `python -m anulm train` work: it maps each
-command name to a module of the package. The only Python file left at the root
-is `model.py`, a 9-line alias that lets checkpoints saved before the package
-layout, which name `model.AnuLMConfig`, still load.
+command name to a module of the package.
 
-The tree is listed and counted by these functions, where `at_pin` (1.7) reads
-one file at the pin:
-
-```python
-def tree_at_pin() -> list[str]:
-    names = subprocess.run(["git", "ls-tree", "-r", "--name-only", PIN], cwd=ROOT, capture_output=True,
-                           text=True, check=True).stdout.split()
-    return [f for f in names if f.endswith(".py")]
-
-
-def repo_map() -> dict:
-    """The package, its tests and tools (everything outside the five folders below), by role."""
-    files = [f for f in tree_at_pin() if not f.startswith(tuple(d + "/" for d in FOLDERS))]
-    groups: dict[str, list] = {}
-    for f in files:
-        role = next(r for r, test in ROLES if test(f))
-        groups.setdefault(role, []).append((f, len(at_pin(f))))
-    print(f"\nPython files in anulm/, tests/, tools/ and the root @{PIN}: {len(files)}")
-    for role, _ in ROLES:
-        fs = groups.get(role, [])
-        print(f"  {role:24s} {len(fs):3d} files {sum(n for _, n in fs):6,d} lines")
-    return groups
-
-
-def subdirectories() -> None:
-    """The rest of the Python: the lab book, run scripts, the reference code, examples, the book."""
-    py = tree_at_pin()
-    print(f"\nPython files in the whole tree @{PIN}: {len(py)}")
-    for d in FOLDERS:
-        fs = [f for f in py if f.startswith(d + "/")]
-        print(f"  {d + '/':24s} {len(fs):3d} files {sum(len(at_pin(f)) for f in fs):6,d} lines")
-```
+> **Details.** The only Python file left at the root is `model.py`, a 9-line
+> alias that lets checkpoints saved before the package layout, which name
+> `model.AnuLMConfig`, still load. Each folder's `__init__.py` is counted in
+> its folder's role.
 
 ![Figure 1.2 · The repository by role](../figures/fig01-2-repo-map.svg)
 
@@ -406,6 +406,26 @@ of width 384 and 16 experts, 2 active per token: 17.4M parameters, 6.6M active
 | IX · To production | 38–40 | serving, export, what a large stack adds |
 | X · Capstone | 41 | train it, trace it, change it |
 
+Parts I–IV build on each other. Part IV is the core: Chapters 11–18 take the
+boxes of Figure 1.3 one at a time, Chapter 19 shows a second kind of attention
+the code also supports, and Chapter 20 puts the boxes back together with every
+shape. After Part IV the parts lean less on each other. Where to go, by what
+you want:
+
+| If you want to | Read |
+|---|---|
+| understand how the model computes a next token | Parts I–IV in order |
+| skip what you know about transformers | Figure 1.3, then Chapter 20; go back to a box's chapter when a line is unfamiliar |
+| train the model, or understand its training run | Part V, after Part IV |
+| generate text from it, faster or longer | Part VI |
+| adapt it to a task, or give it speech and images | Parts VII and VIII |
+| serve or export it | Part IX |
+| change it and check the change | Chapter 41, with Appendix C's test index |
+
+The appendices are for looking things up: every tensor shape (A), the
+parameter arithmetic (B), the tests (C), a glossary (D), the bibliography (E),
+and how to reproduce every number (F).
+
 `IN THE REPO`
 
 ## 1.7  How to read a citation, and the evidence labels
@@ -421,34 +441,9 @@ code at the pin (the front matter has the details). From a clone:
 git show fdbb09a:anulm/model.py | sed -n '1144,1173p'
 ```
 
-Excerpts are copied from the pin, with `# ...` for elided lines. A script
-checks that every quoted line occurs inside the cited range; its core is this,
-from the book example:
-
-```python
-def at_pin(path: str) -> list[str]:
-    out = subprocess.run(["git", "show", f"{PIN}:{path}"], cwd=ROOT, capture_output=True,
-                         text=True, encoding="utf-8", errors="replace", check=True).stdout
-    return out.splitlines()
-
-
-def citation_holds(path: str, first: int, last: int, quoted: list[str]) -> bool:
-    """What the book's checker does for every excerpt: each quoted line, stripped,
-    must occur inside the cited range of the file at the pin."""
-    window = [s.strip() for s in at_pin(path)[first - 1:last]]
-    return all(q.strip() in window for q in quoted if q.strip() and q.strip() != "# ...")
-```
-
-Three lines of 1.2's excerpt pass at 1164–1169 and fail at 1064–1069:
-
-```text
-citation anulm/model.py 1164-1169 holds: True
-citation anulm/model.py 1064-1069 holds: False
-```
-
-*verified*: printed by `ch01_four_steps.py`. The check tests membership, not
-order; a stricter check, that the lines appear in order and are contiguous
-except at `# ...`, also passes for every excerpt in Chapters 1–7.
+Excerpts are copied from the pin, with `# ...` for elided lines. The book's
+tools check that every quoted line occurs inside the cited range of the file
+at the pin; Appendix F.7 shows the check and runs it on 1.2's excerpt.
 
 Every number and section carries a label:
 
@@ -510,9 +505,10 @@ listed at the end of each chapter and in full in Appendix E.
   `generate` token for token, with and without the cache.
 - The released 400M model, run through `anulm/inference/sample.py`, writes fluent text whose
   facts it does not check: it is a base model.
-- The architecture is `anulm/model.py`, 1,364 lines; the rest of the `anulm/`
-  package, with `tests/`, `tools/` and `experiments/`, trains, tests, serves and
-  adapts it.
+- The architecture is `anulm/model.py`, 1,364 lines: an embedding, 20 layers
+  that each add attention and a mixture of experts to a residual stream, a final
+  norm and an output head (Figure 1.3). The rest of the repository trains,
+  tests, serves and adapts it.
 - Every citation names a file, a symbol, lines and the pin `fdbb09a`, the
   `anulm/` layout after the code-quality pass.
 
@@ -532,7 +528,8 @@ used only for the claim in its register row:
 
 Repository evidence, all at @fdbb09a:
 - `anulm/model.py`: banner lines 36, 222, 257, 422, 498, 582, 794;
-  `AnuLMConfig.nano_30b` 159–171; `AnuLM.__init__` 827–843;
+  `AnuLMConfig.nano_30b` 159–171; `Block` 797–824 (Figure 1.3's sublayers;
+  layer 0 dense, line 811); `AnuLM.__init__` 827–843;
   `AnuLM.forward` 915–918; `AnuLM.generate` 1115–1180 (loop 1144–1173;
   the `temperature <= 0` greedy branch 1161–1162).
 - `tests/test_model.py`: `tiny` 44–49; `generation_is_deterministic_at_top_k_1` 398.
@@ -542,7 +539,9 @@ Repository evidence, all at @fdbb09a:
   Hugging Face name.
 - `anulm/__main__.py`: the command table; `model.py` (root): the 9-line alias.
 - The file list and line counts: `git ls-tree` and `git show` at the pin, via
-  `book/code-examples/ch01_four_steps.py`.
+  `book/code-examples/ch01_four_steps.py` (its code in Appendix F.7).
+- Figure 1.3's sizes: the released configuration, `trace_forward.released()`,
+  which matches `ckpt_base_v2.pt`'s stored config in every shape.
 - The public commit: `book/FRONT_MATTER.md`.
 
 The book example is `code-examples/ch01_four_steps.py`.

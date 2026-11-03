@@ -204,39 +204,34 @@ in the repository.
 ## 15.4  The stream in the trained model
 
 `ch15_measure_stream.py` runs `ckpt_base_v2.pt` on 16 held-out windows of 512
-tokens (`data/v2/val.u16`, seed 0), in fp32 without autocast except the
-experts, which the released configuration computes in bf16 (`anulm/model.py` lines
-756 and 784). Forward hooks record each token's RMS entering every layer and
-of what each half adds, position 0 apart:
+tokens (`data/v2/val.u16`, seed 0; precision as in Appendix F, F.6). Forward
+hooks record each token's RMS entering every layer and of what each half adds,
+position 0 apart.
 
-```python
-def rms(t):
-    """Per-token RMS over the last dimension: (B, S, D) -> (B, S)."""
-    return t.float().pow(2).mean(-1).sqrt()
-```
-
-```python
-    def add(key, layer, t):
-        r = rms(t)
-        acc[key][layer, 0] += r[:, 1:].mean().item()
-        acc[key][layer, 1] += r[:, 0].mean().item()
-
-    hooks = []
-    for i, block in enumerate(m.layers):
-        hooks.append(block.register_forward_pre_hook(lambda mod, args, i=i: add("stream", i, args[0])))
-        hooks.append(block.attn.register_forward_hook(lambda mod, args, out, i=i: add("attn", i, out)))
-        hooks.append(block.mlp.register_forward_hook(
-            lambda mod, args, out, i=i: add("mlp", i, out[0] if isinstance(out, tuple) else out)))
-```
-
-A pre-hook sees a module's input; a forward hook its output. From layer 1 on,
-the feed-forward half is a mixture of experts (Chapters 17–18), which returns
-`(y, aux)`, hence `out[0]`. The stream at position 0 is also kept per window:
-
-```python
-        if key == "stream":
-            pos0[layer] += r[:, 0].tolist()
-```
+> **Details.** The hooks. A pre-hook sees a module's input; a forward hook
+> its output. From layer 1 on, the feed-forward half is a mixture of experts
+> (Chapters 17–18), which returns `(y, aux)`, hence `out[0]`. The stream at
+> position 0 is also kept per window (`pos0[layer] += r[:, 0].tolist()`).
+>
+> ```python
+> def rms(t):
+>     """Per-token RMS over the last dimension: (B, S, D) -> (B, S)."""
+>     return t.float().pow(2).mean(-1).sqrt()
+> ```
+>
+> ```python
+>     def add(key, layer, t):
+>         r = rms(t)
+>         acc[key][layer, 0] += r[:, 1:].mean().item()
+>         acc[key][layer, 1] += r[:, 0].mean().item()
+>
+>     hooks = []
+>     for i, block in enumerate(m.layers):
+>         hooks.append(block.register_forward_pre_hook(lambda mod, args, i=i: add("stream", i, args[0])))
+>         hooks.append(block.attn.register_forward_hook(lambda mod, args, out, i=i: add("attn", i, out)))
+>         hooks.append(block.mlp.register_forward_hook(
+>             lambda mod, args, out, i=i: add("mlp", i, out[0] if isinstance(out, tuple) else out)))
+> ```
 
 ![Figure 15.2 · The residual stream of the released model](../figures/fig15-2-stream.svg)
 

@@ -389,8 +389,6 @@ which records how to rebuild each object. Rebuilding is not passive. A full
 unpickle, `torch.load(path, weights_only=False)`, imports whatever module the
 pickle names and calls whatever it says to, so a file from the Hub or a
 colleague's disk can run any code on your machine the moment it is loaded.
-At the book's previous pin, `load_checkpoint` and the resume path both loaded
-that way.
 
 `weights_only=True` swaps in a restricted unpickler: tensors, dicts, lists,
 numbers and strings, and any class you allow-list by name. Every load now goes
@@ -424,17 +422,19 @@ def safe_load(path, map_location="cpu", trust_pickle: Optional[bool] = None, **k
 1. **The escape.** `trust_pickle=True`, or `ANULM_TRUST_PICKLE` set to
    anything but empty or `0`, loads the old way. It is never chosen for you.
 2. **The allow-list.** Every project checkpoint stores its configuration as a
-   pickled `AnuLMConfig`, so the class must be allowed. A pickle names a class
-   by the module path it had *when it was saved*, and this one has had three:
-   `anulm.model.AnuLMConfig` (the plain entry), `model.AnuLMConfig` (from
-   before the `anulm/` package, when `model.py` sat at the root) and
-   `model.NanoSarvamConfig` (from before the project's rename). The pairs map
-   each old name onto today's class; without them, every older checkpoint
-   would be refused. `NanoSarvamConfig = AnuLMConfig` (line 1213) keeps the
-   old name importable for the trusted path.
+   pickled `AnuLMConfig`, so the class must be allowed, under each of the
+   three names it has been pickled as.
 3. **The refusal.** Anything else raises `pickle.UnpicklingError`, which
    becomes `UnsafeCheckpointError` naming both escapes. It is its own type so
    a caller can tell "refused by policy" from "truncated or corrupt".
+
+> **Details.** The three names. A pickle names a class by the module path it
+> had *when it was saved*: `anulm.model.AnuLMConfig` (the plain entry),
+> `model.AnuLMConfig` (from before the `anulm/` package, when `model.py` sat at
+> the root) and `model.NanoSarvamConfig` (from before the project's rename).
+> The pairs map each old name onto today's class; without them, every older
+> checkpoint would be refused. `NanoSarvamConfig = AnuLMConfig` (line 1213)
+> keeps the old name importable for the trusted path.
 
 That is why the resume path (25.4) re-raises it. If a refused `.last` took the
 `except Exception` fallback, a run would quietly restart from the best-val
@@ -519,18 +519,21 @@ def load_checkpoint(path, map_location="cpu", base: bool = True) -> dict:
         ck["model"] = load_file(str(p / "model.safetensors"), device=dev)
 ```
 
-A path that does not exist and matches `_HUB_ID` (`owner/name`, line 1261)
-goes to the Hub, and says so first, so a mistyped local name is not a silent
-download or a puzzling network error. A file is a `.pt`, read by `safe_load`.
-In a folder, the elided lines start `ck = {}`, rebuild the configuration from
-`config.json` keeping only known fields (an unknown one is dropped silently),
-then load `model.safetensors`, which holds tensors only and cannot carry code.
-Paths read from a folder's `config.json` must stay inside the folder
-(Chapter 39). A folder holds no optimizer or sampler state, so it can be
-sampled from or fine-tuned, not resumed. Five evaluation scripts once crashed
-on exported folders by calling `torch.load` (§27);
-`an_exported_folder_loads_everywhere_a_pt_does` (line 924) round-trips a
-folder and scans eleven scripts for `torch.load(ckpt`.
+A file is a `.pt`, read by `safe_load`. A folder is read as safetensors, which
+hold tensors only and cannot carry code; it holds no optimizer or sampler
+state, so it can be sampled from or fine-tuned, not resumed. Chapter 39 covers
+the folder format.
+
+> **Details.** The other two paths. A path that does not exist and matches
+> `_HUB_ID` (`owner/name`, line 1261) goes to the Hub, and says so first, so a
+> mistyped local name is not a silent download or a puzzling network error. In
+> a folder, the elided lines start `ck = {}`, rebuild the configuration from
+> `config.json` keeping only known fields (an unknown one is dropped
+> silently), then load `model.safetensors`. Paths read from a folder's
+> `config.json` must stay inside the folder (Chapter 39). Scripts that call
+> `torch.load` directly crash on such a folder (`docs/RESULTS.md` §27 found
+> five); `an_exported_folder_loads_everywhere_a_pt_does` (line 924)
+> round-trips a folder and scans eleven scripts for `torch.load(ckpt`.
 
 `IN THE REPO`
 

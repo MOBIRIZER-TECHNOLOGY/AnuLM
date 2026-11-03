@@ -261,40 +261,19 @@ that follow take the mutants one at a time.
 
 The router picks experts with a discrete top-k (Chapter 17). Under bf16
 autocast, small rounding changes can swap which experts win.
-
-> **In the repo** · `anulm/model.py` · `Router.forward` · lines 611–622 · @fdbb09a
-
-```python
-    def forward(self, x_flat, seq_len: Optional[int] = None):   # (N, D)
-        """Returns (topk_idx, combine weights, aux) -- aux is None unless one of
-        the regularisers is on and the module is training. `seq_len` lets the
-        sequence-wise balance loss see the (B, S) layout of a flat batch."""
-        # fp32 router: top-k is discrete, and bf16 rounding would flip choices.
-        # Casting the inputs is not enough -- autocast re-casts F.linear to
-        # bf16 whatever dtype it is handed, and every GPU run before this fix
-        # routed in bf16 (3.2% of expert sets differed from fp32 on a real
-        # checkpoint). Autocast has to be off for the whole gate.
-        with torch.autocast(device_type=x_flat.device.type, enabled=False):
-            topk_idx, w, aux = self._gate(x_flat.float(), seq_len)
-        return topk_idx, w.to(x_flat.dtype), aux
-```
-
-The input is (N, D), with N here the tokens in the batch, flattened. `torch.autocast(..., enabled=False)`
-switches autocast off for everything inside, so `_gate`'s `F.linear` and
-sigmoid run in fp32; the combine weights come back in the caller's dtype. The comment
-says why the earlier fix, casting `x_flat` to fp32, did nothing:
+`Router.forward` (quoted in 17.4) therefore switches autocast off for the
+whole gate, so `_gate`'s `F.linear` and sigmoid run in fp32. Its comment says
+why the earlier fix, casting `x_flat` to fp32, did nothing, and the example
+confirms it:
 
 ```
 Part 3. under autocast, F.linear on fp32 tensors returns torch.bfloat16
 ```
 
-*verified*. The comment's 3.2% was measured on "a real checkpoint". Chapter 23
-(23.3) measures it on the released model, and that measurement is the book's
-canonical one: 19,717 of 622,592 (token, layer) expert sets change, 3.17%, from
-10.95% in layer 1 to 1.69% in layer 19 (`ch23_measure.py`,
-`book/measurements/part_v_a_memory.json`). This chapter's script,
-`ch26_measure_router_bf16.py`, repeats it on the same 32 windows for the
-per-layer figure, and gives the same counts.
+*verified*. On the released model a bf16 gate changes 3.17% of (token, layer)
+expert sets, 10.95% in layer 1 (Chapter 23, 23.3). This chapter's script,
+`ch26_measure_router_bf16.py`, repeats that measurement on the same 32 windows
+for the per-layer figure, and gives the same counts.
 
 ![Figure 26.2 · bf16 routing, measured on the released model](../figures/fig26-2-router.svg)
 
@@ -415,14 +394,10 @@ def interleaved_split(data: torch.Tensor, chunk: int = 262144, every: int = 10):
     through the tail split is an English number. Interleaving gives the
     split the corpus's own mix (160 / 153 / 71 of 384 windows).
     """
-    chunks = list(data.split(chunk))
-    val = torch.cat(chunks[every // 2::every])
-    train = torch.cat([c for i, c in enumerate(chunks) if i % every != every // 2])
-    return train, val
+    # ...
 ```
 
-`data.split(chunk)` cuts the corpus into 262,144-token chunks; every tenth,
-starting at the fifth, goes to `val`, and the rest to `train`. The docstring
+The body, quoted in 21.8, holds out every tenth 262,144-token chunk. The docstring
 holds the evidence, also in §32: the first sweep of the lab (§32's small proxy
 runs, `experiments/lab.py`) measured ideas aimed at Hindi on a validation split
 with no Hindi in it. `--val-interleave` is off by default so older
@@ -481,18 +456,18 @@ batch); no test checks how a move between evaluations is read.
 
 | The failure | Recorded in | What catches it now |
 |---|---|---|
-| the `transformers` wrapper left the rotary tables as uninitialised memory; every weight loaded, positions were noise | test docstring | `transformers_wrapper_matches_the_native_model` (line 1285) |
-| an exported question answerer reported itself a base model and hid its question mode | test docstring | `an_exported_qa_checkpoint_still_offers_its_question_mode` (line 1119) |
-| exports dropped projectors, LoRA weights and labels, and still loaded as a plain language model | test docstring | `an_export_keeps_what_makes_a_checkpoint_more_than_a_language_model` (line 1177) |
+| the `transformers` wrapper left the rotary tables as uninitialised memory; every weight loaded, positions were noise (Part VII+) | test docstring | `transformers_wrapper_matches_the_native_model` (line 1285) |
+| an exported question answerer reported itself a base model and hid its question mode (Part VII+) | test docstring | `an_exported_qa_checkpoint_still_offers_its_question_mode` (line 1119) |
+| exports dropped projectors, LoRA weights and labels, and still loaded as a plain language model (Part VII+) | test docstring | `an_export_keeps_what_makes_a_checkpoint_more_than_a_language_model` (line 1177) |
 | five evaluation scripts crashed on exported folders | §27; test docstring | `an_exported_folder_loads_everywhere_a_pt_does` (line 924) |
-| a generated `random.py` could shadow the standard library for every later problem | `anulm/eval/eval_code.py` docstring; test | `eval_code_sandbox_contains_generated_code` (line 1225) |
+| a generated `random.py` could shadow the standard library for every later problem (Part VII+) | `anulm/eval/eval_code.py` docstring; test | `eval_code_sandbox_contains_generated_code` (line 1225) |
 | the golden-set builder's check passed by luck on a small vocabulary | test comment ("It did, once.") | `golden_items_are_well_formed_and_the_scorer_runs` (line 1465), on 400 words |
 | a project rename changed the tokenizer format id, which every older tokenizer (four on the Hub) still carries | test docstring | `bpe_files_load_under_both_format_ids` (line 1379) |
 | a documented hazard, not a recorded incident: `is_causal` aligns top-left, wrong for a multi-token step against a cache | `_attn_mask` docstring | `incremental_forward_matches_full_forward` (line 561) |
 | a checkpoint killed mid-write; a restart loop for three hours | §25 | `atomic_save` and the fallback (Chapter 25); no test |
 | a benchmark with 11% of its documents leaked into a training corpus | §9 | `anulm/data/make_bench.py`'s signature filter; no test in the suite |
 | an evaluation file mixed into the training mix whole | §28 | `anulm/data/mix_corpus.py` now holds out `data/bench_hindi.txt`; no test in the suite |
-| HumanEval 0.0% from the wrong prompt mode | §25 | `eval_code.py --mode`; no test |
+| HumanEval 0.0% from the wrong prompt mode (Part VII+) | §25 | `eval_code.py --mode`; no test |
 | batch 16 without checkpointing spilled to system RAM, 3,657 against 13,639 tokens per second | `warn_if_spilling` docstring | a warning at step 0, not a test |
 | a test that could not run (a missing package, no grouped GEMM) returned early and printed PASS | `tests/test_model.py` module docstring | `unittest.SkipTest` and a SKIP line in `main` (26.10) |
 | the sandbox test passed if the grandchild it meant to kill never started | test comment | the `spawned.txt` check in `eval_code_sandbox_contains_generated_code` (26.10) |

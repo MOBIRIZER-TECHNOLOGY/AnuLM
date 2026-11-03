@@ -202,22 +202,23 @@ second built the wrong way. *verified*: drawn from `_attn_mask`'s output.
 
 The prompt goes in at `start = 0` (and again whenever the context fills and
 the cache is rebuilt); after it, `pending` is one sampled token (line 1173).
-The `transformers` wrapper passes every id its cache has not seen:
-
-> **In the repo** · `anulm/hf/modeling_anulm.py` · `AnuLMForCausalLM.prepare_inputs_for_generation` · lines 274–282 · @fdbb09a
-
-```python
-    def prepare_inputs_for_generation(self, input_ids, past_key_values=None,
-                                      attention_mask=None, use_cache=True, **kwargs):
-        # With a cache, only the tokens it has not seen are new.
-        if past_key_values is not None:
-            input_ids = input_ids[:, past_key_values.seen:]
-        return {"input_ids": input_ids, "past_key_values": past_key_values,
-                "use_cache": use_cache}
-```
-
-So a caller that appends several tokens to a used cache, a second chat turn
+The `transformers` wrapper does: it passes every id its cache has not seen,
+so a caller that appends several tokens to a used cache, a second chat turn
 for example, makes the offset call (Chapter 39).
+
+> **Details.** The wrapper's code:
+>
+> > **In the repo** · `anulm/hf/modeling_anulm.py` · `AnuLMForCausalLM.prepare_inputs_for_generation` · lines 274–282 · @fdbb09a
+>
+> ```python
+>     def prepare_inputs_for_generation(self, input_ids, past_key_values=None,
+>                                       attention_mask=None, use_cache=True, **kwargs):
+>         # With a cache, only the tokens it has not seen are new.
+>         if past_key_values is not None:
+>             input_ids = input_ids[:, past_key_values.seen:]
+>         return {"input_ids": input_ids, "past_key_values": past_key_values,
+>                 "use_cache": use_cache}
+> ```
 
 `IN THE REPO`
 
@@ -260,9 +261,8 @@ reduction available", a saving no code at the pin realises. Its quality is
 
 **What the masks are worth.** `ch12_measure_masks.py` runs `ckpt_base_v2.pt`
 on 32 held-out windows of 1,024 tokens (`data/v2/val.u16`, seed 0) as
-trained, with every `window` set to `None`, and with an all-`True` mask. It
-runs in fp32 without autocast, except the experts (Chapters 17–18), which the
-released configuration computes in bf16 (`anulm/model.py` lines 756 and 784).
+trained, with every `window` set to `None`, and with an all-`True` mask, at
+the settings of Appendix F, F.6.
 
 ![Figure 12.2 · What the masks are worth to the trained model](../figures/fig12-2-mask-loss.svg)
 
@@ -389,47 +389,10 @@ def sliding_window_agrees_with_cache():
 ```
 
 Which test catches which mistake? `ch12_masks.py` swaps wrong masks into
-`anulm/model.py` one at a time. One keeps a key too many:
-
-```python
-        return (k <= q) & (k >= q - window)                     # window + 1 keys
-```
-
-Two more keep the function's early return of `None` and change only the mask
-it builds: one inverts it, one ignores `start`. The last always builds a mask,
-and writes the comparison the wrong way round:
-
-```python
-    def inverted(S, T_, start, window, device):
-        m = real(S, T_, start, window, device)
-        return None if m is None else ~m
-
-    def reversed_always(S, T_, start, window, device):           # no early return, comparison reversed
-        q = torch.arange(start, start + S, device=device)[:, None]
-        k = torch.arange(T_, device=device)[None, :]
-        return k >= q
-```
-
-The loop restores the real function after each test:
-
-```python
-    real = M._attn_mask
-    for name, fn in [("the real _attn_mask", real)] + wrong_masks():
-        failed = []
-        for t in tests:
-            M._attn_mask = fn
-            try:
-                with contextlib.redirect_stdout(io.StringIO()):
-                    t()
-            except Exception:                                   # AssertionError, or a crash
-                failed.append(t.__name__)
-            finally:
-                M._attn_mask = real
-        print(f"  {name:22s} fails: {', '.join(failed) or 'nothing'}")
-```
-
-The swap works because `GQAttention.forward` looks the name up in `model`'s
-namespace on every call. `tests` holds the four tests.
+`anulm/model.py` one at a time and runs the four tests on each. One keeps a
+key too many; two keep the function's early return of `None` and change only
+the mask it builds, one inverting it and one ignoring `start`; the last
+always builds a mask and writes the comparison the wrong way round:
 
 ```
   the real _attn_mask    fails: nothing
@@ -442,8 +405,48 @@ namespace on every call. `tests` holds the four tests.
 *verified*. The causality test catches only the last: a mask that is always
 built reaches its call, while the first three leave its `None` path intact.
 `sliding_window_agrees_with_cache` passes a window one too wide and a
-reversed mask: both its runs share the wrong mask, and an agreement test cannot see a bug both sides
-have.
+reversed mask: both its runs share the wrong mask, and an agreement test
+cannot see a bug both sides have.
+
+> **Details.** How the example swaps the masks. The window one too wide:
+>
+> ```python
+>         return (k <= q) & (k >= q - window)                     # window + 1 keys
+> ```
+>
+> The inverted mask, and the reversed comparison with no early return:
+>
+> ```python
+>     def inverted(S, T_, start, window, device):
+>         m = real(S, T_, start, window, device)
+>         return None if m is None else ~m
+>
+>     def reversed_always(S, T_, start, window, device):           # no early return, comparison reversed
+>         q = torch.arange(start, start + S, device=device)[:, None]
+>         k = torch.arange(T_, device=device)[None, :]
+>         return k >= q
+> ```
+>
+> The loop restores the real function after each test:
+>
+> ```python
+>     real = M._attn_mask
+>     for name, fn in [("the real _attn_mask", real)] + wrong_masks():
+>         failed = []
+>         for t in tests:
+>             M._attn_mask = fn
+>             try:
+>                 with contextlib.redirect_stdout(io.StringIO()):
+>                     t()
+>             except Exception:                                   # AssertionError, or a crash
+>                 failed.append(t.__name__)
+>             finally:
+>                 M._attn_mask = real
+>         print(f"  {name:22s} fails: {', '.join(failed) or 'nothing'}")
+> ```
+>
+> The swap works because `GQAttention.forward` looks the name up in `model`'s
+> namespace on every call. `tests` holds the four tests.
 
 `IN THE REPO`
 

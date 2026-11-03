@@ -153,24 +153,26 @@ The mask works because `AnuLM.forward` already ignores −1:
 
 The mean runs over graded positions only. In training mode the router's
 regulariser is added when the configuration switches it on, as the released
-one does (weights 1e-4 and 1e-3, Chapter 18). The measurement script checks
-the size on one made-up pair, with `ckpt_base_v2.pt` in fp32:
+one does (weights 1e-4 and 1e-3, Chapter 18); `finetune.evaluate` runs in
+evaluation mode, so its held-out loss is the answer loss alone.
 
-```python
-    p, a = _pair_ids(tok, {"question": "What is the capital of India?", "answer": "New Delhi.", "lang": "en"})
-    xb, yb = pack([(p, a)], len(p) + len(a), tok.eos_id)
-    with torch.no_grad():
-        _, ev = model.eval()(xb.long(), yb.long())
-        _, tr = model.train()(xb.long(), yb.long())
-        aux = float(model.aux_loss)
-```
-
-```
-released model, one made-up pair: loss 2.5636 in eval mode, 2.5673 in train mode (router regulariser 0.0038; without it 2.5636)
-```
-
-*measured*: `book/code-examples/ch30_measure_chat_split.py`. `finetune.evaluate`
-runs in evaluation mode, so its held-out loss is the answer loss alone.
+> **Details.** The measurement script checks the regulariser's size on one
+> made-up pair, with `ckpt_base_v2.pt` in fp32:
+>
+> ```python
+>     p, a = _pair_ids(tok, {"question": "What is the capital of India?", "answer": "New Delhi.", "lang": "en"})
+>     xb, yb = pack([(p, a)], len(p) + len(a), tok.eos_id)
+>     with torch.no_grad():
+>         _, ev = model.eval()(xb.long(), yb.long())
+>         _, tr = model.train()(xb.long(), yb.long())
+>         aux = float(model.aux_loss)
+> ```
+>
+> ```
+> released model, one made-up pair: loss 2.5636 in eval mode, 2.5673 in train mode (router regulariser 0.0038; without it 2.5636)
+> ```
+>
+> *measured*: `book/code-examples/ch30_measure_chat_split.py`.
 
 ![Figure 30.1 · Packing with masked prompts](../figures/fig30-1-packing.svg)
 
@@ -315,46 +317,52 @@ article*. `anulm/data/make_chat.py` builds the chat set from Dolly, OpenAssistan
 Hindi rows, 4,000 mined Wikipedia pairs and 11 identity questions repeated 20
 times, and writes `data/chat_train.jsonl` and `data/chat_heldout.jsonl`.
 
-The files on disk were built by the split `make_chat.py` used until November
-2026. The measurement script keeps a verbatim copy of it
-(`book/code-examples/ch30_measure_chat_split.py`, **Book example, not
-repository code**):
+The chat files on disk were built by an older split that held out the first
+300 shuffled rows: by row, with no duplicates removed and no key on the
+question. When a source held the same question twice, one copy could be held
+out while its twin trained, and any split by row leaks the same way: 4 of the
+300 held-out questions (1.3%) are also in the training file, and 3 of those 4
+occur twice in Dolly's own training file. The held-out loss picks the best
+checkpoint (30.4) and is one of the chat model's release gates (Chapter 37),
+so its threshold, its baseline and the score compared with it were all
+measured on a split that shares 4 prompts with training; how much they move
+the mean is *not measured here*. The lesson is to split by question, not by
+row, which the code at the pin does.
 
-```python
-def make_chat_split(rows_in: list[dict], rng: random.Random):
-    """make_chat.py main() at @773b6a8, lines 109-112, unchanged: the split that built data/chat_*.jsonl."""
-    rows = list(rows_in)
-    rng.shuffle(rows)
-    held = [r for r in rows if r["source"] != "identity"][:300]
-    held_ids = {id(r) for r in held}
-    train = [r for r in rows if id(r) not in held_ids]
-    return train, held
-```
+> **Details.** The measurement script keeps a verbatim copy of the old split
+> (`book/code-examples/ch30_measure_chat_split.py`, **Book example, not
+> repository code**):
+>
+> ```python
+> def make_chat_split(rows_in: list[dict], rng: random.Random):
+>     """make_chat.py main() at @773b6a8, lines 109-112, unchanged: the split that built data/chat_*.jsonl."""
+>     rows = list(rows_in)
+>     rng.shuffle(rows)
+>     held = [r for r in rows if r["source"] != "identity"][:300]
+>     held_ids = {id(r) for r in held}
+>     train = [r for r in rows if id(r) not in held_ids]
+>     return train, held
+> ```
+>
+> It holds rows out by Python object (`id(r)`). The script counts the leak on
+> the files on disk, printing counts only:
+>
+> ```
+> train 23,022 rows, held-out 300 rows
+> held-out questions also in train: 4 of 300 (1.3%), 2 with the same answer
+> training questions that occur more than once: 279 (11 of them 20 or more times: the identity rows, which are never held out)
+> leaked questions that occur at least twice in data/dolly_train.jsonl: 3 of 4
+> finetune's rule (question_key: NFKC, case-folded, whitespace collapsed): drops 4 of 300 held-out rows
+> made-up rows, one question present twice: with seed 0 one copy is held out and the other trained on: True
+> split_chat_rows on the same rows plus a re-spaced, re-cased copy with another answer, 20 seeds: question on both sides 0 times; copies kept [2] of 3 (the exact duplicate dropped); held out with 15 seeds
+> packed cache: 23,022 pairs -> 3,689 rows of 1024; 47.4% of positions carry a target (1,791,532 tokens)
+> ```
+>
+> *measured*: run with `--save`, the script writes
+> `book/measurements/part_vii_chat_split.json`. The lab book's Chapter 18
+> (`course/ch18-chat`) found the same 4 of 300.
 
-It held out the first 300 shuffled rows, by Python object (`id(r)`). Nothing
-removed duplicates first or keyed the split on the question, so when a source
-held the same question twice, one copy could be held out while its twin
-trained; any split by row leaks the same way. The script counts it on the
-files on disk, printing counts only:
-
-```
-train 23,022 rows, held-out 300 rows
-held-out questions also in train: 4 of 300 (1.3%), 2 with the same answer
-training questions that occur more than once: 279 (11 of them 20 or more times: the identity rows, which are never held out)
-leaked questions that occur at least twice in data/dolly_train.jsonl: 3 of 4
-finetune's rule (question_key: NFKC, case-folded, whitespace collapsed): drops 4 of 300 held-out rows
-made-up rows, one question present twice: with seed 0 one copy is held out and the other trained on: True
-split_chat_rows on the same rows plus a re-spaced, re-cased copy with another answer, 20 seeds: question on both sides 0 times; copies kept [2] of 3 (the exact duplicate dropped); held out with 15 seeds
-packed cache: 23,022 pairs -> 3,689 rows of 1024; 47.4% of positions carry a target (1,791,532 tokens)
-```
-
-*measured*: run with `--save`, the script writes
-`book/measurements/part_vii_chat_split.json`. Three of the four leaked
-questions occur twice in Dolly's own training file. The lab book's Chapter 18
-(`course/ch18-chat`) found the same 4 of 300.
-
-The code at the pin splits by question. Two questions count as the same when
-they share a key:
+Two questions count as the same when they share a key:
 
 > **In the repo** · `anulm/data/make_qa.py` · `question_key` · lines 66–72 · @fdbb09a
 
@@ -404,52 +412,51 @@ In order:
   side its key belongs to. All copies of a question land on one side.
 
 `main` calls it as `train, held = split_chat_rows(rows)` (line 176). The
-script's made-up rows show the difference: the old split puts one copy on
-each side; `split_chat_rows` never does, over 20 seeds, and keeps 2 of the 3
-copies (the exact duplicate goes). The toy has 401 questions and holds 300 of
-them out, so the repeated one is held out with 15 of the 20 seeds.
+files on disk are still the old split, since rebuilding them would change
+every number measured on them, so `finetune` drops from the held-out side
+every row whose question key is also in training: 4 of 300 on the chat files.
 
-The files on disk are still the old split, and rebuilding them would change
-every number measured on them, so `finetune` guards the held-out side itself:
-
+> **Details.** The script's made-up rows show the difference: the old split
+> puts one copy on each side; `split_chat_rows` never does, over 20 seeds, and
+> keeps 2 of the 3 copies (the exact duplicate goes). The toy has 401
+> questions and holds 300 of them out, so the repeated one is held out with 15
+> of the 20 seeds. The guard in `finetune`:
+>
 > **In the repo** · `anulm/training/finetune.py` · `main` · lines 307–320 · @fdbb09a
-
-```python
-        # A held-out loss over questions the model trained on is optimistic, and
-        # it picks the "best" checkpoint. The release chat files share 4 such
-        # prompts, so drop them from the held-out side (with a count) rather
-        # than refusing to train.
-        held = read_jsonl(args.heldout)
-        trained = {question_key(it["question"]) for it in read_jsonl(args.qa)}
-        kept = [it for it in held if question_key(it["question"]) not in trained]
-        if not kept:
-            raise SystemExit(f"every question in {args.heldout} is also in {args.qa}: nothing is held out")
-        if len(kept) < len(held):
-            print(f"held-out: dropped {len(held) - len(kept)} of {len(held)} rows whose question is also in {args.qa}")
-            hx, hy = pack(encode_pairs(tok, kept), cfg.block_size, tok.eos_id)
-        else:
-            hx, hy = load_packed(args.heldout, cfg.tokenizer_path, cfg.block_size, tok.eos_id, args.workers)
-```
-
-`trained` holds the key of every training question. A held-out row whose key
-is in it is dropped, and the count is printed; if nothing is left, the run
-stops rather than score an empty set. Only when rows were dropped is the
-held-out set packed afresh from `kept`; otherwise the packed cache of the
-whole file is used. On the chat files the script's copy of this rule drops 4
-of 300, the same 4 as the exact-string count (*measured*).
-
-**What the leak touched.** The held-out loss does two jobs. `finetune` keeps
-the checkpoint with the best one (30.4), and the chat model's release gate is
-one: `experiments/omni_one.py` passes the joint model only if
-`chat_heldout_loss` is at most 3.30 (line 100), set against chat v3's 3.146.
-Both numbers come from `omni_eval.chat_loss` (`anulm/multimodal/omni_eval.py`
-lines 115–131), which scores every row of `data/chat_heldout.jsonl` (lines
-192–195), the 4 shared prompts included; it drops nothing at the pin. So the
-gate's threshold, its baseline and the score it is compared with were all
-measured on a split that contains 4 prompts the model trained on. How much
-those 4 of 300 move the mean is *not measured here*. Scoring the gate on the
-296 disjoint rows, or rebuilding the files with `split_chat_rows`, would remove
-the doubt.
+>
+> ```python
+>         # A held-out loss over questions the model trained on is optimistic, and
+>         # it picks the "best" checkpoint. The release chat files share 4 such
+>         # prompts, so drop them from the held-out side (with a count) rather
+>         # than refusing to train.
+>         held = read_jsonl(args.heldout)
+>         trained = {question_key(it["question"]) for it in read_jsonl(args.qa)}
+>         kept = [it for it in held if question_key(it["question"]) not in trained]
+>         if not kept:
+>             raise SystemExit(f"every question in {args.heldout} is also in {args.qa}: nothing is held out")
+>         if len(kept) < len(held):
+>             print(f"held-out: dropped {len(held) - len(kept)} of {len(held)} rows whose question is also in {args.qa}")
+>             hx, hy = pack(encode_pairs(tok, kept), cfg.block_size, tok.eos_id)
+>         else:
+>             hx, hy = load_packed(args.heldout, cfg.tokenizer_path, cfg.block_size, tok.eos_id, args.workers)
+> ```
+>
+> `trained` holds the key of every training question. A held-out row whose key
+> is in it is dropped, and the count is printed; if nothing is left, the run
+> stops rather than score an empty set. Only when rows were dropped is the
+> held-out set packed afresh from `kept`; otherwise the packed cache of the
+> whole file is used. On the chat files the script's copy of this rule drops 4
+> of 300, the same 4 as the exact-string count (*measured*).
+>
+> **What the leak touched.** The held-out loss does two jobs. `finetune` keeps
+> the checkpoint with the best one (30.4), and the chat model's release gate is
+> one: `experiments/omni_one.py` passes the joint model only if
+> `chat_heldout_loss` is at most 3.30 (line 100), set against chat v3's 3.146.
+> Both numbers come from `omni_eval.chat_loss` (`anulm/multimodal/omni_eval.py`
+> lines 115–131), which scores every row of `data/chat_heldout.jsonl` (lines
+> 192–195), the 4 shared prompts included; it drops nothing at the pin.
+> Scoring the gate on the 296 disjoint rows, or rebuilding the files with `split_chat_rows`, would remove
+> the doubt.
 
 `IN THE REPO` · `MEASURED`
 
@@ -582,8 +589,7 @@ Repository evidence, all at @fdbb09a:
 - `anulm/data/make_chat.py`: `split_chat_rows` 119–145, `main` 148–184 (the call 176).
 - `anulm/multimodal/omni_eval.py`: `chat_loss` 115–131, its call 192–195;
   `experiments/omni_one.py`: `GATES` 92–104 (`chat_heldout_loss` 100).
-- The old split: `make_chat.py` `main` lines 109–112 at @773b6a8, copied in
-  `book/code-examples/ch30_measure_chat_split.py`.
+- The old split: copied in `book/code-examples/ch30_measure_chat_split.py`.
 - `anulm/model.py`: `AnuLM.forward` 922–928 (`ignore_index=-1`; the regulariser 926–927).
 - `tests/test_model.py`: `qa_packing_masks_prompts_and_keeps_examples_whole` 1511.
 - `docs/RESULTS.md` §20, §23, §25.

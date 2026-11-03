@@ -102,9 +102,9 @@ tones:
 ```
 
 *measured*: `ch36_projectors.py --whisper`, on the CPU. That is 50 frames a
-second. The 40-second tone raises `ValueError`. Until November 2026 the slice
-cut it to the first 30 seconds without a word, so a long clip was trained
-against its whole transcript (36.6).
+second. The 40-second tone raises `ValueError`. Cropping it silently to 30
+seconds instead would pair part of the audio with the whole transcript, a
+wrong label (36.6).
 
 `IN THE REPO` · `MEASURED`
 
@@ -286,51 +286,62 @@ docstrings say the final LayerNorm is there on purpose, to give the pre-norm
 blocks a fixed scale. The scale itself was not chosen: it is the
 LayerNorm's. At its initial gain of 1 and bias of 0, each output vector has
 mean 0 and variance 1 over its D entries, so its length is √D = 32. A text
-token's embedding row is far shorter:
+token's embedding row is far shorter (mean length over rows or vectors):
 
-```
-5. a fresh projector's output norm: 32.00 (LayerNorm, gain 1, bias 0: sqrt(1024) = 32)
-7. norms (mean over rows or vectors):
-   base_v2_text_embedding_norm_mean       0.4989
-   omni_text_embedding_norm_mean          0.3856
-   omni_new_row_norm_mean                 0.0463
-   omni_vision_proj_output_norm_mean      9.6928
-   siglip_patch_norm_mean                 48.3898
-   omni_audio_proj_ln_expected_norm       3.125
-   omni_vision_proj_ln_expected_norm      8.1266
-   fresh_over_base_text                   64.1
-   fresh_over_omni_text                   83.0
-   trained_vision_over_omni_text          25.1
-```
+| vector | mean length |
+|---|---|
+| a fresh projector's output | 32.00 |
+| the joint model's trained image projector's output | 9.6928 |
+| a base-v2 text embedding row | 0.4989 |
+| a joint-model text embedding row | 0.3856 |
 
-The measurement loads the joint model's trained image projector and runs it on
-cached SigLIP features:
+*measured*: `ch36_projectors.py --measure` on `ckpt_base_v2.pt` and the joint
+model of Chapter 37, `ckpt_omni.pt`; the image projector's row uses the cached
+SigLIP features of 64 training images drawn with seed 0.
 
-```python
-    vp = ImageProjector(768, omni["cfg"].hidden_size, omni.get("pool", POOL)).eval()
-    vp.load_state_dict(omni["vision_proj"])
-    mm = np.memmap(ROOT / "data" / "omni" / "caption_train.feats.f16", dtype="float16", mode="r",
-                   shape=(49_345, 196, 768))
-    pick = np.sort(np.random.default_rng(0).choice(49_345, 64, replace=False))
-    with torch.no_grad():
-        out = torch.cat([vp(torch.from_numpy(np.asarray(mm[i])).float()) for i in pick])
-    res["omni_vision_proj_output_norm_mean"] = round(out.norm(dim=-1).mean().item(), 4)
-    res["siglip_patch_norm_mean"] = round(float(np.linalg.norm(
-        np.asarray(mm[pick], dtype=np.float32), axis=-1).mean()), 4)
-```
-
-*measured*: `ch36_projectors.py --measure` on `ckpt_base_v2.pt` and
-`ckpt_omni.pt` as the October 2026 run left it, the joint model of Chapter 37
-(a new run now writes that path, so this was not rerun); the image projector and the
-SigLIP norm use the cached features of 64 training images drawn with seed 0. The two
-"expected norm" rows are √(Σγ² + Σβ²) over the final LayerNorm's gain γ and
-bias β, the length its output would have if every normalised entry had
-variance 1.
+> **Details.** The script's full output:
+>
+> ```
+> 5. a fresh projector's output norm: 32.00 (LayerNorm, gain 1, bias 0: sqrt(1024) = 32)
+> 7. norms (mean over rows or vectors):
+>    base_v2_text_embedding_norm_mean       0.4989
+>    omni_text_embedding_norm_mean          0.3856
+>    omni_new_row_norm_mean                 0.0463
+>    omni_vision_proj_output_norm_mean      9.6928
+>    siglip_patch_norm_mean                 48.3898
+>    omni_audio_proj_ln_expected_norm       3.125
+>    omni_vision_proj_ln_expected_norm      8.1266
+>    fresh_over_base_text                   64.1
+>    fresh_over_omni_text                   83.0
+>    trained_vision_over_omni_text          25.1
+> ```
+>
+> The measurement loads the joint model's trained image projector and runs it on
+> cached SigLIP features:
+>
+> ```python
+>     vp = ImageProjector(768, omni["cfg"].hidden_size, omni.get("pool", POOL)).eval()
+>     vp.load_state_dict(omni["vision_proj"])
+>     mm = np.memmap(ROOT / "data" / "omni" / "caption_train.feats.f16", dtype="float16", mode="r",
+>                    shape=(49_345, 196, 768))
+>     pick = np.sort(np.random.default_rng(0).choice(49_345, 64, replace=False))
+>     with torch.no_grad():
+>         out = torch.cat([vp(torch.from_numpy(np.asarray(mm[i])).float()) for i in pick])
+>     res["omni_vision_proj_output_norm_mean"] = round(out.norm(dim=-1).mean().item(), 4)
+>     res["siglip_patch_norm_mean"] = round(float(np.linalg.norm(
+>         np.asarray(mm[pick], dtype=np.float32), axis=-1).mean()), 4)
+> ```
+>
+> `ckpt_omni.pt` is the joint model as the October 2026 run left it (a new
+> run now writes that path, so this was not rerun); the SigLIP norm uses the
+> same 64 images. The two "expected norm" rows are √(Σγ² + Σβ²) over the
+> final LayerNorm's gain γ and bias β, the length its output would have if
+> every normalised entry had variance 1. The lab book's "about 80 times"
+> (Chapter 14) uses the chat model's rows as its denominator.
 
 A fresh projector is about 64 times louder than a base-v2 text token
-(32 / 0.499), and 83 times louder than the joint model's text rows (32 / 0.386);
-the lab book's "about 80 times" (Chapter 14) uses the chat model's rows as
-its denominator. Trained, the joint model's image vectors are still about 25 times
+(32 / 0.499), and 83 times louder than the joint model's text rows (32 / 0.386).
+Trained, the joint model's image vectors are still about 25 times
 louder than its text tokens (9.69 / 0.386). Pre-norm blocks rescale each
 sublayer's input, but the residual stream carries these sizes (Chapter 15).
 Whether that hurts the text tasks is *not measured here*.
@@ -375,72 +386,51 @@ so it can be computed once and stored:
 > **In the repo** · `anulm/multimodal/vision_encoder.py` · `build_cache` · lines 312–361 · @fdbb09a
 
 ```python
-    path = Path(path)
     uniq = sorted({r["image"] for r in rows})
-    if not uniq:
-        raise ValueError("Cannot build an image cache from an empty manifest.")
+    # ...
     index = {p_: i for i, p_ in enumerate(uniq)}
-    probe = tower.encode(uniq[0])
-    shape = (len(uniq), probe.shape[0], probe.shape[1])
-    dtype = np.dtype(dtype)
-    identity = {
-        "version": 2,
-        "images": [{"path": str(Path(image).resolve()), "sha256": _file_digest(image)}
-                   for image in uniq],
-        "tower": getattr(tower, "name", type(tower).__qualname__),
-        "weights_sha256": _tower_digest(tower),
-        "transform": repr(getattr(tower, "transform", None)),
-        "dtype": dtype.name,
-        "shape": list(shape),
-    }
+    # ...
     fingerprint = hashlib.sha256(json.dumps(
         identity, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
     ).encode("utf-8")).hexdigest()
-    metadata = {k: v for k, v in identity.items() if k != "images"}
-    metadata["fingerprint"] = fingerprint
-    meta_path = Path(str(path) + ".json")
-    try:
-        cached = json.loads(meta_path.read_text(encoding="utf-8"))
-        expected_size = int(np.prod(shape)) * dtype.itemsize
+    # ...
         if (cached == metadata and path.stat().st_size == expected_size):
             print(f"cache: reusing {path} {shape}")
             return np.memmap(path, dtype=dtype, mode="r", shape=shape), index
-    except (OSError, ValueError):
-        pass
-    # ...
-    tmp = Path(str(path) + ".tmp")
-    mm = np.memmap(tmp, dtype=dtype, mode="w+", shape=shape)
     # ...
     for i, img in enumerate(uniq):
         mm[i] = tower.encode(img).detach().cpu().numpy().astype(dtype)
     # ...
-    mm.flush()
-    del mm
     os.replace(tmp, path)
-    meta_tmp = Path(str(meta_path) + ".tmp")
-    meta_tmp.write_text(json.dumps(metadata, sort_keys=True), encoding="utf-8")
-    os.replace(meta_tmp, meta_path)
-    # ...
-    return np.memmap(path, dtype=dtype, mode="r", shape=shape), index
 ```
 
 In order:
 
 1. **Distinct images.** `uniq` deduplicates images that have several
    captions, in sorted path order; `index` maps a path to its row.
-2. **Identity.** `identity` records every image's resolved path and the
-   SHA-256 of its file bytes, the tower's name, a hash of its weights
-   (`_tower_digest`, lines 283–295, which also refuses a tower that is not
-   frozen and in evaluation mode), its preprocessing, the dtype and the shape.
-   `fingerprint` is the SHA-256 of all of that as canonical JSON.
-3. **Reuse.** The sidecar `<cache>.json` holds the same record without the
-   image list, plus the fingerprint. The cache is reused only when the sidecar
-   matches and the file has exactly N × 196 × 768 × 2 bytes. A missing or
-   unreadable sidecar falls through to a rebuild.
-4. **Build.** Features go to `<cache>.tmp`, a memory-mapped float16 array
-   (N, 196, 768), which `os.replace` moves into place only when complete; the
-   sidecar is written after it the same way. An interrupted build leaves no
-   cache that looks finished.
+2. **Identity.** `fingerprint` is a SHA-256 over a record of what built the
+   cache: every image's path and file bytes, the tower and its weights, its
+   preprocessing, the dtype and the shape.
+3. **Reuse.** The cache is reused only when its sidecar record matches and the
+   file has exactly the expected number of bytes. A byte count alone would
+   reuse stale features for a changed image set of the same size, or for the
+   same paths with new pixels; the fingerprint catches both.
+4. **Build.** Otherwise every image is encoded once into a memory-mapped
+   float16 array (N, 196, 768), written to a temporary file that
+   `os.replace` moves into place only when complete.
+
+> **Details.** The record, `identity`, holds every image's resolved path and
+> the SHA-256 of its file bytes, the tower's name, a hash of its weights
+> (`_tower_digest`, lines 283–295, which also refuses a tower that is not
+> frozen and in evaluation mode), `repr` of its preprocessing, the dtype and
+> the shape; `fingerprint` hashes it as canonical JSON. The sidecar
+> `<cache>.json` holds the same record without the image list, plus the
+> fingerprint, and the reuse test requires N × 196 × 768 × 2 bytes. A missing
+> or unreadable sidecar falls through to a rebuild. Features go to
+> `<cache>.tmp`, and the sidecar is written after the cache the same way, so
+> an interrupted build leaves no cache that looks finished. Because the
+> fingerprint covers every image's bytes, a reuse check reads every image
+> file once, which is cheaper than re-encoding it but not free.
 
 ```
 4. one cached image: 196 x 768 float16 = 301,056 bytes; float16 keeps 11 significant bits, a relative rounding error of at most 4.9e-04
@@ -451,40 +441,8 @@ In order:
 *verified*: arithmetic and the files on disk. The cache is exact up to that
 float16 rounding, not bit for bit.
 
-Until November 2026 the reuse test was the byte count alone, and nothing
-recorded which images built the file: a changed image set of the same size,
-or the same paths with new pixels, reused stale features without a warning.
-The fingerprint closes both cases. Because it covers every image's bytes, a
-reuse check reads every image file once, which is cheaper than re-encoding
-it but not free. A cache written by the old code has no sidecar and is
-rebuilt on first use.
-
-The speech path has no such cache. It runs Whisper on every clip, every epoch:
-
-> **In the repo** · `anulm/multimodal/speech_encoder.py` · `batches` · lines 197–203 · @fdbb09a
-
-```python
-        for r in chunk:
-            wav = read_wav(r["audio"], ASR_RATE)
-            states = torch.from_numpy(enc.encode(wav)).to(device)
-            if states.shape[0] // sm.proj.stack > MAX_AUDIO_FRAMES:
-                continue
-            answer = tok.encode(" " + r["text"].strip()) + [tok.eos_id]
-            built.append(sm.build(states, [], answer, example=r["audio"], task=task))
-```
-
-The limit is set beside the stack:
-
-> **In the repo** · `anulm/multimodal/speech_encoder.py` · `MAX_AUDIO_FRAMES` · lines 55–56 · @fdbb09a
-
-```python
-STACK = 4                      # 50 Hz -> 12.5 Hz
-MAX_AUDIO_FRAMES = 400         # 400 stacked frames = 32 s, well inside 2048
-```
-
-The skip can never fire. `WhisperEncoder.encode` accepts at most 30 seconds,
-so `states` has at most 1,500 rows (36.1) and at most 375 stacked positions,
-under the limit of 400. What guards the length instead is a filter applied to
+The speech path has no such cache: it runs Whisper on every clip, every epoch
+(`batches`, lines 197–203). What guards its length is a filter applied to
 the training rows before any batch is built:
 
 > **In the repo** · `anulm/multimodal/speech_encoder.py` · `whisper_window_rows` · lines 159–182 · @fdbb09a

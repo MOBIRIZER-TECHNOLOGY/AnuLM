@@ -60,57 +60,60 @@ replaces all four. Top-p, dashed, is not in the repository. *verified*: the
 script that draws it asserts this order against `generate`'s source at
 @fdbb09a and reads the line range from it.
 
-The book's script watches these lines run: a subclass returns fixed logits,
-the repository's `generate` samples, and a spy records what
-`torch.multinomial` is given, checked against the steps above. At T ≤ 0 the
-spy sees no call, and the script returns the chosen id as a one-hot row
-instead:
+The book's script watches these lines run: a model that returns fixed logits,
+the repository's `generate`, and a spy on what `torch.multinomial` is given,
+checked against the steps above.
 
-```python
-class FixedLogits(M.AnuLM):
-    """An AnuLM whose forward returns the same logits for every row."""
-
-    def __init__(self, z):
-        super().__init__(tiny(vocab_size=z.numel()))
-        self.z = z
-
-    def forward(self, idx, targets=None, cache=None, start=0, embeds=None):
-        B = (idx if idx is not None else embeds).shape[0]
-        return self.z.expand(B, 1, -1).clone(), None                # (B, 1, V)
-
-
-def probs_from_generate(z, prompt, cls=FixedLogits, **kw):
-    """Run the repository's generate for one token; return what it sampled from,
-    or, if it made no draw (temperature <= 0), the one-hot of the id it chose."""
-    seen, orig = [], torch.multinomial
-
-    def spy(p, num_samples):                         # generate calls this, line 1169
-        seen.append(p.clone())
-        return orig(p, num_samples)
-
-    torch.multinomial = spy
-    try:
-        out = cls(z).generate(torch.tensor([prompt]), 1, **kw)
-    finally:
-        torch.multinomial = orig
-    if not seen:                                     # the argmax branch, lines 1161-1162
-        return torch.nn.functional.one_hot(out[0, -1], z.numel()).float()
-    return seen[0][0]
-
-
-def book_probs(z, seen_ids, temperature=1.0, top_k=None, penalty=1.0):
-    """generate's lines 1157-1168, one row at a time, as Chapter 28 states them."""
-    z = z.clone().float()
-    for i in set(seen_ids) if penalty != 1.0 else ():
-        z[i] = z[i] / penalty if z[i] > 0 else z[i] * penalty   # generate's sign rule
-    if temperature <= 0:                             # greedy: the first largest, no draw
-        return torch.nn.functional.one_hot(z.argmax(), len(z)).float()
-    z = z / temperature
-    if top_k is not None:
-        kth = z.sort(descending=True).values[min(top_k, len(z)) - 1]
-        z[z < kth] = -math.inf                       # ties with the k-th survive
-    return z.softmax(-1)
-```
+> **Details.** The harness. A subclass returns fixed logits; the spy records
+> what `generate` passes to `torch.multinomial`. At T ≤ 0 the spy sees no call,
+> and the script returns the chosen id as a one-hot row instead. `book_probs`
+> states the steps one row at a time.
+>
+> ```python
+> class FixedLogits(M.AnuLM):
+>     """An AnuLM whose forward returns the same logits for every row."""
+>
+>     def __init__(self, z):
+>         super().__init__(tiny(vocab_size=z.numel()))
+>         self.z = z
+>
+>     def forward(self, idx, targets=None, cache=None, start=0, embeds=None):
+>         B = (idx if idx is not None else embeds).shape[0]
+>         return self.z.expand(B, 1, -1).clone(), None                # (B, 1, V)
+>
+>
+> def probs_from_generate(z, prompt, cls=FixedLogits, **kw):
+>     """Run the repository's generate for one token; return what it sampled from,
+>     or, if it made no draw (temperature <= 0), the one-hot of the id it chose."""
+>     seen, orig = [], torch.multinomial
+>
+>     def spy(p, num_samples):                         # generate calls this, line 1169
+>         seen.append(p.clone())
+>         return orig(p, num_samples)
+>
+>     torch.multinomial = spy
+>     try:
+>         out = cls(z).generate(torch.tensor([prompt]), 1, **kw)
+>     finally:
+>         torch.multinomial = orig
+>     if not seen:                                     # the argmax branch, lines 1161-1162
+>         return torch.nn.functional.one_hot(out[0, -1], z.numel()).float()
+>     return seen[0][0]
+>
+>
+> def book_probs(z, seen_ids, temperature=1.0, top_k=None, penalty=1.0):
+>     """generate's lines 1157-1168, one row at a time, as Chapter 28 states them."""
+>     z = z.clone().float()
+>     for i in set(seen_ids) if penalty != 1.0 else ():
+>         z[i] = z[i] / penalty if z[i] > 0 else z[i] * penalty   # generate's sign rule
+>     if temperature <= 0:                             # greedy: the first largest, no draw
+>         return torch.nn.functional.one_hot(z.argmax(), len(z)).float()
+>     z = z / temperature
+>     if top_k is not None:
+>         kth = z.sort(descending=True).values[min(top_k, len(z)) - 1]
+>         z[z < kth] = -math.inf                       # ties with the k-th survive
+>     return z.softmax(-1)
+> ```
 
 `IN THE REPO`
 
@@ -143,9 +146,9 @@ ties, T = 0                        1.000  0.000  0.000  0.000
 
 On logits [1, 1, 1, 0] it picks id 0, whatever the seed;
 `test_temperature_zero_breaks_ties_deterministically`
-(`tests/test_release_fixes.py` line 136) holds it to that on a 64-way tie.
-Until November 2026 `generate` floored T at 10⁻⁵ and still sampled, so on a
-tie "greedy" output changed with the seed.
+(`tests/test_release_fixes.py` line 136) holds it to that on a 64-way tie. A
+"greedy" that only floors T and still samples would change with the seed on a
+tie.
 
 `anulm/inference/serve.py` (line 158) and `anulm/inference/api.py` (line 446)
 pass the temperature through unclamped, so a request's 0 is exact greedy
@@ -353,31 +356,43 @@ def top_p_filter(logits, p):
 
 The patch to `generate` is a new argument and two lines before the softmax,
 inside the sampling branch, so T ≤ 0 stays an exact argmax and ignores
-`top_p`; the softmax then renormalises over the survivors. With the 12-line filter, that is
-the whole extension. The script applies it to the pinned
-source of `generate` and compiles the result, so the test runs the repository's
-loop plus exactly this:
+`top_p`; the softmax then renormalises over the survivors. With the 12-line
+filter, that is the whole extension:
 
-```python
-PATCH = (("repetition_penalty: float = 1.0, on_token=None):",
-          "repetition_penalty: float = 1.0, on_token=None, top_p: float | None = None):"),
-         ("            probs = F.softmax(logits, dim=-1)\n",   # as indented after dedent
-          "            if top_p is not None:\n"
-          "                logits = top_p_filter(logits, top_p)\n"
-          "            probs = F.softmax(logits, dim=-1)\n"))
-
-
-def patched_generate():
-    """The pinned generate's own source with PATCH applied, compiled in model.py's
-    namespace."""
-    src = textwrap.dedent(inspect.getsource(M.AnuLM.generate))
-    for old, new in PATCH:
-        assert src.count(old) == 1, f"patch does not apply: {old!r}"
-        src = src.replace(old, new)
-    ns = dict(vars(M), top_p_filter=top_p_filter)
-    exec(src, ns)
-    return ns["generate"]
+```diff
+-                 repetition_penalty: float = 1.0, on_token=None):
++                 repetition_penalty: float = 1.0, on_token=None, top_p: float | None = None):
+ ...
++                if top_p is not None:
++                    logits = top_p_filter(logits, top_p)
+                 probs = F.softmax(logits, dim=-1)
 ```
+
+> **Details.** How the test applies it. The script takes the pinned source of
+> `generate`, applies the patch as two string replacements, each required to
+> match exactly once, and compiles the result in `model.py`'s namespace, so the
+> test runs the repository's loop plus exactly this diff:
+>
+> ```python
+> PATCH = (("repetition_penalty: float = 1.0, on_token=None):",
+>           "repetition_penalty: float = 1.0, on_token=None, top_p: float | None = None):"),
+>          ("            probs = F.softmax(logits, dim=-1)\n",   # as indented after dedent
+>           "            if top_p is not None:\n"
+>           "                logits = top_p_filter(logits, top_p)\n"
+>           "            probs = F.softmax(logits, dim=-1)\n"))
+>
+>
+> def patched_generate():
+>     """The pinned generate's own source with PATCH applied, compiled in model.py's
+>     namespace."""
+>     src = textwrap.dedent(inspect.getsource(M.AnuLM.generate))
+>     for old, new in PATCH:
+>         assert src.count(old) == 1, f"patch does not apply: {old!r}"
+>         src = src.replace(old, new)
+>     ns = dict(vars(M), top_p_filter=top_p_filter)
+>     exec(src, ns)
+>     return ns["generate"]
+> ```
 
 The test calls the filter directly (only p = 0.7 and `top_p=None` go through
 the patched `generate`). On probabilities 0.5, 0.3, 0.15, 0.05 the kept set for

@@ -68,18 +68,21 @@ python -m anulm train --preset 350m --device cuda --moe-impl grouped --data data
 
 - **Preset.** `--preset 350m` picks `AnuLMConfig.nano_350m`, one of the
   configurations in `anulm/model.py` (Chapter 20).
-- **Parse `KEY=VALUE`.** `partition("=")` splits at the first `=`; `_` is the
-  `=` itself, so the check rejects both an unknown field and a missing `=`.
-  `p.error` prints the usage line and the message and exits with status 2, as
-  argparse does for any bad flag; an `assert` would vanish under `python -O`.
-- **Cast by the declared type.** `anulm/model.py` starts with
-  `from __future__ import annotations` (line 23), so each dataclass field's
-  type is a string such as `"int"` or `"Optional[int]"`. Stripping
-  `Optional[` and `]` leaves the name to look up. A boolean is true for `1`,
-  `true` or `yes`, anything else false; `none` gives `None`.
+- **Parse and cast.** Each `--cfg KEY=VALUE` must name a field of
+  `AnuLMConfig`; its value is cast to the field's declared type.
 - **Merge.** Flags the script knows become keyword arguments; the vocabulary
   size and tokenizer come from the data (Chapter 21). `kw.update(overrides)`
   runs last, so `--cfg` wins.
+
+> **Details.** Parsing and casting. `partition("=")` splits at the first `=`;
+> `_` is the `=` itself, so the check rejects both an unknown field and a
+> missing `=`. `p.error` prints the usage line and the message and exits with
+> status 2, as argparse does for any bad flag; an `assert` would vanish under
+> `python -O`. `anulm/model.py` starts with `from __future__ import annotations`
+> (line 23), so each dataclass field's type is a string such as `"int"` or
+> `"Optional[int]"`. Stripping `Optional[` and `]` leaves the name to look up. A
+> boolean is true for `1`, `true` or `yes`, anything else false; `none` gives
+> `None`.
 
 The ablations in `docs/RESULTS.md` change the model this way. The book example
 runs `main()` with the released arguments and `--steps 0`: everything is
@@ -315,30 +318,19 @@ validation curve.
 
 ## 22.7  Evaluate, save, and bits per byte
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 891–908 · @fdbb09a
+Every `--eval-every` steps, and at the last step of an invocation, the loop
+evaluates, saves, and prints one line. The save block, `main` lines 891–905, is
+quoted and taken apart in 25.1; the line it prints is:
+
+> **In the repo** · `anulm/training/train.py` · `main` · lines 906–908 · @fdbb09a
 
 ```python
-        if (step + 1) % args.eval_every == 0 or step == end - 1:
-            val, val_sem = evaluate(raw_model, val_data, args)
-            flag = ""
-            if val < best_val:
-                best_val = val
-                atomic_save({"model": raw_model.state_dict(), "cfg": cfg,
-                             "step": step, "val_loss": val, "val_sem": val_sem,
-                             "eval_spec": eval_spec}, args.out)
-                flag = "  <- saved"
-            # Always write the resume point, best or not: it exists to recover
-            # from a kill, and the newest step is what we want to continue from.
-            atomic_save({"model": raw_model.state_dict(), "opt": opt.state_dict(),
-                         "cfg": cfg, "step": step, "val_loss": val, "val_sem": val_sem,
-                         "eval_spec": eval_spec, "best_val": best_val,
-                         "sampler": sampler.state()}, last_path)
             bpb = val / math.log(2) / args.bytes_per_token
             print(f"  eval @ {step:5d} | val loss {val:6.4f} +/- {val_sem:.4f} | "
                   f"bits/byte {bpb:5.3f}{flag}")
 ```
 
-Every `--eval-every` steps, and at the last step of an invocation:
+In order:
 
 - **Evaluate.** `evaluate` returns the held-out loss and its standard error
   (Chapter 24).
@@ -385,38 +377,40 @@ October, it was resumed from the step-1,589,999 checkpoint with `--steps
 1900000` and the fraction that puts the decay start at the resume point:
 1,900,000 × (1 − 0.1631579) = 1,590,000. Every step before that is flat at 6e-4
 under both settings, so one `lr_at` call reproduces the whole log.
-`ch22_read_run_log.py` reads every line the run printed, keeping the last line
-for each step (a resumed run repeats the steps it lost):
 
-```python
-    for line in LOG.read_text(encoding="utf-8", errors="replace").splitlines():
-        if m := STEP.match(line):
-            s = int(m[1])
-            train[s] = dict(loss=float(m[2]), aux=float(m[3]), lr=float(m[4]), imb=float(m[5]),
-                            imb_median=float(m[6]), tok_s=int(m[7]), ms=int(m[8]), epoch=float(m[9]))
-        elif m := EVAL.match(line):
-            evals[int(m[1])] = dict(val=float(m[2]), sem=float(m[3]), bpb=float(m[4]))
-        elif line.startswith("resuming from"):
-            resumes += 1
-        elif line.startswith("memory-mapped corpus"):
-            invocations += 1
-        elif line.startswith("sampler:"):
-            planned.append(line.split("; ")[1])
-```
+`ch22_read_run_log.py` reads every line the run printed, checks every logged
+rate against `lr_at` with the final arguments, and summarises the run:
 
-It then checks every logged rate against `lr_at` with the final arguments, and
-summarises the flat phase:
-
-```python
-    a = SimpleNamespace(lr=6e-4, min_lr=6e-5, warmup=2000, steps=1_900_000, schedule="wsd", decay_frac=0.1631579)
-    worst = max(abs(T.lr_at(s, a) - train[s]["lr"]) / T.lr_at(s, a) for s in steps)
-    # ...
-    flat = [s for s in ev if s < 1_590_000]
-    best = min(flat, key=lambda s: evals[s]["val"])
-    late = [evals[s]["val"] for s in flat if s >= 1_000_000]
-    last20 = [evals[s]["val"] for s in flat[-20:]]
-    m, sd = statistics.mean(late), statistics.stdev(late)
-```
+> **Details.** The parser keeps the last line for each step (a resumed run
+> repeats the steps it lost), then compares the rates and summarises the flat
+> phase:
+>
+> ```python
+>     for line in LOG.read_text(encoding="utf-8", errors="replace").splitlines():
+>         if m := STEP.match(line):
+>             s = int(m[1])
+>             train[s] = dict(loss=float(m[2]), aux=float(m[3]), lr=float(m[4]), imb=float(m[5]),
+>                             imb_median=float(m[6]), tok_s=int(m[7]), ms=int(m[8]), epoch=float(m[9]))
+>         elif m := EVAL.match(line):
+>             evals[int(m[1])] = dict(val=float(m[2]), sem=float(m[3]), bpb=float(m[4]))
+>         elif line.startswith("resuming from"):
+>             resumes += 1
+>         elif line.startswith("memory-mapped corpus"):
+>             invocations += 1
+>         elif line.startswith("sampler:"):
+>             planned.append(line.split("; ")[1])
+> ```
+>
+> ```python
+>     a = SimpleNamespace(lr=6e-4, min_lr=6e-5, warmup=2000, steps=1_900_000, schedule="wsd", decay_frac=0.1631579)
+>     worst = max(abs(T.lr_at(s, a) - train[s]["lr"]) / T.lr_at(s, a) for s in steps)
+>     # ...
+>     flat = [s for s in ev if s < 1_590_000]
+>     best = min(flat, key=lambda s: evals[s]["val"])
+>     late = [evals[s]["val"] for s in flat if s >= 1_000_000]
+>     last20 = [evals[s]["val"] for s in flat[-20:]]
+>     m, sd = statistics.mean(late), statistics.stdev(late)
+> ```
 
 ```text
 1901 training lines (steps 0 to 1,899,999), 190 evaluations, 16 resumes, 17 invocations

@@ -12,24 +12,26 @@ need it. This chapter is about shapes: reading `(B, S, D)`; what `nn.Linear`,
 `view`, `split`, `transpose` and broadcasting do; and what a matrix multiply
 costs. `book/code-examples/ch04_shapes.py` (**Book example, not repository
 code**) replays `GQAttention.forward` by hand on `tiny()`, checking each step
-against the module. Its driver:
+against the module.
 
-```python
-    torch.manual_seed(0)
-    model = M.AnuLM(tiny()).eval()
-    attn = model.layers[0].attn
-    x = torch.randn(2, 5, 32)                            # (B, S, D)
-    with torch.no_grad():
-        qkv = linear_is_x_wT(attn, x)
-        q, k, v = heads_by_hand(attn, x, qkv)
-        kk, vv = k.repeat_interleave(attn.n_rep, dim=1), v.repeat_interleave(attn.n_rep, dim=1)
-        y = M._sdpa(q, kk, vv, None, 5, attn.scale, 0.0)          # attention's output, (B, H, S, Dh)
-        print(f"_sdpa output {tuple(y.shape)} strides {y.stride()} contiguous: {y.is_contiguous()}")
-        y2 = M._sdpa(q.contiguous(), kk, vv, None, 5, attn.scale, 0.0)          # the same, from a contiguous q
-        print(f"_sdpa output from a contiguous q: strides {y2.stride()} contiguous: {y2.is_contiguous()}")
-        view_needs_contiguous(y.contiguous())          # a copy laid out as (B, H, S, Dh)
-        # ...
-```
+> **Details.** The example's driver:
+>
+> ```python
+>     torch.manual_seed(0)
+>     model = M.AnuLM(tiny()).eval()
+>     attn = model.layers[0].attn
+>     x = torch.randn(2, 5, 32)                            # (B, S, D)
+>     with torch.no_grad():
+>         qkv = linear_is_x_wT(attn, x)
+>         q, k, v = heads_by_hand(attn, x, qkv)
+>         kk, vv = k.repeat_interleave(attn.n_rep, dim=1), v.repeat_interleave(attn.n_rep, dim=1)
+>         y = M._sdpa(q, kk, vv, None, 5, attn.scale, 0.0)          # attention's output, (B, H, S, Dh)
+>         print(f"_sdpa output {tuple(y.shape)} strides {y.stride()} contiguous: {y.is_contiguous()}")
+>         y2 = M._sdpa(q.contiguous(), kk, vv, None, 5, attn.scale, 0.0)          # the same, from a contiguous q
+>         print(f"_sdpa output from a contiguous q: strides {y2.stride()} contiguous: {y2.is_contiguous()}")
+>         view_needs_contiguous(y.contiguous())          # a copy laid out as (B, H, S, Dh)
+>         # ...
+> ```
 
 **New words for Part II.**
 
@@ -175,23 +177,14 @@ After attention, the heads are laid side by side again:
 > **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 483–494 · @fdbb09a
 
 ```python
-        if NATIVE_GQA and self.n_rep > 1:
-            # SDPA broadcasts the Hkv heads itself: no (B, H, T, Dh) copies.
-            y = F.scaled_dot_product_attention(
-                q, k, v, attn_mask=mask, is_causal=(mask is None and S > 1),
-                scale=self.scale, dropout_p=drop, enable_gqa=True)
-        else:
-            # Broadcast each KV head across its query group explicitly.
-            k = k.repeat_interleave(self.n_rep, dim=1)    # (B, H, T, Dh)
-            v = v.repeat_interleave(self.n_rep, dim=1)
+        # ...
             y = _sdpa(q, k, v, mask, S, self.scale, drop)                    # (B, H, S, Dh)
         y = y.transpose(1, 2).contiguous().view(B, S, -1)
         return self.dense(y)
 ```
 
-`NATIVE_GQA` is `False` by default (line 387), so the `else` branch runs
-(Chapter 13). Either way `y` is (B, H, S, D<sub>h</sub>).
-`transpose(1, 2)` makes `y` (B, S, H, D<sub>h</sub>), and `view(B, S, -1)`
+(The elided branch shares key heads between query heads; 13.4 quotes it.)
+`y` is (B, H, S, D<sub>h</sub>). `transpose(1, 2)` makes `y` (B, S, H, D<sub>h</sub>), and `view(B, S, -1)`
 merges the last two axes into H·D<sub>h</sub> = 32 (`-1`: whatever is left).
 `view` can only merge axes that are adjacent in memory. After a transpose of a (B, H, S,
 D<sub>h</sub>) layout they are not, so `contiguous()` first copies the data
@@ -212,50 +205,47 @@ def view_needs_contiguous(y: torch.Tensor) -> None:
 ```
 
 ```text
-_sdpa output (2, 4, 5, 8) strides (160, 8, 32, 1) contiguous: False
-_sdpa output from a contiguous q: strides (160, 40, 8, 1) contiguous: True
 view after transpose: RuntimeError (view size is not compatible with input tensor's size and stride (at least one dimension spans across two contiguous subspaces))
 contiguous().view -> (2, 5, 32); head 1 sits in columns 8..15
 ```
 
 *verified*: printed by `ch04_shapes.py`, on a contiguous copy of the
-attention output. The first two lines show why the copy is sometimes free: on
-this CPU with torch 2.11, the kernel's output follows the layout of `q`. Here
-`q` is a transposed view of `qkv`, so the output came back stored as
-(B, S, H, D<sub>h</sub>) and a plain `view` would have worked; from a
-contiguous `q` it is stored as (B, H, S, D<sub>h</sub>) and the copy is needed.
-`contiguous()` returns the tensor itself when it is already in order and
-copies otherwise, so line 493 is correct for either layout.
+attention output. `contiguous()` returns the tensor itself when it is already
+in order and copies otherwise, so line 493 is correct for either layout.
+
+> **Details.** The copy is sometimes free. The same run prints the attention
+> output's strides first:
+>
+> ```text
+> _sdpa output (2, 4, 5, 8) strides (160, 8, 32, 1) contiguous: False
+> _sdpa output from a contiguous q: strides (160, 40, 8, 1) contiguous: True
+> ```
+>
+> On this CPU with torch 2.11, the kernel's output follows the layout of `q`.
+> Here `q` is a transposed view of `qkv`, so the output came back stored as
+> (B, S, H, D<sub>h</sub>) and a plain `view` would have worked; from a
+> contiguous `q` it is stored as (B, H, S, D<sub>h</sub>) and the copy is
+> needed.
 
 `IMPLEMENTATION-DEPENDENT` (the kernel's output layout) · `IN THE REPO`
 
 ## 4.5  Broadcasting
 
 Rotary position embeddings (Chapter 14) multiply every head of every sequence
-by the same per-position table:
+by the same per-position table (Chapter 14, 14.6, quotes the whole function):
 
-> **In the repo** · `anulm/model.py` · `apply_rope` · lines 346–362 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `apply_rope` · lines 353–362 · @fdbb09a
 
 ```python
-def rotate_half(x):
-    x1, x2 = x[..., : x.shape[-1] // 2], x[..., x.shape[-1] // 2:]
-    return torch.cat((-x2, x1), dim=-1)
-
-
 def apply_rope(q, k, cos, sin):
-    """q, k: (B, H, S, Dr). cos/sin: (S, Dr) -> broadcast over batch and heads.
-
-    Split-halves (GPT-NeoX) convention. Sarvam's 105B checkpoint stores its rope
-    dims interleaved and permutes before rotating; we train from scratch, so we
-    pick one convention and stay in it.
-    """
+    # ...
     cos = cos[None, None, :, :]
     sin = sin[None, None, :, :]
     return (q * cos) + (rotate_half(q) * sin), (k * cos) + (rotate_half(k) * sin)
 ```
 
-`rotate_half` slices the last axis with `...`, which stands for every axis
-before it, so it works on any number of leading axes. Indexing with `None`
+Its helper `rotate_half` slices the last axis with `...`, which stands for
+every axis before it, so it works on any number of leading axes. Indexing with `None`
 inserts a size-1 axis: (S, D<sub>h</sub>) becomes (1, 1, S, D<sub>h</sub>).
 Broadcasting aligns shapes from the right and stretches every size-1 axis to
 match, without copying, so each of the B·H heads is multiplied by the same
@@ -302,22 +292,9 @@ RMSNorm: mean(-1, keepdim=True) (2, 5, 1); x * rsqrt(...) (2, 5, 32)
 ## 4.6  The batched matrix multiply, and what it costs
 
 First, the cache grows the key axis. With a KV cache (Chapter 27), new keys
-are joined to the stored ones along dimension 2:
-
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 470–477 · @fdbb09a
-
-```python
-        if cache is not None:
-            # Cache the Hkv heads, not their H broadcast copies -- that ratio
-            # (16:1 in the real 30B) is GQA's entire inference saving.
-            if "k" in cache:
-                k = torch.cat([cache["k"], k], dim=2)
-                v = torch.cat([cache["v"], v], dim=2)
-            cache["k"], cache["v"] = k, v
-        T = k.shape[2]
-```
-
-`torch.cat` needs every axis but the joined one to match: (B, H<sub>kv</sub>,
+are joined to the stored ones along dimension 2, `torch.cat([cache["k"], k],
+dim=2)` (`GQAttention.forward` lines 470–477, quoted in 2.5), and then
+`T = k.shape[2]`. `torch.cat` needs every axis but the joined one to match: (B, H<sub>kv</sub>,
 T<sub>old</sub>, D<sub>h</sub>) and (B, H<sub>kv</sub>, S, D<sub>h</sub>) give
 (B, H<sub>kv</sub>, T<sub>old</sub> + S, D<sub>h</sub>). That is why T, the
 key length, can differ from S, the query length. Then every query meets every
@@ -427,7 +404,7 @@ This chapter cites no research references.
 Repository evidence, all at @fdbb09a:
 - `anulm/model.py`: `RMSNorm.forward` 234–239; `rotate_half` 346–350;
   `apply_rope` 353–362; `_sdpa` 414–418; `GQAttention.__init__` 437–441;
-  `NATIVE_GQA` 387; `GQAttention.forward` 457–463, 470–477 and 483–494.
+  `GQAttention.forward` 457–463, 470–477 and 483–494.
 - `tests/test_model.py`: `tiny` 44–49.
 
 The book example is `code-examples/ch04_shapes.py`.

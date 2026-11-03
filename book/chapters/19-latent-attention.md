@@ -60,9 +60,11 @@ force every prefix key to be recomputed [R19].
 
 **This repository does not absorb.** It expands every step, so here the split
 buys no cache saving over rotating after expansion; it even caches
-D<sub>r</sub> extra numbers per token. The code comment at lines 550–551 says
-the position-free latent "is exactly what lets the latent be cached"; the
-latent could be cached either way.
+D<sub>r</sub> extra numbers per token.
+
+> **Details.** The code comment at lines 550–551 says the position-free latent
+> "is exactly what lets the latent be cached"; as above, the latent could be
+> cached either way. What the separate slice protects is absorption.
 
 `IN THE REPO`
 
@@ -382,35 +384,36 @@ measured here*.
   sequence. The example runs the repository's module and a mutant that also
   rotates c, at positions 0–7 and 100–107:
 
-```python
-    with torch.no_grad():
-        y0 = a(x, *rot(8, x.device, x.dtype))                   # positions 0-7
-        y1 = a(x, *rot(8, x.device, x.dtype, start=100))        # the same tokens at 100-107
-```
-
-The mutant, written out in full, rotates c with tables as wide as the latent:
-
-```python
-    def forward(start):
-        cos, sin = rot(S, x.device, x.dtype, start=start)
-        cc, sc = rot_c(S, x.device, x.dtype, start=start)
-        q = a.q_layernorm(a.q_proj(x).view(1, S, H, a.q_head_dim).transpose(1, 2))
-        q_nope, q_pe = q.split([a.qk_nope, a.qk_rope], dim=-1)
-        c, k_pe = a.kv_a_proj_with_mqa(x).split([a.kv_lora_rank, a.qk_rope], dim=-1)
-        q_pe, k_pe = M.apply_rope(q_pe, k_pe.view(1, S, 1, a.qk_rope).transpose(1, 2), cos, sin)
-        c = a.kv_a_layernorm(c)
-        c, _ = M.apply_rope(c[:, None], c[:, None], cc, sc)               # the mutation: rotate the latent
-        kv = a.kv_b_proj(c[:, 0]).view(1, S, H, a.qk_nope + a.v_head_dim).transpose(1, 2)
-        k_nope, v = kv.split([a.qk_nope, a.v_head_dim], dim=-1)
-        k = torch.cat([k_nope, k_pe.expand(-1, H, -1, -1)], dim=-1)
-        y = F.scaled_dot_product_attention(torch.cat([q_nope, q_pe], -1), k, v, is_causal=True, scale=a.scale)
-        return a.o_proj(y.transpose(1, 2).reshape(1, S, -1))
-```
-
 ```
 same tokens at positions 0-7 and 100-107: outputs differ by 1.8e-07 (only relative positions matter)
 mutant with a rotated latent: positions 0-7 vs 100-107 differ by 1.202 (output scale 1.091)
 ```
+
+> **Details.** The harness. The module runs twice on the same tokens; the
+> mutant, written out in full, rotates c with tables as wide as the latent.
+>
+> ```python
+>     with torch.no_grad():
+>         y0 = a(x, *rot(8, x.device, x.dtype))                   # positions 0-7
+>         y1 = a(x, *rot(8, x.device, x.dtype, start=100))        # the same tokens at 100-107
+> ```
+>
+> ```python
+>     def forward(start):
+>         cos, sin = rot(S, x.device, x.dtype, start=start)
+>         cc, sc = rot_c(S, x.device, x.dtype, start=start)
+>         q = a.q_layernorm(a.q_proj(x).view(1, S, H, a.q_head_dim).transpose(1, 2))
+>         q_nope, q_pe = q.split([a.qk_nope, a.qk_rope], dim=-1)
+>         c, k_pe = a.kv_a_proj_with_mqa(x).split([a.kv_lora_rank, a.qk_rope], dim=-1)
+>         q_pe, k_pe = M.apply_rope(q_pe, k_pe.view(1, S, 1, a.qk_rope).transpose(1, 2), cos, sin)
+>         c = a.kv_a_layernorm(c)
+>         c, _ = M.apply_rope(c[:, None], c[:, None], cc, sc)               # the mutation: rotate the latent
+>         kv = a.kv_b_proj(c[:, 0]).view(1, S, H, a.qk_nope + a.v_head_dim).transpose(1, 2)
+>         k_nope, v = kv.split([a.qk_nope, a.v_head_dim], dim=-1)
+>         k = torch.cat([k_nope, k_pe.expand(-1, H, -1, -1)], dim=-1)
+>         y = F.scaled_dot_product_attention(torch.cat([q_nope, q_pe], -1), k, v, is_causal=True, scale=a.scale)
+>         return a.o_proj(y.transpose(1, 2).reshape(1, S, -1))
+> ```
 
 - **Sizing the rotary tables to `head_dim`.** For MLA they must be D<sub>r</sub>
   wide (line 837). *Catch it:* the shapes fail loudly in `apply_rope`.

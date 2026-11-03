@@ -323,35 +323,12 @@ English encoder on Hindi intents.
 
 `MEASURED`
 
-> **Details.** Serving. `/v1/decide` (Chapter 38) calls `Decide.__call__` and
-> turns a `ValueError` (too many options for the context, or the case below)
-> into a 400. With the one joint Omni model loaded (Chapter 37), the call goes
-> instead to `omni.Intent`, which has the same signature but no trained head:
-> it scores each label by the model's own mean log-probability of writing it
-> after an intent prompt, softmaxed over the labels (sharpened ×10, line 158;
-> no fitted temperature, so the calibration numbers above are not its own).
-> It therefore refuses options it never learned to write:
->
-> > **In the repo** · `anulm/multimodal/omni.py` · `Intent.choices` · lines 124–139 · @fdbb09a
->
-> ```python
->     def choices(self, options: list[str] | None) -> list[str]:
->         # ...
->         if options is None:
->             return self.labels
->         known = set(self.labels)
->         unknown = [o for o in options if o not in known]
->         if unknown:
->             raise ValueError("custom options are not supported by the joint model: it scores only "
->                              f"its trained labels, and {unknown[:3]} are not among them. Pass a subset "
->                              "of the trained labels, or none for all of them.")
->         return list(dict.fromkeys(options))
-> ```
->
-> No options means every trained label; a subset is scored with the softmax
-> renormalised over it, duplicates dropped; one unknown label is a 400.
-> `Decide`, by contrast, accepts any option list, zero-shot. Not measured
-> here: how accurate the joint model's subset scores are.
+> **Details.** Serving. `/v1/decide` calls `Decide.__call__` and turns a
+> `ValueError` into a 400. With the one joint Omni model loaded (Chapter 37),
+> the call goes instead to `omni.Intent`, which has no trained head and no
+> fitted temperature, so the calibration numbers above are not its own;
+> Chapter 38, 38.7, shows how it scores labels and why it refuses options it
+> was never trained on.
 
 ## 32.7  The proof, and common mistakes
 
@@ -442,7 +419,6 @@ Repository evidence, all at @fdbb09a:
   `make_examples` 309, `fit_temperature` 368–374, `metrics` 377–397, `train`
   545–616 (loss 596, temperature 611), `Decide.__call__` 691–704.
 - `anulm/bidirectional.py`: `bidir_hidden` 40–53, `adapt` 56–105.
-- `anulm/multimodal/omni.py`: `Intent.choices` 124–139, `Intent.__call__` 141–164.
 - `tests/test_quality_loading.py`: `test_decide_prompt_too_long` 241.
 - `anulm/model.py`: `GQAttention.forward` 479–481.
 - `tests/test_model.py`: `decide_scores_each_option_at_its_last_token_and_calibrates` 1702.

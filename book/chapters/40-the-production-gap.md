@@ -206,11 +206,9 @@ is one published 4-bit format [R33]. LLM.int8() multiplies in int8 with a
 separate normalisation constant for each inner product [R59], close to the
 per-row int8 line (the paper also splits off outlier features, which that line
 does not model). GPTQ quantises weights after training to 3 or 4 bits, using
-approximate second-order information [R60]. The quality cost is *not measured here*,
-but Chapter 39 found a trap: the router biases share a large offset, so plain
-bf16 rounding erases their differences, changing about half the expert
-choices for 0.003 nats; centring them first made it free. The only quantised
-component here is borrowed:
+approximate second-order information [R60]. The quality cost is *not measured
+here*, apart from one trap: plain bf16 rounding of the router biases, which
+Chapter 39 (39.2) measures. The only quantised component here is borrowed:
 
 > **In the repo** · `anulm/multimodal/audio_codec.py` · `WhisperEncoder.__init__` · lines 227–231 · @fdbb09a
 
@@ -349,69 +347,25 @@ both are absent too.
 
 ## 40.7  Monitoring, safety and prompt injection
 
-`anulm/inference/api.py` has one access control, a shared key:
+The repository guards the door of one trusted server in three ways, each read
+in full in Chapter 38, 38.7:
 
-> **In the repo** · `anulm/inference/api.py` · `check_key` · lines 173–180 · @fdbb09a
+- **One shared key.** `check_key` (`anulm/inference/api.py` lines 173–180)
+  compares the `Authorization` header with `ANULM_API_KEY` in constant time.
+  With the variable unset there is no check at all; started on an address
+  other machines can reach with no key set, `main` prints a warning
+  (`exposure_warning`, lines 183–188) and serves anyway.
+- **Caps on every upload** (lines 195–200), so one request cannot fill memory
+  or hold the device for minutes: oversized audio or images are refused with
+  413, the `/v1/decide` limits answer 422, and `anulm/inference/serve.py`
+  caps a request body at 1 MB (`MAX_BODY_BYTES`, line 47).
+- **Error ids.** An unexpected exception's traceback goes to the server's log
+  under a random 12-character id; the client gets a 500 that carries only that
+  id (`log_error`, `_any_error`, lines 305–323).
 
-```python
-def check_key(authorization: Optional[str] = Header(default=None)):
-    key = os.environ.get("ANULM_API_KEY")
-    # compare_digest takes the same time wherever the strings first differ, so
-    # response timing cannot be used to guess the key one character at a time.
-    if key and not hmac.compare_digest((authorization or "").encode("utf-8"),
-                                       f"Bearer {key}".encode("utf-8")):
-        raise APIError(401, "Missing or wrong API key: send 'Authorization: Bearer <ANULM_API_KEY>'.",
-                       "authentication_error", code="invalid_api_key")
-```
-
-With `ANULM_API_KEY` unset there is no check at all. Set, every caller sends
-the same key; `hmac.compare_digest` compares in time that does not depend on
-where the strings first differ. Started on an address other machines can reach
-with no key set, `main` prints a warning (`exposure_warning`, lines 183–188)
-and serves anyway: a trusted LAN is a fair use.
-
-Two more gaps are closed at this pin. Every upload has a cap, so one request
-cannot fill memory or hold the device for minutes:
-
-> **In the repo** · `anulm/inference/api.py` · limits · lines 195–200 · @fdbb09a
-
-```python
-MAX_AUDIO_BYTES = 25 * 1024 * 1024
-MAX_AUDIO_SECONDS = 60
-MAX_IMAGE_BYTES = 10 * 1024 * 1024
-MAX_DECIDE_INPUTS = 64               # messages per /v1/decide request
-MAX_DECIDE_OPTIONS = 256             # BANKING77 has 77; the context limits the rest anyway
-MAX_TEXT_CHARS = 8000                # one decide message or option: far past the 1,024-token context
-```
-
-Oversized audio or images are refused with 413; the `/v1/decide` limits sit
-in the request model, so its validation answers 422. `anulm/inference/serve.py`
-caps a request body at 1 MB (`MAX_BODY_BYTES`, line 47). And an unexpected
-exception no longer reaches the client as text:
-
-> **In the repo** · `anulm/inference/api.py` · `log_error`, `_any_error` · lines 305–323 · @fdbb09a
-
-```python
-def log_error(where: str, e: BaseException) -> str:
-    # ...
-    eid = uuid.uuid4().hex[:12]
-    print(f"error {eid} in {where}:\n{''.join(traceback.format_exception(type(e), e, e.__traceback__))}",
-          flush=True)
-    return eid
-# ...
-@app.exception_handler(Exception)
-async def _any_error(request: Request, e: Exception):
-    eid = log_error(f"{request.method} {request.url.path}", e)
-    return JSONResponse(status_code=500, content={"error": {
-        "message": internal_error_message(eid), "type": "server_error", "param": None, "code": eid}})
-```
-
-The traceback goes to the server's log under a random 12-character id; the
-client gets a 500 that carries only that id, so file paths and checkpoint
-names stay on the server, and an operator can still find the failure. The
-Gradio app shares one decoder between chat, decisions, hearing and reading;
-`app_omni.Models` now takes one re-entrant lock around loading and every call
-on it (`anulm/apps/app_omni.py` line 181), so two visitors no longer
+The Gradio app shares one decoder between chat, decisions, hearing and
+reading; `app_omni.Models` takes one re-entrant lock around loading and every
+call on it (`anulm/apps/app_omni.py` line 181), so two visitors cannot
 interleave on one module or load the model twice.
 
 What is still missing:
@@ -452,11 +406,9 @@ effect on this model is *not measured here*.
    when rounding the expert matrices changes almost none?
 3. With α = 0.8, how many tokens per target call does γ = 2 give?
 
-**Answers.** 1. 64 × 512 × 20,480 = 671,088,640 bytes, 640 MiB. 2. The biases
-sit near a common value of hundreds and differ by under 0.3, below bfloat16's
-spacing at that size, so rounding makes them equal; the choice is discrete, so
-every token whose choice depended on them changes expert. A matrix's rounding
-only perturbs the scores slightly. 3. 2.44.
+**Answers.** 1. 64 × 512 × 20,480 = 671,088,640 bytes, 640 MiB. 2. Rounding
+makes a layer's biases equal and the choice is discrete (Chapter 39, 39.2); a
+matrix's rounding only perturbs the scores slightly. 3. 2.44.
 
 *verified*: printed by `ch40_gap_arithmetic.py`.
 

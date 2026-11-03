@@ -15,11 +15,10 @@ must not look. This chapter reads the trainer and the release recipe, then the
 first full run, from October 2026, whose score improved at every evaluation
 while the skill it was meant to keep got worse.
 
-Every excerpt is quoted at @fdbb09a. The October run used an earlier version
-of the trainer, at commit `773b6a8`, with one batch per optimiser step; the
-book example loads that version to check the run's log. Where the two differ,
-the text says so. A new run with the current recipe is training now. Its
-results are not in this chapter: they are pending.
+The October run used an earlier version of the trainer, with one batch per
+optimiser step; where it differs from the code quoted here, the text says so.
+A new run with the current recipe is training now. Its results are not in
+this chapter: they are pending.
 
 Prerequisites: Chapters 30 (instruction tuning), 35 and 36.
 
@@ -73,8 +72,7 @@ The book example checks that this path is the plain id path in disguise:
    loss through embeds= 4.138337, through ids 4.138337
 ```
 
-*verified*: `ch37_task_mix.py` on `tiny()`, with `text_batches` as of
-`773b6a8`; lines 104–111 and 161–174 are identical at @fdbb09a.
+*verified*: `ch37_task_mix.py` on `tiny()`.
 
 `IN THE REPO`
 
@@ -102,14 +100,15 @@ A task is one command-line string, `name=kind:path[:weight[:batch]]`:
 ```
 
 The kind is `text`, `asr` or `image` (line 64). A missing batch size falls back
-to `DEFAULT_BATCH`, 8 for text and images and 4 for speech (line 65). The
-drive-letter repair matters on Windows, where `C:\data` would otherwise split
-into a path `C` and a weight `\data`:
+to `DEFAULT_BATCH`, 8 for text and images and 4 for speech (line 65).
 
-```
-   asr_hi=asr:C:\data\hindi:0.32            -> name asr_hi, kind asr, path C:\data\hindi, weight 0.32, batch 4
-   vqa=image:data/vqa.jsonl                 -> name vqa, kind image, path data/vqa.jsonl, weight None, batch 8
-```
+> **Details.** The drive-letter repair matters on Windows, where `C:\data`
+> would otherwise split into a path `C` and a weight `\data`:
+>
+> ```
+>    asr_hi=asr:C:\data\hindi:0.32            -> name asr_hi, kind asr, path C:\data\hindi, weight 0.32, batch 4
+>    vqa=image:data/vqa.jsonl                 -> name vqa, kind image, path data/vqa.jsonl, weight None, batch 8
+> ```
 
 `Omni.__init__` then loads each task and splits off its held-out set:
 
@@ -191,10 +190,9 @@ def disjoint_held(training, held, kind, name):
     return kept
 ```
 
-Its docstring gives the case that prompted it: the release data's chat train
-and held-out files share some prompts, and a held-out score over prompts seen
-in training is optimistic. The function drops such rows and prints a count
-rather than refusing to train.
+The case that prompted it is the release chat files' leaked held-out prompts
+(Chapter 30, 30.5); the function drops such rows and prints a count rather
+than refusing to train.
 
 > **Details.** The October run's code split by rows, `rows[:cut]` with
 > `cut = max(1, int(len(rows) * 0.02))`, and did not compare a `--held` file
@@ -217,7 +215,7 @@ draws:
 | vqa | image | 0.12 | 0.12 | 8 |
 
 *verified*: "now" from `experiments/omni_one.py` at @fdbb09a; "October run"
-printed by `ch37_task_mix.py` from the file at `773b6a8`. The October weights
+printed by `ch37_task_mix.py` from the recipe that run used. The October weights
 sum to 1.00. Today's sum to 1.18, so chat gets 0.25 / 1.18 = 21.2% of the
 draws and asr_hi 27.1% (arithmetic).
 
@@ -293,52 +291,54 @@ The optimiser has the backbone in one group and each projector in another,
 at `--lr` (default 5e-5) and `--proj-lr` (1e-3) (lines 372–376, 494–495), as
 in Chapter 36.
 
-Two seeds make a run repeatable, and the resume path checks that it is still
-the same run:
+Two seeds make a run repeatable: one for the fresh projectors' weights, one
+for the task draw. A resumed run records and checks its recipe, so resuming
+under a different accumulation, learning rate, schedule, projector scale or
+task mix stops with the names of the settings that changed.
 
+> **Details.** Seeding, and the resume check:
+>
 > **In the repo** · `anulm/multimodal/omni_train.py` · `train` · lines 365–404 · @fdbb09a
-
-```python
-    # Fresh projectors (vision always, audio without --audio-proj-from) are
-    # initialised from torch's global generator: seed it so a rerun, or an A/B
-    # probe against it, starts from the same weights.
-    torch.manual_seed(args.seed)
-    om = Omni(args)
-    recipe = recipe_of(args, om.tasks)
-    # ...
-    if args.resume and last.exists():
-        from anulm.model import safe_load
-        st = safe_load(last, map_location=dev)       # weights-only: a resume file runs no code
-        if "recipe" not in st:
-            print(f"warning: {last} predates recorded recipes; cannot check it matches this run", flush=True)
-        elif st["recipe"] != recipe:
-            changed = sorted(k for k in recipe if st["recipe"].get(k) != recipe[k])
-            raise SystemExit(f"{last} was written with a different recipe ({', '.join(changed)}): "
-                             "resume with the original settings, or train to a new --out")
-```
-
-`torch.manual_seed` runs before `Omni` builds the projectors, so a fresh
-projector starts from the same weights in every run with the same `--seed`.
-The task draw has its own generator, `default_rng(args.seed + start)`. The
-resume file is read with `safe_load` (Chapter 25), weights only, so loading it
-cannot run code hidden in the file. `recipe` comes from `recipe_of`:
-
+>
+> ```python
+>     # Fresh projectors (vision always, audio without --audio-proj-from) are
+>     # initialised from torch's global generator: seed it so a rerun, or an A/B
+>     # probe against it, starts from the same weights.
+>     torch.manual_seed(args.seed)
+>     om = Omni(args)
+>     recipe = recipe_of(args, om.tasks)
+>     # ...
+>     if args.resume and last.exists():
+>         from anulm.model import safe_load
+>         st = safe_load(last, map_location=dev)       # weights-only: a resume file runs no code
+>         if "recipe" not in st:
+>             print(f"warning: {last} predates recorded recipes; cannot check it matches this run", flush=True)
+>         elif st["recipe"] != recipe:
+>             changed = sorted(k for k in recipe if st["recipe"].get(k) != recipe[k])
+>             raise SystemExit(f"{last} was written with a different recipe ({', '.join(changed)}): "
+>                              "resume with the original settings, or train to a new --out")
+> ```
+>
+> `torch.manual_seed` runs before `Omni` builds the projectors, so a fresh
+> projector starts from the same weights in every run with the same `--seed`.
+> The task draw has its own generator, `default_rng(args.seed + start)`. The
+> resume file is read with `safe_load` (Chapter 25), weights only, so loading it
+> cannot run code hidden in the file. `recipe` comes from `recipe_of`:
+>
 > **In the repo** · `anulm/multimodal/omni_train.py` · `recipe_of` · lines 353–359 · @fdbb09a
-
-```python
-def recipe_of(args, tasks) -> dict:
-    # ...
-    return {"accum": args.accum, "proj_scale": args.proj_scale, "lr": args.lr, "proj_lr": args.proj_lr,
-            "steps": args.steps, "warmup": args.warmup,
-            "tasks": [[t.name, float(t.weight), int(t.batch)] for t in tasks]}
-```
-
-It is stored in `<out>.last` at every evaluation (lines 474–476). A resume under a
-different accumulation, learning rate, schedule, projector scale or task mix
-stops with the names of the settings that changed; a `.last` written before
-recipes were recorded gets a warning. Otherwise the run reloads the model,
-both projectors, the optimiser and the step-0 losses, and continues at the
-next step with a new shuffle per task (lines 404–414).
+>
+> ```python
+> def recipe_of(args, tasks) -> dict:
+>     # ...
+>     return {"accum": args.accum, "proj_scale": args.proj_scale, "lr": args.lr, "proj_lr": args.proj_lr,
+>             "steps": args.steps, "warmup": args.warmup,
+>             "tasks": [[t.name, float(t.weight), int(t.batch)] for t in tasks]}
+> ```
+>
+> It is stored in `<out>.last` at every evaluation (lines 474–476); a `.last`
+> written before recipes were recorded gets a warning. Otherwise the run reloads the model,
+> both projectors, the optimiser and the step-0 losses, and continues at the
+> next step with a new shuffle per task (lines 404–414).
 
 > **Details.** `--stop-after N` (line 506) ends the run at step N while keeping
 > `--steps`' learning-rate schedule, and writes no resume file: a short probe
@@ -370,7 +370,7 @@ finite and positive (lines 417–418). Dividing by them puts every task on the
 same footing: a caption loss of 5.5 and a speech loss of 6.6 both start at
 1.0. Lower is better, and a checkpoint is saved whenever the mean improves.
 
-The October run used the recipe at `773b6a8`: 100,000 steps of one batch
+The October run's recipe: 100,000 steps of one batch
 each, `--lr` 5e-5, chat at 0.07, evaluated every 10,000 steps. The book
 example replays its seeded task draw, one draw per step as that code did:
 
@@ -401,7 +401,7 @@ that this run executed one batch per optimiser step. Chat got 7,017 of
 
 *Figure 37.1 · One training step of the October run.* One task is drawn, its
 batch built, and the one backbone stepped. *verified*: the shares are
-`experiments/omni_one.py`'s `TASKS` at `773b6a8`. The current code repeats
+the October recipe's `TASKS`. The current code repeats
 steps 1 to 3 `--accum` times before step 4.
 
 The October run's scores, recomputed from its log:
@@ -513,7 +513,7 @@ def gates(res) -> dict:
 A missing measurement fails its gate (`v is not None and ...`). Hindi speech
 is gated on the mean of three test sets, because each set alone pulled a
 different way (comment, lines 94–97). The rule and the thresholds are the same
-at `773b6a8` and @fdbb09a. Applied by the book example to the October run's
+for the October run. Applied by the book example to the October run's
 evaluation results:
 
 ```
@@ -688,8 +688,8 @@ the same task sequence from step 1, not continue it; the run would see the
 early order twice. 4. Eight, each drawn independently with probability w, so
 yes; their gradients are averaged into one update.
 
-*verified*: exercise 1 by `omni_train.Task` at `773b6a8` (the same lines
-69–82 at @fdbb09a); exercises 2 and 4 by arithmetic and the loop in 37.3.
+*verified*: exercise 1 by `omni_train.Task` (lines
+69–82); exercises 2 and 4 by arithmetic and the loop in 37.3.
 
 ---
 
@@ -736,6 +736,5 @@ Repository evidence, all at @fdbb09a:
   (outside the repository's history; numbers copied into
   `book/measurements/part_viii_ix_omni_log.json`). It ran `omni_train.py` and
   `experiments/omni_one.py` at commit `773b6a8`.
-- Book example: `book/code-examples/ch37_task_mix.py` (loads the `773b6a8`
-  code; not rerun for @fdbb09a, because `logs/omni_one/` now belongs to the
-  new run).
+- Book example: `book/code-examples/ch37_task_mix.py` (loads that code; not
+  rerun, because `logs/omni_one/` now belongs to the new run).

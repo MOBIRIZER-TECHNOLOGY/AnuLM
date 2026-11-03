@@ -380,16 +380,11 @@ only a stop string sets `matched_stop` (False from line 405). After EOS or
 still uses `decode_complete`, so a `max_tokens` cut inside a character drops
 the unfinished bytes instead of ending in `�`.
 
-**What went wrong.** Until November 2026 the flush ran only when
-`finish != "stop"`, and `on_token` sets `finish = "stop"` on EOS without a
-release, so a reply that ended on EOS with `stop` strings set lost its
-held-back tail, in the stream and in the returned text. The fix this book first
-suggested, calling `self._release(final=True)` on EOS, was incomplete:
-`_release` only returns the delta, so `on_token` would also have had to emit
-it. Keying the final release on the stop match rather than on `finish` fixes
-it in one place, after the loop, where the delta is emitted. The old release also stripped trailing `�` with `rstrip`,
-which deleted a genuine U+FFFD and was skipped in the final flush;
-`decode_complete` replaced it.
+**Why `matched_stop`, not `finish`.** `on_token` sets `finish = "stop"` on EOS
+without a release, so a final flush keyed on `finish` would lose the
+held-back tail of every reply that ended on EOS with `stop` strings set, in
+the stream and in the returned text. Keying it on the stop match does the
+flush in one place, after the loop, where the delta is also emitted.
 
 One more edge: OpenAI's `stop` may be an empty string, and `"".find("")` is 0,
 which would end every reply before its first character. The request's `stop`
@@ -428,9 +423,7 @@ fixed bytes:
    stops_of(''): []; stops_of(['', '###']): ['###']
 ```
 
-*verified*: `ch38_streaming.py`, against `anulm/inference/api.py` at @fdbb09a.
-The same run on the code at @773b6a8 streamed `'Hel'` and `'He'` for the two
-stop lists, and `['H', 'i', ' ', '�']` for the cut.
+*verified*: `ch38_streaming.py`, against `anulm/inference/api.py`.
 
 `IN THE REPO`
 
@@ -466,14 +459,14 @@ stop lists, and `['H', 'i', ' ', '�']` for the cut.
 
 Generation runs in its own thread and puts each released piece on a queue. The
 async generator `events` polls the queue every 5 ms and yields each piece as an
-SSE `data:` line. The cancellation path depends on the web stack. Reading
-Starlette 1.6.0's `StreamingResponse` (the version installed here, with uvicorn
-0.52.2) shows this: under ASGI HTTP spec versions below 2.4 it listens for the disconnect
-and cancels the stream, so `events` is cancelled at its `await`, `finally` sets
-`gen.cancelled`, and `on_token` returns True at the next token. Under spec 2.4
-or later it waits for a send to fail instead, so the stop comes at the next
-piece sent. The book example tests only the last step, setting `cancelled`
-itself; the HTTP path was not tested end to end.
+SSE `data:` line. When the client hangs up, `finally` sets `gen.cancelled`,
+and `on_token` returns True at the next token. How soon `finally` runs depends
+on the web stack. Starlette's `StreamingResponse` (1.6.0, installed here with
+uvicorn 0.52.2, read, not run) either listens for the disconnect and cancels
+`events` at its `await`, or, depending on the protocol version the server
+reports, waits for a send to fail, so the stop comes at the next piece sent.
+The book example tests only the last step, setting `cancelled` itself; the
+HTTP path was not tested end to end.
 
 ```
 3. generate(max_new_tokens=50) with on_token returning True on the 5th token: 5 new tokens
@@ -604,16 +597,17 @@ message (line 483, in 38.6's excerpt).
    so its threshold is set inside the lock, right before the calls that read
    it. Set outside, one request's threshold could decide another's action.
 2. **Two kinds of decider.** `d` is a `decide.Decide` (Chapter 32) or, when
-   the server runs the one joint model, an `omni.Intent`, the joint model of Chapter 37 scoring each label. Both
-   take `(message, options, top=...)`.
+   the server runs the one joint model, an `omni.Intent`, the joint model of
+   Chapter 37 scoring each label. `Intent` has no trained head: it scores each
+   label by the model's own mean log-probability of writing it after an intent
+   prompt, softmaxed over the labels (sharpened ×10, `omni.py` line 158; no
+   fitted temperature). Both take `(message, options, top=...)`.
 3. **A bad option list is a 400.** `Decide` raises `ValueError` when the
    options do not fit the context. `Intent` scores only labels it was trained
-   on; a subset is accepted, and any other option raises `ValueError`
-   (`anulm/multimodal/omni.py` `Intent.choices`, lines 131–139).
-
-`Intent.__call__` used to take `(message, top=3)`. Because line 704 passes the
-options second, every `/v1/decide` request on the joint model failed with a
-`TypeError` and a 500.
+   on: no options means every trained label, a subset is scored with the
+   softmax renormalised over it, and any other option raises `ValueError`
+   (`anulm/multimodal/omni.py` `Intent.choices`, lines 131–139). `Decide`, by
+   contrast, accepts any option list, zero-shot.
 
 The Gradio demo, `anulm/apps/app_omni.py`, serves visitors from a thread pool
 and has one lock of its own:

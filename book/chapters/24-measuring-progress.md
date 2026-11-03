@@ -176,36 +176,13 @@ paired (24.5), with an error from per-batch differences that is not printed.
 across six window sets; that sd is the level's error, so the plateau was read
 against no valid bar.
 
-Random starts also clump. On the released split that does not explain the
-spread. `ch24_error_bars.py` recomputes each default set's windows, counts them
-per source, and predicts the set's mean from the per-source means of 24.6:
-
-```python
-    class Length:                                      # eval_windows reads only len(data)
-        def __len__(self):
-            return n
-
-    obs, pred = [], []
-    print("\nreleased split: source mix of each default random set, and the mean it predicts")
-    for s in r["random80"]["sets"]:
-        ix = [int(i) for b in T.eval_windows(Length(), 4, r["block"], 20, seed=s["seed"]) for i in b]
-        cnt = {k: sum(a <= p < z for p in ix) for k, (a, z) in edges.items()}
-        pred.append(sum(cnt[k] * per[k]["loss"] for k in cnt) / len(ix))
-        obs.append(s["mean"])
-        print(f"  seed {s['seed']}: windows {list(cnt.values())}  predicted {pred[-1]:.4f}  observed {obs[-1]:.4f}")
-    o, p = torch.tensor(obs), torch.tensor(pred)
-    print(f"  correlation {torch.corrcoef(torch.stack([o, p]))[0, 1]:.3f}; sd predicted from the mix "
-          f"{p.std():.3f}, sd observed {o.std():.3f}")
-```
-
-```
-  seed 0: windows [44, 32, 0, 4]  predicted 3.3835  observed 3.2508
-  correlation 0.005; sd predicted from the mix 0.017, sd observed 0.066
-```
-
-*verified* (windows as English, Hindi web, Hindi Wikipedia, Python): the mix
-does not track the mean; the spread comes from how hard individual windows
-are. `--eval-windows K` replaces random starts with K evenly spaced ones:
+Random starts also clump, but on the released split that does not explain the
+spread. `ch24_error_bars.py` counts each default set's windows per source and
+predicts the set's mean from the per-source means of 24.6: the prediction and
+the observed mean correlate at 0.005 (sd predicted from the mix 0.017,
+observed 0.066; *verified*). The mix does not track the mean; the spread comes
+from how hard individual windows are. `--eval-windows K` replaces random starts
+with K evenly spaced ones:
 
 > **In the repo** · `anulm/training/train.py` · `strided_windows` · lines 351–372 · @fdbb09a
 
@@ -258,13 +235,13 @@ possible start, so itself an estimate):
 *verified*. On tinyshakespeare at 320 windows: random sets missed the mean of
 all 435 windows by up to 0.0197, the strided set by 0.0049 (§26).
 
-> **Details.** A strided set's bar is conservative, on one assumption:
-> `evaluate()` treats batches as independent, but a strided batch holds
-> neighbours, which are more alike than random windows. The released model's
-> 400 strided windows report ± 0.0311, 0.0491 and 0.0578 in batches of 1, 4 and
-> 8, with one mean to 10⁻⁴; per-source scoring gives 3.3680 ± 0.0169
-> (*measured*). At batch 1 the bar is the independent-sample formula; a strided
-> set could do worse than it only if the data repeated with the stride's period.
+> **Details.** `evaluate()` treats batches as independent, but a strided
+> batch holds neighbours, which are more alike than random windows, so the bar
+> grows with the batch: the released model's 400 strided windows report
+> ± 0.0311, 0.0491 and 0.0578 in batches of 1, 4 and 8, with one mean to 10⁻⁴
+> (*measured*). So the printed bar is conservative: at batch 1 it is the
+> independent-sample formula, and a strided set could do worse than that only
+> if the data repeated with the stride's period.
 
 `IN THE REPO` · `MEASURED`
 
@@ -314,16 +291,9 @@ On the same Hindi, the byte model scored 0.5975 nats per token and a 16k BPE
 model 4.6795,
 yet the BPE model was better: 0.700 bits per byte against 0.862 (§7).
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 906–908 · @fdbb09a
-
-```python
-            bpb = val / math.log(2) / args.bytes_per_token
-            print(f"  eval @ {step:5d} | val loss {val:6.4f} +/- {val_sem:.4f} | "
-                  f"bits/byte {bpb:5.3f}{flag}")
-```
-
-÷ ln 2 gives bits; ÷ `bytes_per_token`, from the corpus metadata, gives bits
-per byte: 3.3523 / ln 2 / 6.397 = 0.7560 for the released model. That one
+The training loop's evaluation line (`anulm/training/train.py` lines 906–908,
+quoted in 22.7) divides by ln 2 for bits, then by `bytes_per_token`, from the
+corpus metadata, for bits per byte (Chapter 3): 3.3523 / ln 2 / 6.397 = 0.7560 for the released model. That one
 ratio averages sources that differ:
 
 | source | share of tokens | nats/token | bytes/token | bits/byte |

@@ -70,12 +70,13 @@ def fig_01_loop():
     probs = logits[:, -1, :].softmax(-1)
     nxt = probs.argmax(-1, keepdim=True)
     assert tuple(logits.shape) == (1, 1, 64) and tuple(probs.shape) == (1, 64) and tuple(nxt.shape) == (1, 1)
-    w, h = 760, 330
+    w, h = 760, 350
     b = []
-    _title(b, "The four-step loop in AnuLM.generate", "shapes printed on tiny() (V = 64) by ch01_four_steps.py · B = 1, S = 4")
+    _title(b, "The four-step loop, by hand and in AnuLM.generate",
+           "shapes printed on tiny() (V = 64) by ch01_four_steps.py · B = 1, S = 4")
     b += _box(30, 120, 130, 70, "1 · read", "self(ids)", accent=True)
     b += _box(230, 120, 130, 70, "2 · score", "softmax(logits)")
-    b += _box(430, 120, 130, 70, "3 · pick", "multinomial")
+    b += _box(430, 120, 130, 70, "3 · pick", "argmax or draw")
     b += _box(610, 120, 130, 70, "4 · repeat", "cat(idx, nxt)")
     for x1, x2, lab in ((160, 228, "(1, 1, 64)"), (360, 428, "(1, 64)"), (560, 608, "(1, 1)")):
         b.append(_arrow(x1, 155, x2, 155))
@@ -87,9 +88,12 @@ def fig_01_loop():
     b.append(text(95, 108, "ids (1, 4)", 11, "f-muted", MUTED, "middle", family=MONO))
     b.append(text(388, 300, "logits are (B, 1, V): without targets the forward pass projects only the last position",
                   11.5, "f-muted", MUTED, "middle"))
+    b.append(text(388, 324, "pick: the hand loop takes the argmax; generate draws with torch.multinomial when "
+                  "temperature > 0", 11.5, "f-muted", MUTED, "middle"))
     return svg("fig01-1-loop.svg", w, h, "Figure 1.1 · The four-step loop",
                "Read: the model runs on ids (1, 4) and returns logits (1, 1, 64). Score: softmax gives probabilities "
-               "(1, 64). Pick: one id (1, 1). Repeat: the id is appended and the loop runs again.", b)
+               "(1, 64). Pick: one id (1, 1), the argmax in the hand loop, a torch.multinomial draw in generate at a "
+               "temperature above 0. Repeat: the id is appended and the loop runs again.", b)
 
 
 def fig_01_repo_map():
@@ -112,6 +116,116 @@ def fig_01_repo_map():
           ticks=(0, 1000, 2000, 3000, 4000, 5000))
     return svg("fig01-2-repo-map.svg", w, h, "Figure 1.2 · The repository by role",
                "Lines of Python per role: " + ", ".join(f"{r} {v:,}" for r, v in rows) + ".", b)
+
+
+def fig_01_at_a_glance():
+    """Chapter 1's one-page map of the forward pass: a simpler Figure 20.1, each box labelled with the chapter
+    that teaches it. The sizes are the released configuration's, asserted against Chapter 1's text."""
+    from anulm import model as M
+    from tests.test_model import tiny
+    from trace_forward import released
+    cfg = released()
+    # The sizes the figure and Chapter 1 print.
+    assert (cfg.n_layer, cfg.hidden_size, cfg.vocab_size) == (20, 1024, 32768), cfg
+    assert (cfg.n_head, cfg.n_kv_head, cfg.num_experts, cfg.num_experts_per_tok) == (16, 4, 24, 4), cfg
+    assert (cfg.first_k_dense_replace, cfg.num_shared_experts, cfg.tie_word_embeddings) == (1, 0, False), cfg
+    # Every box is a module the code builds, in this order.
+    m = M.AnuLM(tiny())
+    assert [n for n, _ in m.named_children()] == ["embed_tokens", "rotary", "layers", "norm", "lm_head"], \
+        [n for n, _ in m.named_children()]
+    blk = m.layers[1]
+    assert [n for n, _ in blk.named_children()] == ["input_layernorm", "attn", "post_attention_layernorm", "mlp"]
+    assert blk.is_moe and not m.layers[0].is_moe and hasattr(blk.mlp, "router")
+
+    w, h = 760, 640
+    b = []
+    _title(b, "AnuLM-Base-v2-400M at a glance: one forward pass",
+           "each box is a module in anulm/model.py; the right column names the chapter that teaches it · verified")
+    rail, cx0, cx1 = 150, 600, 740                  # the residual stream's x; the chapter column
+    b.append(text(cx0, 76, "taught in", 11.5, "f-muted", MUTED, weight=700))
+
+    def box(x, y, ww, hh, title, sub=None, accent=False):
+        out = [rect(x, y, ww, hh, CARD, "f-card", 8,
+                    f' stroke="{GOLD}" stroke-width="2.5"' if accent else f' stroke="{RULE}" stroke-width="1"')]
+        if sub:
+            out.append(text(x + ww / 2, y + hh / 2 - 3, title, 13, anchor="middle", weight=700))
+            out.append(text(x + ww / 2, y + hh / 2 + 13, sub, 11, "f-muted", MUTED, "middle", family=MONO))
+        else:
+            out.append(text(x + ww / 2, y + hh / 2 + 5, title, 13, anchor="middle", weight=700))
+        return out
+
+    def chapter(y, s):
+        b.append(line(575, y, cx0 - 6, y, RULE, "f-rule", 1, ' stroke-dasharray="2 3"'))
+        b.append(text(cx0, y + 4, s, 12.5, weight=700))
+
+    def plus(y):
+        return [f'<circle cx="{rail}" cy="{y}" r="9" fill="{PAPER}" stroke="{INK}" stroke-width="1.5" '
+                f'class="f-paper f-ink-stroke"/>',
+                line(rail - 5, y, rail + 5, y, INK, "f-ink-stroke", 1.5),
+                line(rail, y - 5, rail, y + 5, INK, "f-ink-stroke", 1.5)]
+
+    down = lambda y1, y2: line(rail, y1, rail, y2, INK, "f-ink-stroke", 2, ' marker-end="url(#arrow)"')
+    # in
+    b += box(60, 84, 180, 42, "token ids", "(B, S)")
+    chapter(105, "Ch 8–9 · bytes, BPE")
+    b.append(down(126, 142))
+    b += box(60, 144, 180, 42, "embedding", f"V × D = {cfg.vocab_size:,} × {cfg.hidden_size:,}")
+    chapter(165, "Ch 10")
+    # the stack of layers, with the residual stream down its left
+    top, bot = 208, 428
+    for k in (2, 1):
+        b.append(rect(40 + 6 * k, top - 6 * k, 530, bot - top, CARD, "f-card", 10, ' fill-opacity="0.35"'))
+    b.append(rect(40, top, 530, bot - top, CARD, "f-card", 10, ' fill-opacity="0.6"'))
+    b.append(text(56, top + 20, f"× {cfg.n_layer} layers", 12.5, weight=700))
+    b.append(line(rail, 186, rail, 466, INK, "f-ink-stroke", 4))
+    b.append(text(rail - 14, 330, "residual stream (B, S, D)", 11, "f-muted", MUTED, "middle", family=MONO,
+                  extra=f' transform="rotate(-90 {rail - 14} 330)"'))
+
+    def sublayer(y, hh, title, sub, accent=False):
+        """Branch off the stream at y: RMSNorm, then the sublayer, then add the result back at a ⊕ below."""
+        cy = y + 21
+        out = [line(rail + 2, cy, 186, cy, MUTED, "f-muted-stroke", 1.3, ' marker-end="url(#arrow)"')]
+        out += box(188, y, 92, 42, "RMSNorm")
+        out.append(line(280, cy, 304, cy, MUTED, "f-muted-stroke", 1.3, ' marker-end="url(#arrow)"'))
+        out += box(306, y, 254, hh, title, sub, accent=accent)
+        ya = y + hh + 14
+        out.append(f'<path d="M433,{y + hh} L433,{ya} L{rail + 11},{ya}" fill="none" stroke="{MUTED}" '
+                   f'class="f-muted-stroke" stroke-width="1.3" marker-end="url(#arrow)"/>')
+        out += plus(ya)
+        return out, ya
+
+    parts, ya = sublayer(236, 42, "attention", f"{cfg.n_head} query heads, {cfg.n_kv_head} key/value · RoPE")
+    b += parts
+    chapter(257, "Ch 11–14")
+    b.append(text(rail + 16, ya + 17, "add", 11, "f-muted", MUTED))
+    chapter(ya, "Ch 15 · norms, adds")
+    parts, ya = sublayer(320, 64, "MoE feed-forward", f"a router picks {cfg.num_experts_per_tok} of "
+                         f"{cfg.num_experts} experts", accent=True)
+    b += parts
+    for i in range(cfg.num_experts):                 # the experts, the chosen four in gold
+        on = i in (3, 9, 14, 20)
+        b.append(rect(330 + i * 8.6, 371, 6.6, 8, GOLD if on else RULE, "f-gold" if on else "f-rule-fill", 1.5,
+                      tip="an expert chosen for this token" if on else "an idle expert"))
+    chapter(352, "Ch 16–18")
+    b.append(text(rail + 16, ya + 17, "add", 11, "f-muted", MUTED))
+    b.append(text(rail + 52, bot - 8, "layer 0 has one dense SwiGLU in place of the MoE (Ch 16)", 11, "f-muted", MUTED))
+    # out
+    b += box(60, 468, 180, 42, "final RMSNorm")
+    chapter(489, "Ch 15")
+    b.append(down(510, 526))
+    b += box(60, 528, 180, 42, "output head", "lm_head: D → V")
+    chapter(549, "Ch 10")
+    b.append(down(570, 586))
+    b.append(text(rail + 12, 582, "logits (B, S, V)", 11, "f-muted", MUTED, family=MONO))
+    b += box(60, 588, 180, 42, "next token", "softmax, then pick")
+    chapter(609, "Ch 3, 5, 28")
+    return svg("fig01-3-at-a-glance.svg", w, h, "Figure 1.3 · The whole model at a glance",
+               f"Token ids (B, S) become vectors through the embedding table (Chapter 10). {cfg.n_layer} layers each "
+               "branch off the residual stream twice: RMSNorm then attention (Chapters 11 to 14), RMSNorm then a "
+               f"mixture-of-experts feed-forward network whose router picks {cfg.num_experts_per_tok} of "
+               f"{cfg.num_experts} experts (Chapters 16 to 18), each result added back to the stream (Chapter 15). "
+               "Layer 0 uses a dense SwiGLU instead. A final RMSNorm and the output head give (B, S, V) logits; "
+               "softmax and a pick give the next token (Chapters 3, 5 and 28).", b)
 
 
 # --------------------------------------------------------------------------- Ch 2

@@ -59,10 +59,8 @@ N_CONTROL = len(CONTROL)
 Text ids `[0, text_vocab)` are untouched; the audio block starts at the old
 size and is `AUDIO_VOCAB` = 7 × 4,096 = 28,672 ids wide (`anulm/multimodal/audio_codec.py` line
 55); five control ids follow. The two image markers were put in the speech
-file before any model was grown. The comment above `CONTROL` (lines 56–59)
-gives the wrong reason: appending ids after the last control token would shift
-nothing. The real cost of adding them later is that `total` changes, so every
-checkpoint grown before would carry a `vocab_size` that is neither the text size
+file before any model was grown. Adding them later would change `total`, so
+every checkpoint grown before would carry a `vocab_size` that is neither the text size
 nor the new total, and `grow_checkpoint` refuses such a checkpoint (lines
 135–140; exercise 2).
 
@@ -70,9 +68,6 @@ nor the new total, and `grow_checkpoint` refuses such a checkpoint (lines
 
 *Figure 35.1 · The grown vocabulary.* The released model's size, drawn to
 scale. *verified*: the ids are printed by `ch35_wider_vocab.py`.
-
-> **Details.** The module docstring still says three control tokens and
-> 28,675 new ids. The code adds five and 28,677. Quote the code.
 
 `IN THE REPO`
 
@@ -216,9 +211,8 @@ same `grow` and scores it twice, over all 61,445 ids and over the text ids only:
    grown, text ids only   3.37907  (+0.00000)
 ```
 
-*measured*: `ch35_wider_vocab.py --measure`, 64 held-out windows of 512 tokens
-(Chapter 20's), seed 0, float32 throughout (the MoE on its sparse path); one
-sample. So generation with `text_vocab` set (35.5), which masks the new ids, is
+*measured*: `ch35_wider_vocab.py --measure`, at the settings of Appendix F,
+F.6, with the MoE on its sparse path, so float32 throughout; one sample. So generation with `text_vocab` set (35.5), which masks the new ids, is
 unchanged, but any loss over the full vocabulary, as in `anulm/multimodal/omni_train.py`
 (Chapter 37), starts about 0.065 nats higher, until training teaches the new
 rows to stay quiet on text.

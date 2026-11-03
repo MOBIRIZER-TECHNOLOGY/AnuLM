@@ -165,19 +165,16 @@ def autocast():
 F.linear on fp32 inputs under bf16 autocast: torch.bfloat16; with autocast disabled: torch.float32
 ```
 
-The comment's 3.2% comes from a checkpoint it does not name. Chapter 23 (23.3)
-measures the flip on the released checkpoint, and that is the book's reference
-figure: with the whole model under bf16 autocast, over 32 held-out windows of
-1,024 tokens, a bf16 gate picks a different expert set for 3.17% of
-token-layer choices, from 1.69% in layer 19 to 10.95% in layer 1 (*measured*;
-Chapter 26 repeats it). A second, separate measurement comes from 17.7's
-script, `ch16_measure_trained.py`. It runs the forward pass without autocast
-(fp32 except the experts, bf16 on the released grouped path) on 64 windows of
-512 tokens, and calls `_gate` under bf16 autocast on the gate's fp32 inputs.
-There the sets differ for 3.18% of tokens on average over the 19 layers
-(median 2.7%; 1.9% in layer 19 to 10.9% in layer 1). *measured*. The two
-settings differ in sample, window length and what reaches the gate; the
-overall rates agree to within a few hundredths of a point.
+On the released checkpoint a bf16 gate picks a different expert set for 3.17%
+of token-layer choices, 10.95% in layer 1; Chapter 23 (23.3) measures it and
+is the book's reference for the figure.
+
+> **Details.** A second, separate measurement comes from 17.7's script,
+> `ch16_measure_trained.py`, which calls `_gate` under bf16 autocast on the
+> gate's fp32 inputs (64 windows of 512 tokens; settings in Appendix F, F.6).
+> There the sets differ for 3.18% of tokens on average over the 19 layers
+> (median 2.7%; 1.9% in layer 19 to 10.9% in layer 1). *measured*. It agrees
+> with 23.3's figure to within a few hundredths of a point.
 
 `IN THE REPO` · `IMPLEMENTATION-DEPENDENT` (which operations autocast re-casts)
 
@@ -349,9 +346,8 @@ routing by machine, a related idea [R20].
 ## 17.7  The trained routers
 
 `book/code-examples/ch16_measure_trained.py` hooks all 19 routers of
-`ckpt_base_v2.pt` on Chapter 16's held-out sample (64 × 512 tokens, seed 0;
-fp32 except the experts, which run in bf16 on the released grouped path) and
-keeps statistics only. *measured*:
+`ckpt_base_v2.pt` on Chapter 16's held-out sample (64 × 512 tokens; settings
+in Appendix F, F.6) and keeps statistics only. *measured*:
 
 | | median over layers | range |
 |---|---|---|

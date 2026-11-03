@@ -74,38 +74,7 @@ On a GPU that supports it the dtype is bf16; elsewhere a disabled autocast
 keeps `with args.autocast:` valid. The parameters, gradients and AdamW moments
 stay fp32. **Autocast**, PyTorch's `torch.autocast` [R51], runs chosen
 operations, chiefly matrix multiplies, on bf16 copies of their inputs. The book
-example reads the dtypes with hooks on a small model; a wrapper around one
-router's `_gate` records the dtype of the logits its `F.linear` returns:
-
-```python
-def spy_on_gate(router):
-    """Record the dtype of the F.linear output inside router._gate (the logits), each call."""
-    import torch.nn.functional as Fn
-    seen, gate, linear = [], router._gate, Fn.linear
-
-    def spy(*a, **k):
-        def lin(*la, **lk):
-            out = linear(*la, **lk)
-            seen.append(out.dtype)
-            return out
-        Fn.linear = lin                                          # model.py calls F.linear: the same module
-        try:
-            return gate(*a, **k)
-        finally:
-            Fn.linear = linear
-    router._gate = spy
-    return seen
-# ...
-
-    for n, mod in m.named_modules():
-        if n == "layers.0":
-            mod.register_forward_pre_hook(lambda _m, i: seen.update({"layers.0": i[0].dtype}))
-        elif n in names:
-            mod.register_forward_hook(lambda _m, _i, o, n=n: seen.update({n: (o[1] if isinstance(o, tuple) else o).dtype}))
-    x = torch.randint(0, 64, (2, 16))
-    with torch.autocast(device_type="cpu", dtype=torch.bfloat16):
-        _, loss = m(x, x)
-```
+example reads the dtypes with hooks on a small model under bf16 autocast:
 
 ```text
   embedding (layer 0 input) float32
@@ -124,6 +93,40 @@ def spy_on_gate(router):
 *verified*: printed by `ch23_precision.py` under **CPU** autocast; CUDA's
 autocast op lists differ in detail, so read the table as this mechanism, not as
 a GPU trace. `IMPLEMENTATION-DEPENDENT`
+
+> **Details.** The hooks. Forward hooks read each module's output dtype;
+> `spy_on_gate`, a wrapper around one router's `_gate`, swaps `F.linear` for
+> the length of one call and records the dtype of the logits it returns.
+>
+> ```python
+> def spy_on_gate(router):
+>     """Record the dtype of the F.linear output inside router._gate (the logits), each call."""
+>     import torch.nn.functional as Fn
+>     seen, gate, linear = [], router._gate, Fn.linear
+>
+>     def spy(*a, **k):
+>         def lin(*la, **lk):
+>             out = linear(*la, **lk)
+>             seen.append(out.dtype)
+>             return out
+>         Fn.linear = lin                                          # model.py calls F.linear: the same module
+>         try:
+>             return gate(*a, **k)
+>         finally:
+>             Fn.linear = linear
+>     router._gate = spy
+>     return seen
+> # ...
+>
+>     for n, mod in m.named_modules():
+>         if n == "layers.0":
+>             mod.register_forward_pre_hook(lambda _m, i: seen.update({"layers.0": i[0].dtype}))
+>         elif n in names:
+>             mod.register_forward_hook(lambda _m, _i, o, n=n: seen.update({n: (o[1] if isinstance(o, tuple) else o).dtype}))
+>     x = torch.randint(0, 64, (2, 16))
+>     with torch.autocast(device_type="cpu", dtype=torch.bfloat16):
+>         _, loss = m(x, x)
+> ```
 
 The embedding is a lookup of fp32 rows. The norm computes in fp32 and
 multiplies by an fp32 gain, so even a bf16 input comes out fp32:
@@ -443,22 +446,6 @@ machine's PyTorch the flash kernel is not compiled in at all, and the
 memory-efficient and cuDNN kernels accept both an explicit mask and
 `is_causal`. The report forces each kernel in turn:
 
-```python
-    for be in (SDPBackend.FLASH_ATTENTION, SDPBackend.EFFICIENT_ATTENTION, SDPBackend.CUDNN_ATTENTION, SDPBackend.MATH):
-        row = []
-        for name, kw in (("is_causal", dict(is_causal=True)), ("explicit mask", dict(attn_mask=mask))):
-            with warnings.catch_warnings(record=True) as w:
-                warnings.simplefilter("always")
-                try:
-                    with sdpa_kernel(be):
-                        torch.nn.functional.scaled_dot_product_attention(q, q, q, **kw)
-                    row.append(f"{name}: ok")
-                except RuntimeError:
-                    why = any("not compiled with flash" in str(x.message) for x in w)
-                    row.append(f"{name}: refused" + (" (this build was not compiled with flash attention)" if why else ""))
-        print(f"  {be.name:20s} " + "; ".join(row))
-```
-
 ```text
 SDPA kernels on this machine (torch 2.11.0+cu128, bf16, head width 64):
   FLASH_ATTENTION      is_causal: refused (this build was not compiled with flash attention); explicit mask: refused (this build was not compiled with flash attention)
@@ -468,6 +455,26 @@ SDPA kernels on this machine (torch 2.11.0+cu128, bf16, head width 64):
 ```
 
 *verified*: printed by `ch23_measure.py --report`.
+
+> **Details.** The probe. Each kernel is forced with `sdpa_kernel`, with
+> `is_causal` and with an explicit mask; a refusal's warning says whether the
+> build lacks the kernel.
+>
+> ```python
+>     for be in (SDPBackend.FLASH_ATTENTION, SDPBackend.EFFICIENT_ATTENTION, SDPBackend.CUDNN_ATTENTION, SDPBackend.MATH):
+>         row = []
+>         for name, kw in (("is_causal", dict(is_causal=True)), ("explicit mask", dict(attn_mask=mask))):
+>             with warnings.catch_warnings(record=True) as w:
+>                 warnings.simplefilter("always")
+>                 try:
+>                     with sdpa_kernel(be):
+>                         torch.nn.functional.scaled_dot_product_attention(q, q, q, **kw)
+>                     row.append(f"{name}: ok")
+>                 except RuntimeError:
+>                     why = any("not compiled with flash" in str(x.message) for x in w)
+>                     row.append(f"{name}: refused" + (" (this build was not compiled with flash attention)" if why else ""))
+>         print(f"  {be.name:20s} " + "; ".join(row))
+> ```
 
 `IN THE REPO` · `MEASURED` · `IMPLEMENTATION-DEPENDENT`
 

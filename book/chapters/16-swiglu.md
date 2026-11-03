@@ -256,59 +256,51 @@ to 1 [R49]; the repository gives no other reason. Every expert is a SwiGLU:
 uses, is one SwiGLU of width I<sub>e</sub> · `num_shared_experts`, so several
 are stored as one wider one; the released model has none.
 
-Every `down_proj`, dense or expert, starts small:
-
-> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 860–863 · @fdbb09a
-
-```python
-        # nanoGPT's scaled init for the residual output projections.
-        for name, p in self.named_parameters():
-            if name.endswith(("o_proj.weight", "dense.weight", "down_proj.weight")):
-                nn.init.normal_(p, mean=0.0, std=cfg.initializer_range / math.sqrt(2 * cfg.n_layer))
-```
-
-That is 0.02/√40 = 0.00316 against 0.02 for the other two, so each block first
-adds little to the stream (Chapter 15); the example measures 0.00316.
+Every `down_proj`, dense or expert, starts small: the scaled initialisation
+quoted in 15.5 (`anulm/model.py` lines 860–863) draws it with standard
+deviation 0.02/√40 = 0.00316 against 0.02 for the other two, so each block
+first adds little to the stream; the example measures 0.00316.
 
 `IN THE REPO`
 
 ## 16.6  What the trained layer 0 does
 
 `book/code-examples/ch16_measure_trained.py` (**Book example, not repository
-code**) runs `ckpt_base_v2.pt` without autocast over Chapter 11's 64 held-out
-windows of 512 tokens (seed 0, `data/v2/val.u16`; loss 3.379). Everything runs
-in fp32 except the experts, which the released configuration's grouped path
-casts to bf16 (Chapter 18); layer 0 comes before any expert. A hook on layer
-0's SwiGLU keeps statistics only:
+code**) runs `ckpt_base_v2.pt` over Chapter 11's 64 held-out windows of 512
+tokens (loss 3.379; settings in Appendix F, F.6). Layer 0 comes before any
+expert, so it runs entirely in fp32. A hook on layer 0's SwiGLU keeps
+statistics only.
 
-```python
-def swiglu_hook(store):
-    def hook(mod, inp, out):
-        u = inp[0]
-        with torch.no_grad():
-            g = mod.gate_proj(u)
-            up = mod.up_proj(u)
-            h = F.silu(g) * up                                           # (B, S, I)
-            store["n"] += g.numel() // g.shape[-1]
-            store["gate_neg"] += (g < 0).float().mean(-1).sum().item()
-            store["gate_lt_m4"] += (g < -4).float().mean(-1).sum().item()
-            h2 = h.pow(2)
-            pr = h2.sum(-1).pow(2) / h2.pow(2).sum(-1)                   # participation ratio, channels in play
-            store["in_play"] += pr.sum().item()
-            top = h2.sort(-1, descending=True)[0].cumsum(-1) / h2.sum(-1, keepdim=True)
-            store["ch90"] += ((top < 0.9).sum(-1) + 1).float().sum().item()
-            store["cum"] = store.get("cum", 0) + top[..., :256].reshape(-1, 256).sum(0).double().cpu()
-            store["out_norm"] += out.norm(dim=-1).sum().item()
-            # ...
-            flat = h2.reshape(-1, h2.shape[-1])
-            store["per_channel"] = store.get("per_channel", 0) + flat.sum(0).double().cpu()
-            store["top_channel"] = store.get("top_channel", 0) + torch.bincount(
-                flat.argmax(-1), minlength=flat.shape[-1]).cpu()
-```
+> **Details.** The hook. `top[..., n − 1]` is the share of a token's Σh² in
+> its n largest channels. `per_channel` is each channel's total Σh² over all
+> tokens; `top_channel` counts how often each channel is a token's largest.
+>
+> ```python
+> def swiglu_hook(store):
+>     def hook(mod, inp, out):
+>         u = inp[0]
+>         with torch.no_grad():
+>             g = mod.gate_proj(u)
+>             up = mod.up_proj(u)
+>             h = F.silu(g) * up                                           # (B, S, I)
+>             store["n"] += g.numel() // g.shape[-1]
+>             store["gate_neg"] += (g < 0).float().mean(-1).sum().item()
+>             store["gate_lt_m4"] += (g < -4).float().mean(-1).sum().item()
+>             h2 = h.pow(2)
+>             pr = h2.sum(-1).pow(2) / h2.pow(2).sum(-1)                   # participation ratio, channels in play
+>             store["in_play"] += pr.sum().item()
+>             top = h2.sort(-1, descending=True)[0].cumsum(-1) / h2.sum(-1, keepdim=True)
+>             store["ch90"] += ((top < 0.9).sum(-1) + 1).float().sum().item()
+>             store["cum"] = store.get("cum", 0) + top[..., :256].reshape(-1, 256).sum(0).double().cpu()
+>             store["out_norm"] += out.norm(dim=-1).sum().item()
+>             # ...
+>             flat = h2.reshape(-1, h2.shape[-1])
+>             store["per_channel"] = store.get("per_channel", 0) + flat.sum(0).double().cpu()
+>             store["top_channel"] = store.get("top_channel", 0) + torch.bincount(
+>                 flat.argmax(-1), minlength=flat.shape[-1]).cpu()
+> ```
 
-`top[..., n − 1]` is the share of a token's Σh² in its n largest channels.
-`per_channel` is each channel's total Σh² over all tokens; `top_channel` counts
-how often each channel is a token's largest. *measured*, over 32,768 tokens:
+*measured*, over 32,768 tokens:
 
 | | layer 0 |
 |---|---|

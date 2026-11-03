@@ -195,31 +195,31 @@ slices a tensor twice. On CUDA both go through **pinned memory**, page-locked
 host memory the GPU can copy from directly, so `non_blocking=True` lets the
 copy overlap other work.
 
-Why `int64`? The book example tries each id dtype on the model's two consumers
-of ids:
+Why `int64`? The file's `uint16` ids fit neither consumer: `F.embedding`
+would take `int32`, but `F.cross_entropy`'s targets need `int64`.
 
-```python
-    emb, logits = torch.randn(10, 4), torch.randn(3, 10)
-    for dt in (torch.int64, torch.int32, torch.uint16):
-        ids = torch.tensor([1, 2, 3]).to(dt)
-        res = []
-        for f in (lambda: torch.nn.functional.embedding(ids, emb), lambda: torch.nn.functional.cross_entropy(logits, ids)):
-            try:
-                f()
-                res.append("ok")
-            except Exception as e:
-                res.append(type(e).__name__)
-        print(f"ids as {str(dt)[6:]:6s}: F.embedding {res[0]:12s} F.cross_entropy {res[1]}")
-```
-
-```text
-ids as int64 : F.embedding ok           F.cross_entropy ok
-ids as int32 : F.embedding ok           F.cross_entropy RuntimeError
-ids as uint16: F.embedding RuntimeError F.cross_entropy RuntimeError
-```
-
-*verified*: printed by `ch21_windows.py` with torch 2.11. The file's `uint16`
-fits neither; the embedding would take `int32`, the targets need `int64`.
+> **Details.** The book example tries each id dtype on the model's two
+> consumers of ids (*verified*: printed by `ch21_windows.py` with torch 2.11):
+>
+> ```python
+>     emb, logits = torch.randn(10, 4), torch.randn(3, 10)
+>     for dt in (torch.int64, torch.int32, torch.uint16):
+>         ids = torch.tensor([1, 2, 3]).to(dt)
+>         res = []
+>         for f in (lambda: torch.nn.functional.embedding(ids, emb), lambda: torch.nn.functional.cross_entropy(logits, ids)):
+>             try:
+>                 f()
+>                 res.append("ok")
+>             except Exception as e:
+>                 res.append(type(e).__name__)
+>         print(f"ids as {str(dt)[6:]:6s}: F.embedding {res[0]:12s} F.cross_entropy {res[1]}")
+> ```
+>
+> ```text
+> ids as int64 : F.embedding ok           F.cross_entropy ok
+> ids as int32 : F.embedding ok           F.cross_entropy RuntimeError
+> ids as uint16: F.embedding RuntimeError F.cross_entropy RuntimeError
+> ```
 
 `IN THE REPO`
 

@@ -169,12 +169,6 @@ autocast and gradient checkpointing. What it holds beyond the 5.65 GB of state
 is activations and workspace, which this arithmetic does not count. *measured*,
 `docs/RESULTS.md` §6 (table).
 
-The same section disagrees with itself about the run without checkpointing.
-Its table gives 15.75 GB for the 443M model with AdamW and no checkpointing.
-Its closing prose, and `anulm/model.py`'s `nano_350m` docstring (lines 187–188),
-give the same 15.75 GB for the 353M preset without `--grad-ckpt`. This
-appendix cites only the table row, for the 443M model.
-
 **The released run's own files agree.** Read memory-mapped, without loading:
 
 ```
@@ -206,4 +200,4 @@ DPO: a frozen fp32 reference copy adds 1.59 GB (1.48 GiB) to the 6.36 GB (5.93 G
 numbers" are the weights of every `nn.Linear` and `nn.Embedding`; the 511,488
 left over are the 19 routers' 466,944 weights and the 44,544 norm gains. The
 456 router-bias numbers are buffers, kept in fp32 because they decide which
-experts fire (`docs/MODEL_CARD_BASE_V2.md`, limitations).
+experts fire; Chapter 39 (39.2) measures what rounding them to bf16 does.

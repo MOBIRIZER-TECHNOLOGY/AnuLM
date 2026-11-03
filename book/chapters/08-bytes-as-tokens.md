@@ -161,32 +161,23 @@ def load_bytes(path: str | None) -> torch.Tensor:
     if path:
         raw = Path(path).read_bytes()
     else:
-        default = HERE / "data" / "input.txt"
-        if default.exists():
-            raw = default.read_bytes()
-        else:
-            default.parent.mkdir(parents=True, exist_ok=True)
-            try:
-                import urllib.request
-                url = ("https://raw.githubusercontent.com/karpathy/char-rnn/"
-                       "master/data/tinyshakespeare/input.txt")
-                raw = urllib.request.urlopen(url, timeout=15).read()
-                default.write_bytes(raw)
-                print(f"downloaded tinyshakespeare -> {default}")
-            except Exception as e:
-                print(f"no data and download failed ({type(e).__name__}); "
-                      f"using the built-in fallback corpus")
-                raw = (FALLBACK * 400).encode("utf-8")
-                default.write_bytes(raw)
+        # ...
 ```
 
 `read_bytes()` reads in binary mode, with no decoding, so the bytes on disk
-are the ids whatever the script. With no path it uses `data/input.txt`,
-downloading a small Shakespeare corpus the first time; if the network fails
-it writes 400 copies of `FALLBACK` (`anulm/training/train.py` lines 51–59): eight lines in
-five languages (Hindi, English, Tamil, Kannada, Bengali), two of them
-code-mixed Hindi and English. So `anulm/training/train.py` runs with no data and no network. Then the
-boundaries:
+are the ids whatever the script. With no path the loader still finds bytes;
+its last resort is 400 copies of `FALLBACK` (`anulm/training/train.py` lines
+51–59): eight lines in five languages (Hindi, English, Tamil, Kannada,
+Bengali), two of them code-mixed Hindi and English. So
+`anulm/training/train.py` runs with no data and no network.
+
+> **Details.** The `else` branch (lines 68–85) uses `data/input.txt` if it
+> exists. Otherwise it downloads a small Shakespeare corpus (karpathy's
+> tinyshakespeare, with a 15-second timeout) and writes it there; if the
+> download raises, it writes the `FALLBACK` copies to that path instead, so
+> the next run reads them from disk.
+
+Then the boundaries:
 
 > **In the repo** · `anulm/training/train.py` · `load_bytes` · lines 86–98 · @fdbb09a
 
@@ -333,29 +324,12 @@ characters against 1,024 English ones.
 
 **Comparing losses.** Nats per token do not compare across vocabularies: a
 32k-vocabulary token carries far more text than a byte. `anulm/training/train.py` prints
-bits per byte instead:
-
-> **In the repo** · `anulm/training/train.py` · `main` · lines 652–656 · @fdbb09a
-
-```python
-    # --- data --------------------------------------------------------------
-    # Two formats: raw text (byte-level, vocab 259) or a .bin from
-    # `bpe.py encode` (token ids + metadata). bits/byte stays comparable across
-    # both because the .bin remembers how many bytes each token covers.
-    tokenizer_path, vocab_size, args.bytes_per_token = None, 259, 1.0
-```
-
-> **In the repo** · `anulm/training/train.py` · `main` · lines 906–908 · @fdbb09a
-
-```python
-            bpb = val / math.log(2) / args.bytes_per_token
-            print(f"  eval @ {step:5d} | val loss {val:6.4f} +/- {val_sem:.4f} | "
-                  f"bits/byte {bpb:5.3f}{flag}")
-```
-
-`val` is nats per token (Chapters 3 and 5); ÷ ln 2 makes bits, ÷ bytes per token (1.0 for
-bytes, line 656) spreads them over the text. Applied to two 17M byte models, Hindi from §2
-and English from §1:
+bits per byte instead, `val / math.log(2) / args.bytes_per_token` (lines
+906–908, quoted in 3.5). `val` is nats per token (Chapters 3 and 5); ÷ ln 2
+makes bits, ÷ bytes per token (1.0 for bytes, line 656) spreads them over the
+text. A tokenized corpus remembers how many bytes each token covers, so the
+figure stays comparable across both formats (the comment at lines 652–655).
+Applied to two 17M byte models, Hindi from §2 and English from §1:
 
 > Book example, not repository code · `book/code-examples/ch08_bytes.py` · `main`
 
@@ -404,9 +378,9 @@ against ids that are not bytes and bytes that are not UTF-8:
         print(raw.decode("utf-8", errors="replace"))
 ```
 
-The comment is stale: 257 is in the training data when the corpus has
+The filter drops EOS too: 257 is in the training data when the corpus has
 separators, and `generate` returns it as the last id when it stops
-(`anulm/model.py` lines 1171–1179). So the filter drops EOS too.
+(`anulm/model.py` lines 1171–1179).
 `errors="replace"` turns a broken sequence into U+FFFD instead of raising:
 
 ```

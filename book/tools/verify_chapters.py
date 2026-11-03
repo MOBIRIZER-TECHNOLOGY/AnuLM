@@ -60,7 +60,8 @@ def check(path: Path) -> tuple[list[str], list[str], dict]:
     problems, notes = [], []
     stats = {"excerpts": 0, "excerpt_lines": 0, "line_refs": 0}
 
-    for m in EXCERPT.finditer(text):
+    # excerpts inside a blockquote (a Details box) are checked too: drop the "> " prefixes first
+    for m in EXCERPT.finditer(re.sub(r"(?m)^[ \t]*> ?", "", text)):
         f, sym, a, b, pin, code = m.groups()
         a, b = int(a), int(b or a)
         stats["excerpts"] += 1

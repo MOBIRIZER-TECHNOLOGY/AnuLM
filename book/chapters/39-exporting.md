@@ -24,8 +24,10 @@ Prerequisites: checkpoints (Chapter 25), the KV cache (Chapter 27).
 
 ## 39.1  What a release folder holds
 
-The released base model is published as `toonist/AnuLM-Base-v2-400M` on the
-Hugging Face Hub. Its local copy:
+A release folder holds the weights in safetensors, a JSON configuration, the
+tokenizer, a model card, and the three code files `transformers` needs to load
+it. The released base model is published as `toonist/AnuLM-Base-v2-400M`
+on the Hugging Face Hub. Its local copy:
 
 ```
 5. release\AnuLM-Base-v2-400M (local copy; release/ is git-ignored)
@@ -40,15 +42,16 @@ Hugging Face Hub. Its local copy:
              232  tokenizer_config.json
 ```
 
-*measured*: `ch39_export_roundtrip.py --measure`, against the files the
-exporter copies at the pin; run at @084cbdd and not rerun at @fdbb09a (it
-needs `release/` and `ckpt_base_v2.pt`). The two wrapper files are unchanged
-between those pins and `anulm/model.py` changed, so each "differs" still
-holds. None matches: the exporter copies the checkout as
-it was on export day (39.3), so a release is a snapshot. This one predates the
-`anulm/` package; its wrapper files equal those at @773b6a8. A safetensors file is an 8-byte length, a JSON header naming each
-tensor's dtype, shape and offsets, then the raw numbers (39.2 reads one): no
-pickle, so reading it runs no code.
+*measured*: `ch39_export_roundtrip.py --measure`. None of the three code files
+matches the code this book quotes: the exporter copies the checkout as it was
+on export day (39.3), so a release is a snapshot. A safetensors file is an
+8-byte length, a JSON header naming each tensor's dtype, shape and offsets,
+then the raw numbers (39.2 reads one): no pickle, so reading it runs no code.
+
+> **Details.** The listing was made at an earlier pin and not rerun (it needs
+> `release/` and `ckpt_base_v2.pt`); the two wrapper files have not changed
+> since and `anulm/model.py` has, so each "differs" still holds. This release
+> predates the `anulm/` package.
 
 ![Figure 39.1 · From a training checkpoint to two loaders](../figures/fig39-1-export.svg)
 
@@ -152,14 +155,15 @@ experts it picks, to compare with the native model:
    graded tokens per variant: 32,732
 ```
 
-*measured*: 64 windows of 512 tokens of `data/v2/val.u16`, seed 0, the
-windows of Chapter 20; one sample, one seed. Greedy prompts are the first 64
-tokens of 8 of those windows; only statistics are printed. These numbers,
-saved in `book/measurements/part_viii_ix_export.json`, ran on the GPU; a CPU
-rerun (2026-11-03) moved each loss by at most 0.00005. The native loss, 3.37908, differs
-from Chapter 20's 3.37895 on the same windows because Chapter 20's script runs
-the experts in bfloat16 on the `grouped` path and this one runs them in
-float32 on `sparse`; both round to 3.379.
+*measured*: on the windows of Appendix F, F.6, except that the experts run in
+float32 on `sparse`, so the native loss is 3.37908 rather than Chapter 20's
+3.37895 (both round to 3.379); one sample, one seed. Greedy prompts are the
+first 64 tokens of 8 of those windows; only statistics are printed. Saved in
+`book/measurements/part_viii_ix_export.json`.
+
+> **Details.** The windows are 64 of 512 tokens of `data/v2/val.u16`, seed 0.
+> These numbers ran on the GPU; a CPU rerun (2026-11-03) moved each loss by at
+> most 0.00005.
 
 Three readings:
 
@@ -183,18 +187,11 @@ Three readings:
 *Figure 39.2 · What the released file stores.* Per group of tensors, on a
 logarithmic axis. *measured*: `book/measurements/part_viii_ix_export.json`.
 
-> **Details.** The exporter's comment (lines 328–331) and the wrapper's
-> warning (`anulm/hf/modeling_anulm.py` lines 120–133) say that 16-bit router biases
-> make the output collapse into repeated tokens. Neither claim reproduces at
-> @fdbb09a with this checkpoint: the measured costs are 0.003 and 0.004 nats.
-> What does collapse is the biases, to one or two values per layer, and so
-> the expert choices: about half of them change (Chapter 18). The choices
-> change a lot; the loss barely moves.
-> The comment and the warning probably predate the fix that runs the router in float32 (Chapter 17);
-> that history is *not verified here*. Keeping the small tensors in float32
-> remains the safe choice, since it is exact and costs 2 MB. An export that
-> must reproduce the `.pt` bit for bit uses `--weights-dtype float32`, and its
-> `config.json` says so in `weights_dtype`.
+> **Details.** Keeping the small tensors in float32 remains the safe choice,
+> since it is exact and costs 2 MB. An export that must reproduce the `.pt`
+> bit for bit uses `--weights-dtype float32`, and its `config.json` says so
+> in `weights_dtype`. The exporter's comment (lines 328–331) and the wrapper's
+> warning (39.6) predict a worse outcome than the one measured here.
 
 `IN THE REPO` · `MEASURED` · `IMPLEMENTATION-DEPENDENT` (bfloat16 greedy text)
 
@@ -297,77 +294,84 @@ holds the round trip, and checks that eleven named scripts (lines 970–972) cal
 `load_checkpoint` rather than `torch.load`; scripts outside that list are not
 checked.
 
-A downloaded folder is untrusted data too. Its `config.json` names three paths
-the loader follows: `config.tokenizer_path`, `extras.hf_backbone` (an open
-encoder shipped inside the folder) and `extras.base_model` (the backbone of an
-adapter-only folder). Each must stay inside the folder:
+A downloaded folder is untrusted data too. Its `config.json` names paths the
+loader follows: the tokenizer, an encoder shipped inside the folder, and the
+backbone of an adapter-only folder. The loader refuses any path that is
+absolute, contains `..`, or resolves outside the folder through a symlink;
+the backbone must be a Hub id, `owner/name`, never a local path; and the
+exporter refuses to write a folder its own loader would refuse.
 
+> **Details.** The three paths are `config.tokenizer_path`,
+> `extras.hf_backbone` (an open encoder shipped inside the folder) and
+> `extras.base_model` (the backbone of an adapter-only folder). Each must stay
+> inside the folder:
+>
 > **In the repo** · `anulm/model.py` · `_inside` · lines 1264–1277 · @fdbb09a
-
-```python
-def _inside(root, value: str, what: str) -> str:
-    # ...
-    from pathlib import Path as _P, PurePosixPath, PureWindowsPath
-    v = str(value)
-    if (PureWindowsPath(v).anchor or PurePosixPath(v.replace("\\", "/")).is_absolute()
-            or ".." in PurePosixPath(v.replace("\\", "/")).parts):
-        raise ValueError(f"{root}/config.json: {what} {v!r} must be a relative path inside the folder")
-    full = _P(root) / v
-    # Resolve too, so a symlink inside the folder cannot lead out of it.
-    if not full.resolve().is_relative_to(_P(root).resolve()):
-        raise ValueError(f"{root}/config.json: {what} {v!r} resolves outside the folder")
-    return str(full)
-```
-
-Two tests around a join. The first refuses a drive or root (`C:/…`, `/etc/…`)
-and any `..` part, on either slash. The second resolves the joined path,
-following symlinks, and requires it still to lie under the folder. The
-exporter writes `tokenizer_path` and `hf_backbone` as bare relative names, so
-its own folders pass. `base_model` is checked harder, because the loader
-fetches it:
-
+>
+> ```python
+> def _inside(root, value: str, what: str) -> str:
+>     # ...
+>     from pathlib import Path as _P, PurePosixPath, PureWindowsPath
+>     v = str(value)
+>     if (PureWindowsPath(v).anchor or PurePosixPath(v.replace("\\", "/")).is_absolute()
+>             or ".." in PurePosixPath(v.replace("\\", "/")).parts):
+>         raise ValueError(f"{root}/config.json: {what} {v!r} must be a relative path inside the folder")
+>     full = _P(root) / v
+>     # Resolve too, so a symlink inside the folder cannot lead out of it.
+>     if not full.resolve().is_relative_to(_P(root).resolve()):
+>         raise ValueError(f"{root}/config.json: {what} {v!r} resolves outside the folder")
+>     return str(full)
+> ```
+>
+> Two tests around a join. The first refuses a drive or root (`C:/…`, `/etc/…`)
+> and any `..` part, on either slash. The second resolves the joined path,
+> following symlinks, and requires it still to lie under the folder. The
+> exporter writes `tokenizer_path` and `hf_backbone` as bare relative names, so
+> its own folders pass. `base_model` is checked harder, because the loader
+> fetches it:
+>
 > **In the repo** · `anulm/model.py` · `load_checkpoint` · lines 1328–1340 · @fdbb09a
-
-```python
-    if "model" not in ck and base and extras.get("base_model"):
-        # base_model comes from an untrusted config.json: a Hub id only, never
-        # a local path, and its side-by-side copy must sit beside this folder.
-        bm = str(extras["base_model"])
-        side = p.parent / bm.split("/")[-1]                     # downloaded side by side: no fetch
-        # The Hub forbids ".." and a leading or trailing "." in a name, so
-        # "../x" or "a/.." is never a real id -- only a way out of the folder.
-        if (not re.fullmatch(_HUB_ID, bm) or ".." in bm
-                or any(part.startswith(".") or part.endswith(".") for part in bm.split("/"))
-                or side.resolve().parent != p.parent.resolve()):
-            raise ValueError(f"{p}/config.json: extras.base_model {bm!r} is not a Hugging Face "
-                             f"Hub id (owner/name)")
-        b = load_checkpoint(side if side.is_dir() else bm, map_location)
-```
-
-`base_model` must be exactly `owner/name`, never a local path. If a folder
-named `name` sits beside the adapter folder, it is used without a download;
-otherwise the id is fetched. The exporter enforces the same rule when it
-writes one: `--adapter-of` without `--base-model`, or a `--base-model` that is
-not `owner/name`, is a usage error (`p.error`), so an export cannot produce a
-folder its own loader would refuse:
-
+>
+> ```python
+>     if "model" not in ck and base and extras.get("base_model"):
+>         # base_model comes from an untrusted config.json: a Hub id only, never
+>         # a local path, and its side-by-side copy must sit beside this folder.
+>         bm = str(extras["base_model"])
+>         side = p.parent / bm.split("/")[-1]                     # downloaded side by side: no fetch
+>         # The Hub forbids ".." and a leading or trailing "." in a name, so
+>         # "../x" or "a/.." is never a real id -- only a way out of the folder.
+>         if (not re.fullmatch(_HUB_ID, bm) or ".." in bm
+>                 or any(part.startswith(".") or part.endswith(".") for part in bm.split("/"))
+>                 or side.resolve().parent != p.parent.resolve()):
+>             raise ValueError(f"{p}/config.json: extras.base_model {bm!r} is not a Hugging Face "
+>                              f"Hub id (owner/name)")
+>         b = load_checkpoint(side if side.is_dir() else bm, map_location)
+> ```
+>
+> `base_model` must be exactly `owner/name`, never a local path. If a folder
+> named `name` sits beside the adapter folder, it is used without a download;
+> otherwise the id is fetched. The exporter enforces the same rule when it
+> writes one: `--adapter-of` without `--base-model`, or a `--base-model` that is
+> not `owner/name`, is a usage error (`p.error`), so an export cannot produce a
+> folder its own loader would refuse:
+>
 > **In the repo** · `anulm/hf/export_hf.py` · `main` · lines 254–259 · @fdbb09a
-
-```python
-    if args.adapter_of:
-        if not args.base_model:
-            p.error("--adapter-of needs --base-model (the Hub id the backbone is fetched from)")
-        if not re.fullmatch(r"[\w.-]+/[\w.-]+", args.base_model):
-            # load_checkpoint accepts nothing else from a folder's config.json
-            p.error(f"--base-model {args.base_model!r} is not a Hugging Face Hub id (owner/name)")
-```
-
-`tests/test_quality_loading.py`'s `FolderContainment` (lines 144–215) feeds
-the loader `../outside.json`, `/etc/passwd`, `C:/Windows/win.ini` and
-`..\outside.json` as a tokenizer path, two escapes as an encoder folder, and
-a local path, `../secret`, `a/..` and `a/b/c` as a base model, and requires a
-`ValueError` for each; a side-by-side base and an inside tokenizer path still
-load, and the Hub message is printed.
+>
+> ```python
+>     if args.adapter_of:
+>         if not args.base_model:
+>             p.error("--adapter-of needs --base-model (the Hub id the backbone is fetched from)")
+>         if not re.fullmatch(r"[\w.-]+/[\w.-]+", args.base_model):
+>             # load_checkpoint accepts nothing else from a folder's config.json
+>             p.error(f"--base-model {args.base_model!r} is not a Hugging Face Hub id (owner/name)")
+> ```
+>
+> `tests/test_quality_loading.py`'s `FolderContainment` (lines 144–215) feeds
+> the loader `../outside.json`, `/etc/passwd`, `C:/Windows/win.ini` and
+> `..\outside.json` as a tokenizer path, two escapes as an encoder folder, and
+> a local path, `../secret`, `a/..` and `a/b/c` as a base model, and requires a
+> `ValueError` for each; a side-by-side base and an inside tokenizer path still
+> load, and the Hub message is printed.
 
 Every export reads itself back through this loader before it reports success.
 The last step of `main` (lines 378–379) calls `check_parity` unless

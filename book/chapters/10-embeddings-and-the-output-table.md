@@ -98,96 +98,64 @@ error of plain AdamW (*measured*). Tying alone was not run at 400M.
 
 ## 10.3  Initialisation and the first loss
 
-> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 859–871 · @fdbb09a
-
-```python
-        self.apply(self._init_weights)
-        # nanoGPT's scaled init for the residual output projections.
-        for name, p in self.named_parameters():
-            if name.endswith(("o_proj.weight", "dense.weight", "down_proj.weight")):
-                nn.init.normal_(p, mean=0.0, std=cfg.initializer_range / math.sqrt(2 * cfg.n_layer))
-
-    def _init_weights(self, m):
-        if isinstance(m, nn.Linear):
-            nn.init.normal_(m.weight, mean=0.0, std=self.cfg.initializer_range)
-            if m.bias is not None:
-                nn.init.zeros_(m.bias)
-        elif isinstance(m, nn.Embedding):
-            nn.init.normal_(m.weight, mean=0.0, std=self.cfg.initializer_range)
-```
-
-`self.apply` visits every module, so both tables are drawn from N(0, 0.02²)
-(`initializer_range`, line 118): the head as an `nn.Linear`, the embedding by
-its own branch. Lines 860–863 rescale residual output projections (Chapter
-15), not the tables. For the head this sets the first loss. The model's last
-normalisation layer (RMSNorm, Chapter 15) hands it vectors of root mean square 1, so ‖h‖ = √D, and each logit has spread
-0.02 × √D: small, so the first softmax is nearly uniform and the loss near
-ln V (Chapter 3). The test holds `tiny()` to that:
-
-> **In the repo** · `tests/test_model.py` · `initial_loss_is_ln_vocab` · lines 349–359 · @fdbb09a
-
-```python
-def initial_loss_is_ln_vocab():
-    for attn in ("gqa", "mla"):
-        torch.manual_seed(0)
-        cfg = tiny(attn=attn)
-        m = AnuLM(cfg).eval()
-        x = torch.randint(0, cfg.vocab_size, (4, 32))
-        with torch.no_grad():
-            _, loss = m(x, x)
-        expected = math.log(cfg.vocab_size)
-        assert abs(loss.item() - expected) < 0.35, \
-            f"{attn}: init loss {loss.item():.3f}, expected ~{expected:.3f} -- init is off"
-```
-
-At the released size the book example simulates just the head, drawn as
-`_init_weights` draws it, on synthetic unit-RMS inputs (*illustrative*;
-`book/code-examples/ch10_embeddings.py`, `first_loss`):
-
-> Book example, not repository code · `book/code-examples/ch10_embeddings.py` · `first_loss`
-
-```python
-    V, D = 32768, 1024
-    g = torch.Generator().manual_seed(0)
-    W = torch.randn(V, D, generator=g) * 0.02
-    h = torch.randn(256, D, generator=g)
-    h = h / h.pow(2).mean(-1, keepdim=True).sqrt()             # RMS exactly 1
-    z = h @ W.T                                                # (256, V)
-    y = torch.randint(0, V, (256,), generator=g)
-```
-
-```
-tiny(): logit std 0.118 (0.02 x sqrt(32) = 0.113), loss 4.186, ln V = 4.159
-released size: logit std 0.640 (0.02 x sqrt(1024) = 0.64), loss 10.581, ln V = 10.397, ln V + std^2/2 = 10.602
-```
-
-With independent logits of spread σ, the first loss is about ln V + σ²/2:
-the softmax denominator sums V terms whose mean is e^(σ²/2). That predicts
-0.006 above ln V for `tiny()` and 0.205 for the released size; the gaps
-are 0.027 for `tiny()` and 0.184 for the simulated head, inside the test's
-0.35. The whole released configuration at random initialisation starts
-0.224 above ln V (*verified*):
-
-> Book example, not repository code · `book/code-examples/ch10_measure_tables.py` · `main`
-
-```python
-    from trace_forward import released
-    torch.manual_seed(0)
-    m = M.AnuLM(released()).eval()
-    x = torch.randint(0, V, (4, 256))
-    with torch.no_grad():
-        logits, loss = m(x, x)
-```
-
-```
-released config at random init (seed 0, 4 x 256 random ids): loss 10.621, logit std 0.640, ln V 10.397
-```
-
-The bump grows with the
-square of the initial spread: at `initializer_range` 0.05 the released head
-would start 1.28 above ln V (*illustrative*, printed by
+Both tables start from N(0, 0.02²) (`initializer_range`, line 118):
+`_init_weights` draws the head as an `nn.Linear` and the embedding by its own
+branch (Chapter 3, 3.4, quotes it with the rest of the initialisation, whose
+residual rescaling does not touch the tables). For the head this sets the
+first loss. The model's last normalisation layer (RMSNorm, Chapter 15) hands
+it vectors of root mean square 1, so ‖h‖ = √D, and each logit has spread
+0.02 × √D: small, so the first softmax is nearly uniform and the loss about
+ln V + σ²/2 (Chapter 3 derives it), which `initial_loss_is_ln_vocab` (line
+349) holds to within 0.35 of ln V on `tiny()`. A simulated head of the
+released size, on unit-RMS inputs, starts at 10.581 against ln V = 10.397
+(*illustrative*; the Details below). The bump grows with the square of the
+initial spread: at `initializer_range` 0.05 the released head would start
+1.28 above ln V (*illustrative*, printed by
 `book/code-examples/ch10_embeddings.py`: σ = 0.05 · √1,024 = 1.6, and
 σ²/2 = 1.28).
+
+> **Details.** At the released size the book example simulates just the
+> head, drawn as `_init_weights` draws it, on synthetic unit-RMS inputs
+> (*illustrative*; `book/code-examples/ch10_embeddings.py`, `first_loss`):
+>
+> > Book example, not repository code · `book/code-examples/ch10_embeddings.py` · `first_loss`
+>
+> ```python
+>     V, D = 32768, 1024
+>     g = torch.Generator().manual_seed(0)
+>     W = torch.randn(V, D, generator=g) * 0.02
+>     h = torch.randn(256, D, generator=g)
+>     h = h / h.pow(2).mean(-1, keepdim=True).sqrt()             # RMS exactly 1
+>     z = h @ W.T                                                # (256, V)
+>     y = torch.randint(0, V, (256,), generator=g)
+> ```
+>
+> ```
+> tiny(): logit std 0.118 (0.02 x sqrt(32) = 0.113), loss 4.186, ln V = 4.159
+> released size: logit std 0.640 (0.02 x sqrt(1024) = 0.64), loss 10.581, ln V = 10.397, ln V + std^2/2 = 10.602
+> ```
+>
+> With independent logits of spread σ, the first loss is about ln V + σ²/2:
+> the softmax denominator sums V terms whose mean is e^(σ²/2). That predicts
+> 0.006 above ln V for `tiny()` and 0.205 for the released size; the gaps
+> are 0.027 for `tiny()` and 0.184 for the simulated head, inside the test's
+> 0.35. The whole released configuration at random initialisation starts
+> 0.224 above ln V (*verified*):
+>
+> > Book example, not repository code · `book/code-examples/ch10_measure_tables.py` · `main`
+>
+> ```python
+>     from trace_forward import released
+>     torch.manual_seed(0)
+>     m = M.AnuLM(released()).eval()
+>     x = torch.randint(0, V, (4, 256))
+>     with torch.no_grad():
+>         logits, loss = m(x, x)
+> ```
+>
+> ```
+> released config at random init (seed 0, 4 x 256 random ids): loss 10.621, logit std 0.640, ln V 10.397
+> ```
 
 `IN THE REPO`
 
@@ -257,8 +225,8 @@ size. *measured* on `ckpt_base_v2.pt`.
   (`_v2_run.cmd`, `experiments/v2_train.sh`) pass no `--weight-decay`, so the
   default 0.1 applied (line 555), and `ckpt_base_v2.pt.last` stores it: 0.1 on
   1,432 tensors, 0.0 on 81, fused. Decay alone over the run's schedule would
-  multiply a row by 10⁻⁴⁶ (1 − lr × 0.1 per step on `lr_at`'s schedule, code
-  below), so even the 0.013 rows got occasional
+  multiply a row by 10⁻⁴⁶ (1 − lr × 0.1 per step on `lr_at`'s schedule; the
+  Details below), so even the 0.013 rows got occasional
   gradients: their size is a balance of gradient against decay. That fits
   the table; nothing here isolates decay as the cause.
 - **Output rows do not.** The gradient on logit *j* is p<sub>j</sub> −
@@ -270,21 +238,24 @@ size. *measured* on `ckpt_base_v2.pt`.
   times, 4.9% of the ten nearest rows agree between the tables, against 0.031%
   by chance (10 of 32,767).
 
-> Book example, not repository code · `book/code-examples/ch10_measure_tables.py` · `main`
-
-```python
-    from types import SimpleNamespace
-    from train import lr_at
-    run = SimpleNamespace(lr=6e-4, min_lr=6e-5, warmup=2000, steps=1900000, schedule="wsd",
-                          decay_frac=0.1631579)               # the flags in _v2_run.cmd / experiments/v2_train.sh
-    wd = groups[0]["weight_decay"]
-    log_keep = sum(math.log1p(-lr_at(s, run) * wd) for s in range(run.steps))
-```
-
-```
-ckpt_base_v2.pt.last optimizer groups: [{'weight_decay': 0.1, 'tensors': 1432, 'fused': True}, {'weight_decay': 0.0, 'tensors': 81, 'fused': True}]
-decay alone over 1,900,000 steps multiplies a row by 10^-45.8: 0.640 -> 9.0e-47
-```
+> **Details.** The decay arithmetic, from the checkpoint's own optimizer
+> groups and `lr_at` (Chapter 7):
+>
+> > Book example, not repository code · `book/code-examples/ch10_measure_tables.py` · `main`
+>
+> ```python
+>     from types import SimpleNamespace
+>     from train import lr_at
+>     run = SimpleNamespace(lr=6e-4, min_lr=6e-5, warmup=2000, steps=1900000, schedule="wsd",
+>                           decay_frac=0.1631579)               # the flags in _v2_run.cmd / experiments/v2_train.sh
+>     wd = groups[0]["weight_decay"]
+>     log_keep = sum(math.log1p(-lr_at(s, run) * wd) for s in range(run.steps))
+> ```
+>
+> ```
+> ckpt_base_v2.pt.last optimizer groups: [{'weight_decay': 0.1, 'tensors': 1432, 'fused': True}, {'weight_decay': 0.0, 'tensors': 81, 'fused': True}]
+> decay alone over 1,900,000 steps multiplies a row by 10^-45.8: 0.640 -> 9.0e-47
+> ```
 
 Within the input table, neighbours by cosine show what the rows encode:
 
@@ -302,9 +273,9 @@ nearby. Four hand-picked tokens illustrate; they test nothing.
 
 ## 10.6  Sidebar: the merge-tree reparameterisation
 
-> **Details.** Everything in this section is off in the released model
-> (`merge_tree = ""` in its configuration) and can be skipped on a first
-> reading. It is a training-time option, measured in `docs/RESULTS.md` §32.
+This section describes a training-time option that is off in the released
+model (`merge_tree = ""` in its configuration); it can be skipped on a first
+reading.
 
 The rows of a rare token learn slowly, as 10.5 shows. But every BPE token is a
 merge of two older ones, so its row could start from theirs. With
@@ -313,148 +284,153 @@ merge of two older ones, so its row could start from theirs. With
   E[t] = W[t] + (E[a] + E[b]) / 2   for merge t = (a, b),
 
 recursively, with E = W for the bytes. Unrolled, E = **P** **W** for a fixed
-sparse (V, V) matrix **P**:
-
-> **In the repo** · `anulm/model.py` · `merge_tree_matrix` · lines 390–411 · @fdbb09a
-
-```python
-def merge_tree_matrix(merges, vocab_size: int) -> torch.Tensor:
-    """Sparse (V, V) matrix P with E = P @ W unrolling E[t] = W[t] + (E[a] + E[b]) / 2.
-
-    `merges` is the BPE merge list (token 256 + i = merges[i]); bytes, EOS and
-    any id past the merges are their own row. For multi32k it has 393,657
-    nonzeros -- about 12 per token -- so P @ W costs ~0.4 GFLOP at width 1024.
-    """
-    coef = [{i: 1.0} for i in range(256)]
-    for a, b in merges:
-        c = {len(coef): 1.0}
-        for q in (a, b):
-            for k, v in coef[q].items():
-                c[k] = c.get(k, 0.0) + 0.5 * v
-        coef.append(c)
-    while len(coef) < vocab_size:
-        coef.append({len(coef): 1.0})
-    rows, cols, vals = [], [], []
-    for t, c in enumerate(coef[:vocab_size]):
-        for k, v in c.items():
-            rows.append(t); cols.append(k); vals.append(v)
-    return torch.sparse_coo_tensor(torch.tensor([rows, cols]), torch.tensor(vals),
-                                   (vocab_size, vocab_size), check_invariants=True).coalesce()
-```
-
-`coef[t]` is row *t* of **P** as {column: weight}. A byte is itself
-(line 397); a merge is 1 on its own row plus half of each parent's row
-(398–403), so ancestors weigh ½, ¼, …, and a self-pair adds its parent twice.
-EOS and extra ids are their own row (404–405). The docstring's "~0.4 GFLOP"
-counts multiply-adds: 393,657 × 1,024 = 0.40 G, which is 0.81 GFLOP per
-table per forward pass. For the merges ab, abc,
-abcabc, the book example prints:
-
-```
-E[97] = 1*W[97]
-E[256] = 0.5*W[97] + 0.5*W[98] + 1*W[256]
-E[257] = 0.25*W[97] + 0.25*W[98] + 0.5*W[99] + 0.5*W[256] + 1*W[257]
-E[258] = 0.25*W[97] + 0.25*W[98] + 0.5*W[99] + 0.5*W[256] + 1*W[257] + 1*W[258]
-```
-
-The test asserts the same rows:
-
-> **In the repo** · `tests/test_model.py` · `merge_tree_composes_trains_and_bakes_losslessly` · lines 1646–1653 · @fdbb09a
-
-```python
-    merges = [[97, 98], [256, 99], [257, 257], [100, 101]]      # ab, abc, abcabc, de
-    P = merge_tree_matrix(merges, 261)
-    W = torch.randn(261, 4)
-    E = torch.sparse.mm(P, W)
-    assert torch.allclose(E[97], W[97])
-    assert torch.allclose(E[256], W[256] + (W[97] + W[98]) / 2)
-    assert torch.allclose(E[257], W[257] + (E[256] + W[99]) / 2)
-    assert torch.allclose(E[258], W[258] + E[257]), "a self-pair counts both halves"
-```
-
-The product runs in fp32 with autocast off, since the sparse multiply has no
-bf16 path here:
-
-> **In the repo** · `anulm/model.py` · `AnuLM._compose` · lines 959–964 · @fdbb09a
-
-```python
-    def _compose(self, W):
-        """P @ W in fp32 outside autocast (sparse matmul has no bf16 path here)."""
-        if self.merge_P.device != W.device:
-            self.merge_P = self.merge_P.to(W.device)
-        with torch.autocast(device_type=W.device.type, enabled=False):
-            return torch.sparse.mm(self.merge_P, W.float()).to(W.dtype)
-```
-
-`_table` composes in training and caches in evaluation:
-
-> **In the repo** · `anulm/model.py` · `AnuLM._table` · lines 971–990 · @fdbb09a
-
-```python
-        if self.training:
-            return self._compose(W)
-        # Eval: compose once and reuse -- a decode step would otherwise redo
-        # the whole-vocabulary product. The cache is dropped by train(), i.e.
-        # every time training resumes. It must NOT be keyed on W._version:
-        # the fused AdamW step updates weights without bumping it, and a
-        # version-keyed cache served step-999 tables to every later eval of
-        # the 400M check (val 6.37 -> 10.66 while train loss fell to 4.43).
-        if self._merged is None:
-            self._merged = {}
-        if side not in self._merged:
-            with torch.no_grad():
-                self._merged[side] = self._compose(W)
-        return self._merged[side]
-
-    def train(self, mode: bool = True):
-        self._merged = None             # weights may change from here on
-        return super().train(mode)
-```
-
-In training the product is recomputed every call, so gradients reach every
-ancestor row through **P**; in evaluation it is computed once per side. The
-comment records a real bug (§32): a cache keyed on the version counter, which
-the fused (single-kernel, CUDA) AdamW step does not bump, served stale tables to every later
-evaluation. Now `train()` drops the cache, and
-`merge_tree_eval_cache_sees_optimizer_updates` (`tests/test_model.py` line 1676)
-fakes an update with `.data.add_`, which leaves the counter alone too
-(*verified*: `W._version moves by 0`).
-
-For serving, the composition is written back:
-
-> **In the repo** · `anulm/model.py` · `AnuLM.bake_merge_tree` · lines 997–1013 · @fdbb09a
-
-```python
-    @torch.no_grad()
-    def bake_merge_tree(self):
-        """Replace the raw tables by their composed values and switch the
-        reparameterisation off. Outputs are unchanged; afterwards this is an
-        ordinary checkpoint for serve.py, export_hf.py and the HF wrapper."""
-        if not self.cfg.merge_tree:
-            return
-        ein, eout = self._compose(self.embed_tokens.weight), self._compose(self.lm_head.weight)
-        side = self.cfg.merge_tree
-        tied = self.lm_head.weight is self.embed_tokens.weight
-        assert not (tied and side != "both"), "a tied table composed on one side only cannot be baked"
-        if side in ("in", "both"):
-            self.embed_tokens.weight.copy_(ein)
-        if side in ("out", "both") and not tied:
-            self.lm_head.weight.copy_(eout)
-        self.cfg.merge_tree = ""
-        self.merge_P, self._merged = None, None
-```
-
-Both tables are composed before either is overwritten, because a tied pair is
-one tensor; and a tied table composed on one side only cannot be baked, since
-one tensor cannot be both **P** **W** and **W**. The rest of the test (lines
-1654–1672) checks that an ancestor gets a gradient through the tree and that
-baking changes no output by more than 10⁻⁵, tied or not; the book example
-finds a largest change of `0.00e+00`.
+sparse (V, V) matrix **P** (`merge_tree_matrix`, line 390). In training the
+product is recomputed every call, so gradients reach every ancestor row
+through **P**; in evaluation it is computed once and cached; for serving,
+`bake_merge_tree` (lines 997–1013) writes the composition back into a plain table.
 
 Quality, from §32: in the 88M proxy at 25M tokens, the merge tree lowered
 held-out loss by 0.187 on the input side and 0.194 on the output side; on top
 of Muon and tied tables, it and a bigram teacher together added about 0.04;
 and at 400M the full recipe's early lead did not hold (*measured*).
+
+> **Details.** How **P** is built, cached and baked.
+>
+> > **In the repo** · `anulm/model.py` · `merge_tree_matrix` · lines 390–411 · @fdbb09a
+>
+> ```python
+> def merge_tree_matrix(merges, vocab_size: int) -> torch.Tensor:
+>     """Sparse (V, V) matrix P with E = P @ W unrolling E[t] = W[t] + (E[a] + E[b]) / 2.
+>
+>     `merges` is the BPE merge list (token 256 + i = merges[i]); bytes, EOS and
+>     any id past the merges are their own row. For multi32k it has 393,657
+>     nonzeros -- about 12 per token -- so P @ W costs ~0.4 GFLOP at width 1024.
+>     """
+>     coef = [{i: 1.0} for i in range(256)]
+>     for a, b in merges:
+>         c = {len(coef): 1.0}
+>         for q in (a, b):
+>             for k, v in coef[q].items():
+>                 c[k] = c.get(k, 0.0) + 0.5 * v
+>         coef.append(c)
+>     while len(coef) < vocab_size:
+>         coef.append({len(coef): 1.0})
+>     rows, cols, vals = [], [], []
+>     for t, c in enumerate(coef[:vocab_size]):
+>         for k, v in c.items():
+>             rows.append(t); cols.append(k); vals.append(v)
+>     return torch.sparse_coo_tensor(torch.tensor([rows, cols]), torch.tensor(vals),
+>                                    (vocab_size, vocab_size), check_invariants=True).coalesce()
+> ```
+>
+> `coef[t]` is row *t* of **P** as {column: weight}. A byte is itself
+> (line 397); a merge is 1 on its own row plus half of each parent's row
+> (398–403), so ancestors weigh ½, ¼, …, and a self-pair adds its parent twice.
+> EOS and extra ids are their own row (404–405). The docstring's "~0.4 GFLOP"
+> counts multiply-adds: 393,657 × 1,024 = 0.40 G, which is 0.81 GFLOP per
+> table per forward pass. For the merges ab, abc,
+> abcabc, the book example prints:
+>
+> ```
+> E[97] = 1*W[97]
+> E[256] = 0.5*W[97] + 0.5*W[98] + 1*W[256]
+> E[257] = 0.25*W[97] + 0.25*W[98] + 0.5*W[99] + 0.5*W[256] + 1*W[257]
+> E[258] = 0.25*W[97] + 0.25*W[98] + 0.5*W[99] + 0.5*W[256] + 1*W[257] + 1*W[258]
+> ```
+>
+> The test asserts the same rows:
+>
+> > **In the repo** · `tests/test_model.py` · `merge_tree_composes_trains_and_bakes_losslessly` · lines 1646–1653 · @fdbb09a
+>
+> ```python
+>     merges = [[97, 98], [256, 99], [257, 257], [100, 101]]      # ab, abc, abcabc, de
+>     P = merge_tree_matrix(merges, 261)
+>     W = torch.randn(261, 4)
+>     E = torch.sparse.mm(P, W)
+>     assert torch.allclose(E[97], W[97])
+>     assert torch.allclose(E[256], W[256] + (W[97] + W[98]) / 2)
+>     assert torch.allclose(E[257], W[257] + (E[256] + W[99]) / 2)
+>     assert torch.allclose(E[258], W[258] + E[257]), "a self-pair counts both halves"
+> ```
+>
+> The product runs in fp32 with autocast off, since the sparse multiply has no
+> bf16 path here:
+>
+> > **In the repo** · `anulm/model.py` · `AnuLM._compose` · lines 959–964 · @fdbb09a
+>
+> ```python
+>     def _compose(self, W):
+>         """P @ W in fp32 outside autocast (sparse matmul has no bf16 path here)."""
+>         if self.merge_P.device != W.device:
+>             self.merge_P = self.merge_P.to(W.device)
+>         with torch.autocast(device_type=W.device.type, enabled=False):
+>             return torch.sparse.mm(self.merge_P, W.float()).to(W.dtype)
+> ```
+>
+> `_table` composes in training and caches in evaluation:
+>
+> > **In the repo** · `anulm/model.py` · `AnuLM._table` · lines 971–990 · @fdbb09a
+>
+> ```python
+>         if self.training:
+>             return self._compose(W)
+>         # Eval: compose once and reuse -- a decode step would otherwise redo
+>         # the whole-vocabulary product. The cache is dropped by train(), i.e.
+>         # every time training resumes. It must NOT be keyed on W._version:
+>         # the fused AdamW step updates weights without bumping it, and a
+>         # version-keyed cache served step-999 tables to every later eval of
+>         # the 400M check (val 6.37 -> 10.66 while train loss fell to 4.43).
+>         if self._merged is None:
+>             self._merged = {}
+>         if side not in self._merged:
+>             with torch.no_grad():
+>                 self._merged[side] = self._compose(W)
+>         return self._merged[side]
+>
+>     def train(self, mode: bool = True):
+>         self._merged = None             # weights may change from here on
+>         return super().train(mode)
+> ```
+>
+> In training the product is recomputed every call, so gradients reach every
+> ancestor row through **P**; in evaluation it is computed once per side. The
+> comment records a real bug (§32): a cache keyed on the version counter, which
+> the fused (single-kernel, CUDA) AdamW step does not bump, served stale tables to every later
+> evaluation. Now `train()` drops the cache, and
+> `merge_tree_eval_cache_sees_optimizer_updates` (`tests/test_model.py` line 1676)
+> fakes an update with `.data.add_`, which leaves the counter alone too
+> (*verified*: `W._version moves by 0`).
+>
+> For serving, the composition is written back:
+>
+> > **In the repo** · `anulm/model.py` · `AnuLM.bake_merge_tree` · lines 997–1013 · @fdbb09a
+>
+> ```python
+>     @torch.no_grad()
+>     def bake_merge_tree(self):
+>         """Replace the raw tables by their composed values and switch the
+>         reparameterisation off. Outputs are unchanged; afterwards this is an
+>         ordinary checkpoint for serve.py, export_hf.py and the HF wrapper."""
+>         if not self.cfg.merge_tree:
+>             return
+>         ein, eout = self._compose(self.embed_tokens.weight), self._compose(self.lm_head.weight)
+>         side = self.cfg.merge_tree
+>         tied = self.lm_head.weight is self.embed_tokens.weight
+>         assert not (tied and side != "both"), "a tied table composed on one side only cannot be baked"
+>         if side in ("in", "both"):
+>             self.embed_tokens.weight.copy_(ein)
+>         if side in ("out", "both") and not tied:
+>             self.lm_head.weight.copy_(eout)
+>         self.cfg.merge_tree = ""
+>         self.merge_P, self._merged = None, None
+> ```
+>
+> Both tables are composed before either is overwritten, because a tied pair is
+> one tensor; and a tied table composed on one side only cannot be baked, since
+> one tensor cannot be both **P** **W** and **W**. The rest of the test (lines
+> 1654–1672) checks that an ancestor gets a gradient through the tree and that
+> baking changes no output by more than 10⁻⁵, tied or not; the book example
+> finds a largest change of `0.00e+00`.
 
 `IN THE REPO` (off by default)
 
