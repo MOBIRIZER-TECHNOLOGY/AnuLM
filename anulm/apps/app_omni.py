@@ -303,14 +303,28 @@ def speech_or_none(models: Models, text: str):
     return (rate, samples) if len(samples) else None
 
 
-def chat_text(models: Models, text: str, max_tokens: int = 200) -> tuple[str, float]:
-    """The chat model in its own words (no lookup)."""
-    from anulm.inference.voice import speakable
+def readable(text: str, max_chars: int = 1500) -> str:
+    """A reply for the screen. Unlike voice.speakable, which flattens text to
+    one line for the voice, it keeps line breaks: a Python answer joined into
+    one line is no longer code. Long replies end at a line break if one is in
+    reach, else at a sentence end."""
+    text = re.sub(r"\n{3,}", "\n\n", text.strip())
+    if len(text) <= max_chars:
+        return text
+    cut = text[:max_chars]
+    end = cut.rfind("\n")
+    if end <= max_chars // 2:
+        end = max(cut.rfind("।"), cut.rfind(". "), cut.rfind("?"), cut.rfind("!"))
+    return (cut[:end + 1] if end > max_chars // 3 else cut).rstrip() + " …"
+
+
+def chat_text(models: Models, text: str, max_tokens: int = 300) -> tuple[str, float]:
+    """The chat model in its own words (no lookup), for the Chat tab."""
     t0 = time.time()
     with models.shared:
         eng = models.brain()
         out = eng.generate(text, max_tokens, 0.3, 40, 0, mode="question", repetition_penalty=1.15)
-    return speakable(out["completion"]), time.time() - t0
+    return readable(out["completion"]), time.time() - t0
 
 
 def hear(models: Models, lang: str, audio) -> dict:

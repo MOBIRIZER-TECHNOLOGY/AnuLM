@@ -94,20 +94,38 @@ class Reader:
     def __init__(self, om: Omni, retriever=None):
         self.om, self.r = om, retriever
 
-    def ask(self, question: str, k: int = 3) -> dict:
+    def read(self, question: str, hits: list[dict]) -> str:
+        """One greedy answer from `hits`, numbered in the order given."""
         from anulm.data.make_qa import PROMPTS
-        from anulm.inference.rag import Retriever
+        hi = bool(DEV.search(question))
+        body = "\n\n".join(f"[{i + 1}] {' '.join(h['text'].split()[:120])}" for i, h in enumerate(hits))
+        q = f"{body}\n\n{'प्रश्न' if hi else 'Question'}: {question.strip()}"
+        prompt = PROMPTS["rc-hi" if hi else "rc-en"].format(q=q)
+        return self.om.engine.generate(prompt, 40, 0.0, 1, 0, mode="continue")["completion"].strip()
+
+    def ask(self, question: str, k: int = 3) -> dict:
+        """Retrieve `k` passages and read the answer. An answer that only
+        repeats the question ("Hamlet" for "Who wrote Hamlet?") or says
+        not-found is read again with the passages rotated, up to k reads: on
+        the 20 demo questions the answer was in the three passages every time,
+        and these were the reader's commonest misses. The answer is "" when no
+        read found one (callers then fall back, as for rc_pointer.PointerQA),
+        and `sources` starts with the passage the answer was taken from."""
+        from anulm.inference.rag import NOT_FOUND, Retriever, cite, echoes
         if self.r is None:
             self.r = Retriever(device=self.om.device)       # e5 on the model's device, not always CUDA
         t0 = time.time()
         hits = self.r.search(question, k)
         t1 = time.time()
-        hi = bool(DEV.search(question))
-        body = "\n\n".join(f"[{i + 1}] {' '.join(h['text'].split()[:120])}" for i, h in enumerate(hits))
-        q = f"{body}\n\n{'प्रश्न' if hi else 'Question'}: {question.strip()}"
-        prompt = PROMPTS["rc-hi" if hi else "rc-en"].format(q=q)
-        out = self.om.engine.generate(prompt, 40, 0.0, 1, 0, mode="continue")
-        return {"answer": out["completion"].strip(), "sources": [h["title"] for h in hits],
+        ans = ""
+        for turn in range(len(hits)):
+            a = self.read(question, hits[turn:] + hits[:turn])
+            if a not in NOT_FOUND and not echoes(a, question):
+                ans = a
+                break
+        titles = [h["title"] for h in hits]
+        src = cite(ans, hits) if ans else (titles[0] if titles else "")
+        return {"answer": ans, "sources": [src] + [t for t in titles if t != src] if titles else [],
                 "retrieve_s": round(t1 - t0, 3), "read_s": round(time.time() - t1, 3)}
 
 

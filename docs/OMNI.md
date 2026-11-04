@@ -67,9 +67,13 @@ On Windows, `experiments\run_omni_one.cmd` starts it detached. It runs, in order
 3. grows its vocabulary with the audio and image ids (`speech_vocab.py`)
 4. waits for the GPU to be free
 5. measures the chat model it starts from, as the baseline
-6. **trains the one model**: 12,500 optimizer steps, each summing 8 batches
-   drawn at random from the seven tasks (100,000 batches), 24.2 hours on
-   the GPU above (2026-11-03 run); the first run also caches the image features (~15 minutes).
+6. **trains the one model**: 3,125 optimizer steps, each summing 8 batches
+   drawn at random from the seven tasks (25,000 batches), about 6 hours on
+   the GPU above; the first run also caches the image features (~15 minutes).
+   The 2026-11-03 run took 12,500 steps (24.2 hours) and failed only the chat
+   gate: chat held-out loss rose from the first evaluation while the other
+   tasks trained. So the run is shorter, and a checkpoint is kept only if its
+   chat loss is within `--max-ratio chat=1.049` of the first evaluation.
    One batch per step was tried first and drifted the shared decoder: an
    intent or image-question batch is ~30 answer tokens, too few to steer a
    full optimizer step, and chat held-out loss went 3.27 -> 5.39

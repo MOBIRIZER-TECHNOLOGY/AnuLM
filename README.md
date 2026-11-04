@@ -77,8 +77,10 @@ fresh clone runs every tab on the one model, AnuLM-Omni-400M, downloaded from
 the Hub on first use (`omni.py` keeps a single copy of its decoder behind all
 of them); a checkout with `ckpt_omni.pt` uses that, and one with only the
 earlier per-task checkpoints (`ckpt_*.pt`) uses those. The Wikipedia lookup
-also needs the retrieval index, which `python -m anulm rag build` makes and which is
-not uploaded; without it *Chat* answers in the model's own words only.
+also needs the retrieval index, which is not uploaded: `python -m anulm omni_data
+fetch read` downloads Simple English + Hindi Wikipedia and runs `rag build`, then
+`python -m anulm rag build-dense` writes `data/rag/dense_e5s.npy` (716 MB, ~5 min
+on a GPU, most of a day on a CPU); without it *Chat* answers in the model's own words only.
 
 Want to help? [TODO.md](docs/TODO.md)
 lists the open work, several items need no GPU, and [CONTRIBUTING.md](CONTRIBUTING.md)

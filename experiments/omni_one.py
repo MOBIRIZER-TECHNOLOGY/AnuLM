@@ -67,7 +67,15 @@ KEYS = ("eval @", "done in", "held-out", "WER", "Traceback", "Error", "F1", "acc
 # decoder a full AdamW step: chat held-out went 3.27 -> 5.39. Summing 8 kept
 # every task better at equal batches (logs/ab_projscale, 2026-10-30).
 ACCUM = 8
-STEPS = 12_500                  # x ACCUM = the first run's 100,000 batches
+# The 2026-11-03 run took 12,500 steps (100,000 batches, 24.2 h) and passed
+# every gate but chat: chat held-out rose from the first eval (3.27 -> 3.41 by
+# step 2,500, 3.58 at 12,500) while the other tasks pulled the shared decoder.
+# Distilling chat from its starting model did not slow that (probe at step 625:
+# 3.358 vs 3.351, experiments/probe_distill.py). So: a quarter of the steps,
+# with the learning rate fully decayed by the end, and never keep a
+# checkpoint whose chat loss is more than MAX_RATIO times its first eval.
+STEPS = 3_125                   # x ACCUM = 25,000 batches, about 6 hours
+MAX_RATIO = "chat=1.049"        # 3.30 (the chat gate) / 3.146 (the chat model)
 # 3,000-batch probes, chat held-out loss on the gate's metric (start 3.335):
 # 15% chat at 5e-5 3.50, 25% at 5e-5 3.457, 15% at 2.5e-5 3.43. Both levers
 # are used together here (not probed as a pair).
@@ -471,7 +479,7 @@ def main() -> None:
         args = ["-m", "anulm.multimodal.omni_train", "--ckpt", "ckpt_chat_mm.pt", "--out", OUT, "--steps", str(a.steps),
                 "--accum", str(ACCUM), "--warmup", str(max(1, 500 // ACCUM)), "--lr", str(LR),
                 "--eval-every", "625", "--eval-n", "200", "--log-every", "125", "--resume",
-                "--grad-ckpt"]     # unattended: an out-of-memory at 3 a.m. would stop the night
+                "--grad-ckpt", "--max-ratio", MAX_RATIO]     # unattended: an out-of-memory at 3 a.m. would stop the night
         if (ROOT / "ckpt_asr_en_v3.pt").exists():      # LibriSpeech-only projector; a clone starts fresh
             args += ["--audio-proj-from", "ckpt_asr_en_v3.pt"]
         for name, kind, path, w, b in TASKS:

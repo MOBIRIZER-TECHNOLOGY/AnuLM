@@ -578,10 +578,15 @@ python -m anulm.apps.app_omni                             # http://127.0.0.1:786
 
 With `ckpt_omni.pt` in the repository root, every tab uses your model. The
 intent tab needs `data/banking77/` and `data/decide_general/massive_hi-IN/`
-(B1). The Wikipedia lookup in the Chat tab also needs a reader checkpoint
-and `data/rag/dense_e5s.npy`. No command in the repository writes that
-file today, so on a fresh clone Chat answers in the model's own words. Add
-`--device cpu` to run without a GPU (slowly).
+(B1). The Wikipedia lookup in the Chat tab (the one model is the reader)
+also needs the retrieval index in `data/rag/`: `python -m anulm omni_data
+fetch read` downloads Simple English and Hindi Wikipedia (`wikimedia/wikipedia`
+20231101, CC BY-SA) and runs `rag build` (chunks.jsonl and BM25, ~1.5 GB),
+then `python -m anulm rag build-dense` embeds the 932,648 chunks with
+multilingual-e5-small into `dense_e5s.npy` (716 MB; ~5 minutes on a GPU,
+most of a day on a CPU; `--limit 1000 --out /tmp/x.npy` is a quick trial).
+Without it, Chat answers in the model's own words. Add `--device cpu` to run
+without a GPU (slowly).
 
 ---
 

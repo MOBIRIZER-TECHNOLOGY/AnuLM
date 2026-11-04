@@ -39,6 +39,14 @@ best checkpoint is the one with the lowest mean of each task's held-out loss
 divided by its value at step 0, so a task with a large loss (captions) cannot
 drown out one with a small one (speech).
 
+**Distillation.** `--distill chat` keeps a task where it started instead of
+re-learning it: on that task's batches the answer-token loss blends the
+cross-entropy with the KL divergence to a frozen copy of the starting
+checkpoint (`--distill-alpha`, 1.0 = KL only). The 2026-11-03 run re-read the
+22,873 chat pairs about seven more times after chat v3 had learned them, and
+chat held-out loss rose 3.27 -> 3.58 while every other task improved; the
+teacher's distribution on those prompts is where chat should stay.
+
 **Licences.** One set of weights inherits every task's data terms. Check
 docs/DATASETS.md before adding a task to a model meant for commercial use.
 """
@@ -158,20 +166,124 @@ def disjoint_held(training, held, kind, name):
         print(f"{name}: dropped {len(held) - len(kept)} held-out rows whose input is also in training", flush=True)
     return kept
 
-def text_batches(rows, model, device, batch_size, shuffle=True, seed=0):
+def text_batches(rows, model, device, batch_size, shuffle=True, seed=0, with_ids=False):
+    """(embeds, targets) per batch; with_ids adds the padded token ids (0 in
+    padding), which a distillation teacher embeds with its own table."""
     order = np.arange(len(rows))
     if shuffle:
         np.random.default_rng(seed).shuffle(order)
     emb = model.embed_tokens
     for i in range(0, len(order), batch_size):
-        built = []
+        built, all_ids = [], []
         for j in order[i: i + batch_size]:
             p, a = rows[j]["p"], rows[j]["a"]
             ids = torch.tensor(p + a, device=device)
             t = torch.full((len(ids),), -1, dtype=torch.long, device=device)
             t[len(p) - 1: len(p) - 1 + len(a)] = ids[len(p):]
             built.append((emb(ids), t))
-        yield pad(built, device)
+            all_ids.append(ids)
+        eb, tb = pad(built, device)
+        if not with_ids:
+            yield eb, tb
+            continue
+        ib = torch.zeros(tb.shape, dtype=torch.long, device=device)
+        for k, ids in enumerate(all_ids):
+            ib[k, : len(ids)] = ids
+        yield eb, tb, ib
+
+
+def _ce_kl_sums(s, t, y):
+    import torch.nn.functional as F
+    ls, lt = F.log_softmax(s.float(), -1), F.log_softmax(t.float(), -1)
+    return F.nll_loss(ls, y, reduction="sum"), (lt.exp() * (lt - ls)).sum()
+
+
+def distill_loss(logits, teacher_logits, targets, loss, alpha: float, chunk: int = 512):
+    """The model's `loss` (answer cross-entropy + router regulariser) with
+    `alpha` of the cross-entropy replaced by KL(teacher || student) on the same
+    answer positions. Returns (loss, cross-entropy, KL), the last two detached.
+
+    `logits` is the student's (B, S, V); `teacher_logits` is (N, V), the
+    teacher's rows at the N answer positions only (targets != -1), in order.
+    The router term is kept whole: only the language-modelling part moves
+    toward the teacher. With alpha 0 this is `loss` unchanged.
+
+    Float log-softmaxes of every answer row at the 61,445-id vocabulary did
+    not fit beside training on the 16 GB card (out of memory at the first
+    step), so the sums run `chunk` rows at a time under activation
+    checkpointing: one chunk's float tensors exist at once. Same value."""
+    m = targets != -1
+    s, y = logits[m], targets[m]
+    n = y.numel()
+    ce_sum = kl_sum = 0.0
+    for i in range(0, n, chunk):
+        args = (s[i:i + chunk], teacher_logits[i:i + chunk], y[i:i + chunk])
+        if s.requires_grad:
+            c, k = torch.utils.checkpoint.checkpoint(_ce_kl_sums, *args, use_reentrant=False)
+        else:
+            c, k = _ce_kl_sums(*args)
+        ce_sum, kl_sum = ce_sum + c, kl_sum + k
+    ce, kl = ce_sum / n, kl_sum / n
+    return loss + alpha * (kl - ce), ce.detach(), kl.detach()
+
+
+def parse_limits(specs) -> dict[str, float]:
+    """`--max-ratio chat=1.049` -> {"chat": 1.049}."""
+    out = {}
+    for s in specs or []:
+        name, _, value = s.partition("=")
+        if not name or not value:
+            raise SystemExit(f"--max-ratio takes task=ratio, got {s!r}")
+        out[name] = float(value)
+    return out
+
+
+def within_limits(losses: dict, first: dict, limits: dict) -> bool:
+    """True if every limited task's held-out loss is at most `ratio` times its
+    value at step 0."""
+    return all(losses[k] / first[k] <= r for k, r in limits.items())
+
+
+def better_checkpoint(score: float, ok: bool, best: float, best_ok: bool) -> bool:
+    """Which evaluation to keep. The combined score alone kept the November
+    run's step 9,375, whose chat had got 8.7% worse than at the start and
+    failed its release gate, over earlier checkpoints that passed it. Here a
+    checkpoint within --max-ratio always beats one outside it; among equals,
+    the lower score wins (ties keep the first, as before)."""
+    if ok != best_ok:
+        return ok
+    return score < best
+
+
+def answer_logits(model, embeds, targets):
+    """The model's logits at the answer positions only, (N, V): the final
+    hidden state is caught on its way to the head, so the full (B, S, V)
+    logits are never built."""
+    caught = {}
+    hook = model.norm.register_forward_hook(lambda _m, _i, out: caught.setdefault("h", out))
+    try:
+        model(None, None, embeds=embeds)            # no targets: the head runs on the last position only
+    finally:
+        hook.remove()
+    return model._head(caught["h"][targets != -1])
+
+
+def half_teacher(model, device):
+    """A frozen teacher in bf16, as the demo keeps its models (Models._half):
+    the routers stay fp32 (bf16 cannot hold their biases) and RoPE's inverse
+    frequencies are rebuilt in fp32 (in bf16 the angles drift)."""
+    from anulm.model import Rotary, Router
+    routers = {m: {k: v.detach().clone() for k, v in m.state_dict().items()}
+               for m in model.modules() if isinstance(m, Router)}
+    model.to(torch.bfloat16)
+    for m, state in routers.items():
+        m.float()
+        m.load_state_dict(state)
+    for m in model.modules():
+        if isinstance(m, Rotary):
+            m.inv_freq = Rotary._build_inv_freq(m.cfg, m.dim).to(device)
+            m._cached_len, m._cached_key = 0, None
+    return model.eval().requires_grad_(False)
 
 
 class Omni:
@@ -196,6 +308,16 @@ class Omni:
             self.model.enable_gradient_checkpointing()
         self.args = args
         self.tasks = [Task(s) for s in args.task]
+        self.distill = set(getattr(args, "distill", None) or [])
+        unknown = self.distill - {t.name for t in self.tasks if t.kind == "text"}
+        if unknown:
+            raise SystemExit(f"--distill names no text task: {', '.join(sorted(unknown))}")
+        self.teacher = None
+        if self.distill:            # the starting checkpoint, frozen: where the distilled tasks should stay
+            self.teacher = AnuLM(self.cfg).to(dev)
+            self.teacher.load_state_dict(ck["model"])
+            self.teacher = half_teacher(self.teacher, dev) if dev.startswith("cuda") else \
+                self.teacher.eval().requires_grad_(False)
         kinds = {t.kind for t in self.tasks}
         self.sm = self.vl = self.enc = self.tower = None
         if "asr" in kinds:
@@ -297,7 +419,8 @@ class Omni:
 
     def batches(self, t: Task, rows, batch_size, shuffle=True, seed=0):
         if t.kind == "text":
-            return text_batches(rows, self.model, self.dev, batch_size, shuffle, seed)
+            return text_batches(rows, self.model, self.dev, batch_size, shuffle, seed,
+                                with_ids=t.name in self.distill)
         if t.kind == "asr":
             from .speech_encoder import batches
             return batches(rows, self.enc, self.tok, self.sm, self.dev,
@@ -323,7 +446,7 @@ class Omni:
     def held_loss(self, t: Task, autocast) -> float:
         self.model.eval()
         tot = n = 0.0
-        for eb, tb in self.batches(t, t.held[: self.args.eval_n], 1, shuffle=False):
+        for eb, tb, *_ in self.batches(t, t.held[: self.args.eval_n], 1, shuffle=False):
             with autocast:
                 _, loss = self.model(None, tb, embeds=eb)
             k = int((tb != -1).sum())
@@ -356,7 +479,10 @@ def recipe_of(args, tasks) -> dict:
     silently splice two recipes into one checkpoint."""
     return {"accum": args.accum, "proj_scale": args.proj_scale, "lr": args.lr, "proj_lr": args.proj_lr,
             "steps": args.steps, "warmup": args.warmup,
-            "tasks": [[t.name, float(t.weight), int(t.batch)] for t in tasks]}
+            "tasks": [[t.name, float(t.weight), int(t.batch)] for t in tasks],
+            **({"distill": sorted(args.distill), "distill_alpha": args.distill_alpha}
+               if getattr(args, "distill", None) else {}),
+            **({"max_ratio": sorted(args.max_ratio)} if getattr(args, "max_ratio", None) else {})}
 
 
 def train(args) -> None:
@@ -392,6 +518,11 @@ def train(args) -> None:
     last = Path(str(args.out) + ".last")
     t0 = time.time()
     start, best, seen = 1, float("inf"), {t.name: 0 for t in om.tasks}
+    limits = parse_limits(args.max_ratio)
+    unknown = set(limits) - {t.name for t in om.tasks}
+    if unknown:
+        raise SystemExit(f"--max-ratio names no task: {', '.join(sorted(unknown))}")
+    best_ok = False             # nothing kept yet: the first evaluation is saved, within limits or not
     if args.resume and last.exists():
         from anulm.model import safe_load
         st = safe_load(last, map_location=dev)       # weights-only: a resume file runs no code
@@ -408,6 +539,7 @@ def train(args) -> None:
             om.vl.proj.load_state_dict(st["vision_proj"])
         opt.load_state_dict(st["opt"])
         first, best, seen = st["first"], st["best"], st["seen"]
+        best_ok = st.get("best_ok", True)       # files from before --max-ratio had no limits to fail
         start = st["step"] + 1
         for t in om.tasks:      # a fresh shuffle per task: the exact batch order is not worth saving
             t.epoch = 100 + st["step"]
@@ -438,14 +570,21 @@ def train(args) -> None:
         # several batches (any tasks) into one step so each step averages more.
         for _ in range(args.accum):
             t = om.tasks[rng.choice(len(om.tasks), p=w)]
-            eb, tb = om.next_batch(t)
+            batch = om.next_batch(t)
+            eb, tb = batch[0], batch[1]
             with autocast:
-                _, loss = model(None, tb, embeds=eb)
+                logits, loss = model(None, tb, embeds=eb)
+                if t.name in om.distill:
+                    with torch.no_grad():
+                        t_logits = answer_logits(om.teacher, om.teacher.embed_tokens(batch[2]), tb)
+                    loss, ce, kl = distill_loss(logits, t_logits, tb, loss, args.distill_alpha)
+                    run_loss.setdefault(t.name + "_kl", []).append(kl.item())
             if not torch.isfinite(loss):
                 raise ValueError(f"{t.name}: non-finite training loss at step {step}.")
             (loss / args.accum).backward()
             seen[t.name] += 1
-            run_loss[t.name].append(loss.item())
+            # logged as cross-entropy for every task, so a distilled run reads like any other
+            run_loss[t.name].append(ce.item() if t.name in om.distill else loss.item())
         torch.nn.utils.clip_grad_norm_(params, 1.0)
         opt.step()
         opt.zero_grad(set_to_none=True)
@@ -461,10 +600,13 @@ def train(args) -> None:
             losses = evaluate()
             score = float(np.mean([losses[k] / first[k] for k in losses]))
             flag = ""
-            if score < best:
-                best = score
+            ok = within_limits(losses, first, limits)
+            if better_checkpoint(score, ok, best, best_ok):
+                best, best_ok = score, ok
                 atomic_save(om.state(step, score, losses), args.out)
-                flag = "  <- saved"
+                flag = "  <- saved" + ("" if ok else " (outside --max-ratio: kept until one within it)")
+            elif not ok:
+                flag = "  (outside --max-ratio)"
             with open(curve, "a", encoding="utf-8") as f:
                 f.write(f"{step},{score:.4f}," + ",".join(str(losses[n]) for n in names) + "\n")
             print(f"  eval @ {step:6d} | score {score:.4f}{flag} | "
@@ -474,7 +616,8 @@ def train(args) -> None:
                 break            # an A/B probe: the full run's schedule, cut short, no resume file
             if step < args.steps:
                 st = om.state(step, score, losses)
-                st.update(opt=opt.state_dict(), first=first, best=best, seen=seen, recipe=recipe)
+                st.update(opt=opt.state_dict(), first=first, best=best, best_ok=best_ok, seen=seen,
+                          recipe=recipe)
                 atomic_save(st, last)
     if last.exists():
         last.unlink()            # finished: the optimizer state is 3.7 GB nobody needs
@@ -507,6 +650,13 @@ def main() -> None:
     p.add_argument("--accum", type=int, default=1, help="batches summed into each optimizer step")
     p.add_argument("--stop-after", type=int, default=0,
                    help="stop at this step (keeping --steps' LR schedule), for short A/B probes")
+    p.add_argument("--distill", action="append",
+                   help="a text task to keep near the starting checkpoint (KL to a frozen copy of --ckpt)")
+    p.add_argument("--distill-alpha", type=float, default=1.0,
+                   help="share of a distilled task's cross-entropy replaced by the KL (1.0 = KL only)")
+    p.add_argument("--max-ratio", action="append",
+                   help="task=R: prefer checkpoints whose held-out loss on task is at most R x its step-0 "
+                        "value (chat=1.049 mirrors the chat release gate, 3.30 / 3.146)")
     p.add_argument("--whisper", default="small")
     p.add_argument("--stack", type=int, default=STACK)
     p.add_argument("--tower", default=DEFAULT_TOWER)

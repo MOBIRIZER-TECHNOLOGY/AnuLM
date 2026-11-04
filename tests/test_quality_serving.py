@@ -286,6 +286,14 @@ class AppOmniStateTests(unittest.TestCase):
             self.skipTest(f"gradio unavailable: {e}")
         self.A = app_omni
 
+    def test_chat_tab_keeps_code_lines(self):
+        # Bug: the Chat tab passed replies through the voice's speakable(),
+        # which joins every line into one: a Python answer stopped being code.
+        code = "```python\ndef rev(s):\n    return s[::-1]\n```"
+        self.assertEqual(self.A.readable(code), code)
+        long = self.A.readable(("word " * 50 + "\n") * 20)
+        self.assertTrue(long.endswith(" …") and len(long) <= 1500 + 2 and "\n" in long)
+
     def test_two_first_requests_load_once(self):
         # Bug: _get had no lock; two threads both saw the key missing.
         m = self.A.Models("cpu", "x")
@@ -380,13 +388,15 @@ class RetrievalDeviceTests(unittest.TestCase):
         seen = []
 
         class FakeDense:
-            def __init__(self, device=None):
+            def __init__(self, device=None, index=None, e5=None):
                 seen.append(device)
 
             def search(self, q, k):
                 return [0], [1.0]
+        from pathlib import Path
         r = rag.Retriever.__new__(rag.Retriever)
         r.device, r.dense, r.mode, r.chunks = "cpu", None, "dense", [{"title": "T", "text": "t", "lang": "en"}]
+        r.root = Path("no-such-rag-dir")
         with patch.object(rag, "Dense", FakeDense):
             hits = r.search("q", 1)
         self.assertEqual(seen, ["cpu"])

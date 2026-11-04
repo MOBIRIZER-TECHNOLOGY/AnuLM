@@ -2,6 +2,7 @@
 Retrieval for AnuLM: let a 400M model look facts up instead of remembering them.
 
     python -m anulm rag build                          # ~405k Wikipedia articles -> data/rag/
+    python -m anulm rag build-dense                    # + dense_e5s.npy, the index the demo reads
     python -m anulm rag search "What is the capital of India?"
     python -m anulm rag eval                           # does top-k contain the answer?
 
@@ -27,6 +28,7 @@ packages import scipy, which Smart App Control blocks on the training box.
 from __future__ import annotations
 
 import argparse
+import itertools
 import json
 import re
 import sys
@@ -100,22 +102,35 @@ def _tokenise(batch):
     return cat(rows, np.int32), cat(terms, np.int64), cat(tfs, np.int32), np.array(lens, np.int32)
 
 
-def build(langs=("simple", "hi"), workers: int = 12) -> None:
-    """Build the BM25 index under data/rag/ from the Wikipedia parquet files
-    of `langs`: chunk every article, tokenise the chunks in `workers`
-    processes, and save the CSR postings with precomputed BM25 weights, the
-    per-article title index, and chunks.jsonl. The dense index is separate
-    (`Dense.build`)."""
+def build(langs=("simple", "hi"), workers: int = 12, out: Path = RAG, limit: int | None = None) -> None:
+    """Build the BM25 index under `out` (data/rag/) from the Wikipedia parquet
+    files of `langs` (data/rag/wiki/20231101.{lang}/, which `python -m anulm
+    omni_data fetch read` downloads): chunk every article, tokenise the
+    chunks in `workers` processes, and save the CSR postings with
+    precomputed BM25 weights, the per-article title index, and chunks.jsonl.
+    `limit` keeps the first `limit` articles of each language, for a quick
+    trial build. The dense index is separate (`build_dense`)."""
     import multiprocessing as mp
 
     import pandas as pd
+    RAG = Path(out)                       # every write below goes to `out`
     RAG.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
     chunks: list[tuple] = []
     titles: list[str] = []
     for lang in langs:
-        for f in sorted(Path(str(WIKI).format(lang=lang)).glob("*.parquet")):
+        files = sorted(Path(str(WIKI).format(lang=lang)).glob("*.parquet"))
+        if not files:
+            raise FileNotFoundError(f"no {WIKI.parent / ('20231101.' + lang)}/*.parquet: "
+                                    "run `python -m anulm omni_data fetch read` first")
+        seen = 0
+        for f in files:
+            if limit is not None and seen >= limit:
+                break
             df = pd.read_parquet(f, columns=["title", "text"])
+            if limit is not None:
+                df = df.head(limit - seen)
+            seen += len(df)
             for title, text in zip(df.title, df.text):
                 art = len(titles)
                 titles.append(title)
@@ -181,15 +196,15 @@ class Dense:
     passage that answers it above a Hindi one that does not.
     """
 
-    def __init__(self, device: str | None = None):
+    def __init__(self, device: str | None = None, index: Path = RAG / "dense_e5s.npy", e5: Path = E5):
         import torch
         from transformers import AutoModel, AutoTokenizer
         device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         # fp16 on the GPU; fp32 on the CPU, where half-precision matmuls are slow.
         self.dtype = torch.float16 if device.startswith("cuda") else torch.float32
-        self.torch, self.device = torch, device
-        self.tok = AutoTokenizer.from_pretrained(str(E5))
-        self.m = AutoModel.from_pretrained(str(E5)).to(device, self.dtype).eval()
+        self.torch, self.device, self.index = torch, device, Path(index)
+        self.tok = AutoTokenizer.from_pretrained(str(e5))
+        self.m = AutoModel.from_pretrained(str(e5)).to(device, self.dtype).eval()
         self.mat = None
 
     def embed(self, texts: list[str], max_len: int = 256):
@@ -206,28 +221,134 @@ class Dense:
 
     def build(self, chunks: list[dict], batch: int = 512) -> None:
         """Embed every chunk as "passage: title. text" and save the (N, hidden)
-        fp16 matrix to data/rag/dense_e5s.npy, rows in `chunks` order."""
+        fp16 matrix to `self.index` (data/rag/dense_e5s.npy), rows in `chunks`
+        order."""
         torch = self.torch
         t0 = time.time()
+        self.index.parent.mkdir(parents=True, exist_ok=True)
         order = sorted(range(len(chunks)), key=lambda i: len(chunks[i]["text"]))   # less padding
         out = torch.empty(len(chunks), self.m.config.hidden_size, dtype=torch.float16)
         for s in range(0, len(order), batch):
             ix = order[s:s + batch]
-            out[ix] = self.embed([f"passage: {chunks[i]['title']}. {chunks[i]['text']}" for i in ix]).cpu()
+            out[ix] = self.embed([f"passage: {chunks[i]['title']}. {chunks[i]['text']}" for i in ix]).cpu().half()
             if s % (batch * 200) == 0:
                 print(f"  dense: {s:,}/{len(chunks):,} ({time.time() - t0:.0f}s)", flush=True)
-        np.save(RAG / "dense_e5s.npy", out.numpy())
-        print(f"dense index: {tuple(out.shape)} in {time.time() - t0:.0f}s")
+        np.save(self.index, out.numpy())
+        print(f"dense index: {tuple(out.shape)} in {time.time() - t0:.0f}s -> {self.index}")
 
     def search(self, query: str, k: int):
         """-> (chunk indices, cosine scores) of the `k` nearest chunks. Loads the
         saved matrix onto the device on first use."""
         torch = self.torch
         if self.mat is None:
-            self.mat = torch.from_numpy(np.load(RAG / "dense_e5s.npy")).to(self.device, self.dtype)
+            self.mat = torch.from_numpy(np.load(self.index)).to(self.device, self.dtype)
         s = (self.mat @ self.embed([f"query: {query}"])[0]).float()
         v, i = s.topk(k)
         return i.tolist(), v.tolist()
+
+
+E5_HUB = "intfloat/multilingual-e5-small"
+E5_FILES = ["config.json", "model.safetensors", "tokenizer.json", "tokenizer_config.json",
+            "special_tokens_map.json", "sentencepiece.bpe.model"]
+
+
+def build_dense(root: Path = RAG, out: Path | None = None, limit: int | None = None,
+                device: str | None = None, batch: int | None = None) -> Path:
+    """The dense index the demo's lookup reads: every line of
+    `root`/chunks.jsonl (written by `build`) embedded by multilingual-e5-small
+    as "passage: title. text", saved as an (N, 384) float16 matrix to `out`
+    (default `root`/dense_e5s.npy), row i for chunk i. The encoder is fetched
+    from the Hub into data/rag/e5-small/ (~470 MB) the first time.
+
+    All 932,648 chunks: 716 MB, ~5 minutes on one GPU; on a CPU ~45 s per
+    1,000 chunks (measured on the training box), so most of a day. `limit`
+    embeds only the first `limit` chunks -- a trial run; such a file does not
+    match the full chunks.jsonl and the Retriever refuses it. Its rows equal
+    the shipped index's first rows (cosine 1.000 on the first 1,000)."""
+    import torch
+    root = Path(root)
+    out = Path(out) if out else root / "dense_e5s.npy"
+    if not (E5 / "model.safetensors").exists():
+        from huggingface_hub import hf_hub_download
+        for f in E5_FILES:
+            hf_hub_download(E5_HUB, f, local_dir=str(E5))
+    with open(root / "chunks.jsonl", encoding="utf-8") as f:
+        chunks = [json.loads(l) for l in itertools.islice(f, limit)]
+    device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"embedding {len(chunks):,} chunks of {root / 'chunks.jsonl'} on {device}", flush=True)
+    Dense(device, out).build(chunks, batch or (512 if device.startswith("cuda") else 64))
+    return out
+
+
+_QUALIFIER = re.compile(r"\s*\(([^)]*)\)\s*$")
+_SIDE_PAGE = re.compile(r"^lists? of |\((disambiguation|बहुविकल्पी)\)$|की सूची$", re.I)
+_LETTER = "0-9A-Za-zÀ-ɏऀ-ॿ"
+# e5's cosine scores for the top hits sit within a few hundredths of each
+# other (0.870 for "Hamlet (1964 movie)", 0.866 for "Hamlet"), so 0.01 would
+# reorder near-ties without lifting an off-topic page. Measured 2026-11-04 and
+# left OFF, like TITLE_W below: retrieval recall did not move (MLQA hi R@1/3
+# 26.8/40.2% -> 26.2/41.0%, SQuAD 11.2/19.2% -> 11.5/18.8%, 400 each), and
+# end to end with the Omni reader it scored 22/42 demo + held-out questions
+# against 25/42 without it (the reader, not the ranking, decides those).
+TITLE_BONUS = 0.0
+
+
+def title_match(title: str, question: str) -> int:
+    """How an article title relates to the question, for `rerank`:
+
+    +1  the title, minus a trailing "(qualifier)", is a phrase of the
+        question -- in Latin script one the question capitalises, i.e. a
+        name: "Hamlet" for "Who wrote Hamlet?", but not "Planet" for "the
+        largest planet" -- and any qualifier is in the question too.
+    -1  a side page: a list ("List of planets", "... की सूची"), a
+        disambiguation page, or a page whose qualifier the question does not
+        mention ("Hamlet (1964 movie)" for "Who wrote Hamlet?").
+     0  anything else."""
+    if _SIDE_PAGE.search(title.strip()):
+        return -1
+    m = _QUALIFIER.search(title)
+    base, qual = (title[:m.start()], m.group(1)) if m else (title, "")
+    bw = words(base)
+    if not bw:
+        return 0
+    phrase = f"(?<![{_LETTER}])" + f"[^{_LETTER}]+".join(map(re.escape, bw)) + f"(?![{_LETTER}])"
+    span = re.search(phrase, question, re.I)
+    if not span or (span.group(0)[0].isascii() and not span.group(0)[0].isupper()):
+        return 0
+    if qual and not set(words(qual)) <= set(words(question)):
+        return -1
+    return 1
+
+
+def rerank(question: str, hits: list[dict], bonus: float = TITLE_BONUS) -> list[dict]:
+    """`hits` re-sorted by score + bonus x title_match(title, question), ties
+    kept in their order. Dense retrieval ranks by meaning, so "Who wrote
+    Hamlet?" put the 1964 film first; the article the question names is
+    where an encyclopedia answers it."""
+    key = [h["score"] + bonus * title_match(h["title"], question) for h in hits]
+    return [hits[i] for i in sorted(range(len(hits)), key=lambda i: -key[i])]
+
+
+NOT_FOUND = ("not found in the passages", "अनुच्छेदों में उत्तर नहीं मिला")     # make_rc.py's
+
+
+def echoes(answer: str, question: str) -> bool:
+    """True when `answer` says nothing the question did not: every word of it
+    is a question word ("Hamlet" for "Who wrote Hamlet?", "The Taj Mahal" for
+    "Who built the Taj Mahal?"). Such an answer is never right."""
+    a = words(answer)
+    return not a or set(a) <= set(words(question))
+
+
+def cite(answer: str, hits: list[dict]) -> str:
+    """The title of the first passage that contains `answer` (case-insensitive,
+    words in order), else of the first passage: the page the answer came
+    from, not just the top hit."""
+    a = " ".join(words(answer))
+    for h in hits:
+        if a and f" {a} " in f" {' '.join(words(h['text']))} ":
+            return h["title"]
+    return hits[0]["title"] if hits else ""
 
 
 class Retriever:
@@ -238,11 +359,12 @@ class Retriever:
     available. Callers pass their own model's device, so `--device cpu` keeps
     retrieval off a GPU that another job owns."""
     def __init__(self, root: Path = RAG, device: str | None = None):
-        self.device = device
+        self.device, self.root = device, Path(root)
         self.indptr = np.load(root / "indptr.npy")
         self.docs = np.load(root / "docs.npy", mmap_mode="r")
         self.weights = np.load(root / "weights.npy", mmap_mode="r")
-        self.chunks = [json.loads(l) for l in open(root / "chunks.jsonl", encoding="utf-8")]
+        with open(root / "chunks.jsonl", encoding="utf-8") as f:
+            self.chunks = [json.loads(l) for l in f]
         self.n = len(self.chunks)
         self.idf = np.load(root / "idf.npy")
         self.t_indptr = np.load(root / "t_indptr.npy")
@@ -254,6 +376,11 @@ class Retriever:
         # the top 3 every time (BM25: 15/20) and took our own reader from 0/20 to 5/20.
         # Hybrid fusion scored worse end to end (2/20): BM25's near-misses confuse the reader.
         self.mode = "dense" if (root / "dense_e5s.npy").exists() else "bm25"
+        if self.mode == "dense":
+            rows = np.load(root / "dense_e5s.npy", mmap_mode="r").shape[0]
+            if rows != self.n:      # a --limit trial, or chunks.jsonl rebuilt since: rows would point at the wrong text
+                raise ValueError(f"{root / 'dense_e5s.npy'} has {rows:,} rows but chunks.jsonl has {self.n:,}: "
+                                 "rebuild it with `python -m anulm rag build-dense`")
         self.dense = None
         langs = np.array([c["lang"] for c in self.chunks])
         self._lm = {l: langs == l for l in set(langs.tolist())}
@@ -263,15 +390,17 @@ class Retriever:
         """mode "bm25", "dense", or "hybrid": reciprocal-rank fusion of both
         top-100 lists, sum of 1 / (60 + rank). Without `mode`, the retriever's
         own: "dense" once dense_e5s.npy exists, else "bm25". title_w and lead_b
-        apply to bm25 only."""
+        apply to bm25 only; dense hits pass through `rerank` from the top 20
+        (a no-op while TITLE_BONUS is 0)."""
         mode = mode or self.mode
         if mode == "bm25":
             return self.bm25(query, k, lang, title_w, lead_b)
         if self.dense is None:
-            self.dense = Dense(self.device)
-        di, dv = self.dense.search(query, 100 if mode == "hybrid" else k)
+            e5 = self.root / "e5-small"
+            self.dense = Dense(self.device, self.root / "dense_e5s.npy", e5 if e5.exists() else E5)
+        di, dv = self.dense.search(query, 100 if mode == "hybrid" else max(k, 20))
         if mode == "dense":
-            return [{**self.chunks[i], "score": v} for i, v in zip(di, dv)]
+            return rerank(query, [{**self.chunks[i], "score": v, "_i": i} for i, v in zip(di, dv)])[:k]
         fused: dict[int, float] = {}
         for rank, i in enumerate(di):
             fused[i] = fused.get(i, 0.0) + 1.0 / (60 + rank)
@@ -461,13 +590,23 @@ def evaluate(n: int, grid=((0, 0), (1, 0), (2, 0), (4, 0), (2, 2), (4, 4), (2, 5
 
 
 def main() -> None:
-    """Command-line entry point: build, search, eval, eval-reader and ask."""
+    """Command-line entry point: build, build-dense, search, eval, eval-reader and ask."""
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     p = argparse.ArgumentParser()
     sub = p.add_subparsers(dest="cmd", required=True)
-    sub.add_parser("build")
+    bd = sub.add_parser("build", help="BM25 index + chunks.jsonl from the Wikipedia parquet files")
+    bd.add_argument("--out", type=Path, default=RAG)
+    bd.add_argument("--limit", type=int, help="first N articles per language (a trial build)")
+    dn = sub.add_parser("build-dense", help="dense_e5s.npy, the index the demo's lookup needs")
+    dn.add_argument("--root", type=Path, default=RAG, help="directory holding build's chunks.jsonl")
+    dn.add_argument("--out", type=Path, help="default: ROOT/dense_e5s.npy")
+    dn.add_argument("--limit", type=int, help="first N chunks only (a trial run)")
+    dn.add_argument("--device", help="cuda or cpu (default: cuda when available)")
+    dn.add_argument("--batch", type=int, help="default 512 on a GPU, 64 on a CPU")
     s = sub.add_parser("search")
     s.add_argument("query")
+    s.add_argument("--root", type=Path, default=RAG)
+    s.add_argument("--device", help="where the dense encoder runs (default: cuda when available)")
     s.add_argument("-k", type=int, default=3)
     s.add_argument("--title-w", type=float, default=TITLE_W)
     s.add_argument("--lead-b", type=float, default=LEAD_B)
@@ -481,7 +620,9 @@ def main() -> None:
     ak.add_argument("--ckpt", default="ckpt_rag_reader.pt")
     a = p.parse_args()
     if a.cmd == "build":
-        build()
+        build(out=a.out, limit=a.limit)
+    elif a.cmd == "build-dense":
+        build_dense(a.root, a.out, a.limit, a.device, a.batch)
     elif a.cmd == "eval":
         evaluate(a.n)
     elif a.cmd == "eval-reader":
@@ -491,12 +632,12 @@ def main() -> None:
         print(f"{out['answer']}\n  sources: {out['sources']}  "
               f"(retrieve {out['retrieve_s']}s, read {out['read_s']}s)")
     else:
-        r = Retriever()
+        r = Retriever(a.root, a.device)
         t0 = time.time()
         hits = r.search(a.query, a.k, title_w=a.title_w, lead_b=a.lead_b)
         print(f"{(time.time() - t0) * 1000:.0f} ms")
         for h in hits:
-            print(f"\n[{h['score']:.1f}] {h['title']} ({h['lang']})\n  {h['text'][:400]}")
+            print(f"\n[{h['score']:.3f}] {h['title']} ({h['lang']})\n  {h['text'][:400]}")
 
 
 if __name__ == "__main__":

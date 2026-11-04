@@ -590,5 +590,105 @@ class ReviewFixTests(unittest.TestCase):
         self.assertEqual(kept, [a, c])      # both files read; the benchmark copy dropped
 
 
+class CheckpointChoiceTests(unittest.TestCase):
+    """omni_train --max-ratio: never prefer a checkpoint that breaks a limit."""
+
+    def test_rule(self):
+        from anulm.multimodal.omni_train import better_checkpoint, parse_limits, within_limits
+        self.assertEqual(parse_limits(["chat=1.049"]), {"chat": 1.049})
+        first = {"chat": 3.0, "vqa": 7.0}
+        self.assertTrue(within_limits({"chat": 3.1, "vqa": 1.0}, first, {"chat": 1.05}))
+        self.assertFalse(within_limits({"chat": 3.2, "vqa": 1.0}, first, {"chat": 1.05}))
+        self.assertTrue(within_limits({"chat": 9.0, "vqa": 1.0}, first, {}))       # no limits: the old rule
+        self.assertTrue(better_checkpoint(0.9, False, float("inf"), False))       # first eval is always kept
+        self.assertTrue(better_checkpoint(0.5, True, 0.4, False))                 # within beats outside...
+        self.assertFalse(better_checkpoint(0.3, False, 0.5, True))                # ...even at a better score
+        self.assertTrue(better_checkpoint(0.3, True, 0.5, True))
+        self.assertFalse(better_checkpoint(0.5, True, 0.5, True))                 # ties keep the first
+
+    def test_november_curve_keeps_a_checkpoint_within_the_chat_gate(self):
+        # The 2026-11-03 run, every other evaluation: the score alone kept step
+        # 9,375 (chat 3.556, ratio 1.087); the gate's ratio, 3.30 / 3.146, allows 1.049.
+        from anulm.multimodal.omni_train import better_checkpoint, within_limits
+        curve = [(0, 1.0, 3.2724), (1250, 0.4012, 3.3679), (2500, 0.3853, 3.4085),
+                 (3750, 0.3792, 3.4638), (9375, 0.3643, 3.5564), (12500, 0.3649, 3.5798)]
+        first = {"chat": 3.2724}
+        best, best_ok, kept = float("inf"), False, None
+        for step, score, chat in curve[1:]:
+            ok = within_limits({"chat": chat}, first, {"chat": 3.30 / 3.146})
+            if better_checkpoint(score, ok, best, best_ok):
+                best, best_ok, kept = score, ok, step
+        self.assertEqual((kept, best_ok), (2500, True))
+
+
+class DistillTests(unittest.TestCase):
+    """omni_train --distill: keep a task near the starting checkpoint."""
+
+    def setUp(self):
+        g = torch.Generator().manual_seed(0)
+        self.targets = torch.tensor([[-1, 3, 1, -1], [-1, -1, 2, 0]])
+        self.student = torch.randn(2, 4, 5, generator=g)
+        self.teacher = torch.randn(2, 4, 5, generator=g)
+        m = self.targets != -1
+        self.ce = torch.nn.functional.cross_entropy(self.student[m], self.targets[m])
+        self.loss = self.ce + 0.25           # the model's loss: cross-entropy + a router term
+
+    def test_alpha_zero_is_the_plain_loss_and_one_swaps_ce_for_kl(self):
+        from anulm.multimodal.omni_train import distill_loss
+        t = self.teacher[self.targets != -1]             # the teacher's answer rows only
+        out, ce, kl = distill_loss(self.student, t, self.targets, self.loss, 0.0)
+        self.assertAlmostEqual(out.item(), self.loss.item(), places=6)
+        chunked = distill_loss(self.student, t, self.targets, self.loss, 1.0, chunk=1)
+        out, ce, kl = distill_loss(self.student, t, self.targets, self.loss, 1.0)
+        self.assertAlmostEqual(chunked[2].item(), kl.item(), places=6)     # chunking changes nothing
+        self.assertAlmostEqual(ce.item(), self.ce.item(), places=6)
+        self.assertAlmostEqual(out.item(), kl.item() + 0.25, places=5)     # router term kept whole
+        m = self.targets != -1
+        p = self.teacher[m].softmax(-1)
+        manual = (p * (p.log() - self.student[m].log_softmax(-1))).sum(-1).mean()
+        self.assertAlmostEqual(kl.item(), manual.item(), places=5)
+
+    def test_kl_is_zero_at_the_teacher_and_pulls_toward_it(self):
+        from anulm.multimodal.omni_train import distill_loss
+        t = self.teacher[self.targets != -1]
+        _, _, kl = distill_loss(self.teacher.clone(), t, self.targets, self.loss, 1.0)
+        self.assertLess(kl.item(), 1e-6)
+        s = self.student.clone().requires_grad_(True)
+        out, _, kl0 = distill_loss(s, t, self.targets, self.ce * 0, 1.0, chunk=2)    # checkpointed path
+        out.backward()
+        with torch.no_grad():
+            _, _, kl1 = distill_loss(s - 0.1 * s.grad, t, self.targets, self.ce * 0, 1.0)
+        self.assertLess(kl1.item(), kl0.item())
+        self.assertEqual(float(s.grad[self.targets == -1].abs().sum()), 0.0)   # prompt positions untouched
+
+    def test_answer_logits_match_the_full_forward(self):
+        from anulm.multimodal.omni_train import answer_logits
+        torch.manual_seed(0)
+        model = AnuLM(AnuLMConfig(vocab_size=64, block_size=32, n_layer=2, hidden_size=32, n_head=4,
+                                  head_dim=8, n_kv_head=2, num_experts=4, num_experts_per_tok=2,
+                                  moe_intermediate_size=16, intermediate_size=64, n_group=1,
+                                  topk_group=1)).eval()
+        ids = torch.randint(0, 64, (2, 6))
+        targets = torch.full((2, 6), -1)
+        targets[0, 2:5], targets[1, 4:6] = ids[0, 3:6], 7
+        with torch.no_grad():
+            full, _ = model(None, targets, embeds=model.embed_tokens(ids))
+            part = answer_logits(model, model.embed_tokens(ids), targets)
+        self.assertEqual(tuple(part.shape), (5, 64))
+        self.assertTrue(torch.allclose(part, full[targets != -1], atol=1e-5))
+
+    def test_text_batches_ids_embed_to_the_same_inputs(self):
+        from anulm.multimodal.omni_train import text_batches
+        model = SimpleNamespace(embed_tokens=torch.nn.Embedding(50, 8))     # all text_batches reads
+        rows = [{"p": [1, 2, 3], "a": [4, 5]}, {"p": [6], "a": [7, 8, 9]}]
+        eb, tb, ib = next(text_batches(rows, model, "cpu", 2, shuffle=False, with_ids=True))
+        plain = next(text_batches(rows, model, "cpu", 2, shuffle=False))
+        self.assertTrue(torch.equal(plain[0], eb) and torch.equal(plain[1], tb))
+        self.assertEqual(ib.tolist(), [[1, 2, 3, 4, 5], [6, 7, 8, 9, 0]])
+        real = tb != -1
+        self.assertTrue(torch.equal(model.embed_tokens(ib)[0], eb[0]))
+        self.assertEqual(tb[real].tolist(), [4, 5, 7, 8, 9])
+
+
 if __name__ == "__main__":
     unittest.main()
