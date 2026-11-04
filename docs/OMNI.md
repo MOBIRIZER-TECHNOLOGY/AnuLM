@@ -26,7 +26,8 @@ training run, checkpoints 10 GB.
 ```bash
 git clone https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM && cd AnuLM
 pip install torch --index-url https://download.pytorch.org/whl/cu128   # match your CUDA
-pip install safetensors pyarrow "huggingface_hub>=1.5,<2" faster-whisper timm pillow av soundfile numpy
+pip install safetensors pyarrow "huggingface_hub>=1.5,<2" faster-whisper av soundfile numpy
+pip install --no-deps torchvision==0.26.0 timm pillow   # --no-deps, or pip swaps in a newer, CPU torch
 pip install gradio piper-tts            # only for the demo app
 ```
 
@@ -67,12 +68,12 @@ On Windows, `experiments\run_omni_one.cmd` starts it detached. It runs, in order
 4. waits for the GPU to be free
 5. measures the chat model it starts from, as the baseline
 6. **trains the one model**: 12,500 optimizer steps, each summing 8 batches
-   drawn at random from the seven tasks (100,000 batches), about 19 hours on
-   the GPU above; the first run also caches the image features (~15 minutes).
+   drawn at random from the seven tasks (100,000 batches), 24.2 hours on
+   the GPU above (2026-11-03 run); the first run also caches the image features (~15 minutes).
    One batch per step was tried first and drifted the shared decoder: an
    intent or image-question batch is ~30 answer tokens, too few to steer a
    full optimizer step, and chat held-out loss went 3.27 -> 5.39
-7. evaluates every task (about 1.5 hours)
+7. evaluates every task (about 30 minutes)
 8. writes `logs/omni_one/REPORT.md`: every number beside the model it
    replaced, and whether each release gate passed
 9. exports `release/AnuLM-Omni-400M` (safetensors, config, tokenizer, card)
@@ -81,9 +82,12 @@ On Windows, `experiments\run_omni_one.cmd` starts it detached. It runs, in order
 
 **If anything stops it** -- a reboot, a crash, a full disk -- fix the cause
 and run the same command. Finished steps are skipped and training resumes
-from its last save (every 625 steps, about 50 minutes of work at most).
-If the training recipe changes, previous outputs are preserved under
-`logs/omni_one/archive/` and the changed recipe starts fresh.
+from its last save (every 625 steps, about 75 minutes of work at most).
+If the training recipe (code, command or data) changes during a run, previous
+outputs are preserved under `logs/omni_one/archive/` and the changed recipe
+starts fresh. Once training has *finished*, a changed recipe stops the
+pipeline instead of discarding the model: run with `--retrain` to archive it
+and train again.
 `logs/omni_one/pipeline.log` says what happened; each step has its own log
 beside it.
 
@@ -103,17 +107,20 @@ print(chat.generate("What is the capital of India?", 40, 0.0, 1, 0, mode="questi
 
 | task | data | share of steps | batch |
 |---|---|---|---|
-| chat | dolly-15k, oasst2, Aya Hindi, Hindi Wikipedia QA | 7% | 8 |
-| reading | SQuAD, MLQA hi, Wikipedia passages | 14% | 4 |
-| intents | BANKING77, MASSIVE hi-IN | 6% | 8 |
-| English speech | LibriSpeech train-clean-100 | 12% | 4 |
-| Hindi speech | Kathbath, MUCS 2021, FLEURS | 32% | 4 |
-| captions | Localized Narratives on Open Images, DOCCI | 17% | 8 |
-| image questions | TextVQA | 12% | 8 |
+| chat | dolly-15k, oasst2, Aya Hindi, Hindi Wikipedia QA | 21% | 8 |
+| reading | SQuAD, MLQA hi, Wikipedia passages | 12% | 4 |
+| intents | BANKING77, MASSIVE hi-IN | 5% | 8 |
+| English speech | LibriSpeech train-clean-100 | 10% | 4 |
+| Hindi speech | Kathbath, MUCS 2021, FLEURS | 27% | 4 |
+| captions | Localized Narratives on Open Images, DOCCI | 14% | 8 |
+| image questions | TextVQA | 10% | 8 |
 
 Hindi speech gets the most steps because it has the most data and is the
-weakest skill; chat the fewest because the model starts from the chat model
-and only has to keep it. The shares are `TASKS` in `experiments/omni_one.py`;
+weakest skill. Chat started at 7%: the model starts from the chat model and
+only has to keep it, but at 7% the other tasks pulled chat off course, so it
+was raised (with half the learning rate). Even so, chat is the one gate the
+2026-11-03 run missed (held-out loss 3.475 against a 3.30 gate): it re-read
+chat data the starting model had already learned. The shares are `TASKS` in `experiments/omni_one.py`;
 change them there.
 
 **Release gates** (`GATES` in the same file) say how much a task may lose

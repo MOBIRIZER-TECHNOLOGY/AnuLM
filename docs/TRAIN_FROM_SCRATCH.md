@@ -425,9 +425,9 @@ python experiments/build_v2.py
   hour.
 - **Resume:** none. It rewrites the files from the start; rerun it.
 
-About `--scale`: the docstring calls `--scale 0.001` "a ~11M-token smoke
-build". It is not that small. The Wikipedia and Python budgets mean "all"
-(1e12), so even at 0.001 they are read in full, about 0.8B tokens. Use
+About `--scale`: a smoke build with `--scale 0.001` is not small. It scales
+the web budgets to 10.5M tokens, but the Wikipedia and Python budgets mean
+"all" (1e12), so even at 0.001 they are read in full, about 0.8B tokens. Use
 `--out data/v2_smoke` if you try it, so it does not overwrite `data/v2`.
 
 ### C4. Pretrain the base (about 7 days of GPU)
@@ -559,7 +559,7 @@ python -m unittest tests.test_training_pipeline tests.test_multimodal_contracts 
 python -m unittest discover -s tests -t . -p "test_quality_*.py"
 ```
 
-On the development machine these gave 79 passed and 1 skipped for the
+On the development machine these gave 80 passed and 1 skipped for the
 second line, and 63 passed for the third (`docs/VERIFICATION.md`).
 
 Score a checkpoint again by hand (GPU):

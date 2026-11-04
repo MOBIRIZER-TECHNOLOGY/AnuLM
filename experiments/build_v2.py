@@ -4,7 +4,9 @@ through the project's own multi32k tokenizer, written as raw uint16 files that
 train.py memory-maps instead of loading.
 
     python experiments/build_v2.py                    # -> data/v2/{train,val}.u16, meta.json
-    python experiments/build_v2.py --scale 0.001      # a ~11M-token smoke build
+    python experiments/build_v2.py --scale 0.001      # a smoke build: 10.5M web tokens, but
+                                                      # Hindi Wikipedia and Python are uncapped
+                                                      # (budget 1e12), so all of them still go in
 
 Sources (all permissive; docs/DATASETS.md has the links):
 
