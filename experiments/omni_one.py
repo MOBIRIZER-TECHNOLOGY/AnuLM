@@ -219,13 +219,22 @@ def archive_stale(previous):
     return archive
 
 
-def prepare_training(args):
-    """Archive a changed recipe; an unchanged interrupted run keeps .last."""
+def prepare_training(args, retrain: bool = False):
+    """Archive a changed recipe; an unchanged interrupted run keeps .last.
+
+    A *finished* training is never thrown away silently: the fingerprint
+    covers shared files (model.py, train.py, ...), so an unrelated edit or a
+    branch merge would otherwise archive a day of GPU work and start again.
+    That takes `--retrain`; without it the pipeline stops and says why."""
     fingerprint = training_fingerprint(args)
     s = state()
     previous = s.get("training_fingerprint")
     if previous == fingerprint:
         return
+    if previous is not None and "6_train" in s and not retrain:
+        raise Failed("6_train: the training code, command or data changed since "
+                     f"{OUT} was trained. Run again with --retrain to archive it and train "
+                     "anew, or restore what changed to keep using it")
     had_training = (previous is not None or any(k in s for k in RECIPE_STEPS)
                     or any((ROOT / p).exists() for p in (OUT, OUT + ".last")))
     archive = archive_stale(previous)
@@ -438,6 +447,8 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--publish", action="store_true", help="upload to the Hub if every release gate passes")
     ap.add_argument("--steps", type=int, default=STEPS)
+    ap.add_argument("--retrain", action="store_true",
+                    help="if the recipe changed after training finished, archive that model and train again")
     a = ap.parse_args()
     LOGS.mkdir(parents=True, exist_ok=True)
     os.chdir(ROOT)
@@ -467,7 +478,7 @@ def main() -> None:
             args += ["--task", f"{name}={kind}:{path}:{w}:{b}"]
         for name, path in HELD.items():
             args += ["--held", f"{name}={path}"]
-        prepare_training(args)
+        prepare_training(args, retrain=a.retrain)
         # A cap, not a deadline: reaching it leaves ckpt_omni.pt.last, and the
         # re-run resumes. The pipeline re-launches training up to three times.
         for attempt in range(3):

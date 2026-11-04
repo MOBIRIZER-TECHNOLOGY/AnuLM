@@ -102,16 +102,20 @@ def read_wav(path: str | Path, rate: int) -> np.ndarray:
 
 
 def audio_chunks(audio: np.ndarray, chunk_samples: int = 30 * ASR_RATE) -> list[np.ndarray]:
-    """Split mono audio into non-overlapping Whisper windows.
+    """Split mono audio into the fewest non-overlapping Whisper windows, of
+    equal length.
 
-    Short and empty inputs keep their original single-chunk path.
+    Equal pieces rather than full windows plus a remainder: a 30.05 s clip
+    cut at 30 s leaves a 0.05 s tail, too short to hold a word, and the
+    decoder invents text for it. Short and empty inputs keep their original
+    single-chunk path.
     """
     if not 0 < chunk_samples <= 30 * ASR_RATE:
         raise ValueError("chunk_samples must be positive and at most Whisper's 30-second window")
     audio = np.asarray(audio)
     if len(audio) <= chunk_samples:
         return [audio]
-    return [audio[i:i + chunk_samples] for i in range(0, len(audio), chunk_samples)]
+    return np.array_split(audio, -(-len(audio) // chunk_samples))
 
 
 # --------------------------------------------------------------------------

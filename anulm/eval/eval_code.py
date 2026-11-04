@@ -85,7 +85,8 @@ def mbpp_entry(row: dict) -> str:
     import re
     first = row["test_list"][0]
     defs = re.findall(r"def\s+([A-Za-z_]\w*)", row.get("code") or "")
-    hit = next((d for d in defs if d in first), None)
+    # called in the assertion, as a whole name: `sort` must not match `heap_sort(...)`
+    hit = next((d for d in defs if re.search(rf"(?<![\w.]){re.escape(d)}\s*\(", first)), None)
     if hit:
         return hit
     return defs[-1] if defs else first.split("(")[0].replace("assert ", "").strip()

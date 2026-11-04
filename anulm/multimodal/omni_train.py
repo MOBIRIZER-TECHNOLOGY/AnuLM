@@ -455,7 +455,9 @@ def train(args) -> None:
             print(f"step {step:6d} | {msg} | imbalance {imbalance:4.2f}x | "
                   f"lr x{frac:.2f} | {time.time()-t0:6.0f}s", flush=True)
             run_loss = {k: [] for k in run_loss}
-        if step % args.eval_every == 0 or step == args.steps:
+        # --stop-after evaluates where it stops, even off the --eval-every grid,
+        # so an A/B probe trains exactly the steps it asked for
+        if step % args.eval_every == 0 or step == args.steps or step == args.stop_after:
             losses = evaluate()
             score = float(np.mean([losses[k] / first[k] for k in losses]))
             flag = ""

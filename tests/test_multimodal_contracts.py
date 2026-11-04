@@ -353,7 +353,7 @@ class Contracts(unittest.TestCase):
         encoder = Encoder()
         text = A.transcribe(sm, encoder, Tokenizer(), np.zeros(65 * C.ASR_RATE, dtype=np.float32), device='cpu')
         self.assertEqual(text, 'one two three')
-        self.assertEqual(encoder.sizes, [30 * C.ASR_RATE, 30 * C.ASR_RATE, 5 * C.ASR_RATE])
+        self.assertEqual(encoder.sizes, [346667, 346667, 346666])    # 65 s in three equal windows
 
     def test_continuous_audio_manifest_resolves_portable_relative_paths(self):
         with tempfile.TemporaryDirectory() as directory:

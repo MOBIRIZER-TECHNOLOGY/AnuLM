@@ -1969,7 +1969,9 @@ def whisper_audio_chunks_cover_long_recordings():
     window = 30 * ASR_RATE
     audio = np.arange(2 * window + 17, dtype=np.float32)
     chunks = audio_chunks(audio)
-    assert [len(c) for c in chunks] == [window, window, 17]
+    lengths = [len(c) for c in chunks]
+    # the fewest windows, balanced: no 17-sample sliver for the decoder to invent words in
+    assert len(chunks) == 3 and max(lengths) <= window and max(lengths) - min(lengths) <= 1
     assert np.array_equal(np.concatenate(chunks), audio)
     assert len(audio_chunks(audio[:window])) == 1
     assert len(audio_chunks(audio[:0])) == 1
@@ -2034,7 +2036,7 @@ def continuous_asr_decodes_long_chunks_in_order():
 
     text, sizes = run(np.zeros(65 * ASR_RATE, dtype=np.float32), ["one", "two", "three"])
     assert text == "one two three"
-    assert sizes == [30 * ASR_RATE, 30 * ASR_RATE, 5 * ASR_RATE]
+    assert len(sizes) == 3 and sum(sizes) == 65 * ASR_RATE and max(sizes) - min(sizes) <= 1   # 3 x 21.7 s
     text, sizes = run(np.zeros(10, dtype=np.float32), ["short\nignored"])
     assert text == "short" and len(sizes) == 1
 
@@ -2300,7 +2302,16 @@ def training_fingerprint_preserves_resume_and_invalidates_downstream():
             O.save_state({"training_fingerprint": "old-fingerprint", "5_base": {"ok": 1},
                           "6_train": {"ok": 1}, "7_eval": {"ok": 1}})
 
-            O.prepare_training([])
+            # a finished training is not discarded without --retrain
+            before = O.state()
+            try:
+                O.prepare_training([])
+                raise AssertionError("a changed recipe discarded a finished training without --retrain")
+            except O.Failed:
+                pass
+            assert O.state() == before and out.read_bytes() == b"old" and resume.exists()
+
+            O.prepare_training([], retrain=True)
             state = O.state()
             archive = O.LOGS / "archive" / "old-fingerprint-2"
             assert state["training_fingerprint"] == "new-fingerprint"

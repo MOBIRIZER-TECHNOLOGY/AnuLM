@@ -206,7 +206,7 @@ def clean_corpus(args) -> None:
     kept = contaminated = 0
     written = 0
     with open(args.out, "w", encoding="utf-8", newline="\n") as fh:
-        for doc in iter_documents(args.inputs[0]):
+        for doc in (d for src in args.inputs for d in iter_documents(src)):    # every --in, in order
             if ngrams(doc) & bench:
                 contaminated += 1
                 continue

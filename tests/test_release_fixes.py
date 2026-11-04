@@ -561,5 +561,34 @@ class LayoutTests(unittest.TestCase):
         self.assertIn("train", r.stdout)
 
 
+class ReviewFixTests(unittest.TestCase):
+    """Bugs from the 2026-11-04 code review."""
+
+    def test_mbpp_entry_matches_the_called_name_not_a_substring(self):
+        # MBPP full test: the reference defines `merge` first, the test calls `merge_sort`
+        from anulm.eval.eval_code import mbpp_entry
+        row = {"code": "def merge(a, b):\n    pass\ndef merge_sort(x):\n    pass",
+               "test_list": ["assert merge_sort([3, 1]) == [1, 3]"]}
+        self.assertEqual(mbpp_entry(row), "merge_sort")
+        wrapped = {"code": "def volume_sphere(r):\n    pass",
+                   "test_list": ["assert math.isclose(volume_sphere(10), 4188.79)"]}
+        self.assertEqual(mbpp_entry(wrapped), "volume_sphere")
+
+    def test_clean_corpus_reads_every_input(self):
+        from anulm.bpe import DOC_SEP
+        from anulm.data import convert_parquet as cp
+        words = lambda tag: " ".join(f"{tag}{i}" for i in range(20))
+        a, b, c = words("alpha"), words("bench"), words("gamma")
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            (d / "one.txt").write_text(a + DOC_SEP, encoding="utf-8")
+            (d / "two.txt").write_text(b + DOC_SEP + c + DOC_SEP, encoding="utf-8")
+            out = d / "out.txt"
+            with patch.object(cp, "benchmark_ngrams", lambda _root: cp.ngrams(b)):
+                cp.clean_corpus(SimpleNamespace(inputs=[str(d / "one.txt"), str(d / "two.txt")], out=str(out)))
+            kept = [x for x in out.read_text(encoding="utf-8").split(DOC_SEP) if x]
+        self.assertEqual(kept, [a, c])      # both files read; the benchmark copy dropped
+
+
 if __name__ == "__main__":
     unittest.main()
