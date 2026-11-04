@@ -142,11 +142,13 @@ def row_cells(name: str, i: int, r: dict) -> list:
     return [i + 1, inp, exp, r.get("got", ""), res, t]
 
 
-def add_tab(summary: dict | None = None, rows: dict | None = None):
-    """Call inside a `gr.Blocks` context."""
+def add_tab(summary: dict | None = None, rows: dict | None = None, note: str = ""):
+    """Call inside a `gr.Blocks` context. `note` is shown above the recording."""
     if summary is None:
         summary, rows = load()
     with gr.Tab("Benchmark"):
+        if note and summary:
+            gr.Markdown(note)
         if not summary:
             gr.Markdown("No recording yet: start `python -m anulm api`, then run "
                         "`python examples/api_demo/benchmark.py`.")

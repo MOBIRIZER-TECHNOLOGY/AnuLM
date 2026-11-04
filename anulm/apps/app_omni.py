@@ -380,6 +380,24 @@ def omni_look_examples() -> tuple[list, str]:
     return ex, note
 
 
+def whole_sentences(text: str) -> str:
+    """A caption cut at the evaluation's token limit, ended at its last full
+    sentence (or marked with an ellipsis when that would drop most of it)."""
+    text = text.strip()
+    if not text or text[-1] in '.!?"':
+        return text
+    cut = text.rfind(". ")
+    return text[:cut + 1] + " …" if cut > len(text) // 3 else text.rstrip(",;: ") + " …"
+
+
+def best_step(df) -> tuple[int, int] | None:
+    """(step kept, last step) from the curve: omni_train.py keeps the lowest
+    combined score, the first one on a tie."""
+    if "score" not in df.columns or len(df) < 2:
+        return None
+    return int(df.loc[df["score"].idxmin(), "step"]), int(df["step"].iloc[-1])
+
+
 def omni_tab(res: dict) -> None:
     """The Model & data tab: what the one model scores, how it got there, on what."""
     gr.Markdown("## The one model\n" + omni_status(res, pointer=False))
@@ -395,10 +413,14 @@ def omni_tab(res: dict) -> None:
             rows.append(f"| {what} ({'higher' if up else 'lower'} is better) | {num(res, k)} | "
                         f"{num(start, k) if k in start else '–'} | {oo.EARLIER.get(k, '–')} | "
                         f"{f'{gate[0]} {gate[1]}' if gate else '–'} | {mark} |")
-        gr.Markdown("\n".join(rows))
+        gr.Markdown("\n".join(rows) + "\n\n*The chat model it started from had never seen the intent "
+                    "labels, so its intent scores are close to guessing: they show what "
+                    "the training added.*")
         if res.get("caption_samples"):
-            gr.Markdown("### Captions on held-out DOCCI photos, beside what a person wrote\n" + "\n".join(
-                f"- **person:** {s['reference']}\n  **AnuLM:** {s['model']}" for s in res["caption_samples"]))
+            gr.Markdown("### Captions on held-out DOCCI photos, beside what a person wrote\n"
+                        "*The evaluation stops each caption at a fixed length; a cut is marked …*\n\n" + "\n".join(
+                f"- **person:** {s['reference']}\n  **AnuLM:** {whole_sentences(s['model'])}"
+                for s in res["caption_samples"]))
 
     curve = HERE / "ckpt_omni_curve.csv"
     if curve.exists():
@@ -408,8 +430,12 @@ def omni_tab(res: dict) -> None:
         first = df.iloc[0]
         long = pd.concat([pd.DataFrame({"step": df["step"], "task": t, "relative_loss": df[t] / first[t]})
                           for t in tasks])
+        kept = best_step(df)
         gr.Markdown("### Training, per task\nHeld-out loss divided by its value before training: "
-                    "below 1 the task has improved, above 1 it has got worse.")
+                    "below 1 the task has improved, above 1 it has got worse."
+                    + (f" The run trained {kept[1]:,} steps and kept the checkpoint with the best "
+                       f"combined score, **step {kept[0]:,}**: every number on this page is that "
+                       f"checkpoint's." if kept else ""))
         gr.LinePlot(long, x="step", y="relative_loss", color="task", height=320)
 
     # The mix of the run that made this checkpoint, from its own log (the
@@ -434,7 +460,8 @@ def omni_tab(res: dict) -> None:
     gr.Markdown(f"### How it was trained\nOne decoder, all seven tasks at once, starting from the chat "
                 f"model (itself base v2, pretrained here from scratch on 11.3B tokens). Each optimizer step "
                 f"{'sums ' + str(accum) + ' batches' if accum > 1 else 'takes one batch'}, drawn at random "
-                f"by the shares below.\n\n" + "\n".join(mix))
+                f"by the shares below. To train it yourself, from a 17M toy model up to every stage "
+                f"from nothing, follow `docs/TRAIN_FROM_SCRATCH.md`.\n\n" + "\n".join(mix))
     card = HERE / "docs" / "MODEL_CARD_OMNI.md"
     if card.exists():
         text = card.read_text(encoding="utf-8")
@@ -686,7 +713,13 @@ def build(models: Models) -> gr.Blocks:
                 omni_tab(res)
 
         from anulm.apps import app_benchmark
-        app_benchmark.wire_initial(demo, app_benchmark.add_tab())
+        # The recording is of whichever models the API served when it was made;
+        # until it is re-made with the one model, say so rather than let it pass as Omni's.
+        note = ("> **An earlier recording.** These requests went to the *separate* models, one per task, "
+                "that AnuLM-Omni replaces (including test sets it does not use, such as Flickr30k and "
+                "A-OKVQA). The one model's own numbers are on the **Model & data** tab."
+                if USE_OMNI else "")
+        app_benchmark.wire_initial(demo, app_benchmark.add_tab(note=note))
     return demo
 
 
