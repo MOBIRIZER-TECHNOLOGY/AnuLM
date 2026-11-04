@@ -575,9 +575,11 @@ def build(models: Models) -> gr.Blocks:
                     return "", ""
                 if mode == "chat":
                     reply, t = chat_text(models, q.strip())
-                    return reply, f"{t:.2f}s · chat model {Path(models.brain_source).name}"
+                    omni = USE_OMNI and models.brain_source == BRAIN      # Models.brain() uses the one model
+                    return reply, f"{t:.2f}s · " + ("AnuLM-Omni" if omni else
+                                                    f"chat model {Path(models.brain_source).name}")
                 reply, t = answer_text(models, q.strip(), max_tokens=200)
-                return reply, f"{t:.2f}s · reader {READER}"
+                return reply, f"{t:.2f}s · " + ("AnuLM-Omni reader" if USE_OMNI else f"reader {READER}")
 
             go_chat.click(do_chat, [q_in, chat_mode], [a_out, chat_meta])
             if USE_OMNI:
