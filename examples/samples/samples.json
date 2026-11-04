@@ -1,0 +1,1795 @@
+{
+ "version": 1,
+ "seed": 20261104,
+ "built_by": "experiments/make_demo_samples.py",
+ "note": "Held-out rows the one model never trained on, drawn at random from each pool.",
+ "items": [
+  {
+   "id": "listen-en-01",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-01.wav",
+    "lang": "en"
+   },
+   "seconds": 6.52,
+   "reference": "sometimes schools do let kids take a lot of soft courses and then they're out on a limb later huh",
+   "source": "LibriSpeech dev-clean, utterance 1988-24833-0009",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-02",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-02.wav",
+    "lang": "en"
+   },
+   "seconds": 3.9,
+   "reference": "nearly the whole population of the town was on foot to see us land",
+   "source": "LibriSpeech dev-clean, utterance 6241-61943-0011",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-03",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-03.wav",
+    "lang": "en"
+   },
+   "seconds": 5.77,
+   "reference": "boil for five minutes mince it very small and mix it with the other ingredients",
+   "source": "LibriSpeech dev-clean, utterance 1919-142785-0044",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-04",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-04.wav",
+    "lang": "en"
+   },
+   "seconds": 6.93,
+   "reference": "with that exception their success became so great that no mountebank memory could recall its parallel",
+   "source": "LibriSpeech dev-clean, utterance 5895-34629-0011",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-05",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-05.wav",
+    "lang": "en"
+   },
+   "seconds": 6.12,
+   "reference": "dorriforth read on and seemed afraid of looking up lest he should see what he could not have pardoned",
+   "source": "LibriSpeech dev-clean, utterance 3536-23268-0022",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-06",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-06.wav",
+    "lang": "en"
+   },
+   "seconds": 4.36,
+   "reference": "if we had been brother and sister indeed there was nothing",
+   "source": "LibriSpeech dev-clean, utterance 174-84280-0010",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-07",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-07.wav",
+    "lang": "en"
+   },
+   "seconds": 3.8,
+   "reference": "he isn't fit to hear what's said here he believes it's all true",
+   "source": "LibriSpeech dev-clean, utterance 777-126732-0073",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-08",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-08.wav",
+    "lang": "en"
+   },
+   "seconds": 4.52,
+   "reference": "from fifteen to twenty minutes will be required to bake them nicely",
+   "source": "LibriSpeech dev-clean, utterance 2078-142845-0038",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-09",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-09.wav",
+    "lang": "en"
+   },
+   "seconds": 3.15,
+   "reference": "he paused they never did to me",
+   "source": "LibriSpeech dev-clean, utterance 1462-170145-0008",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-10",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-10.wav",
+    "lang": "en"
+   },
+   "seconds": 3.8,
+   "reference": "rhein and moselle eighteen ninety three",
+   "source": "LibriSpeech dev-clean, utterance 652-130737-0012",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-11",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-11.wav",
+    "lang": "en"
+   },
+   "seconds": 6.64,
+   "reference": "he cuts off the choicest morsel of the meat and casts it into the fire the purest and most ethereal element",
+   "source": "LibriSpeech dev-clean, utterance 5536-43359-0013",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-12",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-12.wav",
+    "lang": "en"
+   },
+   "seconds": 7.75,
+   "reference": "in all our history you are the first people from outside our borders who have ever stepped a foot in our land",
+   "source": "LibriSpeech dev-clean, utterance 5338-284437-0031",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-13",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-13.wav",
+    "lang": "en"
+   },
+   "seconds": 3.77,
+   "reference": "i obeyed implicitly and met your excellency",
+   "source": "LibriSpeech dev-clean, utterance 3170-137482-0032",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-14",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-14.wav",
+    "lang": "en"
+   },
+   "seconds": 3.36,
+   "reference": "a shop girl was the destiny prefigured for the newcomer",
+   "source": "LibriSpeech dev-clean, utterance 2277-149874-0017",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-15",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-15.wav",
+    "lang": "en"
+   },
+   "seconds": 3.25,
+   "reference": "grub pi le grub pi le",
+   "source": "LibriSpeech dev-clean, utterance 6313-76958-0023",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-16",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-16.wav",
+    "lang": "en"
+   },
+   "seconds": 2.8,
+   "reference": "my own regiment was in the advance",
+   "source": "LibriSpeech dev-clean, utterance 7976-105575-0001",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-17",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-17.wav",
+    "lang": "en"
+   },
+   "seconds": 2.92,
+   "reference": "only name it whatever i have i offer thee",
+   "source": "LibriSpeech dev-clean, utterance 422-122949-0029",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-18",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-18.wav",
+    "lang": "en"
+   },
+   "seconds": 3.98,
+   "reference": "it was one which gave me a small triumph over george",
+   "source": "LibriSpeech dev-clean, utterance 3081-166546-0028",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-19",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-19.wav",
+    "lang": "en"
+   },
+   "seconds": 3.53,
+   "reference": "they thought he might be going to take a nap after his dinner",
+   "source": "LibriSpeech dev-clean, utterance 7850-286674-0015",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-20",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-20.wav",
+    "lang": "en"
+   },
+   "seconds": 6.12,
+   "reference": "to no home in the land did the great trouble bring a more sudden change than the little cottage in the lane",
+   "source": "LibriSpeech dev-clean, utterance 3853-163249-0013",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-21",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-21.wav",
+    "lang": "en"
+   },
+   "seconds": 5.54,
+   "reference": "he had no time to think but he was aware that this was the most exciting adventure that had ever happened to him",
+   "source": "LibriSpeech dev-clean, utterance 6345-93306-0010",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-22",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-22.wav",
+    "lang": "en"
+   },
+   "seconds": 4.57,
+   "reference": "they sat down and listened in silence",
+   "source": "LibriSpeech dev-clean, utterance 6295-64301-0014",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-23",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-23.wav",
+    "lang": "en"
+   },
+   "seconds": 2.8,
+   "reference": "i was quartered with him at sarah island",
+   "source": "LibriSpeech dev-clean, utterance 3752-4944-0007",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-24",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-24.wav",
+    "lang": "en"
+   },
+   "seconds": 7.88,
+   "reference": "throughout this century the power of the church was constantly on the increase and is visible in many important changes",
+   "source": "LibriSpeech dev-clean, utterance 2035-152373-0000",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-en-25",
+   "tab": "listen",
+   "kind": "asr_en",
+   "language": "en",
+   "inputs": {
+    "audio": "media/listen-en-25.wav",
+    "lang": "en"
+   },
+   "seconds": 2.69,
+   "reference": "morning prayers were longer than usual",
+   "source": "LibriSpeech dev-clean, utterance 1993-147965-0001",
+   "license": "CC BY 4.0",
+   "attribution": "LibriSpeech ASR corpus (Panayotov, Chen, Povey, Khudanpur, 2015), openslr.org/12, read from LibriVox audiobooks; trimmed to 16 kHz WAV"
+  },
+  {
+   "id": "listen-hi-01",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-01.wav",
+    "lang": "hi"
+   },
+   "seconds": 7.8,
+   "reference": "यू.एस. कॉर्प्स ऑफ़ इंजीनियर्स ने अंदाजा लगाया कि 6 इंच बारिश पहले से क्षतिग्रस्त बांधों को तोड़ सकती है.",
+   "source": "FLEURS hi_in test, clip 15100264608554334458",
+   "license": "CC BY 4.0",
+   "attribution": "FLEURS (Conneau et al., 2022), Google, huggingface.co/datasets/google/fleurs; converted to 16 kHz 16-bit WAV"
+  },
+  {
+   "id": "listen-hi-02",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-02.wav",
+    "lang": "hi"
+   },
+   "seconds": 8.34,
+   "reference": "शेर प्राइड नामक बड़े समूहों में रहने वाली सबसे बड़ी सामाजिक बिल्लियाँ हैं.",
+   "source": "FLEURS hi_in test, clip 9827556117158213708",
+   "license": "CC BY 4.0",
+   "attribution": "FLEURS (Conneau et al., 2022), Google, huggingface.co/datasets/google/fleurs; converted to 16 kHz 16-bit WAV"
+  },
+  {
+   "id": "listen-hi-03",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-03.wav",
+    "lang": "hi"
+   },
+   "seconds": 8.88,
+   "reference": "सुंदरबन को यूनेस्को द्वारा विश्व धरोहर घोषित किया है। जंगल का वह हिस्सा जो भारत में है उसको सुंदरबन नेशनल पार्क कहा जाता है।",
+   "source": "FLEURS hi_in test, clip 16425245890504734681",
+   "license": "CC BY 4.0",
+   "attribution": "FLEURS (Conneau et al., 2022), Google, huggingface.co/datasets/google/fleurs; converted to 16 kHz 16-bit WAV"
+  },
+  {
+   "id": "listen-hi-04",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-04.wav",
+    "lang": "hi"
+   },
+   "seconds": 8.52,
+   "reference": "साई के साथ-साथ सभी संज्ञा शब्द हमेशा अंग्रेज़ी के बड़े अक्षर से ही शुरू होते हैं, भले ही वे वाक्य के बीच में ही क्यों न हों.",
+   "source": "FLEURS hi_in test, clip 13282941554654573058",
+   "license": "CC BY 4.0",
+   "attribution": "FLEURS (Conneau et al., 2022), Google, huggingface.co/datasets/google/fleurs; converted to 16 kHz 16-bit WAV"
+  },
+  {
+   "id": "listen-hi-05",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-05.wav",
+    "lang": "hi"
+   },
+   "seconds": 5.94,
+   "reference": "ऐसा माना जाता है कि पेरिस के निवासी अहंकारी, असभ्य और अभिमानी होते हैं।",
+   "source": "FLEURS hi_in test, clip 5956554166903472780",
+   "license": "CC BY 4.0",
+   "attribution": "FLEURS (Conneau et al., 2022), Google, huggingface.co/datasets/google/fleurs; converted to 16 kHz 16-bit WAV"
+  },
+  {
+   "id": "listen-hi-06",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-06.wav",
+    "lang": "hi"
+   },
+   "seconds": 6.72,
+   "reference": "इसलिए, यह माना जा रहा है कि नोटेशन को सिर्फ़ एक लेबल के रूप में जोड़ा गया था.",
+   "source": "FLEURS hi_in test, clip 7566467192885443347",
+   "license": "CC BY 4.0",
+   "attribution": "FLEURS (Conneau et al., 2022), Google, huggingface.co/datasets/google/fleurs; converted to 16 kHz 16-bit WAV"
+  },
+  {
+   "id": "listen-hi-07",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-07.wav",
+    "lang": "hi"
+   },
+   "seconds": 9.0,
+   "reference": "11:35 बजे अग्नि बचाव दल ने अंततः आग बुझा दी थी.",
+   "source": "FLEURS hi_in test, clip 15994398767205546911",
+   "license": "CC BY 4.0",
+   "attribution": "FLEURS (Conneau et al., 2022), Google, huggingface.co/datasets/google/fleurs; converted to 16 kHz 16-bit WAV"
+  },
+  {
+   "id": "listen-hi-08",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-08.wav",
+    "lang": "hi"
+   },
+   "seconds": 6.18,
+   "reference": "मध्यपूर्व की गर्म जलवायु में घर उतना ज़रूरी नहीं था.",
+   "source": "FLEURS hi_in test, clip 5342217036255595560",
+   "license": "CC BY 4.0",
+   "attribution": "FLEURS (Conneau et al., 2022), Google, huggingface.co/datasets/google/fleurs; converted to 16 kHz 16-bit WAV"
+  },
+  {
+   "id": "listen-hi-09",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-09.wav",
+    "lang": "hi"
+   },
+   "seconds": 7.32,
+   "reference": "जैसे-जैसे ग्रीक का ज्ञान घटता गया, पश्चिम ने खुद को अपनी ग्रीक दार्शनिक और वैज्ञानिक जड़ों से कटा हुआ पाया.",
+   "source": "FLEURS hi_in test, clip 1921302996542903288",
+   "license": "CC BY 4.0",
+   "attribution": "FLEURS (Conneau et al., 2022), Google, huggingface.co/datasets/google/fleurs; converted to 16 kHz 16-bit WAV"
+  },
+  {
+   "id": "listen-hi-10",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-10.wav",
+    "lang": "hi"
+   },
+   "seconds": 8.28,
+   "reference": "वर्तमान में, जो कीड़े अपने पंखों को वापस नहीं मोड़ सकते हैं उनमें केवल ड्रैगनफ़्लाई और मेफलीज़ हैं.",
+   "source": "FLEURS hi_in test, clip 17127945247681772175",
+   "license": "CC BY 4.0",
+   "attribution": "FLEURS (Conneau et al., 2022), Google, huggingface.co/datasets/google/fleurs; converted to 16 kHz 16-bit WAV"
+  },
+  {
+   "id": "listen-hi-11",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-11.wav",
+    "lang": "hi"
+   },
+   "seconds": 6.9,
+   "reference": "लोग अब कंप्यूटर स्क्रीन पर संदेश लिखते हैं, शार्पनर का उपयोग करने की आवश्यकता नहीं पड़ती।",
+   "source": "FLEURS hi_in test, clip 12116673162471842516",
+   "license": "CC BY 4.0",
+   "attribution": "FLEURS (Conneau et al., 2022), Google, huggingface.co/datasets/google/fleurs; converted to 16 kHz 16-bit WAV"
+  },
+  {
+   "id": "listen-hi-12",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-12.wav",
+    "lang": "hi"
+   },
+   "seconds": 7.32,
+   "reference": "जितनी कम चिंता, उतनी ज़्यादा सकारात्मक जीवन ऊर्जा का संचार. हर इंसान परम शांति और संतोष पा सकता है.",
+   "source": "FLEURS hi_in test, clip 9897512237411090753",
+   "license": "CC BY 4.0",
+   "attribution": "FLEURS (Conneau et al., 2022), Google, huggingface.co/datasets/google/fleurs; converted to 16 kHz 16-bit WAV"
+  },
+  {
+   "id": "listen-hi-13",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-13.wav",
+    "lang": "hi"
+   },
+   "seconds": 7.08,
+   "reference": "शत्रुता फैलाने के तुरंत बाद, ब्रिटेन ने जर्मनी की समुद्री घेराबंदी शुरू कर दी थी.",
+   "source": "FLEURS hi_in test, clip 5698309653901611568",
+   "license": "CC BY 4.0",
+   "attribution": "FLEURS (Conneau et al., 2022), Google, huggingface.co/datasets/google/fleurs; converted to 16 kHz 16-bit WAV"
+  },
+  {
+   "id": "listen-hi-14",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-14.wav",
+    "lang": "hi"
+   },
+   "seconds": 3.95,
+   "reference": "देसी घी लगा कर पाएं चमकदार चेहरा और गुलाबी होंठ",
+   "source": "Kathbath Hindi held-out (valid split), clip 844424932608222-645-f",
+   "license": "CC BY 4.0",
+   "attribution": "Kathbath (Javed et al., 2023), AI4Bharat, huggingface.co/datasets/ai4bharat/Kathbath; 16 kHz WAV"
+  },
+  {
+   "id": "listen-hi-15",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-15.wav",
+    "lang": "hi"
+   },
+   "seconds": 6.55,
+   "reference": "आपकी विभिन्न पुस्तकों का अनुवाद देशी और विदेशी भाषाओं में सम्पन्न हुआ",
+   "source": "Kathbath Hindi held-out (valid split), clip 844424933525088-390-m",
+   "license": "CC BY 4.0",
+   "attribution": "Kathbath (Javed et al., 2023), AI4Bharat, huggingface.co/datasets/ai4bharat/Kathbath; 16 kHz WAV"
+  },
+  {
+   "id": "listen-hi-16",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-16.wav",
+    "lang": "hi"
+   },
+   "seconds": 5.48,
+   "reference": "पाकिस्तान सरकार की ओर से उन्हें तमगाएइन्सानियत से नवाज़ा गया",
+   "source": "Kathbath Hindi held-out (valid split), clip 844424933489913-349-m",
+   "license": "CC BY 4.0",
+   "attribution": "Kathbath (Javed et al., 2023), AI4Bharat, huggingface.co/datasets/ai4bharat/Kathbath; 16 kHz WAV"
+  },
+  {
+   "id": "listen-hi-17",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-17.wav",
+    "lang": "hi"
+   },
+   "seconds": 5.29,
+   "reference": "ये फिल्में अपेक्षाकृत मजबूत होती हैं और खुले घावों पर चिपक सकती हैं",
+   "source": "Kathbath Hindi held-out (valid split), clip 844424933454885-349-m",
+   "license": "CC BY 4.0",
+   "attribution": "Kathbath (Javed et al., 2023), AI4Bharat, huggingface.co/datasets/ai4bharat/Kathbath; 16 kHz WAV"
+  },
+  {
+   "id": "listen-hi-18",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-18.wav",
+    "lang": "hi"
+   },
+   "seconds": 4.85,
+   "reference": "यहाँ बड़ी मात्रा में बॉक्साइट का खनन होता है",
+   "source": "Kathbath Hindi held-out (valid split), clip 844424933456181-759-m",
+   "license": "CC BY 4.0",
+   "attribution": "Kathbath (Javed et al., 2023), AI4Bharat, huggingface.co/datasets/ai4bharat/Kathbath; 16 kHz WAV"
+  },
+  {
+   "id": "listen-hi-19",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-19.wav",
+    "lang": "hi"
+   },
+   "seconds": 4.64,
+   "reference": "जिसके चलते उनकी गिनती बोल्ड और क्लासी एक्ट्रेस में की जाती है",
+   "source": "Kathbath Hindi held-out (valid split), clip 844424932594332-645-f",
+   "license": "CC BY 4.0",
+   "attribution": "Kathbath (Javed et al., 2023), AI4Bharat, huggingface.co/datasets/ai4bharat/Kathbath; 16 kHz WAV"
+  },
+  {
+   "id": "listen-hi-20",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-20.wav",
+    "lang": "hi"
+   },
+   "seconds": 7.64,
+   "reference": "यह अभिव्यक्ति जिस संघर्ष के बीच होती है वह दुख और क्लेश से परिपूर्ण है",
+   "source": "Kathbath Hindi held-out (valid split), clip 844424933485940-38-m",
+   "license": "CC BY 4.0",
+   "attribution": "Kathbath (Javed et al., 2023), AI4Bharat, huggingface.co/datasets/ai4bharat/Kathbath; 16 kHz WAV"
+  },
+  {
+   "id": "listen-hi-21",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-21.wav",
+    "lang": "hi"
+   },
+   "seconds": 6.71,
+   "reference": "शुरू में शूटिंग दादर के एक स्टूडियो में सेट बनाकर की गई",
+   "source": "Kathbath Hindi held-out (valid split), clip 844424933470893-662-m",
+   "license": "CC BY 4.0",
+   "attribution": "Kathbath (Javed et al., 2023), AI4Bharat, huggingface.co/datasets/ai4bharat/Kathbath; 16 kHz WAV"
+  },
+  {
+   "id": "listen-hi-22",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-22.wav",
+    "lang": "hi"
+   },
+   "seconds": 7.55,
+   "reference": "इनमें से सबसे बुनियादी कार्य हृदय के मूल विद्युत लय पर नजर रखना है",
+   "source": "Kathbath Hindi held-out (valid split), clip 844424933457913-662-m",
+   "license": "CC BY 4.0",
+   "attribution": "Kathbath (Javed et al., 2023), AI4Bharat, huggingface.co/datasets/ai4bharat/Kathbath; 16 kHz WAV"
+  },
+  {
+   "id": "listen-hi-23",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-23.wav",
+    "lang": "hi"
+   },
+   "seconds": 3.25,
+   "reference": "क्लब के बाहर श्रीदेवी के प्रशंसकों की लंबी कतार थी",
+   "source": "Kathbath Hindi held-out (valid split), clip 844424933038479-888-f",
+   "license": "CC BY 4.0",
+   "attribution": "Kathbath (Javed et al., 2023), AI4Bharat, huggingface.co/datasets/ai4bharat/Kathbath; 16 kHz WAV"
+  },
+  {
+   "id": "listen-hi-24",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-24.wav",
+    "lang": "hi"
+   },
+   "seconds": 4.16,
+   "reference": "इसके लिए हेयरबैंड की कई किस्मे बाजारों में उपलब्ध हैं",
+   "source": "Kathbath Hindi held-out (valid split), clip 844424930781689-229-f",
+   "license": "CC BY 4.0",
+   "attribution": "Kathbath (Javed et al., 2023), AI4Bharat, huggingface.co/datasets/ai4bharat/Kathbath; 16 kHz WAV"
+  },
+  {
+   "id": "listen-hi-25",
+   "tab": "listen",
+   "kind": "asr_hi",
+   "language": "hi",
+   "inputs": {
+    "audio": "media/listen-hi-25.wav",
+    "lang": "hi"
+   },
+   "seconds": 5.97,
+   "reference": "महासमुन्द के विस्तार के साथ यह उस नगर का उपनगर बन गया है",
+   "source": "Kathbath Hindi held-out (valid split), clip 844424933258353-550-m",
+   "license": "CC BY 4.0",
+   "attribution": "Kathbath (Javed et al., 2023), AI4Bharat, huggingface.co/datasets/ai4bharat/Kathbath; 16 kHz WAV"
+  },
+  {
+   "id": "look-caption-01",
+   "tab": "look",
+   "kind": "caption",
+   "language": "en",
+   "inputs": {
+    "image": "media/look-caption-01.jpg",
+    "question": ""
+   },
+   "reference": "Front, indoor view of a toilet in a bathroom. The toilet is a white ceramic material and the top toilet seat is open.",
+   "source": "DOCCI test, test_00323.jpg",
+   "license": "CC BY 4.0",
+   "attribution": "DOCCI (Onoe et al., 2024), Google, google.github.io/docci; photo resized to 640 px"
+  },
+  {
+   "id": "look-caption-02",
+   "tab": "look",
+   "kind": "caption",
+   "language": "en",
+   "inputs": {
+    "image": "media/look-caption-02.jpg",
+    "question": ""
+   },
+   "reference": "A clear plastic cup of dark beer sits on a blue horizontal post with a large sand area in the background. The cup, seen close up, is mostly full of a dark beer with a thick head and a short shadow on the left, indicating sunlight coming from nearly directly above on the right.",
+   "source": "DOCCI test, test_00285.jpg",
+   "license": "CC BY 4.0",
+   "attribution": "DOCCI (Onoe et al., 2024), Google, google.github.io/docci; photo resized to 640 px"
+  },
+  {
+   "id": "look-caption-03",
+   "tab": "look",
+   "kind": "caption",
+   "language": "en",
+   "inputs": {
+    "image": "media/look-caption-03.jpg",
+    "question": ""
+   },
+   "reference": "A ground shot looking up at a blue sky with stratus and cumulus clouds. The stratus cloud is at the top of the image and the cumulus clouds at the bottom of the image.",
+   "source": "DOCCI test, test_00316.jpg",
+   "license": "CC BY 4.0",
+   "attribution": "DOCCI (Onoe et al., 2024), Google, google.github.io/docci; photo resized to 640 px"
+  },
+  {
+   "id": "look-caption-04",
+   "tab": "look",
+   "kind": "caption",
+   "language": "en",
+   "inputs": {
+    "image": "media/look-caption-04.jpg",
+    "question": ""
+   },
+   "reference": "A view of a construction area. The ground is loose dirt and sandy.",
+   "source": "DOCCI test, test_00296.jpg",
+   "license": "CC BY 4.0",
+   "attribution": "DOCCI (Onoe et al., 2024), Google, google.github.io/docci; photo resized to 640 px"
+  },
+  {
+   "id": "look-caption-05",
+   "tab": "look",
+   "kind": "caption",
+   "language": "en",
+   "inputs": {
+    "image": "media/look-caption-05.jpg",
+    "question": ""
+   },
+   "reference": "Front view of four semi-trucks parked in a gravel lot outside a tan building. The semi trucks are parked side by side with each other, with one second to the left a dark green color, and the rest are white.",
+   "source": "DOCCI test, test_00129.jpg",
+   "license": "CC BY 4.0",
+   "attribution": "DOCCI (Onoe et al., 2024), Google, google.github.io/docci; photo resized to 640 px"
+  },
+  {
+   "id": "look-caption-06",
+   "tab": "look",
+   "kind": "caption",
+   "language": "en",
+   "inputs": {
+    "image": "media/look-caption-06.jpg",
+    "question": ""
+   },
+   "reference": "Four horses are standing in a dirt area. The nearest brown horse is facing the bottom right corner of the image.",
+   "source": "DOCCI test, test_00392.jpg",
+   "license": "CC BY 4.0",
+   "attribution": "DOCCI (Onoe et al., 2024), Google, google.github.io/docci; photo resized to 640 px"
+  },
+  {
+   "id": "look-caption-07",
+   "tab": "look",
+   "kind": "caption",
+   "language": "en",
+   "inputs": {
+    "image": "media/look-caption-07.jpg",
+    "question": ""
+   },
+   "reference": "An outdoor overhead view of two small yellow plastic cones with black square bases. The cones are on a court that is painted green and red with white borders.",
+   "source": "DOCCI test, test_00054.jpg",
+   "license": "CC BY 4.0",
+   "attribution": "DOCCI (Onoe et al., 2024), Google, google.github.io/docci; photo resized to 640 px"
+  },
+  {
+   "id": "look-caption-08",
+   "tab": "look",
+   "kind": "caption",
+   "language": "en",
+   "inputs": {
+    "image": "media/look-caption-08.jpg",
+    "question": ""
+   },
+   "reference": "A front view of a road that is under a building. It curves to the left.",
+   "source": "DOCCI test, test_00398.jpg",
+   "license": "CC BY 4.0",
+   "attribution": "DOCCI (Onoe et al., 2024), Google, google.github.io/docci; photo resized to 640 px"
+  },
+  {
+   "id": "look-caption-09",
+   "tab": "look",
+   "kind": "caption",
+   "language": "en",
+   "inputs": {
+    "image": "media/look-caption-09.jpg",
+    "question": ""
+   },
+   "reference": "An outdoor top down view of two white ducks with yellow beaks swimming in a body of glossy water, both of the ducks are swimming against a short layered rock wall to the right that acts as a rock pathway on land. Both ducks are facing towards the front, there is about a five foot gap between them.",
+   "source": "DOCCI test, test_00208.jpg",
+   "license": "CC BY 4.0",
+   "attribution": "DOCCI (Onoe et al., 2024), Google, google.github.io/docci; photo resized to 640 px"
+  },
+  {
+   "id": "look-caption-10",
+   "tab": "look",
+   "kind": "caption",
+   "language": "en",
+   "inputs": {
+    "image": "media/look-caption-10.jpg",
+    "question": ""
+   },
+   "reference": "A black-framed image is seen on a brown interior wall. The image of a rooster on a stone and a robot-shaped object are made of mixed materials.",
+   "source": "DOCCI test, test_00375.jpg",
+   "license": "CC BY 4.0",
+   "attribution": "DOCCI (Onoe et al., 2024), Google, google.github.io/docci; photo resized to 640 px"
+  },
+  {
+   "id": "look-vqa-01",
+   "tab": "look",
+   "kind": "vqa",
+   "language": "en",
+   "inputs": {
+    "image": "media/look-vqa-01.jpg",
+    "question": "what is the text to the right of fox?"
+   },
+   "reference": "hd",
+   "answers": [
+    "hd"
+   ],
+   "source": "TextVQA val, image 4ccd08fb3139e36a (Open Images)",
+   "license": "question and answers CC BY 4.0; photo CC BY 2.0",
+   "attribution": "Photo by Jesse! S? (https://www.flickr.com/photos/jesssseeee/5577620981), CC BY 2.0, via Open Images; resized to 640 px. Question from TextVQA (Singh et al., 2019), textvqa.org"
+  },
+  {
+   "id": "look-vqa-02",
+   "tab": "look",
+   "kind": "vqa",
+   "language": "en",
+   "inputs": {
+    "image": "media/look-vqa-02.jpg",
+    "question": "what city is in big blue letters on the front passenger door?"
+   },
+   "reference": "rio",
+   "answers": [
+    "rio"
+   ],
+   "source": "TextVQA val, image 66ca8e0091131754 (Open Images)",
+   "license": "question and answers CC BY 4.0; photo CC BY 2.0",
+   "attribution": "Photo by André Gustavo Stumpf (https://www.flickr.com/photos/degu_andre/5304877326), CC BY 2.0, via Open Images; resized to 640 px. Question from TextVQA (Singh et al., 2019), textvqa.org"
+  },
+  {
+   "id": "look-vqa-03",
+   "tab": "look",
+   "kind": "vqa",
+   "language": "en",
+   "inputs": {
+    "image": "media/look-vqa-03.jpg",
+    "question": "what mexican restaurant is being advertised?"
+   },
+   "reference": "taco bell",
+   "answers": [
+    "taco bell",
+    "taco bell "
+   ],
+   "source": "TextVQA val, image 861126230d7ab63f (Open Images)",
+   "license": "question and answers CC BY 4.0; photo CC BY 2.0",
+   "attribution": "Photo by Bobby P. (https://www.flickr.com/photos/tenpoundhammer/5063268345), CC BY 2.0, via Open Images; resized to 640 px. Question from TextVQA (Singh et al., 2019), textvqa.org"
+  },
+  {
+   "id": "look-vqa-04",
+   "tab": "look",
+   "kind": "vqa",
+   "language": "en",
+   "inputs": {
+    "image": "media/look-vqa-04.jpg",
+    "question": "what type of magazine is this?"
+   },
+   "reference": "art",
+   "answers": [
+    "art",
+    "art magazines ",
+    "art magazzine"
+   ],
+   "source": "TextVQA val, image baa1eee9f1da96d7 (Open Images)",
+   "license": "question and answers CC BY 4.0; photo CC BY 2.0",
+   "attribution": "Photo by Art Comments (https://www.flickr.com/photos/artcomments/5845059558), CC BY 2.0, via Open Images; resized to 640 px. Question from TextVQA (Singh et al., 2019), textvqa.org"
+  },
+  {
+   "id": "look-vqa-05",
+   "tab": "look",
+   "kind": "vqa",
+   "language": "en",
+   "inputs": {
+    "image": "media/look-vqa-05.jpg",
+    "question": "what is the number of the player in the middle?"
+   },
+   "reference": "3",
+   "answers": [
+    "3",
+    "33",
+    "35"
+   ],
+   "source": "TextVQA val, image 30dc7ab68c2654a6 (Open Images)",
+   "license": "question and answers CC BY 4.0; photo CC BY 2.0",
+   "attribution": "Photo by Joel Dinda (https://www.flickr.com/photos/mwlguide/273466001), CC BY 2.0, via Open Images; resized to 640 px. Question from TextVQA (Singh et al., 2019), textvqa.org"
+  },
+  {
+   "id": "look-vqa-06",
+   "tab": "look",
+   "kind": "vqa",
+   "language": "en",
+   "inputs": {
+    "image": "media/look-vqa-06.jpg",
+    "question": "what brand is this watch?"
+   },
+   "reference": "rolex",
+   "answers": [
+    "roi",
+    "rolex",
+    "rolex "
+   ],
+   "source": "TextVQA val, image 239ad3ea05915adc (Open Images)",
+   "license": "question and answers CC BY 4.0; photo CC BY 2.0",
+   "attribution": "Photo by Micky Aldridge (https://www.flickr.com/photos/gsi-r/16781536062), CC BY 2.0, via Open Images; resized to 640 px. Question from TextVQA (Singh et al., 2019), textvqa.org"
+  },
+  {
+   "id": "look-vqa-07",
+   "tab": "look",
+   "kind": "vqa",
+   "language": "en",
+   "inputs": {
+    "image": "media/look-vqa-07.jpg",
+    "question": "what is the name of the bar?"
+   },
+   "reference": "moon bar",
+   "answers": [
+    "moo bar",
+    "moon",
+    "moon bar"
+   ],
+   "source": "TextVQA val, image d5ccd36c19120929 (Open Images)",
+   "license": "question and answers CC BY 4.0; photo CC BY 2.0",
+   "attribution": "Photo by JC Awe (https://www.flickr.com/photos/qqjawe/8427362470), CC BY 2.0, via Open Images; resized to 640 px. Question from TextVQA (Singh et al., 2019), textvqa.org"
+  },
+  {
+   "id": "look-vqa-08",
+   "tab": "look",
+   "kind": "vqa",
+   "language": "en",
+   "inputs": {
+    "image": "media/look-vqa-08.jpg",
+    "question": "what does the top sign say?"
+   },
+   "reference": "new",
+   "answers": [
+    "new",
+    "the top sign says new"
+   ],
+   "source": "TextVQA val, image 95fdfa4c9e58a1da (Open Images)",
+   "license": "question and answers CC BY 4.0; photo CC BY 2.0",
+   "attribution": "Photo by chrismetcalfTV (https://www.flickr.com/photos/laffy4k/206251599), CC BY 2.0, via Open Images; resized to 640 px. Question from TextVQA (Singh et al., 2019), textvqa.org"
+  },
+  {
+   "id": "look-vqa-09",
+   "tab": "look",
+   "kind": "vqa",
+   "language": "en",
+   "inputs": {
+    "image": "media/look-vqa-09.jpg",
+    "question": "what player number is the runner sliding under?"
+   },
+   "reference": "13",
+   "answers": [
+    "13"
+   ],
+   "source": "TextVQA val, image 996137f933ef63c2 (Open Images)",
+   "license": "question and answers CC BY 4.0; photo CC BY 2.0",
+   "attribution": "Photo by James G (https://www.flickr.com/photos/james_in_to/9121158982), CC BY 2.0, via Open Images; resized to 640 px. Question from TextVQA (Singh et al., 2019), textvqa.org"
+  },
+  {
+   "id": "look-vqa-10",
+   "tab": "look",
+   "kind": "vqa",
+   "language": "en",
+   "inputs": {
+    "image": "media/look-vqa-10.jpg",
+    "question": "how many ml is the ketchup?"
+   },
+   "reference": "355",
+   "answers": [
+    "355",
+    "355ml"
+   ],
+   "source": "TextVQA val, image 5111f961fd422eb8 (Open Images)",
+   "license": "question and answers CC BY 4.0; photo CC BY 2.0",
+   "attribution": "Photo by GrrlScientist (https://www.flickr.com/photos/30540563@N08/11172829823), CC BY 2.0, via Open Images; resized to 640 px. Question from TextVQA (Singh et al., 2019), textvqa.org"
+  },
+  {
+   "id": "look-vqa-11",
+   "tab": "look",
+   "kind": "vqa",
+   "language": "en",
+   "inputs": {
+    "image": "media/look-vqa-11.jpg",
+    "question": "who is the author of this book?"
+   },
+   "reference": "kimberly kay hoang",
+   "answers": [
+    "kimberely kay hoang",
+    "kimberly kay hoang",
+    "kimberly kay hoant"
+   ],
+   "source": "TextVQA val, image 1a053f0aa7eb9c09 (Open Images)",
+   "license": "question and answers CC BY 4.0; photo CC BY 2.0",
+   "attribution": "Photo by manhhai (https://www.flickr.com/photos/13476480@N07/15602585873), CC BY 2.0, via Open Images; resized to 640 px. Question from TextVQA (Singh et al., 2019), textvqa.org"
+  },
+  {
+   "id": "look-vqa-12",
+   "tab": "look",
+   "kind": "vqa",
+   "language": "en",
+   "inputs": {
+    "image": "media/look-vqa-12.jpg",
+    "question": "what brand of rum is on display?"
+   },
+   "reference": "brugal",
+   "answers": [
+    "brucal",
+    "brugal",
+    "brugal "
+   ],
+   "source": "TextVQA val, image df96ed2ac714a9db (Open Images)",
+   "license": "question and answers CC BY 4.0; photo CC BY 2.0",
+   "attribution": "Photo by LosMocanos.com (https://www.flickr.com/photos/losmocanos/7103746959), CC BY 2.0, via Open Images; resized to 640 px. Question from TextVQA (Singh et al., 2019), textvqa.org"
+  },
+  {
+   "id": "chat-en-01",
+   "tab": "chat",
+   "kind": "chat",
+   "language": "en",
+   "topic": "en",
+   "inputs": {
+    "question": "Explain photosynthesis in two sentences.",
+    "mode": "chat"
+   },
+   "reference": null,
+   "source": "written for this sample library",
+   "license": "MIT (written for this project)",
+   "attribution": "The AnuLM authors"
+  },
+  {
+   "id": "chat-en-02",
+   "tab": "chat",
+   "kind": "chat",
+   "language": "en",
+   "topic": "en",
+   "inputs": {
+    "question": "Give me three tips for a job interview.",
+    "mode": "chat"
+   },
+   "reference": null,
+   "source": "written for this sample library",
+   "license": "MIT (written for this project)",
+   "attribution": "The AnuLM authors"
+  },
+  {
+   "id": "chat-en-03",
+   "tab": "chat",
+   "kind": "chat",
+   "language": "en",
+   "topic": "en",
+   "inputs": {
+    "question": "What is the difference between weather and climate?",
+    "mode": "chat"
+   },
+   "reference": null,
+   "source": "written for this sample library",
+   "license": "MIT (written for this project)",
+   "attribution": "The AnuLM authors"
+  },
+  {
+   "id": "chat-en-04",
+   "tab": "chat",
+   "kind": "chat",
+   "language": "en",
+   "topic": "en",
+   "inputs": {
+    "question": "Write a short, polite email asking a colleague to move our meeting to Friday.",
+    "mode": "chat"
+   },
+   "reference": null,
+   "source": "written for this sample library",
+   "license": "MIT (written for this project)",
+   "attribution": "The AnuLM authors"
+  },
+  {
+   "id": "chat-en-05",
+   "tab": "chat",
+   "kind": "chat",
+   "language": "en",
+   "topic": "en",
+   "inputs": {
+    "question": "Why do we see lightning before we hear thunder?",
+    "mode": "chat"
+   },
+   "reference": null,
+   "source": "written for this sample library",
+   "license": "MIT (written for this project)",
+   "attribution": "The AnuLM authors"
+  },
+  {
+   "id": "chat-hi-01",
+   "tab": "chat",
+   "kind": "chat",
+   "language": "hi",
+   "topic": "hi",
+   "inputs": {
+    "question": "सुबह जल्दी उठने के तीन फायदे बताइए।",
+    "mode": "chat"
+   },
+   "reference": null,
+   "source": "written for this sample library",
+   "license": "MIT (written for this project)",
+   "attribution": "The AnuLM authors"
+  },
+  {
+   "id": "chat-hi-02",
+   "tab": "chat",
+   "kind": "chat",
+   "language": "hi",
+   "topic": "hi",
+   "inputs": {
+    "question": "बारिश कैसे होती है? सरल शब्दों में समझाइए।",
+    "mode": "chat"
+   },
+   "reference": null,
+   "source": "written for this sample library",
+   "license": "MIT (written for this project)",
+   "attribution": "The AnuLM authors"
+  },
+  {
+   "id": "chat-hi-03",
+   "tab": "chat",
+   "kind": "chat",
+   "language": "hi",
+   "topic": "hi",
+   "inputs": {
+    "question": "एक छोटी कहानी लिखिए जिसमें एक बिल्ली और एक चूहा दोस्त बनते हैं।",
+    "mode": "chat"
+   },
+   "reference": null,
+   "source": "written for this sample library",
+   "license": "MIT (written for this project)",
+   "attribution": "The AnuLM authors"
+  },
+  {
+   "id": "chat-hi-04",
+   "tab": "chat",
+   "kind": "chat",
+   "language": "hi",
+   "topic": "hi",
+   "inputs": {
+    "question": "स्वस्थ रहने के लिए हमें क्या खाना चाहिए?",
+    "mode": "chat"
+   },
+   "reference": null,
+   "source": "written for this sample library",
+   "license": "MIT (written for this project)",
+   "attribution": "The AnuLM authors"
+  },
+  {
+   "id": "chat-hi-05",
+   "tab": "chat",
+   "kind": "chat",
+   "language": "hi",
+   "topic": "hi",
+   "inputs": {
+    "question": "पानी बचाने के चार आसान तरीके बताइए।",
+    "mode": "chat"
+   },
+   "reference": null,
+   "source": "written for this sample library",
+   "license": "MIT (written for this project)",
+   "attribution": "The AnuLM authors"
+  },
+  {
+   "id": "chat-python-01",
+   "tab": "chat",
+   "kind": "chat",
+   "language": "en",
+   "topic": "python",
+   "inputs": {
+    "question": "Write a Python function that reverses a string.",
+    "mode": "chat"
+   },
+   "reference": null,
+   "source": "written for this sample library",
+   "license": "MIT (written for this project)",
+   "attribution": "The AnuLM authors"
+  },
+  {
+   "id": "chat-python-02",
+   "tab": "chat",
+   "kind": "chat",
+   "language": "en",
+   "topic": "python",
+   "inputs": {
+    "question": "Write a Python function to check whether a number is prime.",
+    "mode": "chat"
+   },
+   "reference": null,
+   "source": "written for this sample library",
+   "license": "MIT (written for this project)",
+   "attribution": "The AnuLM authors"
+  },
+  {
+   "id": "chat-python-03",
+   "tab": "chat",
+   "kind": "chat",
+   "language": "en",
+   "topic": "python",
+   "inputs": {
+    "question": "How do I read a CSV file in Python?",
+    "mode": "chat"
+   },
+   "reference": null,
+   "source": "written for this sample library",
+   "license": "MIT (written for this project)",
+   "attribution": "The AnuLM authors"
+  },
+  {
+   "id": "chat-python-04",
+   "tab": "chat",
+   "kind": "chat",
+   "language": "en",
+   "topic": "python",
+   "inputs": {
+    "question": "Write a Python function that returns the factorial of n.",
+    "mode": "chat"
+   },
+   "reference": null,
+   "source": "written for this sample library",
+   "license": "MIT (written for this project)",
+   "attribution": "The AnuLM authors"
+  },
+  {
+   "id": "chat-python-05",
+   "tab": "chat",
+   "kind": "chat",
+   "language": "en",
+   "topic": "python",
+   "inputs": {
+    "question": "What does a list comprehension do in Python? Give an example.",
+    "mode": "chat"
+   },
+   "reference": null,
+   "source": "written for this sample library",
+   "license": "MIT (written for this project)",
+   "attribution": "The AnuLM authors"
+  },
+  {
+   "id": "lookup-01",
+   "tab": "chat",
+   "kind": "lookup",
+   "language": "en",
+   "inputs": {
+    "question": "What is the capital of India?",
+    "mode": "lookup"
+   },
+   "reference": "New Delhi",
+   "answers": [
+    "New Delhi"
+   ],
+   "source": "data/rag_demo_questions.jsonl; answers looked up in Wikipedia",
+   "license": "MIT (written for this project)",
+   "attribution": "Questions by the AnuLM authors; the demo retrieves from Wikipedia (CC BY-SA 4.0)"
+  },
+  {
+   "id": "lookup-02",
+   "tab": "chat",
+   "kind": "lookup",
+   "language": "en",
+   "inputs": {
+    "question": "Who wrote Hamlet?",
+    "mode": "lookup"
+   },
+   "reference": "Shakespeare",
+   "answers": [
+    "Shakespeare"
+   ],
+   "source": "data/rag_demo_questions.jsonl; answers looked up in Wikipedia",
+   "license": "MIT (written for this project)",
+   "attribution": "Questions by the AnuLM authors; the demo retrieves from Wikipedia (CC BY-SA 4.0)"
+  },
+  {
+   "id": "lookup-03",
+   "tab": "chat",
+   "kind": "lookup",
+   "language": "en",
+   "inputs": {
+    "question": "Who built the Taj Mahal?",
+    "mode": "lookup"
+   },
+   "reference": "Shah Jahan",
+   "answers": [
+    "Shah Jahan"
+   ],
+   "source": "data/rag_demo_questions.jsonl; answers looked up in Wikipedia",
+   "license": "MIT (written for this project)",
+   "attribution": "Questions by the AnuLM authors; the demo retrieves from Wikipedia (CC BY-SA 4.0)"
+  },
+  {
+   "id": "lookup-04",
+   "tab": "chat",
+   "kind": "lookup",
+   "language": "en",
+   "inputs": {
+    "question": "What is the largest planet in the Solar System?",
+    "mode": "lookup"
+   },
+   "reference": "Jupiter",
+   "answers": [
+    "Jupiter"
+   ],
+   "source": "data/rag_demo_questions.jsonl; answers looked up in Wikipedia",
+   "license": "MIT (written for this project)",
+   "attribution": "Questions by the AnuLM authors; the demo retrieves from Wikipedia (CC BY-SA 4.0)"
+  },
+  {
+   "id": "lookup-05",
+   "tab": "chat",
+   "kind": "lookup",
+   "language": "en",
+   "inputs": {
+    "question": "Who was the first Prime Minister of India?",
+    "mode": "lookup"
+   },
+   "reference": "Nehru",
+   "answers": [
+    "Nehru"
+   ],
+   "source": "data/rag_demo_questions.jsonl; answers looked up in Wikipedia",
+   "license": "MIT (written for this project)",
+   "attribution": "Questions by the AnuLM authors; the demo retrieves from Wikipedia (CC BY-SA 4.0)"
+  },
+  {
+   "id": "lookup-06",
+   "tab": "chat",
+   "kind": "lookup",
+   "language": "hi",
+   "inputs": {
+    "question": "भारत की राजधानी क्या है?",
+    "mode": "lookup"
+   },
+   "reference": "नई दिल्ली",
+   "answers": [
+    "नई दिल्ली",
+    "नयी दिल्ली"
+   ],
+   "source": "data/rag_demo_questions.jsonl; answers looked up in Wikipedia",
+   "license": "MIT (written for this project)",
+   "attribution": "Questions by the AnuLM authors; the demo retrieves from Wikipedia (CC BY-SA 4.0)"
+  },
+  {
+   "id": "lookup-07",
+   "tab": "chat",
+   "kind": "lookup",
+   "language": "hi",
+   "inputs": {
+    "question": "ताजमहल किसने बनवाया था?",
+    "mode": "lookup"
+   },
+   "reference": "शाहजहाँ",
+   "answers": [
+    "शाहजहाँ",
+    "शाहजहां"
+   ],
+   "source": "data/rag_demo_questions.jsonl; answers looked up in Wikipedia",
+   "license": "MIT (written for this project)",
+   "attribution": "Questions by the AnuLM authors; the demo retrieves from Wikipedia (CC BY-SA 4.0)"
+  },
+  {
+   "id": "lookup-08",
+   "tab": "chat",
+   "kind": "lookup",
+   "language": "hi",
+   "inputs": {
+    "question": "भारत के पहले प्रधानमंत्री कौन थे?",
+    "mode": "lookup"
+   },
+   "reference": "नेहरू",
+   "answers": [
+    "नेहरू"
+   ],
+   "source": "data/rag_demo_questions.jsonl; answers looked up in Wikipedia",
+   "license": "MIT (written for this project)",
+   "attribution": "Questions by the AnuLM authors; the demo retrieves from Wikipedia (CC BY-SA 4.0)"
+  },
+  {
+   "id": "lookup-09",
+   "tab": "chat",
+   "kind": "lookup",
+   "language": "hi",
+   "inputs": {
+    "question": "गंगा नदी कहाँ से निकलती है?",
+    "mode": "lookup"
+   },
+   "reference": "गंगोत्री",
+   "answers": [
+    "गंगोत्री",
+    "गोमुख"
+   ],
+   "source": "data/rag_demo_questions.jsonl; answers looked up in Wikipedia",
+   "license": "MIT (written for this project)",
+   "attribution": "Questions by the AnuLM authors; the demo retrieves from Wikipedia (CC BY-SA 4.0)"
+  },
+  {
+   "id": "lookup-10",
+   "tab": "chat",
+   "kind": "lookup",
+   "language": "hi",
+   "inputs": {
+    "question": "रामायण किसने लिखी?",
+    "mode": "lookup"
+   },
+   "reference": "वाल्मीकि",
+   "answers": [
+    "वाल्मीकि"
+   ],
+   "source": "data/rag_demo_questions.jsonl; answers looked up in Wikipedia",
+   "license": "MIT (written for this project)",
+   "attribution": "Questions by the AnuLM authors; the demo retrieves from Wikipedia (CC BY-SA 4.0)"
+  },
+  {
+   "id": "decide-bank-01",
+   "tab": "decide",
+   "kind": "intent_banking",
+   "language": "en",
+   "inputs": {
+    "message": "Can i have a card to my daughter?",
+    "task": "banking"
+   },
+   "reference": "getting_spare_card",
+   "source": "BANKING77 test",
+   "license": "CC BY 4.0",
+   "attribution": "BANKING77 (Casanueva et al., 2020), PolyAI, huggingface.co/datasets/PolyAI/banking77"
+  },
+  {
+   "id": "decide-bank-02",
+   "tab": "decide",
+   "kind": "intent_banking",
+   "language": "en",
+   "inputs": {
+    "message": "How do I get refunded?",
+    "task": "banking"
+   },
+   "reference": "request_refund",
+   "source": "BANKING77 test",
+   "license": "CC BY 4.0",
+   "attribution": "BANKING77 (Casanueva et al., 2020), PolyAI, huggingface.co/datasets/PolyAI/banking77"
+  },
+  {
+   "id": "decide-bank-03",
+   "tab": "decide",
+   "kind": "intent_banking",
+   "language": "en",
+   "inputs": {
+    "message": "What is the youngest age in order to have an account?",
+    "task": "banking"
+   },
+   "reference": "age_limit",
+   "source": "BANKING77 test",
+   "license": "CC BY 4.0",
+   "attribution": "BANKING77 (Casanueva et al., 2020), PolyAI, huggingface.co/datasets/PolyAI/banking77"
+  },
+  {
+   "id": "decide-bank-04",
+   "tab": "decide",
+   "kind": "intent_banking",
+   "language": "en",
+   "inputs": {
+    "message": "What exchange rates do you offer?",
+    "task": "banking"
+   },
+   "reference": "exchange_rate",
+   "source": "BANKING77 test",
+   "license": "CC BY 4.0",
+   "attribution": "BANKING77 (Casanueva et al., 2020), PolyAI, huggingface.co/datasets/PolyAI/banking77"
+  },
+  {
+   "id": "decide-bank-05",
+   "tab": "decide",
+   "kind": "intent_banking",
+   "language": "en",
+   "inputs": {
+    "message": "When will my card payment be done pending?",
+    "task": "banking"
+   },
+   "reference": "pending_card_payment",
+   "source": "BANKING77 test",
+   "license": "CC BY 4.0",
+   "attribution": "BANKING77 (Casanueva et al., 2020), PolyAI, huggingface.co/datasets/PolyAI/banking77"
+  },
+  {
+   "id": "decide-bank-06",
+   "tab": "decide",
+   "kind": "intent_banking",
+   "language": "en",
+   "inputs": {
+    "message": "Why do you need to know so much about me",
+    "task": "banking"
+   },
+   "reference": "why_verify_identity",
+   "source": "BANKING77 test",
+   "license": "CC BY 4.0",
+   "attribution": "BANKING77 (Casanueva et al., 2020), PolyAI, huggingface.co/datasets/PolyAI/banking77"
+  },
+  {
+   "id": "decide-bank-07",
+   "tab": "decide",
+   "kind": "intent_banking",
+   "language": "en",
+   "inputs": {
+    "message": "I would like a temporary virtual card",
+    "task": "banking"
+   },
+   "reference": "get_disposable_virtual_card",
+   "source": "BANKING77 test",
+   "license": "CC BY 4.0",
+   "attribution": "BANKING77 (Casanueva et al., 2020), PolyAI, huggingface.co/datasets/PolyAI/banking77"
+  },
+  {
+   "id": "decide-bank-08",
+   "tab": "decide",
+   "kind": "intent_banking",
+   "language": "en",
+   "inputs": {
+    "message": "I would like to transfer some money from my other bank account into this one.",
+    "task": "banking"
+   },
+   "reference": "transfer_into_account",
+   "source": "BANKING77 test",
+   "license": "CC BY 4.0",
+   "attribution": "BANKING77 (Casanueva et al., 2020), PolyAI, huggingface.co/datasets/PolyAI/banking77"
+  },
+  {
+   "id": "decide-bank-09",
+   "tab": "decide",
+   "kind": "intent_banking",
+   "language": "en",
+   "inputs": {
+    "message": "Tell me how I can exchange between different currency.",
+    "task": "banking"
+   },
+   "reference": "exchange_via_app",
+   "source": "BANKING77 test",
+   "license": "CC BY 4.0",
+   "attribution": "BANKING77 (Casanueva et al., 2020), PolyAI, huggingface.co/datasets/PolyAI/banking77"
+  },
+  {
+   "id": "decide-bank-10",
+   "tab": "decide",
+   "kind": "intent_banking",
+   "language": "en",
+   "inputs": {
+    "message": "What ATMs can I withdraw money from?",
+    "task": "banking"
+   },
+   "reference": "atm_support",
+   "source": "BANKING77 test",
+   "license": "CC BY 4.0",
+   "attribution": "BANKING77 (Casanueva et al., 2020), PolyAI, huggingface.co/datasets/PolyAI/banking77"
+  },
+  {
+   "id": "decide-hi-01",
+   "tab": "decide",
+   "kind": "intent_massive_hi",
+   "language": "hi",
+   "inputs": {
+    "message": "कल दोपहर तीन बजे का मीटिंग का एक रिमाइंडर लगाओ",
+    "task": "massive-hi"
+   },
+   "reference": "calendar_set",
+   "source": "MASSIVE hi-IN validation (held out)",
+   "license": "CC BY 4.0",
+   "attribution": "MASSIVE (FitzGerald et al., 2022), Amazon Science, huggingface.co/datasets/AmazonScience/massive"
+  },
+  {
+   "id": "decide-hi-02",
+   "tab": "decide",
+   "kind": "intent_massive_hi",
+   "language": "hi",
+   "inputs": {
+    "message": "एक शब्द में खुद को परिभाषित करें",
+    "task": "massive-hi"
+   },
+   "reference": "general_quirky",
+   "source": "MASSIVE hi-IN validation (held out)",
+   "license": "CC BY 4.0",
+   "attribution": "MASSIVE (FitzGerald et al., 2022), Amazon Science, huggingface.co/datasets/AmazonScience/massive"
+  },
+  {
+   "id": "decide-hi-03",
+   "tab": "decide",
+   "kind": "intent_massive_hi",
+   "language": "hi",
+   "inputs": {
+    "message": "क्या आप एक नई सूची बना सकते हैं",
+    "task": "massive-hi"
+   },
+   "reference": "lists_createoradd",
+   "source": "MASSIVE hi-IN validation (held out)",
+   "license": "CC BY 4.0",
+   "attribution": "MASSIVE (FitzGerald et al., 2022), Amazon Science, huggingface.co/datasets/AmazonScience/massive"
+  },
+  {
+   "id": "decide-hi-04",
+   "tab": "decide",
+   "kind": "intent_massive_hi",
+   "language": "hi",
+   "inputs": {
+    "message": "क्या आप मुझे बता सकते हैं कि मेरे सोशल मीडिया का क्या हुआ",
+    "task": "massive-hi"
+   },
+   "reference": "social_query",
+   "source": "MASSIVE hi-IN validation (held out)",
+   "license": "CC BY 4.0",
+   "attribution": "MASSIVE (FitzGerald et al., 2022), Amazon Science, huggingface.co/datasets/AmazonScience/massive"
+  },
+  {
+   "id": "decide-hi-05",
+   "tab": "decide",
+   "kind": "intent_massive_hi",
+   "language": "hi",
+   "inputs": {
+    "message": "कौन से झंडे की सवारी सबसे अच्छी है",
+    "task": "massive-hi"
+   },
+   "reference": "recommendation_events",
+   "source": "MASSIVE hi-IN validation (held out)",
+   "license": "CC BY 4.0",
+   "attribution": "MASSIVE (FitzGerald et al., 2022), Amazon Science, huggingface.co/datasets/AmazonScience/massive"
+  },
+  {
+   "id": "decide-hi-06",
+   "tab": "decide",
+   "kind": "intent_massive_hi",
+   "language": "hi",
+   "inputs": {
+    "message": "फेसबुक पर नई स्थिति पोस्ट करें जश्न मनाने का समय",
+    "task": "massive-hi"
+   },
+   "reference": "social_post",
+   "source": "MASSIVE hi-IN validation (held out)",
+   "license": "CC BY 4.0",
+   "attribution": "MASSIVE (FitzGerald et al., 2022), Amazon Science, huggingface.co/datasets/AmazonScience/massive"
+  },
+  {
+   "id": "decide-hi-07",
+   "tab": "decide",
+   "kind": "intent_massive_hi",
+   "language": "hi",
+   "inputs": {
+    "message": "मुझे कुछ ऐसी हस्तियां खोजें जो मकर राशि की हैं",
+    "task": "massive-hi"
+   },
+   "reference": "qa_factoid",
+   "source": "MASSIVE hi-IN validation (held out)",
+   "license": "CC BY 4.0",
+   "attribution": "MASSIVE (FitzGerald et al., 2022), Amazon Science, huggingface.co/datasets/AmazonScience/massive"
+  },
+  {
+   "id": "decide-hi-08",
+   "tab": "decide",
+   "kind": "intent_massive_hi",
+   "language": "hi",
+   "inputs": {
+    "message": "कृपया राम को मेरी संपर्क सूची में जोड़ें",
+    "task": "massive-hi"
+   },
+   "reference": "email_addcontact",
+   "source": "MASSIVE hi-IN validation (held out)",
+   "license": "CC BY 4.0",
+   "attribution": "MASSIVE (FitzGerald et al., 2022), Amazon Science, huggingface.co/datasets/AmazonScience/massive"
+  },
+  {
+   "id": "decide-hi-09",
+   "tab": "decide",
+   "kind": "intent_massive_hi",
+   "language": "hi",
+   "inputs": {
+    "message": "क्या मैं अपनी सूचियाँ देख सकता हूँ",
+    "task": "massive-hi"
+   },
+   "reference": "lists_query",
+   "source": "MASSIVE hi-IN validation (held out)",
+   "license": "CC BY 4.0",
+   "attribution": "MASSIVE (FitzGerald et al., 2022), Amazon Science, huggingface.co/datasets/AmazonScience/massive"
+  },
+  {
+   "id": "decide-hi-10",
+   "tab": "decide",
+   "kind": "intent_massive_hi",
+   "language": "hi",
+   "inputs": {
+    "message": "क्या आप कृपया भारतीय खाना बनाने के लिए वीडियो प्रदर्शित कर सकते हैं",
+    "task": "massive-hi"
+   },
+   "reference": "cooking_recipe",
+   "source": "MASSIVE hi-IN validation (held out)",
+   "license": "CC BY 4.0",
+   "attribution": "MASSIVE (FitzGerald et al., 2022), Amazon Science, huggingface.co/datasets/AmazonScience/massive"
+  }
+ ]
+}

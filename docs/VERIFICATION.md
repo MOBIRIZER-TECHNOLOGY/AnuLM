@@ -11,7 +11,7 @@ From the repository root (or after `pip install -e .`, from anywhere):
 ```bash
 python -m tests.test_model                                                   # 80 tests, under a minute on CPU
 python -m unittest tests.test_training_pipeline tests.test_multimodal_contracts tests.test_release_fixes   # 81 tests, seconds
-python -m unittest discover -s tests -t . -p "test_quality_*.py"               # 63 tests, seconds
+python -m unittest discover -s tests -t . -p "test_quality_*.py"               # 69 tests, seconds
 python -m tools.smoke                                                        # 11 end-to-end steps, ~65-80 s on CPU
 ```
 
@@ -43,7 +43,7 @@ Windows 11, Python 3.14.7, torch 2.11 (CUDA build, run on CPU), transformers 5.1
 | --- | --- |
 | `tests.test_model` | 80 passed, 0 failed (also under `python -m unittest tests.test_model`) |
 | `tests.test_training_pipeline`, `tests.test_multimodal_contracts`, `tests.test_release_fixes` | 80 passed, 1 skipped (the installed-command check, because another copy of AnuLM is installed on this machine) |
-| `tests.test_quality_*` (layout, loading, serving) | 63 passed |
+| `tests.test_quality_*` (layout, loading, serving, samples) | 69 passed |
 | `tools.smoke` | 11 of 11 steps passed |
 | `ruff check .` (the configuration in `pyproject.toml`, which CI runs) | clean |
 | every `python -m anulm` command with `--help` | 53 of 57 print their help; see "Known issues" for the four |

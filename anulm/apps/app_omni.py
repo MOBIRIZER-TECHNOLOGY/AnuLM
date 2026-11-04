@@ -18,6 +18,10 @@ descriptions seen and the answers given all come from the 400M backbone this
 repository trains. docs/SPEECH.md has the numbers behind every tab: WER 8.2%
 English / 48.4% Hindi on held-out speech, 40.9% 4-way on A-OKVQA.
 
+Each tab has a gallery from examples/samples/ (held-out rows, one click runs
+them, the reference answer shown beside the output);
+experiments/demo_samples_check.py scores all of them against a running page.
+
 Models load on first use and stay resident. All of them together (three
 backbones for hearing/seeing, one for answering, plus the encoders) fit a
 16 GB card; use --device cpu to try it without one.
@@ -380,6 +384,60 @@ def omni_look_examples() -> tuple[list, str]:
     return ex, note
 
 
+# The sample library (examples/samples/, built by experiments/make_demo_samples.py):
+# 117 held-out rows the one model never trained on, each with its reference
+# answer and the credit its licence asks for. experiments/demo_samples_check.py
+# runs every one of them through this page's API, so what a visitor clicks is
+# what the check scores.
+SAMPLES = HERE / "examples" / "samples"
+SAMPLE_TASKS = {"banking": TASK_BANK, "massive-hi": TASK_HI}
+
+
+def sample_library(*kinds: str) -> list[dict]:
+    """The manifest's rows of these kinds whose media exist; [] without the library."""
+    items = _json(SAMPLES / "samples.json").get("items", [])
+    return [i for i in items if i["kind"] in kinds
+            and all((SAMPLES / v).exists() for k, v in i["inputs"].items() if k in ("audio", "image"))]
+
+
+def sample_file(item: dict, key: str) -> str:
+    return str((SAMPLES / item["inputs"][key]).resolve())
+
+
+def sample_reference(item: dict) -> str:
+    """What the reference box shows: the dataset's answer, then the source and
+    credit (CC BY asks for the credit wherever the material is shown)."""
+    ref, kind = item.get("reference"), item["kind"]
+    if kind == "caption":
+        head = f"A person wrote: {ref}"
+    elif kind == "vqa":
+        others = [a for a in item.get("answers", []) if a != ref]
+        head = f"Most annotators answered: {ref}" + (f" (also given: {', '.join(others)})" if others else "")
+    elif kind == "lookup":
+        head = "Expected: " + " / ".join(item.get("answers") or [ref])
+    elif kind == "chat":
+        head = "No single right answer: a prompt written for this library."
+    elif kind.startswith("intent"):
+        head = f"Labelled intent: {ref}"
+    else:
+        head = ref or ""
+    return f"{head}\n\n{item['source']} · {item['license']} · {item['attribution']}"
+
+
+def sample_label(item: dict, n: int = 56) -> str:
+    """A short button label: text where the input is text, where-from for media
+    (an audio player or thumbnail per row would load every file with the page)."""
+    kind = item["kind"]
+    if kind.startswith("asr"):
+        where = item["source"].split(",")[0].replace(" hi_in test", "").replace(" Hindi held-out (valid split)", "")
+        return f"{'English' if item['language'] == 'en' else 'हिन्दी'} · {where} · {item.get('seconds', 0):.0f} s"
+    if kind == "caption":
+        return "describe: " + item["source"].replace("DOCCI test, ", "DOCCI ")
+    text = item["inputs"].get("question") or item["inputs"].get("message") or item["id"]
+    text = text if len(text) <= n else text[:n - 1] + "…"
+    return {"lookup": "look up: ", "vqa": "ask: "}.get(kind, "") + text
+
+
 def whole_sentences(text: str) -> str:
     """A caption cut at the evaluation's token limit, ended at its last full
     sentence (or marked with an ellipsis when that would drop most of it)."""
@@ -506,6 +564,9 @@ def build(models: Models) -> gr.Blocks:
                     said = gr.Textbox(label="AnuLM answered", lines=4)
                     voice_out = gr.Audio(label="spoken answer", autoplay=True)
                     listen_meta = gr.Markdown()
+                    listen_lib = sample_library("asr_en", "asr_hi")
+                    listen_ref = gr.Textbox(label="what was actually said (library samples)", lines=3,
+                                            interactive=False, visible=bool(listen_lib))
 
             def do_listen(a, lg, speak):
                 if a is None:
@@ -527,6 +588,20 @@ def build(models: Models) -> gr.Blocks:
 
             go_listen.click(do_listen, [audio, lang, speak_back],
                             [heard, said, voice_out, listen_meta])
+            if listen_lib:
+                # The clips are read sentences, not questions, so a sample turns
+                # "answer out loud" off: the transcript is what the reference checks.
+                ex = gr.Examples([[sample_file(i, "audio"), i["inputs"]["lang"], False, sample_reference(i)]
+                                  for i in listen_lib], [audio, lang, speak_back, listen_ref],
+                                 label=f"{len(listen_lib)} held-out clips: one click transcribes",
+                                 example_labels=[sample_label(i) for i in listen_lib], examples_per_page=10)
+                # Chained on the click rather than run_on_click, so the sample
+                # runs through the same handler, and settings, as the button.
+                ex.load_input_event.then(do_listen, [audio, lang, speak_back],
+                                         [heard, said, voice_out, listen_meta], api_visibility="undocumented")
+                # A clip of the visitor's own makes the shown reference stale.
+                for ev in (audio.upload, audio.stop_recording):
+                    ev(lambda: "", None, listen_ref, queue=False, api_visibility="private")
             if USE_OMNI and res:
                 gr.Markdown(f"*Speech recognition by the one model, word error rate (lower is better): "
                             f"{num(res, 'wer_en')} English (100 held-out LibriSpeech clips); Hindi "
@@ -551,6 +626,9 @@ def build(models: Models) -> gr.Blocks:
                     seen = gr.Textbox(label="AnuLM sees", lines=3)
                     look_voice = gr.Audio(label="spoken", autoplay=True)
                     look_meta = gr.Markdown()
+                    look_lib = sample_library("caption", "vqa") if USE_OMNI else []
+                    look_ref = gr.Textbox(label="reference (library samples)", lines=4,
+                                          interactive=False, visible=bool(look_lib))
 
             def do_look(image, q, sq):
                 if image is None:
@@ -573,7 +651,27 @@ def build(models: Models) -> gr.Blocks:
                 return q, out, spoken, " · ".join(parts)
 
             go_look.click(do_look, [img, question, spoken_q], [question, seen, look_voice, look_meta])
-            if USE_OMNI:
+            def look_sample(image, q):
+                """A sample asks with its typed question; a spoken one left in
+                the box from earlier would otherwise replace it."""
+                return do_look(image, q, None)
+
+            if look_lib:
+                ex = gr.Examples([[sample_file(i, "image"), i["inputs"]["question"], sample_reference(i)]
+                                  for i in look_lib], [img, question, look_ref],
+                                 label=f"{len(look_lib)} held-out photos: one click describes it, or asks "
+                                       f"what is written",
+                                 example_labels=[sample_label(i) for i in look_lib], examples_per_page=11)
+                ex.load_input_event.then(look_sample, [img, question], [question, seen, look_voice, look_meta],
+                                         api_visibility="undocumented")
+                img.upload(lambda: "", None, look_ref, queue=False, api_visibility="private")
+                question.input(lambda: "", None, look_ref, queue=False, api_visibility="private")
+                gr.Markdown("*" + ("Captions learned from Localized Narratives and DOCCI; questions from "
+                                   f"TextVQA, {num(res, 'vqa_acc')} right on 1,000 held-out questions. "
+                                   if res else "") + "Sample photos, none seen in training: DOCCI test set "
+                            "(Google, CC BY 4.0) and TextVQA photos from Open Images (CC BY 2.0), each "
+                            "credited in its reference box and in `examples/samples/ATTRIBUTION.md`.*")
+            elif USE_OMNI:
                 ex, credit = omni_look_examples()
                 if ex:
                     gr.Examples(ex, [img, question], label="held-out photos: describe, or ask what is written")
@@ -596,6 +694,9 @@ def build(models: Models) -> gr.Blocks:
             go_chat = gr.Button("Ask", variant="primary")
             a_out = gr.Textbox(label="AnuLM", lines=6)
             chat_meta = gr.Markdown()
+            chat_lib = sample_library("lookup") + sample_library("chat")     # the default mode's first
+            chat_ref = gr.Textbox(label="reference (library samples)", lines=2, interactive=False,
+                                  visible=bool(chat_lib))
 
             def do_chat(q, mode):
                 if not q or not q.strip():
@@ -609,6 +710,15 @@ def build(models: Models) -> gr.Blocks:
                 return reply, f"{t:.2f}s · " + ("AnuLM-Omni reader" if USE_OMNI else f"reader {READER}")
 
             go_chat.click(do_chat, [q_in, chat_mode], [a_out, chat_meta])
+            if chat_lib:
+                ex = gr.Examples([[i["inputs"]["question"], i["inputs"]["mode"], sample_reference(i)]
+                                  for i in chat_lib], [q_in, chat_mode, chat_ref],
+                                 label=f"{len(chat_lib)} samples: Wikipedia lookups, then English, Hindi "
+                                       f"and Python prompts (one click asks)",
+                                 example_labels=[sample_label(i) for i in chat_lib], examples_per_page=10)
+                ex.load_input_event.then(do_chat, [q_in, chat_mode], [a_out, chat_meta],
+                                         api_visibility="undocumented")
+                q_in.input(lambda: "", None, chat_ref, queue=False, api_visibility="private")
             if USE_OMNI:
                 start = _json(OMNI_LOGS / "eval_base_chat.json")
                 gr.Markdown("*Look it up: the one model reads the Wikipedia passages the retriever finds "
@@ -684,6 +794,10 @@ def build(models: Models) -> gr.Blocks:
                 with gr.Column():
                     choice = gr.Label(label="intent (top 3)", num_top_classes=3)
                     action = gr.Markdown()
+                    decide_lib = [i for i in sample_library("intent_banking", "intent_massive_hi")
+                                  if have(DECIDE_TASKS[SAMPLE_TASKS[i["inputs"]["task"]]][DECIDE_OWN])]
+                    decide_ref = gr.Textbox(label="reference (library samples)", lines=2, interactive=False,
+                                            visible=bool(decide_lib))
                     typed = gr.JSON(label="typed output")
 
             def do_decide(m, t, which, tk=TASK_BANK):
@@ -707,6 +821,17 @@ def build(models: Models) -> gr.Blocks:
                         {**out, "model": name, "task": tk})
 
             go_dec.click(do_decide, [msg, thr, backbone, task], [choice, action, typed])
+            if decide_lib:
+                # Fills message and task only: the model and threshold stay as
+                # the visitor set them, and the chained run reads them.
+                ex = gr.Examples([[i["inputs"]["message"], SAMPLE_TASKS[i["inputs"]["task"]], sample_reference(i)]
+                                  for i in decide_lib], [msg, task, decide_ref],
+                                 label=f"{len(decide_lib)} held-out test messages (BANKING77, MASSIVE hi-IN): "
+                                       f"one click decides",
+                                 example_labels=[sample_label(i) for i in decide_lib], examples_per_page=10)
+                ex.load_input_event.then(do_decide, [msg, thr, backbone, task], [choice, action, typed],
+                                         api_visibility="undocumented")
+                msg.input(lambda: "", None, decide_ref, queue=False, api_visibility="private")
 
         if USE_OMNI:
             with gr.Tab("Model & data"):

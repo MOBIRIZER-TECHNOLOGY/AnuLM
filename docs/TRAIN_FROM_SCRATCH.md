@@ -560,7 +560,7 @@ python -m unittest discover -s tests -t . -p "test_quality_*.py"
 ```
 
 On the development machine these gave 80 passed and 1 skipped for the
-second line, and 63 passed for the third (`docs/VERIFICATION.md`).
+second line, and 69 passed for the third (`docs/VERIFICATION.md`).
 
 Score a checkpoint again by hand (GPU):
 
