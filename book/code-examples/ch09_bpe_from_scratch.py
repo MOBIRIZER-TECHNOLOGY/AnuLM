@@ -28,7 +28,7 @@ from anulm.bpe import BPE, CHUNK_RE  # noqa: E402
 from anulm.training.train import FALLBACK  # noqa: E402
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-PIN = "fdbb09a"
+PIN = "b42998d"
 
 
 def merge(seq: list[int], a: int, b: int, new: int) -> list[int]:

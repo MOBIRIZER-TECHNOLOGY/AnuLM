@@ -2,7 +2,7 @@
 title: "17 · Mixture of experts I: the router"
 part: "IV · Inside the transformer"
 accent: gold
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # 17  Mixture of experts I: the router
@@ -89,7 +89,7 @@ choose, unbiased scores weight. *illustrative*; printed by
 
 ## 17.3  The module: weights and buffers
 
-> **In the repo** · `anulm/model.py` · `Router.__init__` · lines 594–609 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `Router.__init__` · lines 594–609 · @b42998d
 
 ```python
     def __init__(self, cfg: AnuLMConfig):
@@ -131,7 +131,7 @@ The router's input has RMS 1 (Chapter 15), so logits start with spread
 
 ## 17.4  Why the gate runs in fp32 with autocast off
 
-> **In the repo** · `anulm/model.py` · `Router.forward` · lines 611–622 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `Router.forward` · lines 611–622 · @b42998d
 
 ```python
     def forward(self, x_flat, seq_len: Optional[int] = None):   # (N, D)
@@ -180,7 +180,7 @@ is the book's reference for the figure.
 
 ## 17.5  Scores, choice and weights
 
-> **In the repo** · `anulm/model.py` · `Router._gate` · lines 624–645 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `Router._gate` · lines 624–645 · @b42998d
 
 ```python
     def _gate(self, x_flat, seq_len: Optional[int]):
@@ -207,7 +207,7 @@ is the book's reference for the figure.
 
 The test that pins "the bias picks, it never weights":
 
-> **In the repo** · `tests/test_model.py` · `router_weights_come_from_unbiased_scores` · lines 233–248 · @fdbb09a
+> **In the repo** · `tests/test_model.py` · `router_weights_come_from_unbiased_scores` · lines 233–248 · @b42998d
 
 ```python
 def router_weights_come_from_unbiased_scores():
@@ -256,7 +256,7 @@ starts and how far a step moves the output.
 With `n_group > 1`, each group of E/G experts is worth its best two scores, and
 only the best `topk_group` groups may supply the A experts:
 
-> **In the repo** · `anulm/model.py` · `Router._gate` · lines 629–638 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `Router._gate` · lines 629–638 · @b42998d
 
 ```python
         if self.n_group > 1:
@@ -304,7 +304,7 @@ expert 0 is masked with its group. *illustrative*; the scores of
 
 The test checks the limit and the sum of 2.5 on 64 random tokens:
 
-> **In the repo** · `tests/test_model.py` · `router_respects_group_limits` · lines 218–229 · @fdbb09a
+> **In the repo** · `tests/test_model.py` · `router_respects_group_limits` · lines 218–229 · @b42998d
 
 ```python
 def router_respects_group_limits():
@@ -324,7 +324,7 @@ def router_respects_group_limits():
 The configuration refuses an A the groups cannot supply, which `topk` would
 otherwise fill with −∞ experts:
 
-> **In the repo** · `anulm/model.py` · `AnuLMConfig.__post_init__` · lines 144–148 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLMConfig.__post_init__` · lines 144–148 · @b42998d
 
 ```python
         per_group = self.num_experts // self.n_group
@@ -336,7 +336,7 @@ otherwise fill with −∞ experts:
 
 `check` (lines 129–131) raises `ValueError`, a real exception rather than an
 assert, so `python -O` cannot remove it; `config_rejects_unreachable_topk`
-(`tests/test_model.py` line 423) expects that `ValueError`. The released model
+(`tests/test_model.py` line 520) expects that `ValueError`. The released model
 has `n_group = 1`, so lines 629–638 never run in it; `nano_105b` keeps 2 of 4
 groups per token, after Sarvam's 105B code of March 2026, which Sarvam later changed to remove grouping [R49]. DeepSeek-V3 limits
 routing by machine, a related idea [R20].
@@ -475,12 +475,12 @@ used only for the claim in its register row:
 | [S06] | GShard: top-2 gating in every other layer | CHECKED |
 | [S07] | fine-grained and shared experts | CHECKED |
 
-Repository evidence, all at @fdbb09a:
+Repository evidence, all at @b42998d:
 - `anulm/model.py`: `AnuLMConfig.__post_init__` 144–148; `Router.__init__` 594–609,
   `Router.forward` 611–622, `Router._gate` 624–645 (groups 629–638).
 - `tests/test_model.py`: `router_respects_group_limits` 218–229,
   `router_weights_come_from_unbiased_scores` 233–248,
-  `config_rejects_unreachable_topk` 423.
+  `config_rejects_unreachable_topk` 520.
 - `sarvam/sarvam-30b/config.json`, `sarvam/sarvam-105b/config.json`:
   `routed_scaling_factor`; `sarvam/sarvam-105b/modeling_sarvam_moe.py` 276–277,
   305–313: the group defaults and the best-two group score.

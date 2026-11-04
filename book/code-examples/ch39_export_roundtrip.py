@@ -47,7 +47,7 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 warnings.filterwarnings("ignore", category=FutureWarning)
 RELEASE = ROOT / "release" / "AnuLM-Base-v2-400M"
 OUT = ROOT / "book" / "measurements" / "part_viii_ix_export.json"
-PIN = "fdbb09a"
+PIN = "b42998d"
 
 
 def small(**kw) -> M.AnuLMConfig:

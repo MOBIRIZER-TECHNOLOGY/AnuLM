@@ -1,9 +1,9 @@
 # Source verification
 
-Written by `book/tools/verify_source_map.py` against `@fdbb09a`.
+Written by `book/tools/verify_source_map.py` against `@b42998d`.
 
 Source-map rows checked: 94. Matching their line range (±1): **92**. Not matching: **2**.
-Test-map entries: 61. At the `def` line given: **61**. Not: **0**.
+Test-map entries: 65. At the `def` line given: **65**. Not: **0**.
 
 Rows whose range deliberately starts with leading comments or constants (accepted): Vocabulary and ranks, EOS above the merges (+3), Persistence (+7).
 
@@ -18,20 +18,20 @@ Rows whose range deliberately starts with leading comments or constants (accepte
 
 - none
 
-Test functions defined in `tests/test_model.py` at the pin: 80.
+Test functions defined in `tests/test_model.py` at the pin: 84.
 
 ## Drift between the pin and the working tree
 
-- `tests/test_model.py`:  1 file changed, 208 insertions(+), 35 deletions(-)
+- `anulm/multimodal/omni_train.py`:  1 file changed, 66 insertions(+), 9 deletions(-)
 
 ## Claims recomputed from the code and the released checkpoint
 
-`book/tools/verify_claims.py`, against `@fdbb09a` and `ckpt_base_v2.pt`.
+`book/tools/verify_claims.py`, against `@b42998d` and `ckpt_base_v2.pt`.
 
 | Claim | Holds | Evidence |
 |---|---|---|
-| anulm/model.py has 1,364 lines | yes | 1364 lines at @fdbb09a |
-| tests/test_model.py has 76 tests | yes | 76 functions carry a test decorator (test) at @fdbb09a |
+| anulm/model.py has 1,364 lines | yes | 1364 lines at @b42998d |
+| tests/test_model.py has 80 tests | yes | 80 functions carry a test decorator (test) at @b42998d |
 | released model: 397.7M parameters | yes | num_params() total 397,659,648; state dict 397,659,648 |
 | about 173M active per token | yes | num_params() active 173,526,528 |
 | 32k vocabulary | yes | vocab_size 32,768 |

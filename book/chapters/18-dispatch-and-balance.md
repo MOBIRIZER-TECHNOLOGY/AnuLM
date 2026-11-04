@@ -2,7 +2,7 @@
 title: "18 · Mixture of experts II: dispatch and balance"
 part: "IV · Inside the transformer"
 accent: gold
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # 18  Mixture of experts II: dispatch and balance
@@ -65,7 +65,7 @@ sparse, dense and grouped paths. *illustrative*; the index tensors printed by
 
 ## 18.2  The sparse path: one GEMM per expert
 
-> **In the repo** · `anulm/model.py` · `MoE._route_sparse` · lines 709–727 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `MoE._route_sparse` · lines 709–727 · @b42998d
 
 ```python
     def _route_sparse(self, x_flat, topk_idx, topk_w):
@@ -116,13 +116,13 @@ sparse path, nano_30b, torch 2.11.0+cu128: 10 graph breaks, 11 graphs
 ```
 
 The count depends on the PyTorch version; the test `sparse_moe_breaks_the_graph_as_documented`
-(`tests/test_model.py` line 506) asserts only that there is at least one.
+(`tests/test_model.py` line 603) asserts only that there is at least one.
 
 `IN THE REPO`
 
 ## 18.3  The dense and grouped paths
 
-> **In the repo** · `anulm/model.py` · `MoE._route_dense` · lines 729–738 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `MoE._route_dense` · lines 729–738 · @b42998d
 
 ```python
     def _route_dense(self, x_flat, topk_idx, topk_w):
@@ -141,7 +141,7 @@ The count depends on the PyTorch version; the test `sparse_moe_breaks_the_graph_
 elsewhere. Every expert runs on all N tokens and is multiplied by its column:
 static shapes, at E/A = 6 times the expert work in the released model.
 
-> **In the repo** · `anulm/model.py` · `MoE._route_grouped` · lines 775–790 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `MoE._route_grouped` · lines 775–790 · @b42998d
 
 ```python
         N, D = x_flat.shape
@@ -172,7 +172,7 @@ static shapes, at E/A = 6 times the expert work in the released model.
 
 The stacked weights come from one helper:
 
-> **In the repo** · `anulm/model.py` · `MoE._stacked_weights` · lines 750–759 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `MoE._stacked_weights` · lines 750–759 · @b42998d
 
 ```python
         # Keyed on the parameters' in-place version counters, so a
@@ -211,10 +211,10 @@ grouped vs sparse, both under bf16 autocast: 0.0e+00; grouped vs fp32 loop: 3.8e
 ```
 
 So do the tests: `moe_matches_naive_per_token_loop` (`tests/test_model.py`
-line 180), `dense_and_sparse_moe_agree` (line 474), and the grouped test, which
+line 180), `dense_and_sparse_moe_agree` (line 571), and the grouped test, which
 is skipped on a PyTorch without `F.grouped_mm`:
 
-> **In the repo** · `tests/test_model.py` · `grouped_moe_matches_sparse_under_bf16` · lines 694–711 · @fdbb09a
+> **In the repo** · `tests/test_model.py` · `grouped_moe_matches_sparse_under_bf16` · lines 827–844 · @b42998d
 
 ```python
 def grouped_moe_matches_sparse_under_bf16():
@@ -273,7 +273,7 @@ bf16's. Grouped was the fastest of the three in every run.
 
 During training the router counts each expert's slots:
 
-> **In the repo** · `anulm/model.py` · `Router._gate` · lines 647–652 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `Router._gate` · lines 647–652 · @b42998d
 
 ```python
         aux = None
@@ -286,7 +286,7 @@ During training the router counts each expert's slots:
 
 After every optimiser step, `anulm/training/train.py` hands the counts to the biases:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 876–878 · @fdbb09a
+> **In the repo** · `anulm/training/train.py` · `main` · lines 876–878 · @b42998d
 
 ```python
         opt.step()
@@ -294,7 +294,7 @@ After every optimiser step, `anulm/training/train.py` hands the counts to the bi
         imbalance = raw_model.update_expert_biases()
 ```
 
-> **In the repo** · `anulm/model.py` · `AnuLM.update_expert_biases` · lines 1081–1101 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM.update_expert_biases` · lines 1081–1101 · @b42998d
 
 ```python
         ratios = []
@@ -347,7 +347,7 @@ imbalance rises before it falls; it oscillates (1.188× ↔ 1.734× at rate 0.05
 on a frozen batch); and if a starved expert's biased score trails an
 overloaded one's by a gap Δ, the gap closes by 2η per step, so routing needs
 about Δ/(2η) steps to move. `bias_update_recovers_from_collapse`
-(`tests/test_model.py` line 282) holds the recovery. §16 found 3·10⁻³ marginally
+(`tests/test_model.py` line 361) holds the recovery. §16 found 3·10⁻³ marginally
 best for 24 experts, inside the run-to-run noise; the released run used it.
 
 `IN THE REPO`
@@ -409,7 +409,7 @@ of bf16 biases, about 0.003 nats, and why the export keeps them in fp32.
 
 ## 18.7  Two regularisers, and reading imbalance
 
-> **In the repo** · `anulm/model.py` · `Router._gate` · lines 653–670 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `Router._gate` · lines 653–670 · @b42998d
 
 ```python
             if self.seq_balance_alpha > 0 or self.router_z_alpha > 0:
@@ -458,7 +458,7 @@ z-loss by hand 2.553796, Router aux 2.553796
 The repository's test pins the balance term against the formula, using
 all-zero router weights so that every P<sub>i</sub> is exactly 1/E:
 
-> **In the repo** · `tests/test_model.py` · `seq_balance_loss_matches_the_formula` · lines 774–790 · @fdbb09a
+> **In the repo** · `tests/test_model.py` · `seq_balance_loss_matches_the_formula` · lines 907–923 · @b42998d
 
 ```python
 def seq_balance_loss_matches_the_formula():
@@ -482,7 +482,7 @@ def seq_balance_loss_matches_the_formula():
 
 No test checks the z-loss's value:
 `router_regularisers_are_off_by_default_and_work_when_on` (`tests/test_model.py`
-line 750) checks only that the regularisers reach the loss and the router's
+line 883) checks only that the regularisers reach the loss and the router's
 gradient. The second line of the example's output checks the value.
 
 The released run set α = 10⁻⁴ and 10⁻³. On the held-out sample (*measured*),
@@ -509,7 +509,7 @@ step's 16,384 slots: noisy, and biased upward. It reads 3.75× at step 0
 - **No `update_expert_biases`** in a new loop: nothing fails. *Catch it:* log
   the ratio, as `anulm/training/train.py` does.
 - **The bias as a `Parameter`**, moved by AdamW. *Catch it:*
-  `expert_bias_is_not_trainable` (`tests/test_model.py` line 321).
+  `expert_bias_is_not_trainable` (`tests/test_model.py` line 400).
 
 `IN THE REPO`
 
@@ -565,17 +565,17 @@ used only for the claim in its register row:
 | [R20] | the sequence-wise balance loss | CHECKED |
 | [R53] | `F.grouped_mm`, the grouped GEMM `_route_grouped` calls | CHECKED |
 
-Repository evidence, all at @fdbb09a:
+Repository evidence, all at @b42998d:
 - `anulm/model.py`: `Router._gate` 647–652, 653–670; `MoE._route_sparse` 709–727,
   `_route_dense` 729–738, `_stacked_weights` 750–759, `_route_grouped`
   775–790; `AnuLM.update_expert_biases` 1071–1101.
 - `anulm/training/train.py`: `main` 876–878.
 - `tests/test_model.py`: `moe_matches_naive_per_token_loop` 180,
-  `bias_update_recovers_from_collapse` 282, `expert_bias_is_not_trainable` 321,
-  `dense_and_sparse_moe_agree` 474, `sparse_moe_breaks_the_graph_as_documented`
-  506, `grouped_moe_matches_sparse_under_bf16` 694–711,
-  `router_regularisers_are_off_by_default_and_work_when_on` 750,
-  `seq_balance_loss_matches_the_formula` 774–790.
+  `bias_update_recovers_from_collapse` 361, `expert_bias_is_not_trainable` 400,
+  `dense_and_sparse_moe_agree` 571, `sparse_moe_breaks_the_graph_as_documented`
+  603, `grouped_moe_matches_sparse_under_bf16` 827–844,
+  `router_regularisers_are_off_by_default_and_work_when_on` 883,
+  `seq_balance_loss_matches_the_formula` 907–923.
 - The released configuration in `ckpt_base_v2.pt` (`moe_impl`, `bias_update_rate`,
   the two α); `docs/RESULTS.md` §4, §5, §16.
 - Measurements: `book/measurements/part_iv_b_trained.json` and

@@ -2,7 +2,7 @@
 title: "Appendix B · The 400M arithmetic"
 part: "Appendices"
 accent: slate
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # Appendix B  The 400M arithmetic
@@ -32,7 +32,7 @@ compare with a tool that reports GiB.
 ## B.1  The configuration
 
 `AnuLMConfig` (`anulm/model.py` lines 39–218) is a dataclass of 42 fields. The table
-gives each field's line and declared default at @fdbb09a, the two presets this
+gives each field's line and declared default at @b42998d, the two presets this
 book uses, and the value stored in `ckpt_base_v2.pt`. "=" means the same as
 the default.
 

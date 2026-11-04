@@ -2,7 +2,7 @@
 title: "19 · Latent attention (MLA)"
 part: "IV · Inside the transformer"
 accent: gold
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # 19  Latent attention (MLA)
@@ -70,7 +70,7 @@ D<sub>r</sub> extra numbers per token.
 
 ## 19.2  The projections
 
-> **In the repo** · `anulm/model.py` · `MLAttention.__init__` · lines 516–533 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `MLAttention.__init__` · lines 516–533 · @b42998d
 
 ```python
         self.q_proj = nn.Linear(cfg.hidden_size, cfg.n_head * self.q_head_dim, bias=False)
@@ -107,7 +107,7 @@ D<sub>r</sub> extra numbers per token.
 
 The configuration ties the sizes together:
 
-> **In the repo** · `anulm/model.py` · `AnuLMConfig.__post_init__` · lines 150–156 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLMConfig.__post_init__` · lines 150–156 · @b42998d
 
 ```python
         if self.attn == "gqa":
@@ -127,7 +127,7 @@ and `AnuLM.__init__` builds the rotary tables only D<sub>r</sub> wide
 
 ## 19.3  The forward pass, step by step
 
-> **In the repo** · `anulm/model.py` · `MLAttention.forward` · lines 539–553 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `MLAttention.forward` · lines 539–553 · @b42998d
 
 ```python
         B, S, _ = x.shape
@@ -154,7 +154,7 @@ and `AnuLM.__init__` builds the rotary tables only D<sub>r</sub> wide
 - **`apply_rope`** rotates only `q_pe` and `k_pe`; the latent is normalised and
   never rotated.
 
-> **In the repo** · `anulm/model.py` · `MLAttention.forward` · lines 564–578 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `MLAttention.forward` · lines 564–578 · @b42998d
 
 ```python
         T = compressed.shape[1]
@@ -226,7 +226,7 @@ Shapes for `nano_105b`.
 
 ## 19.4  What the cache holds
 
-> **In the repo** · `anulm/model.py` · `MLAttention.forward` · lines 555–563 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `MLAttention.forward` · lines 555–563 · @b42998d
 
 ```python
         if cache is not None:
@@ -265,7 +265,7 @@ cached step vs uncached forward, last position: 1.8e-07
 
 The test that pins the shared rotary key:
 
-> **In the repo** · `tests/test_model.py` · `mla_shares_one_rope_key_across_heads` · lines 432–444 · @fdbb09a
+> **In the repo** · `tests/test_model.py` · `mla_shares_one_rope_key_across_heads` · lines 529–541 · @b42998d
 
 ```python
 def mla_shares_one_rope_key_across_heads():
@@ -472,11 +472,11 @@ used only for the claim in its register row:
 | [R19] | multi-head latent attention; the decoupled RoPE strategy with a shared rope key; absorbing the key and value up-projections at inference, and why RoPE blocks that | CHECKED |
 | [R49] | Sarvam 105B's configuration and modelling code (`q_lora_rank` optional and unset; the 512 + 64 sizes) | CHECKED |
 
-Repository evidence, all at @fdbb09a:
+Repository evidence, all at @b42998d:
 - `anulm/model.py`: `AnuLMConfig.__post_init__` 150–156; `MLAttention.__init__`
   516–533, `MLAttention.forward` 539–553, 555–563, 564–578; `AnuLM.__init__`
   line 837.
-- `tests/test_model.py`: `mla_shares_one_rope_key_across_heads` 432–444;
+- `tests/test_model.py`: `mla_shares_one_rope_key_across_heads` 529–541;
   `incremental_forward_matches_full_forward`, `cache_holds_what_it_should`,
   `dense_and_sparse_moe_agree` (all run with MLA).
 - `sarvam/sarvam-105b/config.json`; `sarvam/sarvam-105b/modeling_sarvam_moe.py`

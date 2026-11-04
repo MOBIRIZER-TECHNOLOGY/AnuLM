@@ -105,7 +105,7 @@ def exercises() -> None:
 
 
 def blind_spot() -> None:
-    print("\n15.5  What initial_loss_is_ln_vocab cannot see (tiny(), its own settings)")
+    print("\n15.5  What the loss check in initial_loss_is_ln_vocab cannot see (tiny(), its own settings)")
     from trace_forward import tiny
     for label, std in (("as model.py initialises", None), ("embeddings at std 1.0", 1.0)):
         torch.manual_seed(0)
@@ -116,8 +116,9 @@ def blind_spot() -> None:
         x = torch.randint(0, cfg.vocab_size, (4, 32))
         with torch.no_grad():
             _, loss = model(x, x)
+        emb = model.embed_tokens.weight.std().item()
         print(f"  {label:24s}: initial loss {loss.item():.3f} (ln V = {math.log(cfg.vocab_size):.3f}; "
-              f"the test allows 0.35)")
+              f"the loss check allows 0.1); embedding std {emb:.4f}")
 
 
 if __name__ == "__main__":

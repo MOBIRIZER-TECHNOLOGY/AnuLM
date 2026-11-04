@@ -2,7 +2,7 @@
 title: "23 · Precision, memory and speed"
 part: "V · Training"
 accent: teal
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # 23  Precision, memory and speed
@@ -59,7 +59,7 @@ trains in bf16 and has no loss scaler and no fp16 path. `NOT IN THE REPO`
 
 ## 23.2  Autocast: 16-bit where it is safe
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 645–650 · @fdbb09a
+> **In the repo** · `anulm/training/train.py` · `main` · lines 645–650 · @b42998d
 
 ```python
     torch.manual_seed(args.seed)
@@ -131,7 +131,7 @@ a GPU trace. `IMPLEMENTATION-DEPENDENT`
 The embedding is a lookup of fp32 rows. The norm computes in fp32 and
 multiplies by an fp32 gain, so even a bf16 input comes out fp32:
 
-> **In the repo** · `anulm/model.py` · `RMSNorm.forward` · lines 234–239 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `RMSNorm.forward` · lines 234–239 · @b42998d
 
 ```python
     def forward(self, x):
@@ -154,7 +154,7 @@ between the bf16 matrix multiplies. One exception is not autocast's doing: the
 Choosing experts is discrete: `topk` picks 4 of 24, and a rounding error can
 swap the fourth and fifth. So the gate runs with autocast off:
 
-> **In the repo** · `anulm/model.py` · `Router.forward` · lines 615–622 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `Router.forward` · lines 615–622 · @b42998d
 
 ```python
         # fp32 router: top-k is discrete, and bf16 rounding would flip choices.
@@ -260,7 +260,7 @@ Backpropagation needs each layer's intermediate tensors. Gradient checkpointing
 stores only each layer's input and recomputes the rest during the backward
 pass, one extra forward for a fraction of the memory [R25]:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 901–909 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 901–909 · @b42998d
 
 ```python
         for i, layer in enumerate(self.layers):
@@ -316,7 +316,7 @@ What is left after checkpointing is mostly the output end: (B·S, V) logits in
 bf16, their fp32 copy, and the gradients of both. `--ce-chunk` computes the head
 and the loss a slice of rows at a time:
 
-> **In the repo** · `anulm/model.py` · `AnuLM._chunked_loss` · lines 942–956 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM._chunked_loss` · lines 942–956 · @b42998d
 
 ```python
         self.ce_chunk = rows
@@ -361,7 +361,7 @@ failing. In `docs/RESULTS.md` §6, on an 8 GB card, a 443M model without
 checkpointing "works" at 31,573 ms per step; with checkpointing it ran at 2,716 ms
 and still spilled. Two pieces of code answer it:
 
-> **In the repo** · `anulm/training/train.py` · `warn_if_spilling` · lines 227–234 · @fdbb09a
+> **In the repo** · `anulm/training/train.py` · `warn_if_spilling` · lines 227–234 · @b42998d
 
 ```python
     total = torch.cuda.get_device_properties(device).total_memory
@@ -374,7 +374,7 @@ and still spilled. Two pieces of code answer it:
     return False
 ```
 
-> **In the repo** · `anulm/model.py` · `fit_memory` · lines 1356–1364 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `fit_memory` · lines 1356–1364 · @b42998d
 
 ```python
     n = sum(p.numel() for p in model.parameters())
@@ -395,7 +395,7 @@ card's total memory. It does not see memory other processes hold.
 `fit_memory` sets each switch by its own threshold: checkpointing above 500M
 parameters, the chunked loss above 100,000 vocabulary entries (defaults, line
 1345). The released model is below both. `anulm/training/train.py` never calls it: the
-callers at @fdbb09a are `anulm/multimodal/omni_train.py` (line 194), `anulm/tasks/decide.py` (475, 553),
+callers at @b42998d are `anulm/multimodal/omni_train.py` (line 194), `anulm/tasks/decide.py` (475, 553),
 `anulm/multimodal/speech_encoder.py` (231) and `anulm/multimodal/vision_encoder.py` (456). The pretraining loop
 has only the warning, and the `--grad-ckpt` and `--ce-chunk` flags.
 
@@ -418,7 +418,7 @@ Under `torch.compile` [R52] the model is captured as graphs of operations; a
 `sparse` gave 9 graphs and 8 breaks, `dense` 1 and 0 (`docs/RESULTS.md` §4).
 Two tests hold both directions:
 
-> **In the repo** · `tests/test_model.py` · `dense_moe_compiles_without_graph_breaks` · lines 491–503 · @fdbb09a
+> **In the repo** · `tests/test_model.py` · `dense_moe_compiles_without_graph_breaks` · lines 588–600 · @b42998d
 
 ```python
 def dense_moe_compiles_without_graph_breaks():
@@ -435,7 +435,7 @@ def dense_moe_compiles_without_graph_breaks():
     assert exp.graph_count == 1, f"expected 1 graph, got {exp.graph_count}"
 ```
 
-Its twin, `sparse_moe_breaks_the_graph_as_documented` (line 506), fails if a
+Its twin, `sparse_moe_breaks_the_graph_as_documented` (line 603), fails if a
 future PyTorch stops breaking on `nonzero`. The released run chose a third
 path, `grouped`: one `F.grouped_mm` [R53] per projection, bf16, static shapes,
 uncompiled. Attention needs no flag: `_sdpa` calls PyTorch's
@@ -523,7 +523,7 @@ B·S·259 numbers, tiny beside the activations; chunking only adds recomputation
 | [R53] | `F.grouped_mm`, the grouped GEMM | CHECKED |
 | [R57] | bf16 represents the same range of values as fp32 | CHECKED |
 
-Repository evidence, all at @fdbb09a:
+Repository evidence, all at @b42998d:
 - `anulm/training/train.py`: `warn_if_spilling` 219–234, `main` 645–650, 701–702, 880.
 - `fit_memory` callers: `anulm/multimodal/omni_train.py` 194, `anulm/tasks/decide.py` 475 and 553,
   `anulm/multimodal/speech_encoder.py` 231, `anulm/multimodal/vision_encoder.py` 456.
@@ -532,8 +532,8 @@ Repository evidence, all at @fdbb09a:
   `AnuLM.forward` 901–909, 919 and 924, `enable_chunked_loss` 930–942,
   `_chunked_loss` 944–953, `_ce_sum` 955–956,
   `enable_gradient_checkpointing` 1064–1068, `fit_memory` 1345–1364.
-- `tests/test_model.py`: `dense_moe_compiles_without_graph_breaks` 491,
-  `sparse_moe_breaks_the_graph_as_documented` 506,
-  `chunked_loss_matches_the_full_loss_and_its_gradients` 1548.
+- `tests/test_model.py`: `dense_moe_compiles_without_graph_breaks` 588,
+  `sparse_moe_breaks_the_graph_as_documented` 603,
+  `chunked_loss_matches_the_full_loss_and_its_gradients` 1713.
 - Measurements: `book/measurements/part_v_a_memory.json`
   (`code-examples/ch23_measure.py`); `docs/RESULTS.md` §4, §6, §32.

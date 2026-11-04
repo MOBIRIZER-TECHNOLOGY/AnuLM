@@ -2,7 +2,7 @@
 title: "31 · LoRA"
 part: "VII · After pre-training"
 accent: plum
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # 31  LoRA
@@ -54,7 +54,7 @@ query–key–value projection with r = 16: 40,960 trainable numbers beside
 
 ## 31.2  `LoRALinear`
 
-> **In the repo** · `anulm/lora.py` · `LoRALinear` · lines 50–84 · @fdbb09a
+> **In the repo** · `anulm/lora.py` · `LoRALinear` · lines 50–84 · @b42998d
 
 ```python
 class LoRALinear(nn.Module):
@@ -113,7 +113,7 @@ layer to float rounding, because x(**W** + c**BA**)<sup>T</sup> = x**W**<sup>T</
 
 ## 31.3  Which layers: `apply_lora`
 
-> **In the repo** · `anulm/lora.py` · `apply_lora` · lines 87–112 · @fdbb09a
+> **In the repo** · `anulm/lora.py` · `apply_lora` · lines 87–112 · @b42998d
 
 ```python
 def apply_lora(model: nn.Module, r: int = 16, alpha: float = 32.0,
@@ -176,7 +176,7 @@ The balancing bias of each router (Chapter 17) is a buffer, not a parameter.
 30, 30.4). The bias keeps moving while the weights stand still. `anulm/lora.py`
 therefore saves it with the adapters:
 
-> **In the repo** · `anulm/lora.py` · `router_state_dict` · lines 126–137 · @fdbb09a
+> **In the repo** · `anulm/lora.py` · `router_state_dict` · lines 126–137 · @b42998d
 
 ```python
 def router_state_dict(model: nn.Module) -> dict:
@@ -187,7 +187,7 @@ def router_state_dict(model: nn.Module) -> dict:
 
 and `anulm/training/finetune.py` writes it next to them:
 
-> **In the repo** · `anulm/training/finetune.py` · `main` · lines 393–400 · @fdbb09a
+> **In the repo** · `anulm/training/finetune.py` · `main` · lines 393–400 · @b42998d
 
 ```python
                 if args.lora:
@@ -259,7 +259,7 @@ bias by up to 0.3, more than the widest layer's spread.
 
 ## 31.5  Merging
 
-> **In the repo** · `anulm/lora.py` · `merge_lora` · lines 150–166 · @fdbb09a
+> **In the repo** · `anulm/lora.py` · `merge_lora` · lines 150–166 · @b42998d
 
 ```python
 @torch.no_grad()
@@ -282,7 +282,7 @@ LoRA's "no additional inference latency" [R32]. The command-line merge,
 `python -m anulm.lora merge ADAPTER OUT`, reads the adapter, rebuilds the
 base, and restores the biases first:
 
-> **In the repo** · `anulm/lora.py` · `_merge_cli` · lines 189–209 · @fdbb09a
+> **In the repo** · `anulm/lora.py` · `_merge_cli` · lines 189–209 · @b42998d
 
 ```python
     ad = load_checkpoint(args.adapter, "cpu", base=False)
@@ -327,7 +327,7 @@ the adapted one, with no LoRA tensor left. *measured*:
 
 ## 31.6  The proof, and what it does not exercise
 
-> **In the repo** · `tests/test_model.py` · `lora_starts_as_the_base_model_and_merges_back_exactly` · lines 1056–1070 · @fdbb09a
+> **In the repo** · `tests/test_model.py` · `lora_starts_as_the_base_model_and_merges_back_exactly` · lines 1191–1205 · @b42998d
 
 ```python
     model = AnuLM(cfg).eval()
@@ -345,27 +345,62 @@ the adapted one, with no LoRA tensor left. *measured*:
         f"something other than the adapters is trainable: {sorted(trainable)[:3]}"
 ```
 
-`lora_starts_as_the_base_model_and_merges_back_exactly` (line 1030) checks step 0 to 10⁻⁶ and that only `lora_` tensors
-train. It then takes one optimiser step, saves the adapter and biases,
-rebuilds from the base, and requires the merged model within 10⁻⁴ of the
-adapted one. Its last block is meant to show the router drift:
+`lora_starts_as_the_base_model_and_merges_back_exactly` (line 1163) checks step 0 to 10⁻⁶ and that only `lora_` tensors
+train. It then takes one optimiser step, and the balancer's update after it,
+as the training loop does, so the router bias drifts:
 
-> **In the repo** · `tests/test_model.py` · `lora_starts_as_the_base_model_and_merges_back_exactly` · lines 1111–1115 · @fdbb09a
+> **In the repo** · `tests/test_model.py` · `lora_starts_as_the_base_model_and_merges_back_exactly` · lines 1207–1218 · @b42998d
 
 ```python
-    trained_bias = router[sorted(router)[0]]
-    base_bias = base_sd[sorted(router)[0]]
-    if not torch.equal(trained_bias, base_bias):
-        assert not torch.equal(naive.state_dict()[sorted(router)[0]], trained_bias), \
-            "the test is not exercising the router drift it claims to"
+    # One real step, so the adapters stop being zero -- and the balancer's
+    # update after it, as the training loop does, so the router bias drifts.
+    opt = torch.optim.AdamW(lora_parameters(model), lr=1e-2)
+    model.train()
+    _, loss = model(x, x)
+    loss.backward()
+    opt.step()
+    model.update_expert_biases()
+    model.eval()
+    drifted = [n for n, b in model.named_buffers()
+               if n.endswith("expert_bias") and not torch.equal(b, base_sd[n])]
+    assert drifted, "update_expert_biases() did not move any router bias"
 ```
 
-> **Details.** The test's single step never calls `update_expert_biases()`, so
-> the bias does not move: run as written, `trained_bias` equals `base_bias`
-> and the `if` skips the assertion (checked by running the test's steps at
-> @fdbb09a). The drift is exercised by the book example in 31.4, not by the
-> suite. Calling `model.update_expert_biases()` after `opt.step()` in the
-> test would make the block run.
+The test builds `tiny(bias_update_rate=0.1)`: one balancer step at the default
+10⁻³ re-routes nothing on so small a model, and 0.1 stands in for the drift of
+a whole fine-tune (its comment, lines 1181–1182). It then saves the adapter and
+biases, rebuilds from the base, requires every drifted bias back and the
+merged model within 10⁻⁴ of the adapted one. Its last block shows why the
+adapter carries the bias:
+
+> **In the repo** · `tests/test_model.py` · `lora_starts_as_the_base_model_and_merges_back_exactly` · lines 1247–1258 · @b42998d
+
+```python
+    # And without the router bias it does NOT come back the same, which is
+    # why the adapter carries it: the base's bias routes some token elsewhere.
+    naive = AnuLM(cfg).eval()
+    naive.load_state_dict(base_sd)
+    apply_lora(naive, r=4, alpha=8.0)
+    load_lora(naive, ad)
+    merge_lora(naive)
+    with torch.no_grad():
+        naive_out, _ = naive(x, x)
+    d_naive = (adapted - naive_out).abs().max().item()
+    assert d_naive > 1e-3, \
+        f"dropping the trained router bias changed nothing ({d_naive:.1e}): no drift exercised"
+```
+
+> **Details.** At @fdbb09a this block never ran. The test took no balancer
+> step, so the bias did not move, and its check sat behind an `if` that
+> compared the trained bias with the base's and skipped when they were equal.
+> Commit 52d26f0 added the balancer step, the assertion that a bias drifted,
+> and this unconditional check on the outputs. The book example in 31.4
+> exercises the drift on the released model as well.
+
+One thing a merge check cannot see is the scale. **B** starts at zero, and if
+the forward pass and the merge shared one wrong scale, they would still agree
+with each other. `lora_scale_is_alpha_over_r` (line 1262), also added in
+52d26f0, sets **B** by hand and checks both against **W** + (α/r)**BA**.
 
 `IN THE REPO`
 
@@ -474,12 +509,13 @@ used only for the claim in its register row:
 | [R33] | QLoRA: 4-bit NormalFloat, double quantisation, paged optimisers | CHECKED |
 | [S09] | adapter modules for parameter-efficient transfer, before LoRA | CHECKED |
 
-Repository evidence, all at @fdbb09a:
+Repository evidence, all at @b42998d:
 - `anulm/lora.py`: `DEFAULT_TARGETS` 47, `LoRALinear` 50–84, `apply_lora` 87–112,
   `router_state_dict` 126–137, `merge_lora` 150–166, `_merge_cli` 181–219.
 - `anulm/training/finetune.py`: adapter save 393–400; `update_expert_biases` call 375.
 - `anulm/model.py`: `AnuLM.update_expert_biases` 1071–1101.
 - `anulm/tasks/decide.py`: `LoRA` 249–264, `LoRAQV` 267–288.
-- `tests/test_model.py`: `lora_starts_as_the_base_model_and_merges_back_exactly` 1030.
+- `tests/test_model.py`: `lora_starts_as_the_base_model_and_merges_back_exactly` 1163–1258
+  (the drift 1207–1218, the naive merge 1247–1258), `lora_scale_is_alpha_over_r` 1262–1280.
 - `docs/RESULTS.md` §29.
 - Measurements: `book/measurements/part_vii_lora.json`.

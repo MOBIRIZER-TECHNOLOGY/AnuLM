@@ -2,7 +2,7 @@
 title: "38 · Serving: engine, API and streaming"
 part: "IX · To production"
 accent: teal
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # 38  Serving: engine, API and streaming
@@ -34,7 +34,7 @@ vocabulary (Chapter 35).
 
 ## 38.1  The engine: load once, hold one lock
 
-> **In the repo** · `anulm/inference/serve.py` · `Engine.__init__` · lines 58–68 · @fdbb09a
+> **In the repo** · `anulm/inference/serve.py` · `Engine.__init__` · lines 58–68 · @b42998d
 
 ```python
     def __init__(self, ckpt: str, device: str):
@@ -56,7 +56,7 @@ checkpoint: the grouped matrix multiply on a GPU, the portable sparse path on
 a CPU (Chapter 18). `text_vocab` keeps a grown model writing text
 (Chapter 35). The constructor ends:
 
-> **In the repo** · `anulm/inference/serve.py` · `Engine.__init__` · lines 110–112 · @fdbb09a
+> **In the repo** · `anulm/inference/serve.py` · `Engine.__init__` · lines 110–112 · @b42998d
 
 ```python
         self.lock = threading.Lock()
@@ -71,7 +71,7 @@ request does not pay for CUDA initialisation.
 
 ## 38.2  One request
 
-> **In the repo** · `anulm/inference/serve.py` · `Engine.generate` · lines 152–166 · @fdbb09a
+> **In the repo** · `anulm/inference/serve.py` · `Engine.generate` · lines 152–166 · @b42998d
 
 ```python
         ids = self.encode(prompt)[-(self.cfg.block_size - 1):]
@@ -113,7 +113,7 @@ tuned with, when the mode asks for one (lines 146–151).
 
 ## 38.3  The standard-library server
 
-> **In the repo** · `anulm/inference/serve.py` · `make_handler` · lines 203–240 · @fdbb09a
+> **In the repo** · `anulm/inference/serve.py` · `make_handler` · lines 203–240 · @b42998d
 
 ```python
         def do_POST(self):
@@ -177,7 +177,7 @@ engine's lock, so the device runs one request at a time.
 
 `anulm/inference/api.py` uses FastAPI and accepts OpenAI's request shapes:
 
-> **In the repo** · `anulm/inference/api.py` · `ChatRequest` · lines 218–224 · @fdbb09a
+> **In the repo** · `anulm/inference/api.py` · `ChatRequest` · lines 218–224 · @b42998d
 
 ```python
     temperature: Optional[float] = Field(None, ge=0, le=2, description="Default 0.3. 0 = greedy.")
@@ -193,7 +193,7 @@ engine's lock, so the device runs one request at a time.
 used: nucleus sampling [R31] is `NOT IN THE REPO` (Chapter 28). `top_k` and
 `repetition_penalty` are additions. The handler is single-turn:
 
-> **In the repo** · `anulm/inference/api.py` · `chat_completions` · lines 570–575 · @fdbb09a
+> **In the repo** · `anulm/inference/api.py` · `chat_completions` · lines 570–575 · @b42998d
 
 ```python
     users = [m for m in req.messages if m.role == "user"]
@@ -209,7 +209,7 @@ dropped, because the chat model was tuned on single questions. An image part
 routes the request to the vision model. All device work shares one lock,
 declared once for the whole server:
 
-> **In the repo** · `anulm/inference/api.py` · `GPU` · lines 295–296 · @fdbb09a
+> **In the repo** · `anulm/inference/api.py` · `GPU` · lines 295–296 · @b42998d
 
 ```python
 models: A.Models | None = None
@@ -234,7 +234,7 @@ never reaches `Generation`; 38.6 checks the lock:
 `generate` takes an `on_token` callback, called with each new (B, 1) token;
 returning True stops (lines 1174–1175). `Generation.run` passes one:
 
-> **In the repo** · `anulm/inference/api.py` · `Generation.run` · lines 430–448 · @fdbb09a
+> **In the repo** · `anulm/inference/api.py` · `Generation.run` · lines 430–448 · @b42998d
 
 ```python
         def on_token(nxt):
@@ -262,7 +262,7 @@ For each token: EOS ends the reply without being shown; anything else is
 appended, and `_release` decides how much new text may go out. Generation stops
 on a stop sequence or a cancellation. The release rule:
 
-> **In the repo** · `anulm/inference/api.py` · `Generation._release` · lines 407–423 · @fdbb09a
+> **In the repo** · `anulm/inference/api.py` · `Generation._release` · lines 407–423 · @b42998d
 
 ```python
     def _release(self, final: bool) -> str:
@@ -300,7 +300,7 @@ Step by step:
 
 For a byte-level model the decoder is one call into the standard library:
 
-> **In the repo** · `anulm/bpe.py` · `complete_utf8` · lines 51–61 · @fdbb09a
+> **In the repo** · `anulm/bpe.py` · `complete_utf8` · lines 51–61 · @b42998d
 
 ```python
 def complete_utf8(data: bytes) -> str:
@@ -312,7 +312,7 @@ def complete_utf8(data: bytes) -> str:
 An incremental decoder called with `final=False` keeps an incomplete trailing
 sequence in its buffer instead of replacing it. The engine picks the decoder:
 
-> **In the repo** · `anulm/inference/serve.py` · `Engine.decode_complete` · lines 129–137 · @fdbb09a
+> **In the repo** · `anulm/inference/serve.py` · `Engine.decode_complete` · lines 129–137 · @b42998d
 
 ```python
     def decode_complete(self, ids) -> str:
@@ -361,7 +361,7 @@ leaves only when a character is complete. *verified*: `ch38_streaming.py`.
 While the reply runs, up to `max(len(s)) − 1` characters sit in the hold. The
 end of `run` must send them, unless a stop string is what ended the reply:
 
-> **In the repo** · `anulm/inference/api.py` · `Generation.run` · lines 449–456 · @fdbb09a
+> **In the repo** · `anulm/inference/api.py` · `Generation.run` · lines 449–456 · @b42998d
 
 ```python
         # Release the held-back tail unless a stop string ended the reply. Ending
@@ -390,7 +390,7 @@ One more edge: OpenAI's `stop` may be an empty string, and `"".find("")` is 0,
 which would end every reply before its first character. The request's `stop`
 goes through `stops_of` first:
 
-> **In the repo** · `anulm/inference/api.py` · `stops_of` · lines 381–386 · @fdbb09a
+> **In the repo** · `anulm/inference/api.py` · `stops_of` · lines 381–386 · @b42998d
 
 ```python
 def stops_of(stop) -> list[str]:
@@ -429,7 +429,7 @@ fixed bytes:
 
 ## 38.6  Streaming over HTTP, and hanging up
 
-> **In the repo** · `anulm/inference/api.py` · `stream_generation` · lines 476–510 · @fdbb09a
+> **In the repo** · `anulm/inference/api.py` · `stream_generation` · lines 476–510 · @b42998d
 
 ```python
     q: queue.Queue = queue.Queue()
@@ -483,7 +483,7 @@ in line 4 vary from run to run; that the spans never overlap does not.
 
 *Figure 38.2 · The serving path.* Many connections, one lock, one sequence on
 the device. Dashed: what `anulm/inference/api.py` does not have. *verified*: from `anulm/inference/api.py`
-and `anulm/inference/serve.py` at @fdbb09a.
+and `anulm/inference/serve.py` at @b42998d.
 
 `IN THE REPO` · `IMPLEMENTATION-DEPENDENT` (disconnect handling)
 
@@ -493,7 +493,7 @@ The API assumes a trusted network, but it still checks who calls, how much
 they send, and what they are told when something breaks. The key check comes
 first, as a dependency of every `/v1/` route:
 
-> **In the repo** · `anulm/inference/api.py` · `check_key` · lines 173–180 · @fdbb09a
+> **In the repo** · `anulm/inference/api.py` · `check_key` · lines 173–180 · @b42998d
 
 ```python
 def check_key(authorization: Optional[str] = Header(default=None)):
@@ -520,7 +520,7 @@ lines 183–188). It warns and does not refuse: a trusted LAN is a fair use.
 
 Every upload is read into memory and decoded, so each has a cap:
 
-> **In the repo** · `anulm/inference/api.py` · module constants · lines 195–200 · @fdbb09a
+> **In the repo** · `anulm/inference/api.py` · module constants · lines 195–200 · @b42998d
 
 ```python
 MAX_AUDIO_BYTES = 25 * 1024 * 1024
@@ -546,7 +546,7 @@ The `serve.py` body cap of 38.3 is the same idea for the small server.
 
 When a handler raises anything other than an `APIError`, one handler answers:
 
-> **In the repo** · `anulm/inference/api.py` · `log_error`, `_any_error` · lines 305–323 · @fdbb09a
+> **In the repo** · `anulm/inference/api.py` · `log_error`, `_any_error` · lines 305–323 · @b42998d
 
 ```python
 def log_error(where: str, e: BaseException) -> str:
@@ -576,7 +576,7 @@ message (line 483, in 38.6's excerpt).
 
 `/v1/decide` picks a decider and calls it under the lock:
 
-> **In the repo** · `anulm/inference/api.py` · `decide` · lines 698–709 · @fdbb09a
+> **In the repo** · `anulm/inference/api.py` · `decide` · lines 698–709 · @b42998d
 
 ```python
     t0, results = time.time(), []
@@ -612,7 +612,7 @@ message (line 483, in 38.6's excerpt).
 The Gradio demo, `anulm/apps/app_omni.py`, serves visitors from a thread pool
 and has one lock of its own:
 
-> **In the repo** · `anulm/apps/app_omni.py` · `Models.__init__`, `Models._get` · lines 181–189 · @fdbb09a
+> **In the repo** · `anulm/apps/app_omni.py` · `Models.__init__`, `Models._get` · lines 181–189 · @b42998d
 
 ```python
         self.shared = threading.RLock()
@@ -649,7 +649,7 @@ The book example checks each guard:
    serve.py, a 1 MB + 1 byte body: 413; max_tokens 'many': 400; a failing generation: 500, exception text in the reply: False, in the server log: True
 ```
 
-*verified*: `ch38_streaming.py` on a CPU, against the code at @fdbb09a. No
+*verified*: `ch38_streaming.py` on a CPU, against the code at @b42998d. No
 model is loaded, so `/v1/completions` fails inside `Generation` and shows the
 500 path; `serve.py` runs on a local port with a stand-in engine that raises.
 The id differs on every run. The timing of `check_key` was not measured.
@@ -686,7 +686,7 @@ if the reply then ends with EOS, the final release in `run` sends them.
 3. Another thread could reseed between the seeding and the generation, and
 both replies would stop being reproducible.
 
-*verified*: answers 1 and 2 from the code at @fdbb09a; the EOS case by the
+*verified*: answers 1 and 2 from the code at @b42998d; the EOS case by the
 example's step 6.
 
 ---
@@ -723,7 +723,7 @@ used only for the claim in its register row:
 |---|---|---|
 | [R31] | nucleus (top-p) sampling, which the API accepts and ignores | CHECKED |
 
-Repository evidence, all at @fdbb09a:
+Repository evidence, all at @b42998d:
 - `anulm/inference/serve.py`: `Engine` 55–176 (`__init__` 58–112, `decode_complete` 129–137,
   `generate` 139–176),
   `MAX_BODY_BYTES` 47, `make_handler` 179–245 (`do_POST` 203–240), `main` 248–269.

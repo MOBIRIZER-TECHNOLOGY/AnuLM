@@ -2,7 +2,7 @@
 title: "6 · Gradients and backpropagation"
 part: "II · Just enough mathematics"
 accent: slate
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # 6  Gradients and backpropagation
@@ -81,7 +81,7 @@ gradient of the loss with respect to its output and asking it for the gradient
 with respect to its inputs and weights. Here is one operation chain from
 `anulm/model.py`, the feed-forward network of layer 0 and of every expert:
 
-> **In the repo** · `anulm/model.py` · `SwiGLU` · lines 242–253 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `SwiGLU` · lines 242–253 · @b42998d
 
 ```python
 class SwiGLU(nn.Module):
@@ -165,7 +165,7 @@ gradients reaching x add. *verified*: shapes from `ch06_backprop.py`.
 
 Every block adds its sublayers' outputs to its input rather than replacing it:
 
-> **In the repo** · `anulm/model.py` · `Block.forward` · lines 820–824 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `Block.forward` · lines 820–824 · @b42998d
 
 ```python
         x = x + self.attn(self.input_layernorm(x), cos, sin,
@@ -194,7 +194,7 @@ PyTorch records each operation on tensors that require gradients, and
 **adds** each result into the parameter's `.grad`, rather than overwriting it.
 `anulm/training/train.py` relies on that:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 855–873 · @fdbb09a
+> **In the repo** · `anulm/training/train.py` · `main` · lines 855–873 · @b42998d
 
 ```python
         opt.zero_grad(set_to_none=True)
@@ -240,7 +240,7 @@ log with `aux_total.detach()` (line 913), a copy cut out of the record.
 
 The equivalence of accumulation and a large batch is a test:
 
-> **In the repo** · `tests/test_model.py` · `gradient_accumulation_equals_large_batch` · lines 448–466 · @fdbb09a
+> **In the repo** · `tests/test_model.py` · `gradient_accumulation_equals_large_batch` · lines 545–563 · @b42998d
 
 ```python
 def gradient_accumulation_equals_large_batch():
@@ -311,7 +311,7 @@ loop would fail on it. Real training uses AdamW instead of this plain rule
 A model can train with some weights cut off from the loss: the others make up
 for them, and the loss still falls. This test finds such weights:
 
-> **In the repo** · `tests/test_model.py` · `all_parameters_receive_gradients` · lines 336–345 · @fdbb09a
+> **In the repo** · `tests/test_model.py` · `all_parameters_receive_gradients` · lines 415–424 · @b42998d
 
 ```python
 def all_parameters_receive_gradients():
@@ -336,7 +336,7 @@ Gradients also give evidence of causality: a zero gradient is necessary for
 independence, though not by itself proof of it. If position 5's output depended on position
 6's input, the gradient between them would be nonzero:
 
-> **In the repo** · `tests/test_model.py` · `causality_holds_under_gradients_too` · lines 78–93 · @fdbb09a
+> **In the repo** · `tests/test_model.py` · `causality_holds_under_gradients_too` · lines 78–93 · @b42998d
 
 ```python
 def causality_holds_under_gradients_too():
@@ -400,7 +400,7 @@ logits with respect to each input embedding, on `tiny()` at initialisation.
    otherwise the gradient would flow on into the embedding table and not be
    stored per position.
 
-*verified*: by the shapes in `ch06_backprop.py` and `anulm/training/train.py` at @fdbb09a.
+*verified*: by the shapes in `ch06_backprop.py` and `anulm/training/train.py` at @b42998d.
 
 > **Build it.** The lab book's Chapter 8 (`course/ch08-pretrain`, §8.4)
 > builds the training step with gradient accumulation.
@@ -435,13 +435,13 @@ logits with respect to each input embedding, on `tiny()` at initialisation.
 
 This chapter cites no research references.
 
-Repository evidence, all at @fdbb09a:
+Repository evidence, all at @b42998d:
 - `anulm/model.py`: `SwiGLU` 242–253; `Block.forward` 820–824;
   `AnuLM.forward` 913; `AnuLM.generate` 1115–1116 (`@torch.no_grad()`).
 - `anulm/training/train.py`: `evaluate` 477–478 (`@torch.no_grad()`); `main` 855–873.
 - `tests/test_model.py`: `causality_holds_under_gradients_too` 78–93;
-  `all_parameters_receive_gradients` 336–345;
-  `gradient_accumulation_equals_large_batch` 448–466.
+  `all_parameters_receive_gradients` 415–424;
+  `gradient_accumulation_equals_large_batch` 545–563.
 - Measurements: `book/measurements/part_i_ii_causal_grad.json`.
 
 The book example is `code-examples/ch06_backprop.py`.

@@ -2,7 +2,7 @@
 title: "4 · Tensors, shapes and the matrix multiply"
 part: "II · Just enough mathematics"
 accent: slate
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # 4  Tensors, shapes and the matrix multiply
@@ -72,7 +72,7 @@ positions, each a D = 32 vector.
 
 The attention layer's two matrices are built here:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 437–441 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 437–441 · @b42998d
 
 ```python
         # One fused projection: (H + 2*Hkv) * Dh, exactly as the 30B does.
@@ -109,7 +109,7 @@ output is one input row's dot product with one row of W.
 
 ## 4.3  `view`, `split` and `transpose`: cutting the width into heads
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 457–463 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 457–463 · @b42998d
 
 ```python
         B, S, _ = x.shape
@@ -174,7 +174,7 @@ position, as `view` and `split` divide them. *verified*: slot boundaries from
 
 After attention, the heads are laid side by side again:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 483–494 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 483–494 · @b42998d
 
 ```python
         # ...
@@ -234,7 +234,7 @@ in order and copies otherwise, so line 493 is correct for either layout.
 Rotary position embeddings (Chapter 14) multiply every head of every sequence
 by the same per-position table (Chapter 14, 14.6, quotes the whole function):
 
-> **In the repo** · `anulm/model.py` · `apply_rope` · lines 353–362 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `apply_rope` · lines 353–362 · @b42998d
 
 ```python
 def apply_rope(q, k, cos, sin):
@@ -252,7 +252,7 @@ match, without copying, so each of the B·H heads is multiplied by the same
 table. RMSNorm uses the rule the other way, keeping a reduced axis to divide
 by:
 
-> **In the repo** · `anulm/model.py` · `RMSNorm.forward` · lines 234–239 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `RMSNorm.forward` · lines 234–239 · @b42998d
 
 ```python
     def forward(self, x):
@@ -401,7 +401,7 @@ inner axes must match and disappear. *verified*: shapes from `ch04_shapes.py`.
 
 This chapter cites no research references.
 
-Repository evidence, all at @fdbb09a:
+Repository evidence, all at @b42998d:
 - `anulm/model.py`: `RMSNorm.forward` 234–239; `rotate_half` 346–350;
   `apply_rope` 353–362; `_sdpa` 414–418; `GQAttention.__init__` 437–441;
   `GQAttention.forward` 457–463, 470–477 and 483–494.

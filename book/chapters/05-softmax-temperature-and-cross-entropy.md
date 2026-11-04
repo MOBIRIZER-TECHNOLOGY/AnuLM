@@ -2,7 +2,7 @@
 title: "5 · Softmax, temperature and cross-entropy"
 part: "II · Just enough mathematics"
 accent: slate
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # 5  Softmax, temperature and cross-entropy
@@ -75,7 +75,7 @@ internally, which is why AnuLM never subtracts a maximum itself.
 Softmax makes entries compete; where AnuLM wants scores that do not, it uses a
 sigmoid:
 
-> **In the repo** · `anulm/model.py` · `Router._gate` · lines 624–626 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `Router._gate` · lines 624–626 · @b42998d
 
 ```python
     def _gate(self, x_flat, seq_len: Optional[int]):
@@ -92,7 +92,7 @@ Each of the E experts gets its own score in (0, 1) (Chapter 17).
 AnuLM casts the output logits to 32-bit floats before every softmax over the
 vocabulary:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 923–925 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 923–925 · @b42998d
 
 ```python
         loss = F.cross_entropy(
@@ -166,7 +166,7 @@ comparison and the repetition penalty in fp32.
 
 Sampling divides the logits by the temperature T before the softmax:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1152–1169 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1152–1169 · @b42998d
 
 ```python
             logits = logits[:, -1, :].float()
@@ -226,7 +226,7 @@ defaults to T = 0.8 and `top_k` 50 (lines 34–35).
 > **Details.** The serving API passes the request's temperature through
 > unclamped:
 >
-> > **In the repo** · `anulm/inference/api.py` · `Generation.run` · lines 446–448 · @fdbb09a
+> > **In the repo** · `anulm/inference/api.py` · `Generation.run` · lines 446–448 · @b42998d
 >
 > ```python
 >                 self.eng.model.generate(x, self.max_tokens, temperature=self.temperature,  # 0 = exact greedy
@@ -260,7 +260,7 @@ logit is the most probable id.
 > **Details.** Like `generate`'s T ≤ 0 branch, the decoder for image and
 > audio prompts takes the argmax of the raw scores:
 >
-> > **In the repo** · `anulm/model.py` · `AnuLM.decode_from_embeds` · lines 1038–1049 · @fdbb09a
+> > **In the repo** · `anulm/model.py` · `AnuLM.decode_from_embeds` · lines 1038–1049 · @b42998d
 >
 > ```python
 >             scores = logits[0, -1].float()
@@ -401,7 +401,7 @@ the loss and receive exactly zero gradient, which is how fine-tuning keeps a
 prompt from being trained (Chapter 30). The denominator is the number of
 graded rows, not all rows; the chunked loss makes that explicit:
 
-> **In the repo** · `anulm/model.py` · `AnuLM._chunked_loss` · lines 944–956 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM._chunked_loss` · lines 944–956 · @b42998d
 
 ```python
     def _chunked_loss(self, x, targets):
@@ -495,7 +495,7 @@ it against autograd.
 
 This chapter cites no research references.
 
-Repository evidence, all at @fdbb09a:
+Repository evidence, all at @b42998d:
 - `anulm/model.py`: `Router._gate` 624–626; `AnuLM.forward` 923–925;
   `AnuLM._chunked_loss` 944–953, `AnuLM._ce_sum` 955–956;
   `AnuLM.decode_from_embeds` 1038–1049; `AnuLM.generate` 1152–1169.

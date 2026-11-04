@@ -48,7 +48,7 @@ def main() -> int:
                  and any(ast.unparse(d).split("(")[0] in ("test", "check", "case") for d in f.decorator_list)]
     deco_names = sorted({ast.unparse(d).split("(")[0] for f in tree.body if isinstance(f, ast.FunctionDef)
                          for d in f.decorator_list})
-    claim("tests/test_model.py has 76 tests", len(decorated) == 76,
+    claim("tests/test_model.py has 80 tests", len(decorated) == 80,
           f"{len(decorated)} functions carry a test decorator ({', '.join(deco_names)}) at @{PIN}")
 
     ck = torch.load(ROOT / "ckpt_base_v2.pt", map_location="cpu", weights_only=False, mmap=True)

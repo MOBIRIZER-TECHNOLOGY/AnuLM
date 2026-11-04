@@ -26,7 +26,7 @@ from anulm.model import AnuLM          # noqa: E402  the repository's anulm/mode
 from tests.test_model import tiny      # noqa: E402  the test suite's small configuration
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-PIN = "fdbb09a"
+PIN = "b42998d"
 
 
 def four_steps(model: AnuLM, ids: torch.Tensor, n: int, show: bool = False) -> torch.Tensor:

@@ -307,6 +307,63 @@ def fig_37_2_task_ratios():
                "speech 0.16, intents 0.03. The dashed score, their mean, falls from 1.0 to 0.587.", b)
 
 
+def fig_37_3_november_run():
+    m = json.loads((MEAS / "part_viii_ix_omni_nov.json").read_text(encoding="utf-8"))
+    ev = m["evals"]
+    close(m["kept_step"], 9375, 0, "kept step")
+    kept = next(e for e in ev if e["step"] == m["kept_step"])
+    close(kept["score"], 0.3643, 1e-9, "kept score")
+    close(ev[-1]["ratios"]["chat"], 1.094, 5e-4, "final chat ratio")
+    close(kept["ratios"]["chat"], 1.087, 5e-4, "kept chat ratio")
+    names = list(m["first"])
+    steps = [0] + [e["step"] for e in ev]
+    w, h = 760, 400
+    x0, x1, y0, y1 = 70, 600, 70, 340
+    sx = lambda s: x0 + (x1 - x0) * s / 12_500
+    sy = lambda v: y1 - (y1 - y0) * v / 1.2
+    b = [text(20, 28, "Held-out loss ÷ step-0 loss, per task, in the November run", 15, weight=700, family=SERIF),
+         text(20, 48, "ckpt_omni_curve.csv · 8 batches per step, lr 2.5e-5, chat weight 0.25 · lower is better", 12,
+              "f-muted", MUTED)]
+    for v in (0, 0.25, 0.5, 0.75, 1.0):
+        b.append(line(x0, sy(v), x1, sy(v), RULE if v != 1.0 else INK, "f-rule" if v != 1.0 else "f-ink-stroke",
+                      1, ' stroke-dasharray="3 3"' if v == 1.0 else ""))
+        b.append(text(x0 - 8, sy(v) + 4, f"{v:.2f}", 10, "f-muted", MUTED, "end", family=MONO))
+    for s in range(0, 12_501, 2_500):
+        b.append(text(sx(s), y1 + 18, f"{s:,}", 10, "f-muted", MUTED, "middle", family=MONO))
+    b.append(text((x0 + x1) / 2, y1 + 36, "optimiser step (each sums 8 batches)", 11, "f-muted", MUTED, "middle"))
+    ks = m["kept_step"]
+    b.append(line(sx(ks), y0 - 4, sx(ks), y1, PLUM, "f-plum-stroke", 1.5, ' stroke-dasharray="2 3"'))
+    b.append(text(sx(ks), y0 - 8, f"kept: step {ks:,}, score {kept['score']:.4f}", 11, anchor="middle",
+                  weight=700))
+
+    def path(vals, col, cls, width, dash=""):
+        pts = " ".join(f"{sx(s):.1f},{sy(v):.1f}" for s, v in zip(steps, vals))
+        return f'<polyline points="{pts}" fill="none" stroke="{col}" class="{cls}" stroke-width="{width}"{dash}/>'
+
+    offsets = {"chat": 0, "read": -10, "intent": 4, "asr_en": -6, "asr_hi": 0, "caption": 8, "vqa": 0}
+    for n in names:
+        vals = [1.0] + [e["ratios"][n] for e in ev]
+        is_chat = n == "chat"
+        b.append(path(vals, CORAL if is_chat else SLATE, "f-coral-stroke" if is_chat else "f-slate-stroke",
+                      3 if is_chat else 1.2, "" if is_chat else ' stroke-opacity="0.7"'))
+        for s, v in zip(steps, vals):
+            b.append(f'<circle cx="{sx(s):.1f}" cy="{sy(v):.1f}" r="{3 if is_chat else 2}" '
+                     f'fill="{CORAL if is_chat else SLATE}" class="{"f-coral" if is_chat else "f-slate"}">'
+                     f'<title>{esc(n)} at step {s}: {v:.3f}</title></circle>')
+        b.append(text(x1 + 10, sy(vals[-1]) + 4 + offsets[n], f"{n} {vals[-1]:.2f}", 11,
+                      weight=700 if is_chat else 400))
+    sc = [1.0] + [e["score"] for e in ev]
+    b.append(path(sc, PLUM, "f-plum-stroke", 3, ' stroke-dasharray="7 4"'))
+    b.append(text(x1 + 10, sy(sc[-1]) + 21, f"score {sc[-1]:.3f}", 11, weight=700))
+    b.append(text(sx(1_500), sy(1.09) - 14, "chat: 1.02 at the first evaluation, 1.09 at the last", 11.5,
+                  weight=700))
+    return svg("fig37-3-november-run.svg", w, h, "Figure 37.3 · The November run: every task but chat improved",
+               "Seven lines of held-out loss divided by step-0 loss over 12,500 steps of eight batches. Chat rises "
+               "slowly from 1.02 at step 625 to 1.09 at step 12,500; reading ends at 0.36, VQA 0.50, captions 0.38, "
+               "Hindi speech 0.15, English speech 0.05, intents 0.02. The dashed score falls to 0.365; the kept "
+               "checkpoint is step 9,375, where the score is 0.3643 and chat 1.087.", b)
+
+
 # --------------------------------------------------------------------------- Ch 38
 def fig_38_1_utf8_release():
     from anulm.inference import api, serve

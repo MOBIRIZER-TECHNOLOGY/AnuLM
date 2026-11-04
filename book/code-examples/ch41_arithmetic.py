@@ -100,7 +100,7 @@ def config_table() -> None:
     import dataclasses
     import re
     import subprocess
-    src = subprocess.run(["git", "show", "fdbb09a:anulm/model.py"], cwd=ROOT, capture_output=True, text=True,
+    src = subprocess.run(["git", "show", "b42998d:anulm/model.py"], cwd=ROOT, capture_output=True, text=True,
                          encoding="utf-8").stdout.splitlines()
     end = next(i for i, l in enumerate(src) if l.startswith("    def __post_init__"))   # the fields come first
     line = {m.group(1): i + 1 for i, l in enumerate(src[:end]) if (m := re.match(r"    (\w+): ", l))}

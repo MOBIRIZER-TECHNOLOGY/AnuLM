@@ -2,14 +2,14 @@
 title: "Appendix F · Reproducing every number"
 part: "Appendices"
 accent: slate
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # Appendix F  Reproducing every number
 
 Every number in this book carries one of four labels (`STYLE.md` §7):
 
-- ***verified***: checked against the repository at @fdbb09a, or recomputed by
+- ***verified***: checked against the repository at @b42998d, or recomputed by
   a book script;
 - ***measured***: from a run recorded in `docs/RESULTS.md` or `logs/`, or from
   a book script run on the released checkpoint, whose output is saved in
@@ -30,21 +30,21 @@ counts and citation check.
 
 ## F.1  The repository at the pin
 
-The line numbers refer to commit `fdbb09a`, the `anulm/` package layout
+The line numbers refer to commit `b42998d`, the `anulm/` package layout
 after a code-quality pass, on the GitHub branch `port-bundle-fixes`; the
 default branch, `main` (`ae59238`), has the old flat layout, whose line
 numbers differ (front matter).
 To work on exactly the cited code, export the pin rather than checking it out:
 
 ```bash
-mkdir pin && git archive fdbb09a | tar -x -C pin
-cd pin && CUDA_VISIBLE_DEVICES=-1 python -m tests.test_model   # 76 passed, 0 failed, 76 total (Chapter 41.5)
+mkdir pin && git archive b42998d | tar -x -C pin
+cd pin && CUDA_VISIBLE_DEVICES=-1 python -m tests.test_model   # 80 passed, 0 failed, 80 total (Chapter 41.5)
 CUDA_VISIBLE_DEVICES=-1 python -m unittest discover -s tests -p "test_quality_*.py" -t .   # Ran 63 tests ... OK
 ```
 
 The first suite runs in under a minute on a CPU (46 s on the book's
-machine), the second in about 5 s. `-1` hides the GPU; on the book's machine
-an empty `CUDA_VISIBLE_DEVICES` did not. A test that cannot run for want of a
+machine, at @fdbb09a, when it held 76 tests), the second in about 5 s. `-1`
+hides the GPU; on the book's machine an empty `CUDA_VISIBLE_DEVICES` did not. A test that cannot run for want of a
 package prints SKIP, and the first suite's summary then reads
 "N passed, M skipped, F failed, T total" (Appendix C).
 
@@ -114,7 +114,7 @@ three things.
 **It checks four appendix tables against their sources:**
 
 ```
-Appendix C: 76 rows against 76 tests at @fdbb09a: ok
+Appendix C: 80 rows against 80 tests at @b42998d: ok
 Appendix B.1: 42 configuration rows recomputed: ok
 Appendix E: 80 rows against 80 register entries: ok
 Appendix A: 47 distinct concrete shapes, 0 not in ch41_shapes.py's output
@@ -141,7 +141,7 @@ the list names a file that does not exist. A new example runs unless someone add
 
 It exits with status 1 if an appendix check fails or an example run fails.
 
-*verified*: the four lines above are the script's output at @fdbb09a, rerun
+*verified*: the four lines above are the script's output at @b42998d, rerun
 on a CPU with `ckpt_base_v2.pt` present (the B.1 line needs it). The run
 printed `0 problems`.
 
@@ -194,7 +194,7 @@ which picks the same experts and differs only by rounding.
 `ch13_measure_groups.py`, `ch14_measure_shift.py`, `ch15_measure_stream.py` and
 `ch16_measure_trained.py`, and the `precision`, `windows`, `seed` and `device`
 fields of their files in `book/measurements/`; lines 756 and 784 read at
-@fdbb09a.
+@b42998d.
 
 What differs, by measurement, as each page says:
 

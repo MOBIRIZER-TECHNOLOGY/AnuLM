@@ -2,7 +2,7 @@
 title: "10 · Embeddings and the output table"
 part: "III · From text to vectors"
 accent: coral
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # 10  Embeddings and the output table
@@ -55,7 +55,7 @@ which costs D numbers per token instead of V × D multiplies.
 
 ## 10.2  Two tables, built untied
 
-> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 827–843 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 827–843 · @b42998d
 
 ```python
 class AnuLM(nn.Module):
@@ -106,7 +106,7 @@ first loss. The model's last normalisation layer (RMSNorm, Chapter 15) hands
 it vectors of root mean square 1, so ‖h‖ = √D, and each logit has spread
 0.02 × √D: small, so the first softmax is nearly uniform and the loss about
 ln V + σ²/2 (Chapter 3 derives it), which `initial_loss_is_ln_vocab` (line
-349) holds to within 0.35 of ln V on `tiny()`. A simulated head of the
+428) holds to within 0.1 of ln V on `tiny()`. A simulated head of the
 released size, on unit-RMS inputs, starts at 10.581 against ln V = 10.397
 (*illustrative*; the Details below). The bump grows with the square of the
 initial spread: at `initializer_range` 0.05 the released head would start
@@ -138,8 +138,8 @@ initial spread: at `initializer_range` 0.05 the released head would start
 > With independent logits of spread σ, the first loss is about ln V + σ²/2:
 > the softmax denominator sums V terms whose mean is e^(σ²/2). That predicts
 > 0.006 above ln V for `tiny()` and 0.205 for the released size; the gaps
-> are 0.027 for `tiny()` and 0.184 for the simulated head, inside the test's
-> 0.35. The whole released configuration at random initialisation starts
+> are 0.027 for `tiny()`, inside the test's 0.1, and 0.184 for the
+> simulated head, which the test never builds. The whole released configuration at random initialisation starts
 > 0.224 above ln V (*verified*):
 >
 > > Book example, not repository code · `book/code-examples/ch10_measure_tables.py` · `main`
@@ -163,13 +163,13 @@ initial spread: at `initializer_range` 0.05 the released head would start
 
 `AnuLM.forward` never touches `embed_tokens` directly:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · line 896 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · line 896 · @b42998d
 
 ```python
             x = F.embedding(idx, self._table("in"))               # (B, S, D)
 ```
 
-> **In the repo** · `anulm/model.py` · `AnuLM._table` · lines 966–970 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM._table` · lines 966–970 · @b42998d
 
 ```python
     def _table(self, side: str):
@@ -179,7 +179,7 @@ initial spread: at `initializer_range` 0.05 the released head would start
             return W
 ```
 
-> **In the repo** · `anulm/model.py` · `AnuLM._head` · lines 992–995 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM._head` · lines 992–995 · @b42998d
 
 ```python
     def _head(self, h):
@@ -296,7 +296,7 @@ and at 400M the full recipe's early lead did not hold (*measured*).
 
 > **Details.** How **P** is built, cached and baked.
 >
-> > **In the repo** · `anulm/model.py` · `merge_tree_matrix` · lines 390–411 · @fdbb09a
+> > **In the repo** · `anulm/model.py` · `merge_tree_matrix` · lines 390–411 · @b42998d
 >
 > ```python
 > def merge_tree_matrix(merges, vocab_size: int) -> torch.Tensor:
@@ -340,7 +340,7 @@ and at 400M the full recipe's early lead did not hold (*measured*).
 >
 > The test asserts the same rows:
 >
-> > **In the repo** · `tests/test_model.py` · `merge_tree_composes_trains_and_bakes_losslessly` · lines 1646–1653 · @fdbb09a
+> > **In the repo** · `tests/test_model.py` · `merge_tree_composes_trains_and_bakes_losslessly` · lines 1819–1826 · @b42998d
 >
 > ```python
 >     merges = [[97, 98], [256, 99], [257, 257], [100, 101]]      # ab, abc, abcabc, de
@@ -356,7 +356,7 @@ and at 400M the full recipe's early lead did not hold (*measured*).
 > The product runs in fp32 with autocast off, since the sparse multiply has no
 > bf16 path here:
 >
-> > **In the repo** · `anulm/model.py` · `AnuLM._compose` · lines 959–964 · @fdbb09a
+> > **In the repo** · `anulm/model.py` · `AnuLM._compose` · lines 959–964 · @b42998d
 >
 > ```python
 >     def _compose(self, W):
@@ -369,7 +369,7 @@ and at 400M the full recipe's early lead did not hold (*measured*).
 >
 > `_table` composes in training and caches in evaluation:
 >
-> > **In the repo** · `anulm/model.py` · `AnuLM._table` · lines 971–990 · @fdbb09a
+> > **In the repo** · `anulm/model.py` · `AnuLM._table` · lines 971–990 · @b42998d
 >
 > ```python
 >         if self.training:
@@ -397,13 +397,13 @@ and at 400M the full recipe's early lead did not hold (*measured*).
 > comment records a real bug (§32): a cache keyed on the version counter, which
 > the fused (single-kernel, CUDA) AdamW step does not bump, served stale tables to every later
 > evaluation. Now `train()` drops the cache, and
-> `merge_tree_eval_cache_sees_optimizer_updates` (`tests/test_model.py` line 1676)
+> `merge_tree_eval_cache_sees_optimizer_updates` (`tests/test_model.py` line 1849)
 > fakes an update with `.data.add_`, which leaves the counter alone too
 > (*verified*: `W._version moves by 0`).
 >
 > For serving, the composition is written back:
 >
-> > **In the repo** · `anulm/model.py` · `AnuLM.bake_merge_tree` · lines 997–1013 · @fdbb09a
+> > **In the repo** · `anulm/model.py` · `AnuLM.bake_merge_tree` · lines 997–1013 · @b42998d
 >
 > ```python
 >     @torch.no_grad()
@@ -438,8 +438,8 @@ and at 400M the full recipe's early lead did not hold (*measured*).
 
 | Mistake | What happens, silently | Catch it |
 |---|---|---|
-| a large `initializer_range` | logits start wide; the first loss sits well above ln V | assert the first loss near ln V, as `initial_loss_is_ln_vocab` does |
-| tying by copying instead of sharing | two tensors that drift apart, twice the memory | check `lm_head.weight is embed_tokens.weight` |
+| a large `initializer_range` | logits start wide; the first loss sits well above ln V | assert the first loss near ln V and each weight's starting spread, as `initial_loss_is_ln_vocab` does |
+| tying by copying instead of sharing | two tensors that drift apart, twice the memory | check `lm_head.weight is embed_tokens.weight`, as `tied_embeddings_share_one_table` does |
 | a vocabulary larger than the table | an index error, or a wrong row if ids were remapped | assert `max(ids) < vocab_size` when loading data |
 | a cache keyed on `_version` | fused optimizers and `.data` updates do not bump it; stale tables | drop caches on `train()`, as `_table` does |
 | reading rare rows' norms as meaning | a row's size reflects how often it got a gradient against decay, not only what it means | compare against token counts, as 10.5 does |
@@ -500,7 +500,7 @@ used only for the claim in its register row:
 The merge tree is this repository's own idea, measured only in
 `docs/RESULTS.md` §32.
 
-Repository evidence, all at @fdbb09a:
+Repository evidence, all at @b42998d:
 - `anulm/model.py`:
   - `AnuLMConfig` lines 117–118 and 119–124;
   - `merge_tree_matrix` 390–411;
@@ -508,9 +508,9 @@ Repository evidence, all at @fdbb09a:
   - `AnuLM.forward` 896; `_compose` 959–964, `_table` 966–984,
     `train` 986–990, `_head` 992–995, `bake_merge_tree` 997–1013.
 - `anulm/training/train.py`: `make_optimizer` 447–474, `--weight-decay` 555.
-- `tests/test_model.py`: `initial_loss_is_ln_vocab` 349–359,
-  `merge_tree_composes_trains_and_bakes_losslessly` 1640,
-  `merge_tree_eval_cache_sees_optimizer_updates` 1676.
+- `tests/test_model.py`: `tied_embeddings_share_one_table` 287, `initial_loss_is_ln_vocab` 428–456,
+  `merge_tree_composes_trains_and_bakes_losslessly` 1813,
+  `merge_tree_eval_cache_sees_optimizer_updates` 1849.
 - `experiments/v2_train.sh` (the run's flags); `docs/MODEL_CARD_BASE_V2.md`
   (AdamW schedule); `docs/RESULTS.md` §32.
 

@@ -2,7 +2,7 @@
 title: "Appendix D · Glossary"
 part: "Appendices"
 accent: slate
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # Appendix D  Glossary
@@ -75,7 +75,7 @@ symbols are listed in D.2.
 | nats | the unit of a loss taken with the natural logarithm; divide by ln 2 for bits | 3 |
 | nucleus | the set top-p keeps, renormalised to sum to 1 | 28, 41 |
 | packing | laying several short examples end to end in one training row | 30 |
-| pin, the | commit `fdbb09a`, the `anulm/` package layout after the code-quality pass; every line number in this book refers to it | 1 |
+| pin, the | commit `b42998d`, the `anulm/` package layout after the code-quality pass; every line number in this book refers to it | 1 |
 | pre-norm | normalising a sublayer's input rather than its output | 15 |
 | prefill | the first call, which runs the whole prompt at once and fills the cache | 27 |
 | projector | the small trained network that maps an encoder's vectors to the model's width D | 36 |

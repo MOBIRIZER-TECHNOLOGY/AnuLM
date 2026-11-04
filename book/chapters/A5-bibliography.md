@@ -2,7 +2,7 @@
 title: "Appendix E · Bibliography"
 part: "Appendices"
 accent: slate
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # Appendix E  Bibliography

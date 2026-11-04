@@ -2,7 +2,7 @@
 title: "15 · Normalisation and the residual stream"
 part: "IV · Inside the transformer"
 accent: gold
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # 15  Normalisation and the residual stream
@@ -55,7 +55,7 @@ direction of 1,024. `anulm/model.py`'s RMSNorm matches PyTorch's `F.rms_norm`.
 LayerNorm is not in `anulm/model.py`; the speech and image projectors use it, to
 bring encoder features to the scale the blocks expect (Chapter 36):
 
-> **In the repo** · `anulm/multimodal/speech_encoder.py` · `AudioProjector.__init__` · lines 79–82 · @fdbb09a
+> **In the repo** · `anulm/multimodal/speech_encoder.py` · `AudioProjector.__init__` · lines 79–82 · @b42998d
 
 ```python
         hidden = hidden or max(out_dim, d)
@@ -70,7 +70,7 @@ bring encoder features to the scale the blocks expect (Chapter 36):
 
 ## 15.2  In the code: `RMSNorm`
 
-> **In the repo** · `anulm/model.py` · `RMSNorm` · lines 225–239 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `RMSNorm` · lines 225–239 · @b42998d
 
 ```python
 class RMSNorm(nn.Module):
@@ -93,6 +93,11 @@ class RMSNorm(nn.Module):
 - **The normalisation.** The mean square over the last dimension is
   (…, 1); ε = 10⁻⁶ guards a zero vector; `rsqrt` is 1/√. Each vector along
   the last dimension is normalised alone: a token, or a query head (Chapter 13).
+  ε sits inside the root. Moved outside, as `rsqrt(ms) + eps`, an all-zero row
+  gives 0 · ∞ = NaN, and other rows change only when they are small, so
+  `rmsnorm_and_swiglu_match_their_formulas` (`tests/test_model.py` line 252)
+  checks the formula on activations of size 10⁻³, with a trained-looking random
+  gain and one all-zero row.
 - **The return** casts back to the input's dtype, then multiplies by γ.
 
 Why fp32 inside? The example normalises large 16-bit activations both ways
@@ -134,7 +139,7 @@ fp32 keys in the cache under autocast: the gain is an fp32 parameter, and a
 
 Each block owns two norms:
 
-> **In the repo** · `anulm/model.py` · `Block.__init__` · lines 802–811 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `Block.__init__` · lines 802–811 · @b42998d
 
 ```python
     def __init__(self, cfg: AnuLMConfig, layer_idx: int, rotary: Rotary):
@@ -151,7 +156,7 @@ Each block owns two norms:
 
 and uses them like this:
 
-> **In the repo** · `anulm/model.py` · `Block.forward` · lines 816–824 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `Block.forward` · lines 816–824 · @b42998d
 
 ```python
     def forward(self, x, cos, sin, cache: Optional[dict] = None, start: int = 0,
@@ -173,7 +178,7 @@ the gradient reaches every layer directly through the additions. One more
 RMSNorm, built once for the whole model, normalises the stream at the end,
 before the output head:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 839–841 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 839–841 · @b42998d
 
 ```python
         self.layers = nn.ModuleList([Block(cfg, i, self.rotary) for i in range(cfg.n_layer)])
@@ -181,7 +186,7 @@ before the output head:
         self.lm_head = nn.Linear(cfg.hidden_size, cfg.vocab_size, bias=False)
 ```
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · line 912 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · line 912 · @b42998d
 
 ```python
         x = self.norm(x)
@@ -264,7 +269,7 @@ positions 1–511; `book/measurements/part_iv_a_stream.json`.
 The stream sums 40 sublayer outputs, so at initialisation the code shrinks
 the matrices that write into it:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 859–863 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 859–863 · @b42998d
 
 ```python
         self.apply(self._init_weights)
@@ -274,7 +279,7 @@ the matrices that write into it:
                 nn.init.normal_(p, mean=0.0, std=cfg.initializer_range / math.sqrt(2 * cfg.n_layer))
 ```
 
-> **In the repo** · `anulm/model.py` · `AnuLM._init_weights` · lines 865–871 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM._init_weights` · lines 865–871 · @b42998d
 
 ```python
     def _init_weights(self, m):
@@ -317,26 +322,31 @@ with those matrices at 0.02:
 *verified*: 20 `dense`, layer 0's `down_proj` and 19 × 24 experts' make 477.
 Unscaled, the untrained stream grows 79-fold; scaled, 12-fold. The effect on
 the trained model's quality is *not measured here*. The test that guards the
-start checks the loss:
+start checks the loss, and then the scales themselves:
 
-> **In the repo** · `tests/test_model.py` · `initial_loss_is_ln_vocab` · lines 349–359 · @fdbb09a
+> **In the repo** · `tests/test_model.py` · `initial_loss_is_ln_vocab` · lines 428–456 · @b42998d
 
 ```python
 def initial_loss_is_ln_vocab():
-    for attn in ("gqa", "mla"):
-        torch.manual_seed(0)
-        cfg = tiny(attn=attn)
-        m = AnuLM(cfg).eval()
-        x = torch.randint(0, cfg.vocab_size, (4, 32))
-        with torch.no_grad():
-            _, loss = m(x, x)
+    # ...
         expected = math.log(cfg.vocab_size)
-        assert abs(loss.item() - expected) < 0.35, \
+        assert abs(loss.item() - expected) < 0.1, \
             f"{attn}: init loss {loss.item():.3f}, expected ~{expected:.3f} -- init is off"
+        std = cfg.initializer_range
+        resid = std / math.sqrt(2 * cfg.n_layer)
+        for name, p in m.named_parameters():
+            if p.dim() < 2 or ".router." in name:   # norms, and the kaiming router
+                continue
+            want = resid if name.endswith(("o_proj.weight", "dense.weight",
+                                           "down_proj.weight")) else std
+            got = p.std().item()
+            assert abs(got - want) < 0.15 * want, \
+                f"{attn}: {name} initialised at std {got:.4f}, expected {want:.4f}"
 ```
 
-The lab book found that embeddings fifty times too large pass it, and they
-do here:
+The scale check is there because the loss check alone is blind. The lab book
+found that embeddings fifty times too large pass the loss check, and they
+still do here:
 
 ```python
         model = M.AnuLM(cfg).eval()
@@ -348,11 +358,15 @@ do here:
 ```
 
 ```
-  as model.py initialises : initial loss 4.186 (ln V = 4.159; the test allows 0.35)
-  embeddings at std 1.0   : initial loss 4.155 (ln V = 4.159; the test allows 0.35)
+  as model.py initialises : initial loss 4.186 (ln V = 4.159; the loss check allows 0.1); embedding std 0.0199
+  embeddings at std 1.0   : initial loss 4.155 (ln V = 4.159; the loss check allows 0.1); embedding std 1.0260
 ```
 
-*verified*: the final RMSNorm rescales whatever reaches it.
+*verified*: the final RMSNorm rescales whatever reaches it, so the loss moves
+by 0.03. The scale check catches what the loss misses: an embedding spread of
+1.0260 against the 0.02 it wants is far outside 15%. Mutation testing planted
+this bug among 21 others, and the scale check was added for it
+(`docs/VERIFICATION.md`, "Tests checked by mutation").
 
 `IN THE REPO`
 
@@ -418,12 +432,12 @@ used only for the claim in its register row:
 | [R09] | LayerNorm: normalising with the mean and variance within a layer | CHECKED |
 | [R10] | pre-norm transformers without the warm-up stage reach comparable results | CHECKED |
 
-Repository evidence, all at @fdbb09a:
+Repository evidence, all at @b42998d:
 - `anulm/model.py`: `RMSNorm` 225–239, `Block.__init__` 802–811, `Block.forward`
   816–824, `AnuLM.__init__` 839–841 and 859–863, `AnuLM._init_weights` 865–871,
   `AnuLM.forward` 912.
 - `anulm/multimodal/speech_encoder.py` 79–82 and `anulm/multimodal/vision_encoder.py` 124 (LayerNorm in the projectors).
-- `tests/test_model.py`: `initial_loss_is_ln_vocab` 349.
+- `tests/test_model.py`: `rmsnorm_and_swiglu_match_their_formulas` 252, `initial_loss_is_ln_vocab` 428–456.
 - `book/measurements/part_iv_a_stream.json`.
 
 Book examples: `code-examples/ch15_norms.py`, `code-examples/ch15_measure_stream.py`.

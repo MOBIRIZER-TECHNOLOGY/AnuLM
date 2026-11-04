@@ -1,6 +1,6 @@
 # Repository source map
 
-The table every chapter cites from. Line numbers are taken at `@fdbb09a`, the
+The table every chapter cites from. Line numbers are taken at `@b42998d`, the
 tip of the `restructure` branch (the `anulm/` package layout), from the root
 copy of the repository.
 
@@ -9,11 +9,11 @@ branch `port-bundle-fixes`. The default branch, `main` (`ae59238`), still has
 the old flat layout, whose line numbers differ. `tools/build_preview.py` links
 every citation whose file is identical at this commit:
 
-Public commit: `fdbb09a14df5a3655bc0a3ee164d41864ae953b8`
+Public commit: `b42998d817806f4502a54ac5ed4d82c91821b023`
 
-Re-pinned from `@773b6a8` on 2026-11-03 by `tools/repin.py`; every moved
-citation, with the old and new code line, is in
-`technical-review/repin-report.md`.
+Re-pinned from `@773b6a8` on 2026-11-03, and from `@fdbb09a` on 2026-11-04,
+by `tools/repin.py`; every citation the last re-pin moved, with the old and
+new code line, is in `technical-review/repin-report.md`.
 `.claude/worktrees/api-demo/` holds a second copy whose numbers differ, so
 **never cite from that copy**.
 
@@ -148,11 +148,11 @@ The byte-level path, which needs no tokenizer, lives in `anulm/training/train.py
 | Captioning (KV-cached greedy) | `caption` | 587–617 | implemented | agent |
 | Audio frame stacking + projector | `anulm/multimodal/speech_encoder.py` `AudioProjector` | 64–92 | implemented | agent + spot-check |
 | ASR sequence layout | `ContinuousSpeech` | 95–134 | implemented | agent |
-| Whisper encoder (log-mel inside) | `anulm/multimodal/audio_codec.py` `WhisperEncoder` | 211–255 | external (`faster-whisper`, `ctranslate2`) | agent |
-| SNAC codec, 7-slot flatten | `SnacCodec`, `flatten`, `unflatten` | 121–204 | external codec; flattening implemented | agent |
+| Whisper encoder (log-mel inside) | `anulm/multimodal/audio_codec.py` `WhisperEncoder` | 215–259 | external (`faster-whisper`, `ctranslate2`) | agent |
+| SNAC codec, 7-slot flatten | `SnacCodec`, `flatten`, `unflatten` | 125–208 | external codec; flattening implemented | agent |
 | Vocabulary growth (+28,672 audio, +5 control) | `anulm/multimodal/speech_vocab.py` `SpeechVocab`, `grow_checkpoint` | 69–159 | implemented | agent + spot-check |
-| Joint multitask training | `anulm/multimodal/omni_train.py` `Omni`, `train` | 177–479 | implemented: `--accum` (line 505), `--proj-scale` (502), seeding and the resume recipe check (`recipe_of` 353) | Re-pinned 2026-11-03 against @fdbb09a: `Omni` 177–350, `train` 362–478 |
-| Projector norm matching | `anulm/multimodal/omni_train.py` `Omni._match_scale` | 249–263 | implemented; off by default (`--proj-scale embed`, line 502; `experiments/omni_one.py` does not pass it) | Re-pinned 2026-11-03 against @fdbb09a (Chapter 36, 36.5 Details) |
+| Joint multitask training | `anulm/multimodal/omni_train.py` `Omni`, `train` | 177–481 | implemented: `--accum` (line 507), `--proj-scale` (504), seeding and the resume recipe check (`recipe_of` 353) | Re-pinned 2026-11-03 against @fdbb09a; moved to @b42998d on 2026-11-04: `Omni` 177–350, `train` 362–481 |
+| Projector norm matching | `anulm/multimodal/omni_train.py` `Omni._match_scale` | 249–263 | implemented; off by default (`--proj-scale embed`, line 504; `experiments/omni_one.py` does not pass it) | Re-pinned 2026-11-03 against @fdbb09a; moved to @b42998d on 2026-11-04 (Chapter 36, 36.5 Details) |
 | Inference facade | `anulm/multimodal/omni.py` `Omni`, `Reader`, `Intent` | 33–164 | implemented | agent |
 | Stdlib HTTP server, model engine | `anulm/inference/serve.py` `Engine`, `make_handler` | 55–245 | implemented | agent |
 | OpenAI-compatible API, SSE streaming | `anulm/inference/api.py` `Generation`, `stream_generation` | 389–512 | implemented (`fastapi`) | agent |
@@ -164,7 +164,7 @@ The byte-level path, which needs no tokenizer, lives in `anulm/training/train.py
 **Confirmed absent from serving:** paged KV cache, continuous batching (`anulm/inference/api.py`
 serialises all device work behind one lock), and quantised weights. The only
 quantisation anywhere is ctranslate2's int8 Whisper on CPU
-(`anulm/multimodal/audio_codec.py` lines 227–228).
+(`anulm/multimodal/audio_codec.py` lines 231–232).
 
 **Stale docstrings to avoid quoting:**
 
@@ -182,20 +182,21 @@ it is wrong.
 | Concept | Test (line) |
 |---|---|
 | Causal mask | `causal_mask_does_not_leak_future` (57), `causality_holds_under_gradients_too` (78) |
-| RoPE | `rope_is_relative` (101), `rope_preserves_norms` (120), `rotary_cache_tracks_dtype_and_positions` (636) |
+| RoPE | `rope_is_relative` (101), `rope_preserves_norms` (120), `rotary_cache_tracks_dtype_and_positions` (733) |
 | YaRN | `yarn_blends_the_right_bands` (131), `yarn_temperature_reaches_attention` (144) |
-| MoE equivalence | `moe_matches_naive_per_token_loop` (180), `moe_with_all_experts_selected_is_dense` (199), `dense_and_sparse_moe_agree` (474), `grouped_moe_matches_sparse_under_bf16` (694) |
-| Router | `router_respects_group_limits` (218), `router_weights_come_from_unbiased_scores` (233), `config_rejects_unreachable_topk` (423) |
-| Balancing | `bias_update_moves_in_the_right_direction` (252), `bias_update_recovers_from_collapse` (282), `expert_bias_is_not_trainable` (321), `router_regularisers_are_off_by_default_and_work_when_on` (750), `seq_balance_loss_matches_the_formula` (774) |
-| Initialisation and loss | `all_parameters_receive_gradients` (336), `initial_loss_is_ln_vocab` (349), `chunked_loss_matches_the_full_loss_and_its_gradients` (1548) |
-| MLA | `mla_shares_one_rope_key_across_heads` (432) |
-| Training mechanics | `gradient_accumulation_equals_large_batch` (448), `window_sampler_covers_every_window_once_per_epoch` (798), `window_sampler_resumes_exactly` (823), `wsd_schedule_is_flat_then_decays_to_min_lr` (1627), `memmap_batches_match_in_memory_batches` (1749), `interleaved_split_samples_the_whole_corpus` (1771), `eval_windows_are_frozen_and_strided_windows_cover_the_split` (980) |
-| KV cache and generation | `incremental_forward_matches_full_forward` (561), `cache_holds_what_it_should` (582), `cached_generation_matches_uncached` (604), `generation_stops_at_eos` (620), `generation_is_deterministic_at_top_k_1` (398), `block_size_boundary` (384), `cached_embeds_decoding_matches_prefix_replay` (1577) |
-| Sliding window | `sliding_window_limits_reach` (653), `sliding_window_agrees_with_cache` (679) |
-| GQA | `native_gqa_matches_repeat_interleave` (1602) |
-| Compile | `dense_moe_compiles_without_graph_breaks` (491), `sparse_moe_breaks_the_graph_as_documented` (506), `compiled_forward_matches_eager` (522), `compiled_backward_produces_gradients` (542), `grouped_moe_compiles_without_graph_breaks` (733), `grouped_moe_trains` (715) |
-| Tokenizer | `bpe_documents_get_eos_and_the_vocab_is_exact` (837), `bpe_files_load_under_both_format_ids` (1379), `hf_tokenizer_conversion_is_exact` (1352), `byte_loader_inserts_eos_at_document_boundaries` (1430) |
-| Checkpoints and export | `checkpoint_roundtrip_is_exact` (363), `an_exported_folder_loads_everywhere_a_pt_does` (924), `transformers_wrapper_matches_the_native_model` (1285), `an_export_keeps_what_makes_a_checkpoint_more_than_a_language_model` (1177) |
-| Fine-tuning | `lora_starts_as_the_base_model_and_merges_back_exactly` (1030), `qa_packing_masks_prompts_and_keeps_examples_whole` (1511), `decide_scores_each_option_at_its_last_token_and_calibrates` (1702) |
-| Merge tree, Muon | `merge_tree_composes_trains_and_bakes_losslessly` (1640), `merge_tree_eval_cache_sees_optimizer_updates` (1676), `batched_muon_matches_per_matrix_muon` (1729) |
-| Parameter count | `param_count_matches_analysis` (410) |
+| MoE equivalence | `moe_matches_naive_per_token_loop` (180), `moe_with_all_experts_selected_is_dense` (199), `dense_and_sparse_moe_agree` (571), `grouped_moe_matches_sparse_under_bf16` (827) |
+| Router | `router_respects_group_limits` (218), `router_weights_come_from_unbiased_scores` (233), `router_choices_survive_autocast` (302), `config_rejects_unreachable_topk` (520) |
+| Balancing | `bias_update_moves_in_the_right_direction` (331), `bias_update_recovers_from_collapse` (361), `expert_bias_is_not_trainable` (400), `router_regularisers_are_off_by_default_and_work_when_on` (883), `seq_balance_loss_matches_the_formula` (907) |
+| Norm and FFN formulas | `rmsnorm_and_swiglu_match_their_formulas` (252) |
+| Initialisation and loss | `tied_embeddings_share_one_table` (287), `all_parameters_receive_gradients` (415), `initial_loss_is_ln_vocab` (428), `chunked_loss_matches_the_full_loss_and_its_gradients` (1713) |
+| MLA | `mla_shares_one_rope_key_across_heads` (529) |
+| Training mechanics | `gradient_accumulation_equals_large_batch` (545), `window_sampler_covers_every_window_once_per_epoch` (931), `window_sampler_resumes_exactly` (956), `wsd_schedule_is_flat_then_decays_to_min_lr` (1800), `memmap_batches_match_in_memory_batches` (1922), `interleaved_split_samples_the_whole_corpus` (1944), `eval_windows_are_frozen_and_strided_windows_cover_the_split` (1113) |
+| KV cache and generation | `incremental_forward_matches_full_forward` (658), `cache_holds_what_it_should` (679), `cached_generation_matches_uncached` (701), `generation_stops_at_eos` (717), `generation_is_deterministic_at_top_k_1` (495), `block_size_boundary` (481), `cached_embeds_decoding_matches_prefix_replay` (1742) |
+| Sliding window | `sliding_window_limits_reach` (750), `sliding_window_agrees_with_cache` (776) |
+| GQA | `native_gqa_matches_repeat_interleave` (1767) |
+| Compile | `dense_moe_compiles_without_graph_breaks` (588), `sparse_moe_breaks_the_graph_as_documented` (603), `compiled_forward_matches_eager` (619), `compiled_backward_produces_gradients` (639), `grouped_moe_compiles_without_graph_breaks` (866), `grouped_moe_trains` (848) |
+| Tokenizer | `bpe_documents_get_eos_and_the_vocab_is_exact` (970), `bpe_files_load_under_both_format_ids` (1544), `hf_tokenizer_conversion_is_exact` (1517), `byte_loader_inserts_eos_at_document_boundaries` (1595) |
+| Checkpoints and export | `checkpoint_roundtrip_is_exact` (460), `an_exported_folder_loads_everywhere_a_pt_does` (1057), `transformers_wrapper_matches_the_native_model` (1450), `an_export_keeps_what_makes_a_checkpoint_more_than_a_language_model` (1342) |
+| Fine-tuning | `lora_starts_as_the_base_model_and_merges_back_exactly` (1163), `lora_scale_is_alpha_over_r` (1262), `qa_packing_masks_prompts_and_keeps_examples_whole` (1676), `decide_scores_each_option_at_its_last_token_and_calibrates` (1875) |
+| Merge tree, Muon | `merge_tree_composes_trains_and_bakes_losslessly` (1813), `merge_tree_eval_cache_sees_optimizer_updates` (1849), `batched_muon_matches_per_matrix_muon` (1902) |
+| Parameter count | `param_count_matches_analysis` (507) |

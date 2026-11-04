@@ -2,7 +2,7 @@
 title: "24 · Measuring progress honestly"
 part: "V · Training"
 accent: teal
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # 24  Measuring progress honestly
@@ -34,7 +34,7 @@ few windows, whose standard error is s/√n for n values with spread s.
 
 ## 24.2  The same windows every time
 
-> **In the repo** · `anulm/training/train.py` · `eval_windows` · lines 338–348 · @fdbb09a
+> **In the repo** · `anulm/training/train.py` · `eval_windows` · lines 338–348 · @b42998d
 
 ```python
 def eval_windows(data: torch.Tensor, batch_size: int, block_size: int, iters: int, seed: int = 0):
@@ -54,7 +54,7 @@ Every val loss logged before `--eval-windows` existed was read through this
 function (§26; the docstring's "every val loss" is older than the strided runs
 of §32 and §39), so a test freezes the indices it returns:
 
-> **In the repo** · `tests/test_model.py` · `eval_windows_are_frozen_and_strided_windows_cover_the_split` · lines 994–998 · @fdbb09a
+> **In the repo** · `tests/test_model.py` · `eval_windows_are_frozen_and_strided_windows_cover_the_split` · lines 1127–1131 · @b42998d
 
 ```python
     data = torch.arange(100_000)
@@ -71,7 +71,7 @@ silently restate every recorded number, and this fails first.
 
 ## 24.3  The error bar `evaluate()` prints
 
-> **In the repo** · `anulm/training/train.py` · `evaluate` · lines 477–533 · @fdbb09a
+> **In the repo** · `anulm/training/train.py` · `evaluate` · lines 477–533 · @b42998d
 
 ```python
 @torch.no_grad()
@@ -184,7 +184,7 @@ observed 0.066; *verified*). The mix does not track the mean; the spread comes
 from how hard individual windows are. `--eval-windows K` replaces random starts
 with K evenly spaced ones:
 
-> **In the repo** · `anulm/training/train.py` · `strided_windows` · lines 351–372 · @fdbb09a
+> **In the repo** · `anulm/training/train.py` · `strided_windows` · lines 351–372 · @b42998d
 
 ```python
 def strided_windows(data: torch.Tensor, batch_size: int, block_size: int, n: int):
@@ -203,7 +203,7 @@ def strided_windows(data: torch.Tensor, batch_size: int, block_size: int, n: int
 K cells and `idx`, shape (K,), takes each midpoint, with no seed. Batches are sliced
 afterwards, so unlike the random set it ignores `--batch-size`. The test:
 
-> **In the repo** · `tests/test_model.py` · `eval_windows_are_frozen_and_strided_windows_cover_the_split` · lines 1000–1006 · @fdbb09a
+> **In the repo** · `tests/test_model.py` · `eval_windows_are_frozen_and_strided_windows_cover_the_split` · lines 1133–1139 · @b42998d
 
 ```python
     flat = lambda bs: [int(i) for b in bs for i in b]
@@ -266,7 +266,7 @@ Score both on the same windows and take the error of the *differences*:
 *verified*: the windows' shared difficulty cancels. Two runs on
 different windows are not paired, so each checkpoint records its windows:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 782–786 · @fdbb09a
+> **In the repo** · `anulm/training/train.py` · `main` · lines 782–786 · @b42998d
 
 ```python
     eval_spec = ({"mode": "strided", "windows": args.eval_windows,
@@ -309,7 +309,7 @@ ratio averages sources that differ:
 mix and 0.756 moves with no change in the model. Comparing models also needs
 shared text; `anulm/eval/eval_bench.py` scores one file, each model with its tokenizer:
 
-> **In the repo** · `anulm/eval/eval_bench.py` · `score` · lines 55–71 · @fdbb09a
+> **In the repo** · `anulm/eval/eval_bench.py` · `score` · lines 55–71 · @b42998d
 
 ```python
     bs = cfg.block_size
@@ -346,7 +346,7 @@ passage before a content word and add three distractors. `anulm/eval/eval_golden
 scores every item twice, by exact match of a greedily decoded next word and by
 multiple choice; the multiple-choice part:
 
-> **In the repo** · `anulm/eval/eval_golden.py` · `score` · lines 85–102 · @fdbb09a
+> **In the repo** · `anulm/eval/eval_golden.py` · `score` · lines 85–102 · @b42998d
 
 ```python
         # --- multiple choice: one batch, the 4 choices right-padded ------
@@ -445,13 +445,13 @@ take the standard error of the per-batch differences (24.5).
 This chapter cites no external sources. Quality claims are measured here or in
 `docs/RESULTS.md` §7, §9, §19, §25, §26 and §28.
 
-Repository evidence, all at @fdbb09a:
+Repository evidence, all at @b42998d:
 - `anulm/training/train.py`: `eval_windows` 338–348, `strided_windows` 351–372, `evaluate`
   477–533, `main` 782–786 (`eval_spec`) and 906–908 (bits per byte).
 - `tests/test_model.py`: `eval_windows_are_frozen_and_strided_windows_cover_the_split`
-  980–1026, `golden_items_are_well_formed_and_the_scorer_runs` 1465–1507.
+  1113–1159, `golden_items_are_well_formed_and_the_scorer_runs` 1630–1672.
 - `anulm/eval/eval_bench.py` `score` 32–80; `anulm/eval/eval_golden.py` `score` 59–118;
-  `anulm/eval/eval_code.py` `score` 220–272 (`--mode`); `experiments/build_v2.py` (the
+  `anulm/eval/eval_code.py` `score` 221–273 (`--mode`); `experiments/build_v2.py` (the
   ordered split).
 - `anulm/training/train.py` `main` 689–695 (the split).
 - Measurements: `book/measurements/part_v_b_val_noise.json` from

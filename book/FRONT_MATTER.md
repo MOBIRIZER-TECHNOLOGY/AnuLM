@@ -69,10 +69,10 @@ released model; *cited* means it comes from a checked paper; *illustrative*
 means it was made up for teaching. A strip like this one opens every excerpt
 of repository code:
 
-> **In the repo** · `anulm/model.py` · `_sdpa` · lines 414–418 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `_sdpa` · lines 414–418 · @b42998d
 
 It names the file, the function, the lines and the commit they are read at, so
-you can open the same lines yourself (`git show fdbb09a:anulm/model.py`).
+you can open the same lines yourself (`git show b42998d:anulm/model.py`).
 Boxes marked **Details** hold what a first reading can skip; boxes marked
 **Build it** point to the lab book chapter that builds the same piece. Chapter
 1.7 lists every label and badge, and Appendix F says how to reproduce every
@@ -92,14 +92,14 @@ number.
 
 Every code citation names a file, a symbol, line numbers and a commit:
 
-> **In the repo** · `anulm/model.py` · `_sdpa` · lines 414–418 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `_sdpa` · lines 414–418 · @b42998d
 
-The line numbers are checked against commit `fdbb09a` by the book's own tools.
+The line numbers are checked against commit `b42998d` by the book's own tools.
 That commit is on the repository's
 [`port-bundle-fixes`](https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/tree/port-bundle-fixes) branch on GitHub, which holds the code in the
 `anulm/` package. The default branch, `main`
 ([`ae59238`](https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/tree/ae592387dc373cc6f579abce444c7f08c9e373a3)),
-still has the old flat layout (`model.py` at the root), so its line numbers
+still has the old flat layout (`anulm/model.py` at the root), so its line numbers
 differ: read the code at the pin, not at `main`. The lab book under `course/`,
 which the "Build it" boxes point to, is in the pin.
 

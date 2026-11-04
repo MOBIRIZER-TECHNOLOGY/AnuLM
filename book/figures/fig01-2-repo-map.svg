@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 550" role="img" aria-labelledby="t d" class="figure-svg">
 <title id="t">Figure 1.2 · The repository by role</title>
-<desc id="d">Lines of Python per role: the model 1,364, tests 4,580, training and tokenizer 2,864, data 2,270, evaluation 1,354, post-training 1,506, speech and vision 3,905, serving and apps 4,481, export 1,260, package entry 107, tools 1,306.</desc>
+<desc id="d">Lines of Python per role: the model 1,364, tests 4,793, training and tokenizer 2,864, data 2,270, evaluation 1,355, post-training 1,506, speech and vision 3,911, serving and apps 4,518, export 1,260, package entry 107, tools 1,306.</desc>
 <defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
 <text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">The repository at the pin, by role</text>
-<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">lines of Python in the 93 files of anulm/, tests/, tools/ and the root · total 24,997 · verified with git at fdbb09a</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">lines of Python in the 93 files of anulm/, tests/, tools/ and the root · total 25,254 · verified with git at b42998d</text>
 <line x1="210.0" y1="64.0" x2="210.0" y2="400.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
 <text x="210.0" y="415.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
 <line x1="296.0" y1="64.0" x2="296.0" y2="400.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
@@ -20,8 +20,8 @@
 <rect x="210.0" y="74.0" width="117.3" height="22.0" rx="3" fill="#A8701A" class="f-gold"><title>the model: 1,364</title></rect>
 <text x="333.3" y="89.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">1,364</text>
 <text x="200.0" y="119.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">tests</text>
-<rect x="210.0" y="104.0" width="393.9" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>tests: 4,580</title></rect>
-<text x="609.9" y="119.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">4,580</text>
+<rect x="210.0" y="104.0" width="412.2" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>tests: 4,793</title></rect>
+<text x="628.2" y="119.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">4,793</text>
 <text x="200.0" y="149.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">training and tokenizer</text>
 <rect x="210.0" y="134.0" width="246.3" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>training and tokenizer: 2,864</title></rect>
 <text x="462.3" y="149.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">2,864</text>
@@ -29,17 +29,17 @@
 <rect x="210.0" y="164.0" width="195.2" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>data: 2,270</title></rect>
 <text x="411.2" y="179.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">2,270</text>
 <text x="200.0" y="209.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">evaluation</text>
-<rect x="210.0" y="194.0" width="116.4" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>evaluation: 1,354</title></rect>
-<text x="332.4" y="209.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">1,354</text>
+<rect x="210.0" y="194.0" width="116.5" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>evaluation: 1,355</title></rect>
+<text x="332.5" y="209.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">1,355</text>
 <text x="200.0" y="239.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">post-training</text>
 <rect x="210.0" y="224.0" width="129.5" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>post-training: 1,506</title></rect>
 <text x="345.5" y="239.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">1,506</text>
 <text x="200.0" y="269.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">speech and vision</text>
-<rect x="210.0" y="254.0" width="335.8" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>speech and vision: 3,905</title></rect>
-<text x="551.8" y="269.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">3,905</text>
+<rect x="210.0" y="254.0" width="336.3" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>speech and vision: 3,911</title></rect>
+<text x="552.3" y="269.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">3,911</text>
 <text x="200.0" y="299.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">serving and apps</text>
-<rect x="210.0" y="284.0" width="385.4" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>serving and apps: 4,481</title></rect>
-<text x="601.4" y="299.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">4,481</text>
+<rect x="210.0" y="284.0" width="388.5" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>serving and apps: 4,518</title></rect>
+<text x="604.5" y="299.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">4,518</text>
 <text x="200.0" y="329.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="end">export</text>
 <rect x="210.0" y="314.0" width="108.4" height="22.0" rx="3" fill="#D9A13B" class="f-gold"><title>export: 1,260</title></rect>
 <text x="324.4" y="329.0" class="f-ink" fill="#17262E" font-size="11.5" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">1,260</text>

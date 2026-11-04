@@ -2,7 +2,7 @@
 title: "13 · Many heads, shared keys: multi-head and grouped-query attention"
 part: "IV · Inside the transformer"
 accent: gold
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # 13  Many heads, shared keys: multi-head and grouped-query attention
@@ -28,7 +28,7 @@ A head is Chapter 11's attention on a D<sub>h</sub>-wide slice; H of them
 side by side cost about what one head of width H·D<sub>h</sub> would, and
 each learns its own pattern. The configuration fixes the sizes:
 
-> **In the repo** · `anulm/model.py` · `AnuLMConfig.__post_init__` · lines 150–154 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLMConfig.__post_init__` · lines 150–154 · @b42998d
 
 ```python
         if self.attn == "gqa":
@@ -136,7 +136,7 @@ then repeats the call under bf16 autocast, as the serving code runs:
 parameter (Chapter 15), which is why Chapter 20 counts 30 KiB per token as
 served, not 20. A test pins the layout; this is its GQA half:
 
-> **In the repo** · `tests/test_model.py` · `cache_holds_what_it_should` · lines 582–590 · @fdbb09a
+> **In the repo** · `tests/test_model.py` · `cache_holds_what_it_should` · lines 679–687 · @b42998d
 
 ```python
 def cache_holds_what_it_should():
@@ -153,7 +153,7 @@ def cache_holds_what_it_should():
 
 Only after caching are the shared heads copied for attention:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 483–494 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 483–494 · @b42998d
 
 ```python
         if NATIVE_GQA and self.n_rep > 1:
@@ -198,7 +198,7 @@ the GPU.
 
 > **Details.** The switch, and the test that keeps it honest.
 >
-> > **In the repo** · `anulm/model.py` · `NATIVE_GQA` · lines 384–387 · @fdbb09a
+> > **In the repo** · `anulm/model.py` · `NATIVE_GQA` · lines 384–387 · @b42998d
 >
 > ```python
 > # GQA through SDPA's own `enable_gqa` instead of repeat_interleave. Same
@@ -209,35 +209,46 @@ the GPU.
 >
 > `train.py --native-gqa` turns it on (lines 637–643). Its test:
 >
-> > **In the repo** · `tests/test_model.py` · `native_gqa_matches_repeat_interleave` · lines 1602–1623 · @fdbb09a
+> > **In the repo** · `tests/test_model.py` · `native_gqa_matches_repeat_interleave` · lines 1767–1796 · @b42998d
 >
 > ```python
 > def native_gqa_matches_repeat_interleave():
 >     """NATIVE_GQA hands the Hkv heads to SDPA's enable_gqa instead of copying
->     them; outputs must agree on the full-sequence, cached and windowed paths."""
+>     them; outputs must agree on the full-sequence, cached and windowed paths.
+>
+>     With several KV heads, so the pairing is tested: query head h belongs to
+>     KV head h // n_rep (repeat_interleave). Tiling the heads (repeat) instead
+>     pairs h with h % n_kv -- invisible with one KV head, wrong with two or more.
+>     """
 >     from anulm import model as M
->     torch.manual_seed(2)
->     m = AnuLM(tiny(n_kv_head=1, sliding_window=4, max_window_layers=1)).eval()
->     x = torch.randint(0, 64, (2, 12))
 >     saved = M.NATIVE_GQA
 >     try:
->         outs = []
->         for native in (False, True):
->             M.NATIVE_GQA = native
->             with torch.no_grad():
->                 full, _ = m(x, x)
->                 cache = m.new_cache()
->                 m(x[:, :8], cache=cache)
->                 step, _ = m(x[:, 8:], cache=cache, start=8)
->             outs.append((full, step))
+>         for n_head, n_kv in ((4, 2), (6, 2), (6, 3), (4, 1)):
+>             torch.manual_seed(2)
+>             m = AnuLM(tiny(n_head=n_head, n_kv_head=n_kv, head_dim=8,
+>                            sliding_window=4, max_window_layers=1)).eval()
+>             x = torch.randint(0, 64, (2, 12))
+>             outs = []
+>             for native in (False, True):
+>                 M.NATIVE_GQA = native
+>                 with torch.no_grad():
+>                     full, _ = m(x, x)
+>                     cache = m.new_cache()
+>                     m(x[:, :8], cache=cache)
+>                     step, _ = m(x[:, 8:], cache=cache, start=8)
+>                 outs.append((full, step))
+>             tag = f"{n_head}q/{n_kv}kv"
+>             assert torch.allclose(outs[0][0], outs[1][0], atol=1e-5), f"{tag}: full-sequence logits differ"
+>             assert torch.allclose(outs[0][1], outs[1][1], atol=1e-5), f"{tag}: cached-step logits differ"
 >     finally:
 >         M.NATIVE_GQA = saved
->     assert torch.allclose(outs[0][0], outs[1][0], atol=1e-5), "full-sequence logits differ"
->     assert torch.allclose(outs[0][1], outs[1][1], atol=1e-5), "cached-step logits differ"
 > ```
 >
-> With `n_kv_head=1` every query head reads the same key/value head, so a native
-> path that tiled would pass it; the example's grouping check would catch it.
+> With one key/value head every query head reads the same one, so a pairing
+> bug cannot show; with two or three it can. At @fdbb09a the test used only
+> `n_kv_head=1`, and a native path that tiled the heads would have passed it.
+> Commit 52d26f0 added the three shapes with several key/value heads after
+> mutation testing tiled the heads and no test failed (`docs/VERIFICATION.md`).
 
 `IN THE REPO` · `IMPLEMENTATION-DEPENDENT` (which is faster)
 
@@ -355,11 +366,11 @@ used only for the claim in its register row:
 | [R13] | multi-query attention: keys and values shared across all heads, for incremental decoding | CHECKED |
 | [R50] | the documented `enable_gqa` behaviour of SDPA (`repeat_interleave` of key and value heads; experimental) | CHECKED |
 
-Repository evidence, all at @fdbb09a:
+Repository evidence, all at @b42998d:
 - `anulm/model.py`: `AnuLMConfig.__post_init__` 129–131 and 150–154, `NATIVE_GQA` 384–387,
   `GQAttention.__init__` 430–445 and 449, `GQAttention.forward` 451–494.
 - `anulm/training/train.py`: `--native-gqa`, lines 637–643.
-- `tests/test_model.py`: `cache_holds_what_it_should` 582, `native_gqa_matches_repeat_interleave` 1602.
+- `tests/test_model.py`: `cache_holds_what_it_should` 679, `native_gqa_matches_repeat_interleave` 1767.
 - `docs/RESULTS.md` §32; `book/measurements/part_iv_a_groups.json`.
 
 Book examples: `code-examples/ch13_gqa.py`, `code-examples/ch13_measure_groups.py`.

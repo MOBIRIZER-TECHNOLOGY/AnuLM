@@ -2,12 +2,12 @@
 title: "Appendix A · Tensor shapes for every module"
 part: "Appendices"
 accent: slate
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # Appendix A  Tensor shapes for every module
 
-Every shape below was printed by running `anulm/model.py` unchanged at @fdbb09a,
+Every shape below was printed by running `anulm/model.py` unchanged at @b42998d,
 with `book/code-examples/ch41_shapes.py` (**Book example, not repository
 code**). The script puts a forward hook on each module and wraps the two
 module-level functions `apply_rope` and `_sdpa`. It records what goes in and

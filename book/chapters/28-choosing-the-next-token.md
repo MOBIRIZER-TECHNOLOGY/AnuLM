@@ -2,7 +2,7 @@
 title: "28 · Choosing the next token"
 part: "VI · Generation"
 accent: teal
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # 28  Choosing the next token
@@ -16,7 +16,7 @@ the repository does not have, closes it as a tested patch.
 
 ## 28.1  The order of operations
 
-> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1152–1169 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1152–1169 · @b42998d
 
 ```python
             logits = logits[:, -1, :].float()
@@ -58,7 +58,7 @@ In order, on a (B, V) tensor:
 the sampling branch divides, filters, normalises and draws; at T ≤ 0 an argmax
 replaces all four. Top-p, dashed, is not in the repository. *verified*: the
 script that draws it asserts this order against `generate`'s source at
-@fdbb09a and reads the line range from it.
+@b42998d and reads the line range from it.
 
 The book's script watches these lines run: a model that returns fixed logits,
 the repository's `generate`, and a spy on what `torch.multinomial` is given,
@@ -96,13 +96,13 @@ checked against the steps above.
 >         out = cls(z).generate(torch.tensor([prompt]), 1, **kw)
 >     finally:
 >         torch.multinomial = orig
->     if not seen:                                     # the argmax branch, lines 1161-1162
+>     if not seen:                                     # the argmax branch, lines 1161–1162
 >         return torch.nn.functional.one_hot(out[0, -1], z.numel()).float()
 >     return seen[0][0]
 >
 >
 > def book_probs(z, seen_ids, temperature=1.0, top_k=None, penalty=1.0):
->     """generate's lines 1157-1168, one row at a time, as Chapter 28 states them."""
+>     """generate's lines 1157–1168, one row at a time, as Chapter 28 states them."""
 >     z = z.clone().float()
 >     for i in set(seen_ids) if penalty != 1.0 else ():
 >         z[i] = z[i] / penalty if z[i] > 0 else z[i] * penalty   # generate's sign rule
@@ -136,7 +136,7 @@ the id `generate` chose without calling it. Dividing by T below 1 widens the
 gaps between logits and sharpens the distribution; above 1 flattens it
 (Chapter 5). As T → 0 all the mass goes to the largest logit, except where two
 logits tie, so a small positive T is greedy except at ties, and so is
-`top_k=1` (28.3), which `generation_is_deterministic_at_top_k_1` (line 398)
+`top_k=1` (28.3), which `generation_is_deterministic_at_top_k_1` (line 495)
 checks. T ≤ 0 does not take that limit numerically: it calls `argmax`, which
 returns the first of tied ids and never touches the random generator:
 
@@ -216,7 +216,7 @@ time; temperature 0.8 with penalty 1.3, 12.4%. The serving defaults
 Speech and images decode through `decode_from_embeds`, which is greedy and
 blocks repeated n-grams:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.decode_from_embeds` · lines 1037–1054 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM.decode_from_embeds` · lines 1037–1054 · @b42998d
 
 ```python
         for _ in range(max_tokens):
@@ -254,7 +254,7 @@ no_repeat_ngram = 3: [0, 0, 0, 1, 0, 0, 2, 0]
 
 *verified*: `ch28_sampling.py`. `generate` stops on one id for a whole batch:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1170–1179 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1170–1179 · @b42998d
 
 ```python
             if eos_id is not None:
@@ -271,7 +271,7 @@ no_repeat_ngram = 3: [0, 0, 0, 1, 0, 0, 2, 0]
 
 A finished row keeps receiving `eos_id`, so `idx` stays (B, t + 1). The loop
 ends when every row is done, or when `on_token`, `anulm/inference/api.py`'s streaming callback
-(Chapter 38), returns True. `generation_stops_at_eos` (line 620) checks it.
+(Chapter 38), returns True. `generation_stops_at_eos` (line 717) checks it.
 
 `IN THE REPO`
 
@@ -282,7 +282,7 @@ probabilities reach p, then renormalises [R31]; the set grows where the model
 is unsure, which a fixed k cannot do. `anulm/inference/api.py` accepts the argument and drops
 it:
 
-> **In the repo** · `anulm/inference/api.py` · `ChatRequest` · lines 218–221 · @fdbb09a
+> **In the repo** · `anulm/inference/api.py` · `ChatRequest` · lines 218–221 · @b42998d
 
 ```python
     temperature: Optional[float] = Field(None, ge=0, le=2, description="Default 0.3. 0 = greedy.")
@@ -370,7 +370,7 @@ filter, that is the whole extension:
 
 > **Details.** How the test applies it. The script takes the pinned source of
 > `generate`, applies the patch as two string replacements, each required to
-> match exactly once, and compiles the result in `model.py`'s namespace, so the
+> match exactly once, and compiles the result in `anulm/model.py`'s namespace, so the
 > test runs the repository's loop plus exactly this diff:
 >
 > ```python
@@ -483,14 +483,14 @@ used only for the claim in its register row:
 | [R30] | penalised sampling: discounting the scores of tokens already generated | CHECKED |
 | [R31] | nucleus (top-p) sampling | CHECKED |
 
-Repository evidence, all at @fdbb09a:
+Repository evidence, all at @b42998d:
 - `anulm/model.py`: `AnuLM.decode_from_embeds` 1015–1062 (excerpt 1037–1054),
   `AnuLM.generate` 1152–1179.
 - `anulm/inference/api.py`: `ChatRequest` 218–221, `Generation` 389 and 446–448, chat defaults
   611–613, completion defaults 649–650.
 - `anulm/inference/serve.py`: the `generate` call 158–160 (no clamp), HTTP defaults 224–229. `anulm/inference/sample.py`: 34–35.
-- `tests/test_model.py`: `generation_is_deterministic_at_top_k_1` 398,
-  `generation_stops_at_eos` 620. `tests/test_release_fixes.py`:
+- `tests/test_model.py`: `generation_is_deterministic_at_top_k_1` 495,
+  `generation_stops_at_eos` 717. `tests/test_release_fixes.py`:
   `test_temperature_zero_reaches_the_model_unclamped` 112,
   `test_temperature_zero_breaks_ties_deterministically` 136.
 - `docs/RESULTS.md` §30.

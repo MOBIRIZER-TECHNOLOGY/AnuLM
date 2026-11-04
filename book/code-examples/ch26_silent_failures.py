@@ -18,9 +18,10 @@ monkeypatch; the matching test from test_model.py is run against the mutant
 and then against the committed code. A good check fails on the mutant and
 passes on the original.
 
-One story has no test in the suite: bf16 autocast inside the router. For it
-the script writes the check a test would make, router_choices_survive_autocast
-(marked EXTENSION in the book), and runs it like the others. Part 3 shows why
+One story had no test in the suite when this script was written: bf16
+autocast inside the router. For it the script writes the check a test would
+make, router_choices_survive_autocast, and runs it like the others. The suite
+has had its own test of that name since commit 52d26f0 (Chapter 26). Part 3 shows why
 casting the router's inputs to fp32 was not enough.
 """
 
@@ -116,7 +117,7 @@ def router_forward_under_autocast(self, x_flat, seq_len=None):   # Router.forwar
 
 
 def router_choices_survive_autocast():
-    """EXTENSION: the check the suite lacks. bf16 autocast must not change which experts a token gets."""
+    """The book's check, written before the suite had one. bf16 autocast must not change which experts a token gets."""
     torch.manual_seed(0)
     r = M.Router(released()).eval()                  # the released router's shape: 24 experts, top-4
     x = torch.randn(4096, r.weight.shape[1])

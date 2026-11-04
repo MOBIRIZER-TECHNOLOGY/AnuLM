@@ -2,7 +2,7 @@
 title: "20 · The whole model, traced end to end"
 part: "IV · Inside the transformer"
 accent: gold
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # 20  The whole model, traced end to end
@@ -63,7 +63,7 @@ beside the released model's:
 | shared expert | an expert every token uses | 1 | 0 |
 | sliding window | attention limited to the last 256 tokens (Chapters 12, 29) | none | layers 0–9 |
 
-*verified*: `tiny()` is `tests/test_model.py` lines 44–49 at @fdbb09a; the released
+*verified*: `tiny()` is `tests/test_model.py` lines 44–49 at @b42998d; the released
 column is the configuration stored in `ckpt_base_v2.pt`. The last two rows
 change no shape below.
 
@@ -81,7 +81,7 @@ Layers 0–9 attend within a 256-token window. Drawn by `tools/make_figures.py`.
 x<sup>(ℓ)</sup> is the residual stream entering layer ℓ, a (B, S, D) tensor
 that each layer adds to:
 
-| Step | Equation | Code @fdbb09a | Shape out |
+| Step | Equation | Code @b42998d | Shape out |
 |---|---|---|---|
 | embed | x<sup>(0)</sup><sub>b,s</sub> = W<sub>emb</sub>[id<sub>b,s</sub>] | `anulm/model.py` 896 | (B, S, D) |
 | attention half | h = x<sup>(ℓ)</sup> + Attn(RMSNorm(x<sup>(ℓ)</sup>)) | `anulm/model.py` 820 | (B, S, D) |
@@ -118,7 +118,7 @@ The model's constructor, `AnuLM.__init__` (lines 833–863; quoted in 10.2 and
 
 `AnuLM.forward` takes `idx`, a (B, S) tensor of ids:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 891–899 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 891–899 · @b42998d
 
 ```python
         if embeds is not None:
@@ -154,7 +154,7 @@ layer 0 input x                    (2, 5, 32)  (B, S, D)
 
 ## 20.5  The layers, and the residual stream
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 900–911 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 900–911 · @b42998d
 
 ```python
         aux_total = None
@@ -215,7 +215,7 @@ Three bias-free matrices, so 3·D·I numbers. The gate's SiLU scales the up
 projection element-wise before `down_proj` returns to width D (Chapter 16).
 From layer 1 on, the half is a mixture of experts:
 
-> **In the repo** · `anulm/model.py` · `MoE.forward` · lines 696–707 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `MoE.forward` · lines 696–707 · @b42998d
 
 ```python
     def forward(self, x):                                     # (B, S, D)
@@ -249,8 +249,8 @@ quoted in 17.5) makes the choice:
 > `sparse` (the default, `tiny()`'s), `dense` (every expert on every token,
 > for `torch.compile`) and `grouped` (one `F.grouped_mm` per projection over
 > groups of different sizes, in bf16; the released model's).
-> `dense_and_sparse_moe_agree` (`tests/test_model.py` line 474) holds the
-> first two together to 10⁻⁵. `grouped_moe_matches_sparse_under_bf16` (line 694) holds
+> `dense_and_sparse_moe_agree` (`tests/test_model.py` line 571) holds the
+> first two together to 10⁻⁵. `grouped_moe_matches_sparse_under_bf16` (line 827) holds
 > grouped to sparse within 5% of the largest output; on a PyTorch without
 > `F.grouped_mm` it is skipped, and reported as SKIP rather than a pass
 > (Chapter 18).
@@ -271,7 +271,7 @@ and a router z-loss with weight 10⁻³ (`router_z_alpha`); see Chapter 18.
 
 ## 20.6  Out: the loss, or one row of logits
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 912–928 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 912–928 · @b42998d
 
 ```python
         x = self.norm(x)
@@ -316,7 +316,7 @@ without targets: logits            (2, 1, 64)  (B, 1, V): the last position only
 model guesses almost uniformly, so its loss starts near ln V. On average it
 sits slightly above (Chapter 3 shows why); 10 random targets are one noisy
 draw, and this one lands 0.004 below ln 64. `initial_loss_is_ln_vocab`
-(`tests/test_model.py` line 349) requires it within 0.35.
+(`tests/test_model.py` line 428) requires it within 0.1.
 
 The released model shows what training buys. On 64 windows of 512 held-out
 tokens (seed 0; 32,732 graded, as the 36 targets after an end-of-document
@@ -380,7 +380,7 @@ and a SwiGLU holds 3·D·I. The trace script sums eight terms:
 Each token uses A = 2 of 8 routed experts in each of the two MoE layers, so
 2 × 6 × 1,536 = 18,432 sit idle and `num_params()` reports **29,456** active.
 
-> **In the repo** · `anulm/model.py` · `AnuLM.num_params` · lines 1104–1113 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM.num_params` · lines 1104–1113 · @b42998d
 
 ```python
     def num_params(self) -> tuple[int, int]:
@@ -451,14 +451,14 @@ each storage choice; the 256-token window does not shrink them.
 
 ## 20.10  The proof, and how to see it yourself
 
-> **In the repo** · `tests/test_model.py` · `param_count_matches_analysis` · line 410 · @fdbb09a
+> **In the repo** · `tests/test_model.py` · `param_count_matches_analysis` · line 507 · @b42998d
 
 It builds two more presets, `nano_30b` and `nano_105b`, small models shaped
 like Sarvam's 30B and 105B, and requires 17,440,384 parameters (6,602,368 active)
 and 47,389,728 (13,327,392 active), each within 1,000. That catches a missing
 matrix, the smallest being 6,144 numbers, but not a missing gain vector (64 or 384
-numbers in `nano_30b`, 48, 72 or 384 in `nano_105b`). `all_parameters_receive_gradients` (line 336) catches a parameter that
-is built but never used, and `initial_loss_is_ln_vocab` (line 349) a badly
+numbers in `nano_30b`, 48, 72 or 384 in `nano_105b`). `all_parameters_receive_gradients` (line 415) catches a parameter that
+is built but never used, and `initial_loss_is_ln_vocab` (line 428) a badly
 scaled initialisation. To print the trace:
 
 ```bash
@@ -508,7 +508,7 @@ python book/code-examples/trace_forward.py
 4. (B, V) logits would break `generate`'s three-dimensional `logits[:, -1, :]`.
 5. 47,888 − 3,072 = 44,816 total; 29,456 − 3,072 = 26,384 active.
 
-*verified*: each answer recomputed with `anulm/model.py` at @fdbb09a.
+*verified*: each answer recomputed with `anulm/model.py` at @b42998d.
 
 ---
 
@@ -549,7 +549,7 @@ used only for the claim in its register row:
 | [R18] | the balancing bias is used only for selection | CHECKED |
 | [R20] | sigmoid affinity scores in the router | CHECKED |
 
-Repository evidence, all at @fdbb09a:
+Repository evidence, all at @b42998d:
 - `anulm/model.py`:
   - `RMSNorm` 225–239, `SwiGLU` 242–253, `Rotary._grow` / `forward` 324–343,
     `NATIVE_GQA` 387;
@@ -560,9 +560,9 @@ Repository evidence, all at @fdbb09a:
 - `anulm/training/train.py`: `make_batch` 237–250.
 - `tests/test_model.py`:
   - `tiny` 44–49;
-  - `all_parameters_receive_gradients` 336, `initial_loss_is_ln_vocab` 349,
-    `param_count_matches_analysis` 410;
-  - `dense_and_sparse_moe_agree` 474, `grouped_moe_matches_sparse_under_bf16` 694.
+  - `all_parameters_receive_gradients` 415, `initial_loss_is_ln_vocab` 428,
+    `param_count_matches_analysis` 507;
+  - `dense_and_sparse_moe_agree` 571, `grouped_moe_matches_sparse_under_bf16` 827.
 - The released configuration, stored in `ckpt_base_v2.pt`.
 - Measurements of the released model on held-out text:
   `book/measurements/attention.json`, written by

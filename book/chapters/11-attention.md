@@ -2,7 +2,7 @@
 title: "11 · Attention from first principles"
 part: "IV · Inside the transformer"
 accent: gold
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # 11  Attention from first principles
@@ -275,7 +275,7 @@ width behaves alike. 11.8 measures the trained model.
 
 `anulm/model.py` runs attention in one function:
 
-> **In the repo** · `anulm/model.py` · `_sdpa` · lines 414–418 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `_sdpa` · lines 414–418 · @b42998d
 
 ```python
 def _sdpa(q, k, v, mask, S, scale, dropout_p):
@@ -292,7 +292,7 @@ PyTorch for the causal mask whenever no mask is passed and S > 1.
 
 The layer that calls it sets up its projections and scale once:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 430–449 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 430–449 · @b42998d
 
 ```python
     def __init__(self, cfg: AnuLMConfig, rotary: Rotary):
@@ -329,7 +329,7 @@ The layer that calls it sets up its projections and scale once:
 
 The forward pass first makes the queries, keys and values for every head:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 451–476 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 451–476 · @b42998d
 
 ```python
     def forward(self, x, cos, sin, cache: Optional[dict] = None, start: int = 0,
@@ -362,7 +362,7 @@ Lines 458–463 are x **W** for all three roles at once, then a cut into
 465–468 normalise (11.7) and rotate (Chapter 14). Lines 470–476 append to the
 KV cache (Chapter 27). Then comes the attention call:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 477–494 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 477–494 · @b42998d
 
 ```python
         T = k.shape[2]
@@ -409,11 +409,11 @@ KV cache (Chapter 27). Then comes the attention call:
 > |---|---|---|---|
 > | several tokens, no cache, no window (layers 10–19 in training) | `None` | `True` | PyTorch's built-in causal mask |
 > | one token against a cache, no window | `None` | `False` | nobody: the newest token may see every key |
-> | a window (layers 0–9, always), or several tokens against a cache | a boolean (S, T) mask | `False` | the explicit mask, lines 376–380 |
+> | a window (layers 0–9, always), or several tokens against a cache | a boolean (S, T) mask | `False` | the explicit mask, lines 473–477 |
 >
 > The explicit mask is the causal rule in absolute positions, the same rule as
 > `causal()` in 11.4, plus the window: the last 256 tokens, the query's own
-> included (Chapters 12 and 29). `sliding_window_limits_reach` (line 653,
+> included (Chapters 12 and 29). `sliding_window_limits_reach` (line 750,
 > quoted in 12.6) pins the window to the token: a token exactly W back must
 > change the last position's output by exactly zero, one W − 1 back by
 > something.
@@ -421,7 +421,7 @@ KV cache (Chapter 27). Then comes the attention call:
 > The repository passes the scale explicitly because YaRN changes it, and the
 > comment at lines 446–448 says what goes wrong otherwise. It did go wrong:
 >
-> > **In the repo** · `tests/test_model.py` · `yarn_temperature_reaches_attention` · lines 144–164 · @fdbb09a
+> > **In the repo** · `tests/test_model.py` · `yarn_temperature_reaches_attention` · lines 144–164 · @b42998d
 >
 > ```python
 > def yarn_temperature_reaches_attention():
@@ -460,7 +460,7 @@ head and each key head passes through an RMSNorm before the scores
 queries and one for keys, and each has a 64-wide gain γ shared by all heads of
 its kind.
 
-> **In the repo** · `anulm/model.py` · `RMSNorm` · lines 225–239 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `RMSNorm` · lines 225–239 · @b42998d
 
 ```python
 class RMSNorm(nn.Module):
@@ -667,7 +667,7 @@ the formula.
 | scale applied twice | scores divided by 64 at width 64: nearly uniform attention | the same assertion |
 | softmax over queries | weights still look plausible | every row of weights sums to 1 over the keys |
 | dropout at evaluation | PyTorch applies any `dropout_p` it is given [R50] | pass 0.0 outside training (line 482); two evaluation passes must match |
-| boolean mask inverted | PyTorch's `True` means *may attend*; `nn.MultiheadAttention`'s padding mask means the opposite [R50] | `incremental_forward_matches_full_forward` (`tests/test_model.py` line 561), `sliding_window_limits_reach` (line 653, shown in 12.6) and `sliding_window_agrees_with_cache` fail with `_attn_mask`'s output inverted |
+| boolean mask inverted | PyTorch's `True` means *may attend*; `nn.MultiheadAttention`'s padding mask means the opposite [R50] | `incremental_forward_matches_full_forward` (`tests/test_model.py` line 658), `sliding_window_limits_reach` (line 750, shown in 12.6) and `sliding_window_agrees_with_cache` fail with `_attn_mask`'s output inverted |
 | comparing kernels exactly | sums in different orders differ in the last bits | compare with a tolerance suited to the dtype |
 
 The causal test, `causal_mask_does_not_leak_future` (line 57), does **not**
@@ -740,7 +740,7 @@ used only for the claim in its register row:
 | [R29] | FlashAttention: exact attention computed in tiles to cut memory traffic | CHECKED |
 | [R50] | PyTorch's `scaled_dot_product_attention`: reference formula, default scale, mask meaning, dropout, the kernels its documentation lists | CHECKED |
 
-Repository evidence, all at @fdbb09a:
+Repository evidence, all at @b42998d:
 - `anulm/model.py`:
   - `RMSNorm` 225–239, `Rotary.__init__` line 298;
   - `_attn_mask` 365–381, `NATIVE_GQA` 387, `_sdpa` 414–418;
@@ -748,7 +748,7 @@ Repository evidence, all at @fdbb09a:
 - `tests/test_model.py`:
   - `causal_mask_does_not_leak_future` 57, `rope_preserves_norms` 120;
   - `yarn_temperature_reaches_attention` 144–164;
-  - `incremental_forward_matches_full_forward` 561, `sliding_window_limits_reach` 653–675.
+  - `incremental_forward_matches_full_forward` 658, `sliding_window_limits_reach` 750–772.
 - The QK-norm gains, stored in `ckpt_base_v2.pt`.
 - Measurements of the released model: `book/measurements/attention.json` and
   `attention_report.txt`; `docs/RESULTS.md` §39.

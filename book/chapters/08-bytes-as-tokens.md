@@ -2,7 +2,7 @@
 title: "8 · Bytes as tokens"
 part: "III · From text to vectors"
 accent: coral
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # 8  Bytes as tokens
@@ -95,13 +95,13 @@ cover everything. The price is length outside ASCII (8.5).
 
 ## 8.2  A vocabulary of 259 ids
 
-> **In the repo** · `anulm/model.py` · `AnuLMConfig` · line 47 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLMConfig` · line 47 · @b42998d
 
 ```python
     vocab_size: int = 259           # 256 bytes + BOS + EOS + PAD (byte mode)
 ```
 
-> **In the repo** · `anulm/training/train.py` · `BYTE_EOS` · line 101 · @fdbb09a
+> **In the repo** · `anulm/training/train.py` · `BYTE_EOS` · line 101 · @b42998d
 
 ```python
 BYTE_EOS = 257          # byte mode: 256 BOS, 257 EOS, 258 PAD
@@ -112,11 +112,11 @@ table. Above them, only EOS is ever written into data. In `anulm/model.py`,
 `anulm/training/train.py` and `anulm/inference/sample.py`, 256 (beginning of sequence) and 258 (padding) as
 ids appear only in comments (`anulm/model.py` 47, `anulm/training/train.py` 101, `anulm/inference/sample.py` 86);
 elsewhere 258 occurs only in a merge-tree test as an ordinary row (*verified*,
-`git grep` at @fdbb09a, `course/` excluded). They are reserved rows that the
+`git grep` at @b42998d, `course/` excluded). They are reserved rows that the
 model still scores. `anulm/inference/sample.py` encodes a byte prompt and sets the
 stop id:
 
-> **In the repo** · `anulm/inference/sample.py` · `main` · lines 70–72 · @fdbb09a
+> **In the repo** · `anulm/inference/sample.py` · `main` · lines 70–72 · @b42998d
 
 ```python
         # Byte-level: the prompt is its own UTF-8 encoding. 257 is EOS.
@@ -136,7 +136,7 @@ text, and `generate` has nothing to stop on. So each boundary in a corpus file
 is a separator, turned into EOS on loading. It lives in `anulm/bpe.py`, and
 `anulm/training/train.py` imports it (`anulm/training/train.py` line 28):
 
-> **In the repo** · `anulm/bpe.py` · `DOC_SEP` · lines 40–45 · @fdbb09a
+> **In the repo** · `anulm/bpe.py` · `DOC_SEP` · lines 40–45 · @b42998d
 
 ```python
 # Document separator in corpus .txt files. fetch_hindi.py writes one article
@@ -151,7 +151,7 @@ Three newlines are a safe marker only because the cleaner guarantees no
 article contains three in a row; the comment records that contract. The
 loader first finds the bytes:
 
-> **In the repo** · `anulm/training/train.py` · `load_bytes` · lines 62–85 · @fdbb09a
+> **In the repo** · `anulm/training/train.py` · `load_bytes` · lines 62–85 · @b42998d
 
 ```python
 def load_bytes(path: str | None) -> torch.Tensor:
@@ -179,7 +179,7 @@ Bengali), two of them code-mixed Hindi and English. So
 
 Then the boundaries:
 
-> **In the repo** · `anulm/training/train.py` · `load_bytes` · lines 86–98 · @fdbb09a
+> **In the repo** · `anulm/training/train.py` · `load_bytes` · lines 86–98 · @b42998d
 
 ```python
     # Text files written on Windows carry CRLF; the tokenizer path reads them
@@ -258,7 +258,7 @@ EOS cast to uint8: 1 (silent); built as uint8: RuntimeError (value cannot be con
 98 bytes, less 10 CR bytes and two 3-byte separators, plus two EOS ids, make
 84. The repository's own test checks the same properties:
 
-> **In the repo** · `tests/test_model.py` · `byte_loader_inserts_eos_at_document_boundaries` · lines 1430–1448 · @fdbb09a
+> **In the repo** · `tests/test_model.py` · `byte_loader_inserts_eos_at_document_boundaries` · lines 1595–1613 · @b42998d
 
 ```python
 def byte_loader_inserts_eos_at_document_boundaries():
@@ -364,7 +364,7 @@ is exact, and a byte model's bits per byte is the number every tokenizer
 must beat (Chapter 9). Decoding is where bytes bite: `anulm/inference/sample.py` guards
 against ids that are not bytes and bytes that are not UTF-8:
 
-> **In the repo** · `anulm/inference/sample.py` · `main` · lines 85–93 · @fdbb09a
+> **In the repo** · `anulm/inference/sample.py` · `main` · lines 85–93 · @b42998d
 
 ```python
         # Two ways a byte model produces something that is not a byte string:
@@ -466,7 +466,7 @@ used only for the claim in its register row:
 
 The UTF-8 rule as coded here is also checked against Python's encoder.
 
-Repository evidence, all at @fdbb09a:
+Repository evidence, all at @b42998d:
 - `anulm/model.py`: `AnuLMConfig` line 47; `AnuLM.generate` 1171–1179.
 - `anulm/training/train.py`:
   - import of `DOC_SEP` line 28, `FALLBACK` 51–59, `load_bytes` 62–98,
@@ -475,7 +475,7 @@ Repository evidence, all at @fdbb09a:
 - `anulm/bpe.py`: `DOC_SEP` 40–45.
 - `anulm/inference/sample.py`: `main` 70–72 and 85–93.
 - `tests/test_model.py`: `byte_loader_inserts_eos_at_document_boundaries`
-  1430–1448.
+  1595–1613.
 - `docs/RESULTS.md` §2: bytes per character, bits per byte and per character,
   and the decode-error count.
 

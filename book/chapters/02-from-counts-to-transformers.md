@@ -2,7 +2,7 @@
 title: "2 · From counts to transformers"
 part: "I · Foundations"
 accent: slate
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # 2  From counts to transformers
@@ -46,7 +46,7 @@ ladder in 2.3 scores it too.
 
 > **Details.** How `bigram_teacher.py` builds its table:
 >
-> > **In the repo** · `anulm/bigram_teacher.py` · `build_bigram_teacher` · lines 42–51 · @fdbb09a
+> > **In the repo** · `anulm/bigram_teacher.py` · `build_bigram_teacher` · lines 42–51 · @b42998d
 >
 > ```python
 >     V = vocab_size
@@ -82,7 +82,7 @@ learned continuous vectors for words from large corpora [R03]. AnuLM begins
 with a table of vectors and ends with a matrix (Chapter 10 quotes the whole
 constructor):
 
-> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 836–841 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 836–841 · @b42998d
 
 ```python
         self.embed_tokens = nn.Embedding(cfg.vocab_size, cfg.hidden_size)
@@ -95,7 +95,7 @@ constructor):
 With `n_layer = 0` the block list is empty, and the forward pass's loop does
 nothing:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 900–912 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 900–912 · @b42998d
 
 ```python
         aux_total = None
@@ -269,7 +269,7 @@ A **decoder** writes one
 token at a time, each position seeing only earlier ones. GPT-2 was a decoder
 only, trained as a language model on web text [R04]. AnuLM is a decoder too:
 
-> **In the repo** · `anulm/model.py` · `_sdpa` · lines 414–418 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `_sdpa` · lines 414–418 · @b42998d
 
 ```python
 def _sdpa(q, k, v, mask, S, scale, dropout_p):
@@ -284,7 +284,7 @@ position (Chapter 12). Reading one way gives three things: S graded
 predictions per window of S tokens (Chapter 3); generation that is just
 reading one more token; and a past that never changes, so it can be cached:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 470–476 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 470–476 · @b42998d
 
 ```python
         if cache is not None:
@@ -330,7 +330,7 @@ there (`docs/RESULTS.md` §36).
 > follows is masked next-token prediction (MNTP): hide 20% of the tokens and
 > predict each one from the position before it:
 >
-> > **In the repo** · `anulm/bidirectional.py` · `adapt` · lines 82–93 · @fdbb09a
+> > **In the repo** · `anulm/bidirectional.py` · `adapt` · lines 82–93 · @b42998d
 >
 > ```python
 >         masked = torch.rand(x.shape, device=x.device) < a.mask_frac
@@ -405,7 +405,7 @@ used only for the claim in its register row:
 | [S15] | LSTM: gate units keeping error flow constant over long time lags | CHECKED |
 
 
-Repository evidence, all at @fdbb09a:
+Repository evidence, all at @b42998d:
 - `anulm/model.py`: `_sdpa` 414–418; `GQAttention.forward` 470–476, 481;
   `AnuLM.__init__` 836–841; `AnuLM.forward` 900–912.
 - `anulm/bigram_teacher.py`: `build_bigram_teacher` 34–62 (counts 42–51),

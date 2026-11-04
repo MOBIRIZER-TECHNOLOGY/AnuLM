@@ -2,7 +2,7 @@
 title: "22 · The training loop, line by line"
 part: "V · Training"
 accent: teal
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # 22  The training loop, line by line
@@ -19,10 +19,10 @@ repository code**).
 ![Figure 22.1 · The training loop](../figures/fig22-1-loop.svg)
 
 *Figure 22.1 · The training loop.* Setup runs once per invocation; the loop runs
-once per optimiser step. Line numbers are at @fdbb09a.
+once per optimiser step. Line numbers are at @b42998d.
 
 The released run finished under this command (`experiments/v2_train.sh` lines
-24–28 and 32 at @fdbb09a, `$PRESET` expanded). It did not start under it: it
+24–28 and 32 at @b42998d, `$PRESET` expanded). It did not start under it: it
 was planned with `--steps 2750000 --decay-frac 0.2` (the script at commit
 a380a15), and shortened at step 1,590,000 by commit 5c1127c after a week lost
 to a shutdown (22.8):
@@ -40,7 +40,7 @@ python -m anulm train --preset 350m --device cuda --moe-impl grouped --data data
 
 ## 22.2  From a preset and `--cfg` to a model
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 712–732 · @fdbb09a
+> **In the repo** · `anulm/training/train.py` · `main` · lines 712–732 · @b42998d
 
 ```python
     builder = {"30b": AnuLMConfig.nano_30b,
@@ -118,7 +118,7 @@ same parameter line with `device=cuda dtype=torch.bfloat16`, and
 
 ## 22.3  The compile probe, and two names for one model
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 749–772 · @fdbb09a
+> **In the repo** · `anulm/training/train.py` · `main` · lines 749–772 · @b42998d
 
 ```python
     raw_model = model
@@ -160,7 +160,7 @@ released run did not compile (Chapter 23).
 
 ## 22.4  One step: M micro-batches
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 849–873 · @fdbb09a
+> **In the repo** · `anulm/training/train.py` · `main` · lines 849–873 · @b42998d
 
 ```python
     end = min(args.steps, args.stop_at) if args.stop_at else args.steps
@@ -218,7 +218,7 @@ too large.
 
 ## 22.5  Clip, step, and the out-of-band update
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 874–880 · @fdbb09a
+> **In the repo** · `anulm/training/train.py` · `main` · lines 874–880 · @b42998d
 
 ```python
         if args.grad_clip > 0:
@@ -285,7 +285,7 @@ such as plain SGD. Compare gradients, as the test does.
 
 ## 22.6  The log line
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 882–889 · @fdbb09a
+> **In the repo** · `anulm/training/train.py` · `main` · lines 882–889 · @b42998d
 
 ```python
         if step % args.log_every == 0 or step == args.steps - 1:
@@ -322,7 +322,7 @@ Every `--eval-every` steps, and at the last step of an invocation, the loop
 evaluates, saves, and prints one line. The save block, `main` lines 891–905, is
 quoted and taken apart in 25.1; the line it prints is:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 906–908 · @fdbb09a
+> **In the repo** · `anulm/training/train.py` · `main` · lines 906–908 · @b42998d
 
 ```python
             bpb = val / math.log(2) / args.bytes_per_token
@@ -354,7 +354,7 @@ In order:
 
 The schedule is `lr_at`'s warmup-stable-decay branch:
 
-> **In the repo** · `anulm/training/train.py` · `lr_at` · lines 375–391 · @fdbb09a
+> **In the repo** · `anulm/training/train.py` · `lr_at` · lines 375–391 · @b42998d
 
 ```python
 def lr_at(step: int, args, start_step: int = 0) -> float:
@@ -453,9 +453,9 @@ Three things to read off it:
 
 ## 22.9  The proof, and common mistakes
 
-`gradient_accumulation_equals_large_batch` (line 448) runs `tiny()` on 8
+`gradient_accumulation_equals_large_batch` (line 545) runs `tiny()` on 8
 sequences at once and as two halves with `(l / 2).backward()`, and requires
-the gradients to agree within 2·10⁻⁵. It passes at @fdbb09a.
+the gradients to agree within 2·10⁻⁵. It passes at @b42998d.
 
 Two mistakes the loss will not show: reading progress from the train loss,
 whose standard deviation over the last 20 log lines was 0.271; and
@@ -507,12 +507,12 @@ no reason to record the graph and keep activations for it.
 | [R23] | the warmup-stable-decay schedule | CHECKED |
 | [R52] | `torch.compile`, the API the probe calls | CHECKED |
 
-Repository evidence, all at @fdbb09a:
+Repository evidence, all at @b42998d:
 - `anulm/training/train.py`: `main` 536–924 (646, 712–732, 736, 747, 749–772, 849–873, 869,
   874–880, 882–889, 891–908), `lr_at` 375–400, `OptimizerSet.set_lr_scale` 416–420.
 - `anulm/model.py`: `from __future__ import annotations` 23,
   `AnuLM.update_expert_biases` 1071–1101.
-- `tests/test_model.py`: `gradient_accumulation_equals_large_batch` 448.
+- `tests/test_model.py`: `gradient_accumulation_equals_large_batch` 545.
 - `experiments/v2_train.sh` 24–28, 32; its earlier version at a380a15 (`--steps
   2750000 --decay-frac 0.2`) and the shortening commit 5c1127c.
 - The run's log, `v2_train_run.log` (repository root), parsed by

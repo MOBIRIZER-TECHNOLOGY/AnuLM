@@ -2,7 +2,7 @@
 title: "16 · The feed-forward network: SwiGLU"
 part: "IV · Inside the transformer"
 accent: gold
-pinned: "@fdbb09a"
+pinned: "@b42998d"
 ---
 
 # 16  The feed-forward network: SwiGLU
@@ -87,7 +87,7 @@ model.SwiGLU gives tensor([ 1.224, -0.238]) (matches)
 
 ## 16.3  In the code
 
-> **In the repo** · `anulm/model.py` · `SwiGLU` · lines 242–253 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `SwiGLU` · lines 242–253 · @b42998d
 
 ```python
 class SwiGLU(nn.Module):
@@ -155,7 +155,7 @@ upward: close to 0 for very negative g, about g itself for large g (SiLU(4) =
 
 ## 16.4  Three matrices: 3·D·I parameters
 
-> **In the repo** · `anulm/model.py` · `AnuLMConfig` · lines 77–79 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLMConfig` · lines 77–79 · @b42998d
 
 ```python
     moe_intermediate_size: int = 96
@@ -166,7 +166,7 @@ upward: close to 0 for very negative g, about g itself for large g (SiLU(4) =
 These are I<sub>e</sub>, an expert's width; I, layer 0's; and the number of
 dense layers from the bottom. The released model's preset sets I:
 
-> **In the repo** · `anulm/model.py` · `AnuLMConfig.nano_350m` · lines 191–200 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `AnuLMConfig.nano_350m` · lines 191–200 · @b42998d
 
 ```python
         cfg = dict(
@@ -228,7 +228,7 @@ Two readings (*verified*):
 
 ## 16.5  Dense layer 0, and the experts that replace it
 
-> **In the repo** · `anulm/model.py` · `Block.__init__` · lines 809–811 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `Block.__init__` · lines 809–811 · @b42998d
 
 ```python
         # Layer 0 dense, the rest MoE -- first_k_dense_replace = 1 in both models.
@@ -240,7 +240,7 @@ Only layers below `first_k_dense_replace`, here layer 0, get a SwiGLU of width
 I. "Both models" are Sarvam's 30B and 105B, whose configurations set the value
 to 1 [R49]; the repository gives no other reason. Every expert is a SwiGLU:
 
-> **In the repo** · `anulm/model.py` · `MoE.__init__` · lines 688–694 · @fdbb09a
+> **In the repo** · `anulm/model.py` · `MoE.__init__` · lines 688–694 · @b42998d
 
 ```python
         self.experts = nn.ModuleList(
@@ -360,13 +360,16 @@ output scale 0.4609; gate/up swapped: max difference 0.1585; gate transposed: 0.
   (0.5985 against 0.4609), without an error. *Catch it:* test with D ≠ I, where
   the shapes no longer fit.
 - **Swapped `gate_proj` and `up_proj`** changed it by about a third of its
-  scale (0.1585). Both are (I, D), so no shape test sees it. *Catch it:* compare
-  outputs with the source on the same input, as
-  `transformers_wrapper_matches_the_native_model` (`tests/test_model.py`
-  line 1285) does. That test returns early, and counts as a pass, when `transformers` is
-  not installed.
+  scale (0.1585). Both are (I, D), so no shape test sees it, and a model
+  trained from scratch learns just as well either way. *Catch it:* compare the
+  output with the formula, down(silu(gate(x)) · up(x)), as
+  `rmsnorm_and_swiglu_match_their_formulas` (`tests/test_model.py` line 252)
+  does; or with the source on the same input, as
+  `transformers_wrapper_matches_the_native_model` (line 1450) does. That second
+  test returns early, and counts as a pass, when `transformers` is not
+  installed.
 - **A projection built but never used** still lets the loss fall. *Catch it:*
-  `all_parameters_receive_gradients` (`tests/test_model.py` line 336).
+  `all_parameters_receive_gradients` (`tests/test_model.py` line 415).
 
 `IN THE REPO`
 
@@ -420,12 +423,13 @@ used only for the claim in its register row:
 | [R49] | Sarvam's 30B and 105B configurations, which set `first_k_dense_replace` to 1 | CHECKED |
 | [S04] | the GELU activation | CHECKED |
 
-Repository evidence, all at @fdbb09a:
+Repository evidence, all at @b42998d:
 - `anulm/model.py`: `AnuLMConfig` 77–79, `nano_30b` line 166, `nano_350m` 191–200,
   `nano_105b` line 213; `SwiGLU` 242–253, `MoE.__init__` 688–694,
   `Block.__init__` 809–811, `AnuLM.__init__` 860–863.
-- `tests/test_model.py`: `all_parameters_receive_gradients` 336,
-  `transformers_wrapper_matches_the_native_model` 1285.
+- `tests/test_model.py`: `rmsnorm_and_swiglu_match_their_formulas` 252,
+  `all_parameters_receive_gradients` 415,
+  `transformers_wrapper_matches_the_native_model` 1450.
 - `sarvam/sarvam-30b/config.json`, `sarvam/sarvam-105b/config.json`:
   `first_k_dense_replace`.
 - `docs/RESULTS.md`, "The two presets".

@@ -1,0 +1,190 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 400" role="img" aria-labelledby="t d" class="figure-svg">
+<title id="t">Figure 37.3 · The November run: every task but chat improved</title>
+<desc id="d">Seven lines of held-out loss divided by step-0 loss over 12,500 steps of eight batches. Chat rises slowly from 1.02 at step 625 to 1.09 at step 12,500; reading ends at 0.36, VQA 0.50, captions 0.38, Hindi speech 0.15, English speech 0.05, intents 0.02. The dashed score falls to 0.365; the kept checkpoint is step 9,375, where the score is 0.3643 and chat 1.087.</desc>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Held-out loss ÷ step-0 loss, per task, in the November run</text>
+<text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">ckpt_omni_curve.csv · 8 batches per step, lr 2.5e-5, chat weight 0.25 · lower is better</text>
+<line x1="70.0" y1="340.0" x2="600.0" y2="340.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="344.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0.00</text>
+<line x1="70.0" y1="283.8" x2="600.0" y2="283.8" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="287.8" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0.25</text>
+<line x1="70.0" y1="227.5" x2="600.0" y2="227.5" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="231.5" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0.50</text>
+<line x1="70.0" y1="171.2" x2="600.0" y2="171.2" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="62.0" y="175.2" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">0.75</text>
+<line x1="70.0" y1="115.0" x2="600.0" y2="115.0" stroke="#17262E" class="f-ink-stroke" stroke-width="1" stroke-dasharray="3 3"/>
+<text x="62.0" y="119.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">1.00</text>
+<text x="70.0" y="358.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">0</text>
+<text x="176.0" y="358.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">2,500</text>
+<text x="282.0" y="358.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">5,000</text>
+<text x="388.0" y="358.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">7,500</text>
+<text x="494.0" y="358.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">10,000</text>
+<text x="600.0" y="358.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">12,500</text>
+<text x="335.0" y="376.0" class="f-muted" fill="#5E6E72" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="middle">optimiser step (each sums 8 batches)</text>
+<line x1="467.5" y1="66.0" x2="467.5" y2="340.0" stroke="#7B5E8E" class="f-plum-stroke" stroke-width="1.5" stroke-dasharray="2 3"/>
+<text x="467.5" y="62.0" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="middle">kept: step 9,375, score 0.3643</text>
+<polyline points="70.0,115.0 96.5,110.2 123.0,108.4 149.5,106.7 176.0,105.6 202.5,103.1 229.0,101.8 255.5,100.5 282.0,100.5 308.5,98.9 335.0,98.1 361.5,97.5 388.0,96.4 414.5,96.3 441.0,95.9 467.5,95.5 494.0,95.2 520.5,94.3 547.0,94.3 573.5,94.3 600.0,93.9" fill="none" stroke="#C4532F" class="f-coral-stroke" stroke-width="3"/>
+<circle cx="70.0" cy="115.0" r="3" fill="#C4532F" class="f-coral"><title>chat at step 0: 1.000</title></circle>
+<circle cx="96.5" cy="110.2" r="3" fill="#C4532F" class="f-coral"><title>chat at step 625: 1.022</title></circle>
+<circle cx="123.0" cy="108.4" r="3" fill="#C4532F" class="f-coral"><title>chat at step 1250: 1.029</title></circle>
+<circle cx="149.5" cy="106.7" r="3" fill="#C4532F" class="f-coral"><title>chat at step 1875: 1.037</title></circle>
+<circle cx="176.0" cy="105.6" r="3" fill="#C4532F" class="f-coral"><title>chat at step 2500: 1.042</title></circle>
+<circle cx="202.5" cy="103.1" r="3" fill="#C4532F" class="f-coral"><title>chat at step 3125: 1.053</title></circle>
+<circle cx="229.0" cy="101.8" r="3" fill="#C4532F" class="f-coral"><title>chat at step 3750: 1.058</title></circle>
+<circle cx="255.5" cy="100.5" r="3" fill="#C4532F" class="f-coral"><title>chat at step 4375: 1.065</title></circle>
+<circle cx="282.0" cy="100.5" r="3" fill="#C4532F" class="f-coral"><title>chat at step 5000: 1.065</title></circle>
+<circle cx="308.5" cy="98.9" r="3" fill="#C4532F" class="f-coral"><title>chat at step 5625: 1.071</title></circle>
+<circle cx="335.0" cy="98.1" r="3" fill="#C4532F" class="f-coral"><title>chat at step 6250: 1.075</title></circle>
+<circle cx="361.5" cy="97.5" r="3" fill="#C4532F" class="f-coral"><title>chat at step 6875: 1.078</title></circle>
+<circle cx="388.0" cy="96.4" r="3" fill="#C4532F" class="f-coral"><title>chat at step 7500: 1.083</title></circle>
+<circle cx="414.5" cy="96.3" r="3" fill="#C4532F" class="f-coral"><title>chat at step 8125: 1.083</title></circle>
+<circle cx="441.0" cy="95.9" r="3" fill="#C4532F" class="f-coral"><title>chat at step 8750: 1.085</title></circle>
+<circle cx="467.5" cy="95.5" r="3" fill="#C4532F" class="f-coral"><title>chat at step 9375: 1.087</title></circle>
+<circle cx="494.0" cy="95.2" r="3" fill="#C4532F" class="f-coral"><title>chat at step 10000: 1.088</title></circle>
+<circle cx="520.5" cy="94.3" r="3" fill="#C4532F" class="f-coral"><title>chat at step 10625: 1.092</title></circle>
+<circle cx="547.0" cy="94.3" r="3" fill="#C4532F" class="f-coral"><title>chat at step 11250: 1.092</title></circle>
+<circle cx="573.5" cy="94.3" r="3" fill="#C4532F" class="f-coral"><title>chat at step 11875: 1.092</title></circle>
+<circle cx="600.0" cy="93.9" r="3" fill="#C4532F" class="f-coral"><title>chat at step 12500: 1.094</title></circle>
+<text x="610.0" y="97.9" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">chat 1.09</text>
+<polyline points="70.0,115.0 96.5,238.3 123.0,241.9 149.5,246.1 176.0,248.4 202.5,249.2 229.0,248.7 255.5,250.2 282.0,250.4 308.5,253.1 335.0,253.7 361.5,256.0 388.0,255.3 414.5,257.2 441.0,256.9 467.5,257.7 494.0,239.7 520.5,258.6 547.0,258.5 573.5,258.7 600.0,258.9" fill="none" stroke="#56676C" class="f-slate-stroke" stroke-width="1.2" stroke-opacity="0.7"/>
+<circle cx="70.0" cy="115.0" r="2" fill="#56676C" class="f-slate"><title>read at step 0: 1.000</title></circle>
+<circle cx="96.5" cy="238.3" r="2" fill="#56676C" class="f-slate"><title>read at step 625: 0.452</title></circle>
+<circle cx="123.0" cy="241.9" r="2" fill="#56676C" class="f-slate"><title>read at step 1250: 0.436</title></circle>
+<circle cx="149.5" cy="246.1" r="2" fill="#56676C" class="f-slate"><title>read at step 1875: 0.417</title></circle>
+<circle cx="176.0" cy="248.4" r="2" fill="#56676C" class="f-slate"><title>read at step 2500: 0.407</title></circle>
+<circle cx="202.5" cy="249.2" r="2" fill="#56676C" class="f-slate"><title>read at step 3125: 0.404</title></circle>
+<circle cx="229.0" cy="248.7" r="2" fill="#56676C" class="f-slate"><title>read at step 3750: 0.406</title></circle>
+<circle cx="255.5" cy="250.2" r="2" fill="#56676C" class="f-slate"><title>read at step 4375: 0.399</title></circle>
+<circle cx="282.0" cy="250.4" r="2" fill="#56676C" class="f-slate"><title>read at step 5000: 0.398</title></circle>
+<circle cx="308.5" cy="253.1" r="2" fill="#56676C" class="f-slate"><title>read at step 5625: 0.386</title></circle>
+<circle cx="335.0" cy="253.7" r="2" fill="#56676C" class="f-slate"><title>read at step 6250: 0.384</title></circle>
+<circle cx="361.5" cy="256.0" r="2" fill="#56676C" class="f-slate"><title>read at step 6875: 0.373</title></circle>
+<circle cx="388.0" cy="255.3" r="2" fill="#56676C" class="f-slate"><title>read at step 7500: 0.376</title></circle>
+<circle cx="414.5" cy="257.2" r="2" fill="#56676C" class="f-slate"><title>read at step 8125: 0.368</title></circle>
+<circle cx="441.0" cy="256.9" r="2" fill="#56676C" class="f-slate"><title>read at step 8750: 0.369</title></circle>
+<circle cx="467.5" cy="257.7" r="2" fill="#56676C" class="f-slate"><title>read at step 9375: 0.366</title></circle>
+<circle cx="494.0" cy="239.7" r="2" fill="#56676C" class="f-slate"><title>read at step 10000: 0.446</title></circle>
+<circle cx="520.5" cy="258.6" r="2" fill="#56676C" class="f-slate"><title>read at step 10625: 0.362</title></circle>
+<circle cx="547.0" cy="258.5" r="2" fill="#56676C" class="f-slate"><title>read at step 11250: 0.362</title></circle>
+<circle cx="573.5" cy="258.7" r="2" fill="#56676C" class="f-slate"><title>read at step 11875: 0.361</title></circle>
+<circle cx="600.0" cy="258.9" r="2" fill="#56676C" class="f-slate"><title>read at step 12500: 0.360</title></circle>
+<text x="610.0" y="252.9" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">read 0.36</text>
+<polyline points="70.0,115.0 96.5,323.6 123.0,329.5 149.5,332.3 176.0,333.1 202.5,333.3 229.0,334.1 255.5,333.8 282.0,333.6 308.5,334.4 335.0,334.4 361.5,334.8 388.0,334.9 414.5,334.7 441.0,334.3 467.5,335.0 494.0,335.0 520.5,334.9 547.0,334.7 573.5,335.1 600.0,335.0" fill="none" stroke="#56676C" class="f-slate-stroke" stroke-width="1.2" stroke-opacity="0.7"/>
+<circle cx="70.0" cy="115.0" r="2" fill="#56676C" class="f-slate"><title>intent at step 0: 1.000</title></circle>
+<circle cx="96.5" cy="323.6" r="2" fill="#56676C" class="f-slate"><title>intent at step 625: 0.073</title></circle>
+<circle cx="123.0" cy="329.5" r="2" fill="#56676C" class="f-slate"><title>intent at step 1250: 0.047</title></circle>
+<circle cx="149.5" cy="332.3" r="2" fill="#56676C" class="f-slate"><title>intent at step 1875: 0.034</title></circle>
+<circle cx="176.0" cy="333.1" r="2" fill="#56676C" class="f-slate"><title>intent at step 2500: 0.031</title></circle>
+<circle cx="202.5" cy="333.3" r="2" fill="#56676C" class="f-slate"><title>intent at step 3125: 0.030</title></circle>
+<circle cx="229.0" cy="334.1" r="2" fill="#56676C" class="f-slate"><title>intent at step 3750: 0.026</title></circle>
+<circle cx="255.5" cy="333.8" r="2" fill="#56676C" class="f-slate"><title>intent at step 4375: 0.028</title></circle>
+<circle cx="282.0" cy="333.6" r="2" fill="#56676C" class="f-slate"><title>intent at step 5000: 0.028</title></circle>
+<circle cx="308.5" cy="334.4" r="2" fill="#56676C" class="f-slate"><title>intent at step 5625: 0.025</title></circle>
+<circle cx="335.0" cy="334.4" r="2" fill="#56676C" class="f-slate"><title>intent at step 6250: 0.025</title></circle>
+<circle cx="361.5" cy="334.8" r="2" fill="#56676C" class="f-slate"><title>intent at step 6875: 0.023</title></circle>
+<circle cx="388.0" cy="334.9" r="2" fill="#56676C" class="f-slate"><title>intent at step 7500: 0.023</title></circle>
+<circle cx="414.5" cy="334.7" r="2" fill="#56676C" class="f-slate"><title>intent at step 8125: 0.024</title></circle>
+<circle cx="441.0" cy="334.3" r="2" fill="#56676C" class="f-slate"><title>intent at step 8750: 0.025</title></circle>
+<circle cx="467.5" cy="335.0" r="2" fill="#56676C" class="f-slate"><title>intent at step 9375: 0.022</title></circle>
+<circle cx="494.0" cy="335.0" r="2" fill="#56676C" class="f-slate"><title>intent at step 10000: 0.022</title></circle>
+<circle cx="520.5" cy="334.9" r="2" fill="#56676C" class="f-slate"><title>intent at step 10625: 0.023</title></circle>
+<circle cx="547.0" cy="334.7" r="2" fill="#56676C" class="f-slate"><title>intent at step 11250: 0.024</title></circle>
+<circle cx="573.5" cy="335.1" r="2" fill="#56676C" class="f-slate"><title>intent at step 11875: 0.022</title></circle>
+<circle cx="600.0" cy="335.0" r="2" fill="#56676C" class="f-slate"><title>intent at step 12500: 0.022</title></circle>
+<text x="610.0" y="343.0" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">intent 0.02</text>
+<polyline points="70.0,115.0 96.5,315.3 123.0,319.6 149.5,322.4 176.0,323.5 202.5,325.2 229.0,326.1 255.5,326.7 282.0,327.0 308.5,327.2 335.0,327.8 361.5,327.9 388.0,327.9 414.5,328.3 441.0,328.4 467.5,328.6 494.0,328.9 520.5,329.0 547.0,329.1 573.5,329.2 600.0,329.2" fill="none" stroke="#56676C" class="f-slate-stroke" stroke-width="1.2" stroke-opacity="0.7"/>
+<circle cx="70.0" cy="115.0" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 0: 1.000</title></circle>
+<circle cx="96.5" cy="315.3" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 625: 0.110</title></circle>
+<circle cx="123.0" cy="319.6" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 1250: 0.091</title></circle>
+<circle cx="149.5" cy="322.4" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 1875: 0.078</title></circle>
+<circle cx="176.0" cy="323.5" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 2500: 0.073</title></circle>
+<circle cx="202.5" cy="325.2" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 3125: 0.066</title></circle>
+<circle cx="229.0" cy="326.1" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 3750: 0.062</title></circle>
+<circle cx="255.5" cy="326.7" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 4375: 0.059</title></circle>
+<circle cx="282.0" cy="327.0" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 5000: 0.058</title></circle>
+<circle cx="308.5" cy="327.2" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 5625: 0.057</title></circle>
+<circle cx="335.0" cy="327.8" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 6250: 0.054</title></circle>
+<circle cx="361.5" cy="327.9" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 6875: 0.054</title></circle>
+<circle cx="388.0" cy="327.9" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 7500: 0.054</title></circle>
+<circle cx="414.5" cy="328.3" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 8125: 0.052</title></circle>
+<circle cx="441.0" cy="328.4" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 8750: 0.052</title></circle>
+<circle cx="467.5" cy="328.6" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 9375: 0.051</title></circle>
+<circle cx="494.0" cy="328.9" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 10000: 0.050</title></circle>
+<circle cx="520.5" cy="329.0" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 10625: 0.049</title></circle>
+<circle cx="547.0" cy="329.1" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 11250: 0.048</title></circle>
+<circle cx="573.5" cy="329.2" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 11875: 0.048</title></circle>
+<circle cx="600.0" cy="329.2" r="2" fill="#56676C" class="f-slate"><title>asr_en at step 12500: 0.048</title></circle>
+<text x="610.0" y="327.2" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">asr_en 0.05</text>
+<polyline points="70.0,115.0 96.5,282.9 123.0,289.8 149.5,293.6 176.0,295.7 202.5,297.6 229.0,298.7 255.5,298.8 282.0,300.0 308.5,300.4 335.0,301.7 361.5,302.0 388.0,303.0 414.5,303.4 441.0,304.0 467.5,304.6 494.0,304.7 520.5,305.3 547.0,305.3 573.5,305.4 600.0,305.7" fill="none" stroke="#56676C" class="f-slate-stroke" stroke-width="1.2" stroke-opacity="0.7"/>
+<circle cx="70.0" cy="115.0" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 0: 1.000</title></circle>
+<circle cx="96.5" cy="282.9" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 625: 0.254</title></circle>
+<circle cx="123.0" cy="289.8" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 1250: 0.223</title></circle>
+<circle cx="149.5" cy="293.6" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 1875: 0.206</title></circle>
+<circle cx="176.0" cy="295.7" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 2500: 0.197</title></circle>
+<circle cx="202.5" cy="297.6" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 3125: 0.188</title></circle>
+<circle cx="229.0" cy="298.7" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 3750: 0.184</title></circle>
+<circle cx="255.5" cy="298.8" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 4375: 0.183</title></circle>
+<circle cx="282.0" cy="300.0" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 5000: 0.178</title></circle>
+<circle cx="308.5" cy="300.4" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 5625: 0.176</title></circle>
+<circle cx="335.0" cy="301.7" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 6250: 0.170</title></circle>
+<circle cx="361.5" cy="302.0" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 6875: 0.169</title></circle>
+<circle cx="388.0" cy="303.0" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 7500: 0.165</title></circle>
+<circle cx="414.5" cy="303.4" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 8125: 0.163</title></circle>
+<circle cx="441.0" cy="304.0" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 8750: 0.160</title></circle>
+<circle cx="467.5" cy="304.6" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 9375: 0.158</title></circle>
+<circle cx="494.0" cy="304.7" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 10000: 0.157</title></circle>
+<circle cx="520.5" cy="305.3" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 10625: 0.154</title></circle>
+<circle cx="547.0" cy="305.3" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 11250: 0.154</title></circle>
+<circle cx="573.5" cy="305.4" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 11875: 0.154</title></circle>
+<circle cx="600.0" cy="305.7" r="2" fill="#56676C" class="f-slate"><title>asr_hi at step 12500: 0.153</title></circle>
+<text x="610.0" y="309.7" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">asr_hi 0.15</text>
+<polyline points="70.0,115.0 96.5,235.3 123.0,240.5 149.5,243.5 176.0,245.4 202.5,247.3 229.0,248.5 255.5,249.9 282.0,250.7 308.5,251.8 335.0,252.0 361.5,252.5 388.0,252.8 414.5,253.3 441.0,253.6 467.5,254.1 494.0,254.3 520.5,254.1 547.0,254.4 573.5,254.5 600.0,254.5" fill="none" stroke="#56676C" class="f-slate-stroke" stroke-width="1.2" stroke-opacity="0.7"/>
+<circle cx="70.0" cy="115.0" r="2" fill="#56676C" class="f-slate"><title>caption at step 0: 1.000</title></circle>
+<circle cx="96.5" cy="235.3" r="2" fill="#56676C" class="f-slate"><title>caption at step 625: 0.466</title></circle>
+<circle cx="123.0" cy="240.5" r="2" fill="#56676C" class="f-slate"><title>caption at step 1250: 0.442</title></circle>
+<circle cx="149.5" cy="243.5" r="2" fill="#56676C" class="f-slate"><title>caption at step 1875: 0.429</title></circle>
+<circle cx="176.0" cy="245.4" r="2" fill="#56676C" class="f-slate"><title>caption at step 2500: 0.420</title></circle>
+<circle cx="202.5" cy="247.3" r="2" fill="#56676C" class="f-slate"><title>caption at step 3125: 0.412</title></circle>
+<circle cx="229.0" cy="248.5" r="2" fill="#56676C" class="f-slate"><title>caption at step 3750: 0.406</title></circle>
+<circle cx="255.5" cy="249.9" r="2" fill="#56676C" class="f-slate"><title>caption at step 4375: 0.401</title></circle>
+<circle cx="282.0" cy="250.7" r="2" fill="#56676C" class="f-slate"><title>caption at step 5000: 0.397</title></circle>
+<circle cx="308.5" cy="251.8" r="2" fill="#56676C" class="f-slate"><title>caption at step 5625: 0.392</title></circle>
+<circle cx="335.0" cy="252.0" r="2" fill="#56676C" class="f-slate"><title>caption at step 6250: 0.391</title></circle>
+<circle cx="361.5" cy="252.5" r="2" fill="#56676C" class="f-slate"><title>caption at step 6875: 0.389</title></circle>
+<circle cx="388.0" cy="252.8" r="2" fill="#56676C" class="f-slate"><title>caption at step 7500: 0.388</title></circle>
+<circle cx="414.5" cy="253.3" r="2" fill="#56676C" class="f-slate"><title>caption at step 8125: 0.385</title></circle>
+<circle cx="441.0" cy="253.6" r="2" fill="#56676C" class="f-slate"><title>caption at step 8750: 0.384</title></circle>
+<circle cx="467.5" cy="254.1" r="2" fill="#56676C" class="f-slate"><title>caption at step 9375: 0.382</title></circle>
+<circle cx="494.0" cy="254.3" r="2" fill="#56676C" class="f-slate"><title>caption at step 10000: 0.381</title></circle>
+<circle cx="520.5" cy="254.1" r="2" fill="#56676C" class="f-slate"><title>caption at step 10625: 0.382</title></circle>
+<circle cx="547.0" cy="254.4" r="2" fill="#56676C" class="f-slate"><title>caption at step 11250: 0.381</title></circle>
+<circle cx="573.5" cy="254.5" r="2" fill="#56676C" class="f-slate"><title>caption at step 11875: 0.380</title></circle>
+<circle cx="600.0" cy="254.5" r="2" fill="#56676C" class="f-slate"><title>caption at step 12500: 0.380</title></circle>
+<text x="610.0" y="266.5" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">caption 0.38</text>
+<polyline points="70.0,115.0 96.5,214.1 123.0,218.4 149.5,220.1 176.0,221.4 202.5,223.2 229.0,224.8 255.5,226.1 282.0,226.4 308.5,227.4 335.0,228.2 361.5,229.0 388.0,229.3 414.5,229.7 441.0,230.4 467.5,230.8 494.0,230.6 520.5,229.5 547.0,228.4 573.5,229.0 600.0,228.2" fill="none" stroke="#56676C" class="f-slate-stroke" stroke-width="1.2" stroke-opacity="0.7"/>
+<circle cx="70.0" cy="115.0" r="2" fill="#56676C" class="f-slate"><title>vqa at step 0: 1.000</title></circle>
+<circle cx="96.5" cy="214.1" r="2" fill="#56676C" class="f-slate"><title>vqa at step 625: 0.559</title></circle>
+<circle cx="123.0" cy="218.4" r="2" fill="#56676C" class="f-slate"><title>vqa at step 1250: 0.540</title></circle>
+<circle cx="149.5" cy="220.1" r="2" fill="#56676C" class="f-slate"><title>vqa at step 1875: 0.533</title></circle>
+<circle cx="176.0" cy="221.4" r="2" fill="#56676C" class="f-slate"><title>vqa at step 2500: 0.527</title></circle>
+<circle cx="202.5" cy="223.2" r="2" fill="#56676C" class="f-slate"><title>vqa at step 3125: 0.519</title></circle>
+<circle cx="229.0" cy="224.8" r="2" fill="#56676C" class="f-slate"><title>vqa at step 3750: 0.512</title></circle>
+<circle cx="255.5" cy="226.1" r="2" fill="#56676C" class="f-slate"><title>vqa at step 4375: 0.506</title></circle>
+<circle cx="282.0" cy="226.4" r="2" fill="#56676C" class="f-slate"><title>vqa at step 5000: 0.505</title></circle>
+<circle cx="308.5" cy="227.4" r="2" fill="#56676C" class="f-slate"><title>vqa at step 5625: 0.501</title></circle>
+<circle cx="335.0" cy="228.2" r="2" fill="#56676C" class="f-slate"><title>vqa at step 6250: 0.497</title></circle>
+<circle cx="361.5" cy="229.0" r="2" fill="#56676C" class="f-slate"><title>vqa at step 6875: 0.493</title></circle>
+<circle cx="388.0" cy="229.3" r="2" fill="#56676C" class="f-slate"><title>vqa at step 7500: 0.492</title></circle>
+<circle cx="414.5" cy="229.7" r="2" fill="#56676C" class="f-slate"><title>vqa at step 8125: 0.490</title></circle>
+<circle cx="441.0" cy="230.4" r="2" fill="#56676C" class="f-slate"><title>vqa at step 8750: 0.487</title></circle>
+<circle cx="467.5" cy="230.8" r="2" fill="#56676C" class="f-slate"><title>vqa at step 9375: 0.485</title></circle>
+<circle cx="494.0" cy="230.6" r="2" fill="#56676C" class="f-slate"><title>vqa at step 10000: 0.486</title></circle>
+<circle cx="520.5" cy="229.5" r="2" fill="#56676C" class="f-slate"><title>vqa at step 10625: 0.491</title></circle>
+<circle cx="547.0" cy="228.4" r="2" fill="#56676C" class="f-slate"><title>vqa at step 11250: 0.496</title></circle>
+<circle cx="573.5" cy="229.0" r="2" fill="#56676C" class="f-slate"><title>vqa at step 11875: 0.493</title></circle>
+<circle cx="600.0" cy="228.2" r="2" fill="#56676C" class="f-slate"><title>vqa at step 12500: 0.497</title></circle>
+<text x="610.0" y="232.2" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">vqa 0.50</text>
+<polyline points="70.0,115.0 96.5,245.7 123.0,249.7 149.5,252.1 176.0,253.3 202.5,254.1 229.0,254.7 255.5,255.1 282.0,255.5 308.5,256.1 335.0,256.6 361.5,257.1 388.0,257.1 414.5,257.6 441.0,257.6 467.5,258.0 494.0,255.5 520.5,257.9 547.0,257.8 573.5,258.0 600.0,257.9" fill="none" stroke="#7B5E8E" class="f-plum-stroke" stroke-width="3" stroke-dasharray="7 4"/>
+<text x="610.0" y="278.9" class="f-ink" fill="#17262E" font-size="11" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">score 0.365</text>
+<text x="133.6" y="80.7" class="f-ink" fill="#17262E" font-size="11.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="start">chat: 1.02 at the first evaluation, 1.09 at the last</text>
+</svg>

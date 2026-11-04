@@ -290,7 +290,7 @@ extension (§3.3) was withdrawn by its writer. Both are recorded in `technical-r
 ## 7. Research and implementation
 
 The **Repository** column comes from `REPOSITORY_SOURCE_MAP.md`, read at
-`@fdbb09a`, and is verified. The paper side of each difference was confirmed
+`@b42998d`, and is verified. The paper side of each difference was confirmed
 against the source in Stage 3 (2026-10-31); the claim it rests on is in that
 reference's row.
 
