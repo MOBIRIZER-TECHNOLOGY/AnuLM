@@ -138,6 +138,8 @@ train a model or download one. Then `docs/TUTORIAL.md` goes from an empty
 machine to every checkpoint in this repository, with the time, disk and
 number to expect at each step.
 
+To train AnuLM-Omni-400M yourself, from a toy model up to pretraining your own base, follow [docs/TRAIN_FROM_SCRATCH.md](docs/TRAIN_FROM_SCRATCH.md).
+
 `30b` and `105b` run on CPU; `350m` needs a GPU (8 GB is enough with
 `--grad-ckpt`; every 350M-class run here used an RTX 5050 and then an RTX
 5070 Ti). If you have an NVIDIA card, install the CUDA wheel — the default

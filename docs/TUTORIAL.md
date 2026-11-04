@@ -339,3 +339,7 @@ not the hardware.
 - **Resuming after a crash**: run the same script again; it finds
   `<ckpt>.last` and continues. `python -m tools.update_tasks` prints the step
   of the latest save.
+
+## Next step
+
+Train AnuLM-Omni-400M yourself, from the released base or from nothing: [TRAIN_FROM_SCRATCH.md](TRAIN_FROM_SCRATCH.md).
