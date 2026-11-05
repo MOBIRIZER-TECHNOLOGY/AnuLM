@@ -24,7 +24,7 @@ target is a goal, not a result. Update the status column as work lands.
 | Area | Now | Target | Plan | Status |
 |---|---|---|---|---|
 | Model selection | the combined score kept a checkpoint whose chat got worse | never keep a checkpoint that fails a gate | keep the best checkpoint among those within the chat gate (`--max-ratio`) | done |
-| Release | not published: 6 of 7 gates (run b); the 5% blend passes 7 of 7 before export, chat by 0.001 | all 7 gates, on the exported copy too, with a margin | export, re-run every gate (reading included), publish only with approval | after the chat fix |
+| Release | not published: 6 of 7 gates (run b); the 5% blend passes 7 of 7, exported copy included (chat 3.2985, by 0.0015) | all 7 gates, on the exported copy too, with a margin | export, re-run every gate (reading included), publish only with approval | after the chat fix |
 | Demo | 117 one-click samples, CPU-checked; Benchmark tab records the old separate models | GPU-checked; Benchmark re-recorded with Omni | `experiments/demo_samples_check.py` on GPU; re-record; Chat tab keeps code lines | Chat tab done |
 | Landing page | `site/index.html` drafted | live on GitHub Pages and a Hugging Face Space | publish with the release, with approval | waiting on release |
 | Training reliability | GPU shared with other apps: 13% slower, one out-of-memory crash | the GPU to itself | quit other GPU apps during runs; the pipeline waits for a free GPU | ongoing |

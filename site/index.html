@@ -3,309 +3,269 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AnuLM-Omni-400M</title>
-<meta name="description" content="One open 456M model that listens, looks, reads, routes and chats in English and Hindi. Trained from scratch on one consumer GPU, only on commercially usable data.">
+<title>AnuLM-Omni-400M: one open model that listens, looks, reads, routes and chats</title>
+<meta name="description" content="AnuLM-Omni-400M is one open 456M-parameter model for English and Hindi: speech recognition, photo captions and questions, answers from Wikipedia, intent routing and chat. Pretrained from scratch on one consumer GPU, trained only on commercially usable data.">
 <meta name="color-scheme" content="light dark">
-<style>
-:root {
-  --bg: #fbfaf7;
-  --surface: #ffffff;
-  --surface-2: #f2f0ea;
-  --text: #1b1f23;
-  --muted: #545d68;
-  --border: #dedad0;
-  --accent: #0a6464;
-  --accent-text: #ffffff;
-  --accent-soft: #e2f0ef;
-  --warn: #8a4a05;
-  --warn-soft: #fbeedd;
-  --ok: #1d6b33;
-  --code-bg: #f2f0ea;
-  --shadow: 0 1px 2px rgba(0, 0, 0, .05);
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0f1214;
-    --surface: #171b1e;
-    --surface-2: #1e2327;
-    --text: #e8eaed;
-    --muted: #a7b0ba;
-    --border: #2d343a;
-    --accent: #63c7c4;
-    --accent-text: #0f1214;
-    --accent-soft: #15302f;
-    --warn: #f2b06b;
-    --warn-soft: #33250f;
-    --ok: #7fd49a;
-    --code-bg: #1e2327;
-    --shadow: none;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #0f1214;
-  --surface: #171b1e;
-  --surface-2: #1e2327;
-  --text: #e8eaed;
-  --muted: #a7b0ba;
-  --border: #2d343a;
-  --accent: #63c7c4;
-  --accent-text: #0f1214;
-  --accent-soft: #15302f;
-  --warn: #f2b06b;
-  --warn-soft: #33250f;
-  --ok: #7fd49a;
-  --code-bg: #1e2327;
-  --shadow: none;
-}
-*, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Devanagari", "Nirmala UI", sans-serif;
-  overflow-wrap: break-word;
-}
-a { color: var(--accent); text-underline-offset: 2px; }
-a:hover { text-decoration-thickness: 2px; }
-a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
-img, audio { max-width: 100%; }
-img { height: auto; display: block; border-radius: 6px; }
-code, pre { font-family: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace; font-size: .88em; }
-code { background: var(--code-bg); padding: .1em .35em; border-radius: 4px; }
-pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; overflow-x: auto; line-height: 1.5; }
-pre code { background: none; padding: 0; }
-.wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
-.skip { position: absolute; left: -9999px; }
-.skip:focus { left: 16px; top: 8px; background: var(--surface); padding: 6px 10px; z-index: 10; }
-
-header.top { border-bottom: 1px solid var(--border); }
-header.top .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 20px; padding-top: 12px; padding-bottom: 12px; }
-.brand { font-weight: 700; color: var(--text); text-decoration: none; letter-spacing: -.01em; }
-nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: .94em; }
-nav a { color: var(--muted); text-decoration: none; }
-nav a:hover { color: var(--text); text-decoration: underline; }
-
-section { padding: 48px 0; border-bottom: 1px solid var(--border); }
-section:last-of-type { border-bottom: 0; }
-h1, h2, h3 { line-height: 1.2; letter-spacing: -.015em; }
-h1 { font-size: clamp(2rem, 5vw, 3.1rem); margin: 0 0 16px; }
-h2 { font-size: clamp(1.45rem, 3.2vw, 1.9rem); margin: 0 0 12px; }
-h3 { font-size: 1.12rem; margin: 0 0 6px; }
-.lede { font-size: 1.15em; color: var(--muted); max-width: 46em; margin: 0 0 20px; }
-.intro { color: var(--muted); max-width: 46em; margin-top: 0; }
-.eyebrow { text-transform: uppercase; font-size: .78em; letter-spacing: .08em; color: var(--accent); font-weight: 700; margin: 0 0 10px; }
-
-.hero { padding-top: 56px; }
-.facts { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 24px; padding: 0; list-style: none; }
-.facts li { background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; font-size: .9em; }
-.cta { display: flex; flex-wrap: wrap; gap: 12px; }
-.btn { display: inline-block; padding: 10px 18px; border-radius: 8px; font-weight: 600; text-decoration: none; border: 1px solid var(--accent); }
-.btn.primary { background: var(--accent); color: var(--accent-text); }
-.btn.ghost { color: var(--accent); background: transparent; }
-.status { margin-top: 24px; padding: 12px 16px; border-left: 4px solid var(--warn); background: var(--warn-soft); border-radius: 0 8px 8px 0; max-width: 46em; }
-.status strong { color: var(--warn); }
-
-.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(290px, 100%), 1fr)); }
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; box-shadow: var(--shadow); min-width: 0; }
-.card h3 { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-.metric { font-size: .82em; font-weight: 600; color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 2px 10px; white-space: nowrap; }
-.metric.weak { color: var(--warn); background: var(--warn-soft); }
-.card p { margin: 6px 0; }
-.sample { margin-top: 12px; border-top: 1px dashed var(--border); padding-top: 12px; font-size: .94em; }
-.sample dl { margin: 8px 0 0; display: grid; grid-template-columns: max-content 1fr; gap: 4px 10px; }
-.sample dt { color: var(--muted); font-size: .9em; }
-.sample dd { margin: 0; min-width: 0; }
-.sample .miss { color: var(--warn); font-weight: 600; }
-.credit { font-size: .8em; color: var(--muted); margin-top: 8px; }
-figure { margin: 0; }
-
-.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
-table { border-collapse: collapse; width: 100%; font-size: .93em; }
-th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
-thead th { background: var(--surface-2); font-weight: 600; }
-tbody tr:last-child td { border-bottom: 0; }
-td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
-.pass { color: var(--ok); font-weight: 600; }
-.fail { color: var(--warn); font-weight: 700; }
-.note { color: var(--muted); font-size: .9em; max-width: 52em; }
-
-.flow { display: grid; gap: 10px; grid-template-columns: 1fr; margin: 18px 0; }
-.lane { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.box { border: 1px solid var(--border); background: var(--surface); border-radius: 8px; padding: 6px 10px; font-size: .9em; }
-.box.frozen { border-style: dashed; color: var(--muted); }
-.box.ours { border-color: var(--accent); background: var(--accent-soft); }
-.box.core { border: 2px solid var(--accent); background: var(--accent-soft); font-weight: 700; }
-.arrow { color: var(--muted); }
-.legend { font-size: .85em; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 16px; }
-
-ul.plain { padding-left: 1.2em; }
-ul.plain li { margin: 4px 0; }
-.soon { color: var(--muted); font-style: italic; }
-footer { padding: 28px 0 48px; color: var(--muted); font-size: .9em; }
-</style>
+<meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1012" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a6464'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23fff'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%23fff' stroke-width='2' stroke-dasharray='4 3'/%3E%3C/svg%3E">
+<script>
+  // Apply a saved theme before first paint. Default: follow the system.
+  try { var t = localStorage.getItem("anulm-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<link rel="stylesheet" href="styles.css">
+<script src="main.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header class="top">
+
+<header class="nav">
   <div class="wrap">
-    <a class="brand" href="#top">AnuLM-Omni-400M</a>
-    <nav aria-label="Sections">
-      <ul>
-        <li><a href="#try">Try it</a></li>
-        <li><a href="#skills">What it does</a></li>
+    <a class="brand" href="#top" aria-label="AnuLM-Omni-400M, back to top">
+      <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><circle cx="16" cy="16" r="5" fill="var(--accent-text)"/><circle cx="16" cy="16" r="10" fill="none" stroke="var(--accent-text)" stroke-width="2" stroke-dasharray="4 3"/></svg>
+      <span>AnuLM-Omni <small>400M</small></span>
+    </a>
+    <nav aria-label="Main">
+      <ul class="nav-links" id="nav-links">
+        <li><a href="#capabilities">Capabilities</a></li>
         <li><a href="#results">Results</a></li>
         <li><a href="#how">How it works</a></li>
-        <li><a href="#open">Open source</a></li>
-        <li><a href="#credits">Credits</a></li>
+        <li><a href="#data">Data</a></li>
+        <li><a href="#train">Train it</a></li>
+        <li><a href="#limits">Limits</a></li>
+        <li><a href="#start">Get started</a></li>
+        <li><a href="#faq">FAQ</a></li>
       </ul>
     </nav>
+    <div class="nav-actions">
+      <a class="btn small secondary nav-gh" href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM">
+        <svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span>GitHub</span>
+      </a>
+      <button class="icon-btn theme-toggle" type="button" aria-label="Switch theme">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+      </button>
+      <button class="icon-btn menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
   </div>
 </header>
 
 <main id="main">
-<section class="hero" id="top">
+
+<!-- ================= HERO ================= -->
+<section class="hero" id="top" aria-labelledby="hero-title">
   <div class="wrap">
-    <p class="eyebrow">Open-source model · English and Hindi</p>
-    <h1>One model that listens, looks, reads, routes and chats.</h1>
-    <p class="lede">AnuLM-Omni-400M is a single 456M-parameter mixture-of-experts decoder that transcribes
-      English and Hindi speech, describes photos and answers questions about them, reads Wikipedia to answer
-      questions, sorts a message into an intent, and holds a conversation. It was pretrained from scratch on
-      one consumer GPU and fine-tuned only on data that allows commercial use.</p>
-    <ul class="facts" aria-label="Key facts">
-      <li>456M parameters, 232M active per token</li>
-      <li>one RTX 5070 Ti (16 GB)</li>
-      <li>seven tasks, one set of weights</li>
-      <li>code MIT · weights CC BY-SA 4.0</li>
+    <div class="hero-grid">
+      <div>
+        <p class="pill"><span class="dot">7 / 7 gates pass</span> Release candidate, measured 5 November 2026</p>
+        <h1 id="hero-title">One small model. <span class="grad">Five skills.</span> English and Hindi.</h1>
+        <p class="lede">AnuLM-Omni-400M is a single open model that transcribes speech, describes photos,
+          answers from Wikipedia, routes messages to an intent and chats. It was pretrained from scratch on one
+          consumer GPU, and trained only on data that allows commercial use.</p>
+        <ul class="verbs" aria-label="What it does">
+          <li>Listens</li><li>Looks</li><li>Reads</li><li>Routes</li><li>Chats</li>
+        </ul>
+        <div class="cta">
+          <a class="btn primary" href="#start">Get started
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a class="btn secondary" href="#demo">Run the demo</a>
+          <a class="btn secondary" href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM">View on GitHub</a>
+        </div>
+        <p class="hero-note">Code MIT. Weights CC BY-SA 4.0. The Omni weights are not on Hugging Face yet.</p>
+      </div>
+
+      <figure class="showcase" aria-labelledby="showcase-cap">
+        <div class="showcase-bar" aria-hidden="true">
+          <span class="dots"><span></span><span></span><span></span></span>
+          <span>AnuLM-Omni demo</span>
+          <code>127.0.0.1:7863</code>
+        </div>
+        <div class="turns">
+          <div class="turn">
+            <span class="who">You</span>
+            <div class="msg">
+              <img src="assets/textvqa-watch.jpg" width="640" height="360" alt="Close-up of a black watch face on a repair stand. The dial reads Rolex Submariner.">
+              <p class="bubble" style="margin:8px 0 0">what brand is this watch?</p>
+            </div>
+          </div>
+          <div class="turn">
+            <span class="who model">AnuLM</span>
+            <p class="msg bubble model" style="margin:0">rolex</p>
+          </div>
+          <div class="turn">
+            <span class="who">You</span>
+            <p class="msg bubble" style="margin:0" lang="hi">भारत की राजधानी क्या है?</p>
+          </div>
+          <div class="turn">
+            <span class="who model">AnuLM</span>
+            <p class="msg bubble model" style="margin:0"><span lang="hi">नई दिल्ली</span> <span style="color:var(--muted);font-size:.88em">(from Wikipedia: <span lang="hi">दिल्ली</span>)</span></p>
+          </div>
+        </div>
+        <figcaption class="showcase-foot" id="showcase-cap">Two real samples from the demo's held-out library, with the model's
+          actual outputs. Photo by Micky Aldridge, CC BY 2.0, via Open Images; question from TextVQA, CC BY 4.0.</figcaption>
+      </figure>
+    </div>
+
+    <ul class="stats" aria-label="Key numbers">
+      <li><b>456M</b><span>parameters, mixture of experts</span></li>
+      <li><b>232M</b><span>active per token</span></li>
+      <li><b>11.3B</b><span>pretraining tokens, from scratch</span></li>
+      <li><b>1 GPU</b><span>RTX 5070 Ti, 16 GB</span></li>
+      <li><b>7 tasks</b><span>one set of weights</span></li>
+      <li><b>7 / 7</b><span>release gates pass</span></li>
     </ul>
-    <div class="cta">
-      <a class="btn primary" href="#try">Run the demo</a>
-      <a class="btn ghost" href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM">Code on GitHub</a>
-    </div>
-    <p class="status"><strong>Not released yet.</strong> Six of its seven release gates pass. Chat is the one
-      that does not: held-out answer loss is 3.475 against a gate of 3.30, so the weights are not on Hugging
-      Face. A fix is being trained. Everything on this page is measured on the current checkpoint.</p>
   </div>
 </section>
 
-<section id="try">
+<!-- ================= CAPABILITIES ================= -->
+<section class="alt" id="capabilities" aria-labelledby="cap-title">
   <div class="wrap">
-    <h2>Try it</h2>
-    <p class="intro">The demo is a Gradio page with a tab per skill. Each tab has a gallery of held-out samples:
-      one click fills the inputs, runs the model and shows the dataset's reference answer beside the output.
-      There are 117 of them, none seen in training.</p>
-    <div class="grid">
-      <div class="card">
-        <h3>On your machine</h3>
-        <p>From a clone of the repository, with the checkpoint in place:</p>
-<pre><code>python -m anulm.apps.app_omni</code></pre>
-        <p>No GPU? Add <code>--device cpu</code>; on a desktop CPU most samples answer in one to two seconds.
-          Setup and the checkpoint are covered in
-          <a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/main/docs/OMNI.md">docs/OMNI.md</a>.</p>
-      </div>
-      <div class="card">
-        <h3>In your browser</h3>
-        <p class="soon">A hosted Hugging Face Space: coming soon, once the weights are released.</p>
-        <p>Until then the page runs locally only. The spoken replies use Piper voices whose own terms are
-          non-commercial; a commercial deployment of the demo needs other voices. The model itself is not
-          affected.</p>
-      </div>
+    <div class="section-head">
+      <p class="eyebrow">What it does</p>
+      <h2 id="cap-title">Five skills, one decoder.</h2>
+      <p>Each card shows a real held-out sample from the demo's library and what the model actually said.
+        Misses are marked. The headline number is the release candidate's score on the full test set.</p>
     </div>
-  </div>
-</section>
 
-<section id="skills">
-  <div class="wrap">
-    <h2>What it can do</h2>
-    <p class="intro">Five skills, each with a real sample from the demo's library and the number measured on
-      the full held-out test set. The outputs are copied from a run of the demo on 2026-11-04, misses included.</p>
-    <div class="grid">
-
-      <article class="card">
-        <h3>Listens <span class="metric">WER 5.5% EN · 32.0% HI</span></h3>
-        <p>Speech to text in English and Hindi, including Hindi–English code-mixing.</p>
+    <div class="cap-grid">
+      <!-- Listens: English -->
+      <article class="card wide" aria-labelledby="c-listen">
+        <div class="card-top">
+          <span class="cap-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></span>
+          <h3 id="c-listen">Listens</h3>
+        </div>
+        <p class="sub">Speech to text in English and Hindi, including Hindi mixed with English.</p>
+        <p class="metric"><b>8.3%</b> English word error rate · <b>42.2%</b> Hindi, mean of three test sets</p>
         <div class="sample">
-          <audio controls preload="none" src="assets/kathbath-hindi.wav">
+          <audio controls preload="none" src="assets/librispeech-english.wav" aria-label="English speech sample, 5.5 seconds">
+            <a href="assets/librispeech-english.wav">Download the English clip (WAV)</a>
+          </audio>
+          <dl class="io">
+            <dt>Said</dt><dd>he had no time to think but he was aware that this was the most exciting adventure that had ever happened to him</dd>
+            <dt>Heard</dt><dd class="out">he had no time to think but he was aware that this was the most exciting adventure that had ever happened to him</dd>
+          </dl>
+          <p class="credit">All 23 words right. Clip: LibriSpeech dev-clean, CC BY 4.0.</p>
+        </div>
+      </article>
+
+      <!-- Listens: Hindi -->
+      <article class="card wide" aria-labelledby="c-listen-hi">
+        <div class="card-top">
+          <span class="cap-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h2M7 8v8M11 5v14M15 8v8M19 11v2"/></svg></span>
+          <h3 id="c-listen-hi">Listens, in Hindi</h3>
+        </div>
+        <p class="sub">Read and conversational Hindi, scored on three test sets.</p>
+        <p class="metric"><b>32.1%</b> Kathbath · <b>41.5%</b> FLEURS · <b>52.9%</b> MUCS</p>
+        <div class="sample">
+          <audio controls preload="none" src="assets/kathbath-hindi.wav" aria-label="Hindi speech sample, 6.7 seconds">
             <a href="assets/kathbath-hindi.wav">Download the Hindi clip (WAV)</a>
           </audio>
-          <dl>
-            <dt>said</dt><dd lang="hi">शुरू में शूटिंग दादर के एक स्टूडियो में सेट बनाकर की गई</dd>
-            <dt>heard</dt><dd lang="hi">शुरू में शूटिंग दादर के एक <span class="miss">स्टैंड</span> में सेट बनाकर की गई</dd>
+          <dl class="io">
+            <dt>Said</dt><dd lang="hi">शुरू में शूटिंग दादर के एक स्टूडियो में सेट बनाकर की गई</dd>
+            <dt>Heard</dt><dd class="out" lang="hi">शुरू में शूटिंग दादर के एक <mark class="miss">स्टैंड</mark> में सेट बनाकर की गई</dd>
           </dl>
-          <p class="credit">One word wrong in twelve. Clip: Kathbath (AI4Bharat), Hindi held-out split, CC BY 4.0.</p>
+          <p class="credit">One word wrong in twelve. Clip: Kathbath (AI4Bharat), held-out split, CC BY 4.0.</p>
         </div>
       </article>
 
-      <article class="card">
-        <h3>Looks <span class="metric weak">TextVQA 17.3%</span></h3>
-        <p>Describes a photo, or answers a question about what is written in it. Captions are fluent but often
-          miss details; questions are its weakest skill.</p>
+      <!-- Looks -->
+      <article class="card" aria-labelledby="c-look">
+        <div class="card-top">
+          <span class="cap-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span>
+          <h3 id="c-look">Looks</h3>
+        </div>
+        <p class="sub">Describes a photo, or answers a question about the text in it.</p>
+        <p class="metric"><b>11.4%</b> TextVQA accuracy <span class="tag weak">its weakest skill</span></p>
         <div class="sample">
           <figure>
-            <img src="assets/docci-ducks.jpg" width="640" height="480" loading="lazy"
-                 alt="Two white ducks swimming in dark water beside a stone ledge, seen from above.">
+            <img src="assets/docci-ducks.jpg" width="640" height="480" loading="lazy" alt="Two white ducks with yellow beaks swimming in dark, glossy water beside a low layered rock wall, seen from above.">
           </figure>
-          <dl>
-            <dt>AnuLM</dt><dd>A white duck is swimming in a body of water. The water is in the center of the image.</dd>
-            <dt>person</dt><dd>An outdoor top down view of two white ducks with yellow beaks swimming in a body of
-              glossy water… (it saw one duck, not two)</dd>
+          <dl class="io">
+            <dt>AnuLM</dt><dd class="out">A white duck is swimming in a body of water. The water is in the center of the image.</dd>
+            <dt>Person</dt><dd>An outdoor top down view of two white ducks with yellow beaks swimming in a body of glossy water…</dd>
           </dl>
-          <p class="credit">Photo: DOCCI test set (Google), CC BY 4.0, resized.</p>
+          <p class="credit">Fluent, but it saw <mark class="miss">one duck, not two</mark>. Photo: DOCCI test set (Google), CC BY 4.0, resized.</p>
         </div>
       </article>
 
-      <article class="card">
-        <h3>Reads <span class="metric">SQuAD F1 48.4</span></h3>
-        <p>Retrieves Wikipedia passages (Simple English and Hindi) and writes the answer from them, naming the
-          article. Hindi reading is weak: MLQA F1 11.7.</p>
+      <!-- Reads -->
+      <article class="card" aria-labelledby="c-read">
+        <div class="card-top">
+          <span class="cap-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5h6a4 4 0 014 4v11a3 3 0 00-3-3H2zM22 5h-6a4 4 0 00-4 4v11a3 3 0 013-3h7z"/></svg></span>
+          <h3 id="c-read">Reads</h3>
+        </div>
+        <p class="sub">Finds Wikipedia passages (Simple English and Hindi), answers from them and names the article.</p>
+        <p class="metric"><b>36.4</b> SQuAD F1 · <b>12.9</b> MLQA Hindi F1</p>
         <div class="sample">
-          <dl>
-            <dt>asked</dt><dd lang="hi">भारत की राजधानी क्या है?</dd>
-            <dt>AnuLM</dt><dd><span lang="hi">नई दिल्ली</span> (from Wikipedia: <span lang="hi">दिल्ली</span>)</dd>
+          <dl class="io">
+            <dt>Asked</dt><dd>What is the largest planet in the Solar System?</dd>
+            <dt>AnuLM</dt><dd class="out">Jupiter. <span class="credit">(from Wikipedia: List of planets)</span></dd>
+            <dt>Asked</dt><dd lang="hi">भारत की राजधानी क्या है?</dd>
+            <dt>AnuLM</dt><dd class="out"><span lang="hi">नई दिल्ली</span> <span class="credit">(from Wikipedia: <span lang="hi">दिल्ली</span>)</span></dd>
           </dl>
-          <p class="credit">4 of the library's 10 lookup questions come back with the expected answer.</p>
+          <p class="credit">4 of the library's 10 lookup questions came back with the expected answer.</p>
         </div>
       </article>
 
-      <article class="card">
-        <h3>Routes <span class="metric">BANKING77 87.7% · MASSIVE-hi 80.3%</span></h3>
-        <p>Sorts a message into one of 77 banking intents or 60 Hindi assistant commands, with a confidence;
-          below a threshold it hands the case to a person. No text is generated.</p>
+      <!-- Routes -->
+      <article class="card" aria-labelledby="c-route">
+        <div class="card-top">
+          <span class="cap-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h6l4-6h6M14 18h6M10 12l4 6"/></svg></span>
+          <h3 id="c-route">Routes</h3>
+        </div>
+        <p class="sub">Sorts a message into one of 77 banking intents or a Hindi assistant command, with a
+          confidence. Below a threshold it hands the case to a person.</p>
+        <p class="metric"><b>85.7%</b> BANKING77 · <b>79.7%</b> MASSIVE Hindi</p>
         <div class="sample">
-          <dl>
-            <dt>message</dt><dd lang="hi">क्या आप कृपया भारतीय खाना बनाने के लिए वीडियो प्रदर्शित कर सकते हैं</dd>
-            <dt>AnuLM</dt><dd><code>cooking_recipe</code>, confidence 0.81 (label: <code>cooking_recipe</code>)</dd>
+          <dl class="io">
+            <dt>Message</dt><dd>How do I get refunded?</dd>
+            <dt>AnuLM</dt><dd class="out"><code>request_refund</code> · confidence 0.99</dd>
+            <dt>Message</dt><dd lang="hi">क्या आप कृपया भारतीय खाना बनाने के लिए वीडियो प्रदर्शित कर सकते हैं</dd>
+            <dt>AnuLM</dt><dd class="out"><code>cooking_recipe</code> · confidence 0.81</dd>
           </dl>
-          <p class="credit">Message: MASSIVE hi-IN (Amazon Science), held-out split, CC BY 4.0.</p>
+          <p class="credit">Both match the dataset label. Messages: BANKING77 test (PolyAI) and MASSIVE hi-IN (Amazon Science), CC BY 4.0.</p>
         </div>
       </article>
 
-      <article class="card">
-        <h3>Chats <span class="metric weak">loss 3.475, gate 3.30</span></h3>
-        <p>Answers in English or Hindi in its own words. Fluent and on topic; facts and Python code from memory
-          are unreliable, which is why the reader above looks things up.</p>
+      <!-- Chats -->
+      <article class="card wide" aria-labelledby="c-chat">
+        <div class="card-top">
+          <span class="cap-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"/></svg></span>
+          <h3 id="c-chat">Chats</h3>
+        </div>
+        <p class="sub">Answers in English or Hindi in its own words. Fluent and on topic; for facts, use Reads.</p>
+        <p class="metric"><b>3.2985</b> held-out chat loss (gate ≤ 3.30)</p>
         <div class="sample">
-          <dl>
-            <dt>asked</dt><dd>Explain photosynthesis in two sentences.</dd>
-            <dt>AnuLM</dt><dd>Photosynthesis is a process that takes in sunlight, water and carbon dioxide to create
-              oxygen and glucose. It is the process that produces the food we eat and the energy it uses to
-              convert sunlight into energy.</dd>
+          <dl class="io">
+            <dt>Asked</dt><dd>Explain photosynthesis in two sentences.</dd>
+            <dt>AnuLM</dt><dd class="out">Photosynthesis is a process that takes in sunlight, water and carbon dioxide to create
+              oxygen and glucose. It is the process that produces the food we eat and the energy it uses to convert
+              sunlight into energy.</dd>
+            <dt>Asked</dt><dd lang="hi">एक छोटी कहानी लिखिए जिसमें एक बिल्ली और एक चूहा दोस्त बनते हैं।</dd>
+            <dt>AnuLM</dt><dd class="out" lang="hi">एक छोटे से शहर में एक बिल्ली और एक चूहा दोस्त बनाते हैं।</dd>
           </dl>
-          <p class="credit">The first sentence is right; the second drifts.</p>
+          <p class="credit">English: the first sentence is right, the second drifts. Hindi: on topic, but a story of one sentence.</p>
         </div>
       </article>
 
-      <article class="card">
-        <h3>…and reads text in photos</h3>
-        <p>A question it gets right. Most of TextVQA's questions it does not: 17.3% on 1,000 held-out questions.</p>
+      <!-- Looks: text in photos -->
+      <article class="card wide" aria-labelledby="c-vqa">
+        <div class="card-top">
+          <span class="cap-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h10M7 14h6"/></svg></span>
+          <h3 id="c-vqa">Reads text in photos</h3>
+        </div>
+        <p class="sub">A question it gets right. Most TextVQA questions it does not.</p>
         <div class="sample">
           <figure>
-            <img src="assets/textvqa-watch.jpg" width="640" height="360" loading="lazy"
-                 alt="Close-up of a black watch face on a repair stand; the dial reads Rolex Submariner.">
+            <img src="assets/textvqa-watch.jpg" width="640" height="360" loading="lazy" alt="Close-up of a black watch face on a repair stand. The dial reads Rolex Submariner.">
           </figure>
-          <dl>
-            <dt>asked</dt><dd>what brand is this watch?</dd>
-            <dt>AnuLM</dt><dd>rolex (annotators: rolex)</dd>
+          <dl class="io">
+            <dt>Asked</dt><dd>what brand is this watch?</dd>
+            <dt>AnuLM</dt><dd class="out">rolex <span class="tag ok">matches annotators</span></dd>
           </dl>
           <p class="credit">Photo by <a href="https://www.flickr.com/photos/gsi-r/16781536062">Micky Aldridge</a>,
             <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>, via Open Images, resized.
@@ -313,154 +273,617 @@ footer { padding: 28px 0 48px; color: var(--muted); font-size: .9em; }
         </div>
       </article>
     </div>
+
+    <p class="fineprint">Sample outputs come from a CPU run of the demo's 117-sample library on 4 November 2026
+      (<code>examples/samples/results.md</code>). Headline numbers are the release candidate's, measured on the
+      exported model on 5 November 2026.</p>
   </div>
 </section>
 
-<section id="results">
+<!-- ================= RESULTS ================= -->
+<section id="results" aria-labelledby="res-title">
   <div class="wrap">
-    <h2>Results against the models it replaces</h2>
-    <p class="intro">Before this model, each skill was its own full copy of the decoder. The table puts the one
-      model beside those separate models, on the same held-out sets. Lower is better for word error rate (WER)
-      and loss; higher is better for F1 and accuracy.</p>
-    <div class="table-wrap" role="region" aria-label="Results table" tabindex="0">
+    <div class="section-head">
+      <p class="eyebrow">Measured</p>
+      <h2 id="res-title">Seven release gates. All seven pass.</h2>
+      <p>The model is published only if every gate passes on the exported copy. These are the numbers from that
+        check, on held-out test sets the model never trained on.</p>
+    </div>
+
+    <div class="gates">
+      <div class="gate">
+        <p class="label">English speech <span class="tag ok">pass</span></p>
+        <p class="value">8.3<small>% WER</small></p>
+        <p class="meta">LibriSpeech, 100 held-out clips. Gate ≤ 9.0. Lower is better.</p>
+      </div>
+      <div class="gate">
+        <p class="label">Hindi speech, mean <span class="tag ok">pass</span></p>
+        <p class="value">42.2<small>% WER</small></p>
+        <p class="meta">Mean of FLEURS, Kathbath, MUCS. Gate ≤ 50.9.</p>
+      </div>
+      <div class="gate">
+        <p class="label">Hindi speech, FLEURS <span class="tag ok">pass</span></p>
+        <p class="value">41.5<small>% WER</small></p>
+        <p class="meta">FLEURS Hindi test. Gate ≤ 43.0.</p>
+      </div>
+      <div class="gate">
+        <p class="label">Reading, English <span class="tag ok">pass</span></p>
+        <p class="value">36.4<small> F1</small></p>
+        <p class="meta">SQuAD. Gate ≥ 30.0. Higher is better.</p>
+      </div>
+      <div class="gate">
+        <p class="label">Banking intents <span class="tag ok">pass</span></p>
+        <p class="value">85.7<small>%</small></p>
+        <p class="meta">BANKING77 accuracy, 77 intents. Gate ≥ 80.0.</p>
+      </div>
+      <div class="gate">
+        <p class="label">Image questions <span class="tag ok">pass</span></p>
+        <p class="value">11.4<small>%</small></p>
+        <p class="meta">TextVQA accuracy. Gate ≥ 10.0.</p>
+      </div>
+      <div class="gate">
+        <p class="label">Chat <span class="tag ok">pass</span></p>
+        <p class="value">3.2985</p>
+        <p class="meta">Held-out answer loss. Gate ≤ 3.30. Lower is better.</p>
+      </div>
+      <div class="gate">
+        <p class="label">Also measured</p>
+        <p class="meta" style="margin-top:8px">Kathbath WER <b>32.1%</b> · MUCS WER <b>52.9%</b> · MASSIVE Hindi
+          accuracy <b>79.7%</b> · MLQA Hindi F1 <b>12.9</b>. No gate on these.</p>
+      </div>
+    </div>
+
+    <div class="table-wrap stack" role="region" aria-labelledby="res-table-cap" tabindex="0">
       <table>
+        <caption id="res-table-cap">Every number, in one table</caption>
         <thead>
-          <tr><th scope="col">skill and measure</th><th scope="col">AnuLM-Omni</th><th scope="col">separate model before</th><th scope="col">release gate</th><th scope="col">status</th></tr>
+          <tr><th scope="col">Skill and measure</th><th scope="col">AnuLM-Omni-400M</th><th scope="col">Release gate</th><th scope="col">Status</th></tr>
         </thead>
         <tbody>
-          <tr><td>English speech, WER (LibriSpeech held-out)</td><td class="num">5.5%</td><td class="num">7.1%</td><td class="num">≤ 9.0%</td><td class="pass">pass</td></tr>
-          <tr><td>Hindi speech, WER, mean of three test sets</td><td class="num">32.0%</td><td class="num">50.9% (v3) · 40.0% (v5)</td><td class="num">≤ 50.9%</td><td class="pass">pass</td></tr>
-          <tr><td>&nbsp;&nbsp;FLEURS</td><td class="num">29.6%</td><td class="num">36.5% · 39.6%</td><td class="num">≤ 43.0%</td><td class="pass">pass</td></tr>
-          <tr><td>&nbsp;&nbsp;Kathbath</td><td class="num">20.3%</td><td class="num">37.0% · 24.9%</td><td>–</td><td>–</td></tr>
-          <tr><td>&nbsp;&nbsp;MUCS (Hindi–English mixed)</td><td class="num">46.1%</td><td class="num">79.2% · 55.6%</td><td>–</td><td>–</td></tr>
-          <tr><td>Reading, English, SQuAD F1</td><td class="num">48.4</td><td class="num">57.2 (pointer reader)</td><td class="num">≥ 30.0</td><td class="pass">pass</td></tr>
-          <tr><td>Reading, Hindi, MLQA F1</td><td class="num">11.7</td><td>–</td><td>–</td><td>weak</td></tr>
-          <tr><td>Banking intents, BANKING77 accuracy</td><td class="num">87.7%</td><td class="num">89.0% (adapter)</td><td class="num">≥ 80.0%</td><td class="pass">pass</td></tr>
-          <tr><td>Hindi commands, MASSIVE hi-IN accuracy</td><td class="num">80.3%</td><td class="num">84.5% (adapter)</td><td>–</td><td>–</td></tr>
-          <tr><td>Image questions, TextVQA accuracy</td><td class="num">17.3%</td><td>– (no earlier model)</td><td class="num">≥ 10.0%</td><td class="pass">pass, weak</td></tr>
-          <tr><td>Captions, held-out loss</td><td class="num">2.725</td><td>–</td><td>–</td><td>–</td></tr>
-          <tr><td>Chat, held-out answer loss</td><td class="num">3.475</td><td class="num">3.146 (chat model it started from)</td><td class="num">≤ 3.30</td><td class="fail">not met</td></tr>
+          <tr><th scope="row">English speech, WER (LibriSpeech, 100 clips)</th><td class="num" data-label="Score">8.3%</td><td class="num" data-label="Gate">≤ 9.0%</td><td data-label="Status"><span class="tag ok">pass</span></td></tr>
+          <tr><th scope="row">Hindi speech, WER, mean of three sets</th><td class="num" data-label="Score">42.2%</td><td class="num" data-label="Gate">≤ 50.9%</td><td data-label="Status"><span class="tag ok">pass</span></td></tr>
+          <tr class="sub"><th scope="row">Hindi: FLEURS</th><td class="num" data-label="Score">41.5%</td><td class="num" data-label="Gate">≤ 43.0%</td><td data-label="Status"><span class="tag ok">pass</span></td></tr>
+          <tr class="sub"><th scope="row">Hindi: Kathbath</th><td class="num" data-label="Score">32.1%</td><td data-label="Gate">none</td><td data-label="Status">measured</td></tr>
+          <tr class="sub"><th scope="row">Hindi: MUCS (mixed with English)</th><td class="num" data-label="Score">52.9%</td><td data-label="Gate">none</td><td data-label="Status">measured</td></tr>
+          <tr><th scope="row">Reading, English, SQuAD F1</th><td class="num" data-label="Score">36.4</td><td class="num" data-label="Gate">≥ 30.0</td><td data-label="Status"><span class="tag ok">pass</span></td></tr>
+          <tr><th scope="row">Reading, Hindi, MLQA F1</th><td class="num" data-label="Score">12.9</td><td data-label="Gate">none</td><td data-label="Status"><span class="tag weak">weak</span></td></tr>
+          <tr><th scope="row">Banking intents, BANKING77 accuracy</th><td class="num" data-label="Score">85.7%</td><td class="num" data-label="Gate">≥ 80.0%</td><td data-label="Status"><span class="tag ok">pass</span></td></tr>
+          <tr><th scope="row">Hindi commands, MASSIVE hi-IN accuracy</th><td class="num" data-label="Score">79.7%</td><td data-label="Gate">none</td><td data-label="Status">measured</td></tr>
+          <tr><th scope="row">Image questions, TextVQA accuracy</th><td class="num" data-label="Score">11.4%</td><td class="num" data-label="Gate">≥ 10.0%</td><td data-label="Status"><span class="tag ok">pass</span> <span class="tag weak">weak</span></td></tr>
+          <tr><th scope="row">Chat, held-out answer loss</th><td class="num" data-label="Score">3.2985</td><td class="num" data-label="Gate">≤ 3.30</td><td data-label="Status"><span class="tag ok">pass</span></td></tr>
         </tbody>
       </table>
     </div>
-    <p class="note">The one model beats the separate speech models, is close on intents, lower on English
-      reading (F1 48.4 against 57.2), and worse at chat than the chat model it started from: training on seven tasks at once
-      pulled the shared decoder away from conversation. That is the gate it misses, and the reason it is not
-      released yet. Source: <code>logs/omni_one/results.json</code>, written by
-      <code>experiments/omni_one.py</code>, which also records the separate models' numbers as they were measured.</p>
+    <p class="fineprint">WER is word error rate: lower is better. F1 and accuracy: higher is better. Loss: lower
+      is better. The gates are defined in <code>experiments/omni_one.py</code>, which trains, evaluates and
+      exports the model and repeats every measurement on the exported copy.</p>
   </div>
 </section>
 
-<section id="how">
+<!-- ================= DEMO ================= -->
+<section class="alt" id="demo" aria-labelledby="demo-title">
   <div class="wrap">
-    <h2>How it works</h2>
-    <p class="intro">One decoder does all the thinking. Sound and images reach it through two frozen,
-      borrowed encoders and two small projectors trained here; everything it says is text from the same weights.</p>
-    <div class="flow" role="img" aria-label="Diagram: audio goes through a frozen Whisper-small encoder and an audio projector; images go through a frozen SigLIP encoder and an image projector; text and Wikipedia passages go in as tokens; all of it enters the one AnuLM decoder, which writes transcripts, captions, answers, intent labels and replies.">
-      <div class="lane"><span class="box">speech</span><span class="arrow" aria-hidden="true">→</span><span class="box frozen">Whisper-small encoder</span><span class="arrow" aria-hidden="true">→</span><span class="box ours">audio projector</span><span class="arrow" aria-hidden="true">↘</span></div>
-      <div class="lane"><span class="box">photo</span><span class="arrow" aria-hidden="true">→</span><span class="box frozen">SigLIP encoder</span><span class="arrow" aria-hidden="true">→</span><span class="box ours">image projector</span><span class="arrow" aria-hidden="true">↘</span></div>
-      <div class="lane"><span class="box">text · Wikipedia passages</span><span class="arrow" aria-hidden="true">→</span><span class="box ours">tokenizer, 32,768 ids</span><span class="arrow" aria-hidden="true">→</span></div>
-      <div class="lane"><span class="box core">AnuLM decoder: 20 layers, mixture of experts</span><span class="arrow" aria-hidden="true">→</span><span class="box">transcript · caption · answer · intent · reply</span></div>
-      <p class="legend"><span>solid teal: trained here</span><span>dashed: frozen, borrowed</span></p>
+    <div class="split">
+      <div>
+        <p class="eyebrow">Demo</p>
+        <h2 id="demo-title">Run the demo on your own machine.</h2>
+        <p style="color:var(--muted);font-size:1.1rem;margin-top:14px">The demo is a local Gradio page with one tab per skill:
+          <em>Listen &amp; reply</em>, <em>Look</em>, <em>Chat</em> and <em>Decide</em>. Each tab has a gallery of
+          held-out samples. One click fills the inputs, runs the model and shows the dataset's reference answer
+          beside the output. There are 117 of them.</p>
+        <ul class="checklist">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg><span>Every model together fits a 16 GB card. <code>--device cpu</code> runs without one; on CPU most samples answer in under two seconds.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg><span>Spoken replies use Piper voices. Their own terms are non-commercial, so a commercial deployment of the demo needs other voices. The model is not affected.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg><span>There is no hosted demo yet. Until the Omni weights are published, the demo needs <code>ckpt_omni.pt</code>, which <a href="#train">route B</a> trains in about 6 hours.</span></li>
+        </ul>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>Start the demo</span>
+          <button class="copy" type="button" data-target="code-demo" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
+            <span class="copy-label" aria-live="polite">Copy</span><span class="visually-hidden"> commands to start the demo</span>
+          </button>
+        </div>
+<pre id="code-demo"><code><span class="c"># from a clone of the repository (see Get started)</span>
+pip install gradio faster-whisper piper-tts timm pillow
+python -m anulm app_omni
+<span class="c"># then open http://127.0.0.1:7863</span>
+
+<span class="c"># no GPU?</span>
+python -m anulm app_omni --device cpu</code></pre>
+      </div>
     </div>
-    <ul class="plain">
-      <li><strong>The decoder.</strong> 20 layers, hidden size 1,024, grouped-query attention, rotary positions;
-        24 routed experts per layer with a sigmoid router picking 4 per token, balanced without an auxiliary loss.
-        456M parameters, 232M active per token. An independent re-implementation of the published Sarvam 30B
-        design, at small scale.</li>
-      <li><strong>Pretraining.</strong> From random weights on 11.3B tokens of English, Hindi and Python
-        (base v2, 1.9M steps), on one RTX 5070 Ti.</li>
-      <li><strong>One fine-tune for seven tasks.</strong> Chat, reading, intents, English speech, Hindi speech,
-        captions and image questions, sampled together; each optimizer step sums 8 batches so that short
-        tasks cannot drag the shared weights around. About 24 hours on the same GPU.</li>
-      <li><strong>Borrowed, frozen, credited.</strong> Whisper-small's encoder for audio (MIT), SigLIP for
-        images (Apache 2.0), multilingual-e5-small to retrieve passages (MIT). They are not in the weights.</li>
-    </ul>
   </div>
 </section>
 
-<section id="open">
+<!-- ================= HOW IT WORKS ================= -->
+<section id="how" aria-labelledby="how-title">
   <div class="wrap">
-    <h2>Open source</h2>
-    <div class="grid">
-      <div class="card">
-        <h3>Code</h3>
-        <p><a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM">github.com/MOBIRIZER-TECHNOLOGY/AnuLM</a>:
-          model, training, data scripts, evaluation and the demo, under the
-          <a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/main/LICENSE">MIT licence</a>.
-          Third-party material and data provenance are in
-          <a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/main/NOTICE">NOTICE</a>.</p>
-      </div>
-      <div class="card">
-        <h3>Train it yourself</h3>
-        <p><a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/restructure/docs/TRAIN_FROM_SCRATCH.md">docs/TRAIN_FROM_SCRATCH.md</a>
-          goes from a 17M toy model on a laptop to every stage of this one, with the commands, timings and
-          disk space. Every dataset is fetched from its source by script; none is redistributed.</p>
-      </div>
-      <div class="card">
-        <h3>The book</h3>
-        <p><a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/tree/restructure/book"><em>Inside AnuLM: A Language Model You Can Read, Line by Line</em></a>,
-          a reference that walks through this repository's own code (in progress). Its companion lab book,
-          <a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/tree/restructure/course"><em>Build Your Own LLM, from Scratch to Omni</em></a>,
-          has you write the pieces and check them against the real model.</p>
-      </div>
-      <div class="card">
-        <h3>Data, only commercially usable</h3>
-        <p>Every training source allows commercial use; Flickr30k, COCO photos and data with unclear terms
-          were left out on purpose. The sources and their licences are listed in
-          <a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/main/docs/DATASETS.md">docs/DATASETS.md</a>
-          and the <a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/main/docs/MODEL_CARD_OMNI.md">model card</a>.</p>
-      </div>
+    <div class="section-head">
+      <p class="eyebrow">How it works</p>
+      <h2 id="how-title">Borrowed ears and eyes. One brain, trained here.</h2>
+      <p>One decoder does all the thinking. Sound and images reach it through frozen, borrowed encoders and two
+        small projectors trained here. Everything it says is text from the same weights.</p>
     </div>
 
-    <h3 style="margin-top:28px">Models on Hugging Face</h3>
-    <div class="table-wrap" role="region" aria-label="Models on Hugging Face" tabindex="0">
+    <figure class="diagram">
+      <!-- Wide layout -->
+      <svg class="d-wide" viewBox="0 0 1000 420" role="img" aria-labelledby="dw-title dw-desc">
+        <title id="dw-title">AnuLM-Omni architecture</title>
+        <desc id="dw-desc">Speech goes through the frozen Whisper-small encoder and a trained audio projector. A photo goes through the frozen SigLIP encoder and a trained image projector. Text goes through the tokenizer. For lookups, the frozen multilingual-e5-small model finds Wikipedia passages, which enter as text. All of it enters the one AnuLM decoder, which writes a transcript, a caption or photo answer, an answer with its source, an intent with a confidence, or a chat reply that Piper can speak.</desc>
+        <defs>
+          <marker id="ahw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-arrow" d="M0 0L10 5L0 10z"/></marker>
+        </defs>
+        <!-- column labels -->
+        <text class="d-s" x="80" y="16" text-anchor="middle">INPUT</text>
+        <text class="d-s" x="275" y="16" text-anchor="middle">ENCODER</text>
+        <text class="d-s" x="495" y="16" text-anchor="middle">INTO THE DECODER</text>
+        <text class="d-s" x="915" y="16" text-anchor="middle">OUTPUT</text>
+        <!-- row 1: speech -->
+        <rect class="d-box" x="20" y="30" width="120" height="60" rx="10"/><text class="d-t" x="80" y="65" text-anchor="middle">Speech</text>
+        <rect class="d-frozen" x="180" y="30" width="190" height="60" rx="10"/><text class="d-t" x="275" y="57" text-anchor="middle">Whisper-small</text><text class="d-s" x="275" y="76" text-anchor="middle">encoder, frozen</text>
+        <rect class="d-ours" x="410" y="30" width="170" height="60" rx="10"/><text class="d-t" x="495" y="57" text-anchor="middle">Audio projector</text><text class="d-s" x="495" y="76" text-anchor="middle">trained here</text>
+        <!-- row 2: photo -->
+        <rect class="d-box" x="20" y="130" width="120" height="60" rx="10"/><text class="d-t" x="80" y="165" text-anchor="middle">Photo</text>
+        <rect class="d-frozen" x="180" y="130" width="190" height="60" rx="10"/><text class="d-t" x="275" y="157" text-anchor="middle">SigLIP</text><text class="d-s" x="275" y="176" text-anchor="middle">image encoder, frozen</text>
+        <rect class="d-ours" x="410" y="130" width="170" height="60" rx="10"/><text class="d-t" x="495" y="157" text-anchor="middle">Image projector</text><text class="d-s" x="495" y="176" text-anchor="middle">trained here</text>
+        <!-- row 3: text -->
+        <rect class="d-box" x="20" y="230" width="120" height="60" rx="10"/><text class="d-t" x="80" y="257" text-anchor="middle">Text</text><text class="d-s" x="80" y="276" text-anchor="middle">English, Hindi</text>
+        <rect class="d-ours" x="410" y="230" width="170" height="60" rx="10"/><text class="d-t" x="495" y="257" text-anchor="middle">Tokenizer</text><text class="d-s" x="495" y="276" text-anchor="middle">32,768 text ids</text>
+        <!-- row 4: lookup -->
+        <rect class="d-box" x="20" y="330" width="120" height="60" rx="10"/><text class="d-t" x="80" y="357" text-anchor="middle">Question</text><text class="d-s" x="80" y="376" text-anchor="middle">to look up</text>
+        <rect class="d-frozen" x="180" y="330" width="190" height="60" rx="10"/><text class="d-t" x="275" y="357" text-anchor="middle">multilingual-e5-small</text><text class="d-s" x="275" y="376" text-anchor="middle">finds passages, frozen</text>
+        <rect class="d-box" x="410" y="330" width="170" height="60" rx="10"/><text class="d-t" x="495" y="357" text-anchor="middle">Wikipedia passages</text><text class="d-s" x="495" y="376" text-anchor="middle">enter as text</text>
+        <!-- arrows in -->
+        <path class="d-line" d="M140 60H176" marker-end="url(#ahw)"/><path class="d-line" d="M370 60H406" marker-end="url(#ahw)"/>
+        <path class="d-line" d="M140 160H176" marker-end="url(#ahw)"/><path class="d-line" d="M370 160H406" marker-end="url(#ahw)"/>
+        <path class="d-line" d="M140 260H406" marker-end="url(#ahw)"/>
+        <path class="d-line" d="M140 360H176" marker-end="url(#ahw)"/><path class="d-line" d="M370 360H406" marker-end="url(#ahw)"/>
+        <path class="d-line" d="M580 60H626" marker-end="url(#ahw)"/><path class="d-line" d="M580 160H626" marker-end="url(#ahw)"/>
+        <path class="d-line" d="M580 260H626" marker-end="url(#ahw)"/><path class="d-line" d="M580 360H626" marker-end="url(#ahw)"/>
+        <!-- decoder -->
+        <rect class="d-core" x="630" y="30" width="170" height="360" rx="14"/>
+        <text class="d-big" x="715" y="172" text-anchor="middle">AnuLM</text>
+        <text class="d-big" x="715" y="198" text-anchor="middle">decoder</text>
+        <text class="d-s" x="715" y="226" text-anchor="middle">456M parameters</text>
+        <text class="d-s" x="715" y="244" text-anchor="middle">232M active per token</text>
+        <text class="d-s" x="715" y="262" text-anchor="middle">mixture of experts</text>
+        <text class="d-s" x="715" y="280" text-anchor="middle">from scratch</text>
+        <!-- outputs -->
+        <rect class="d-out" x="840" y="30" width="150" height="52" rx="10"/><text class="d-t" x="915" y="53" text-anchor="middle">Transcript</text><text class="d-s" x="915" y="70" text-anchor="middle">English, Hindi</text>
+        <rect class="d-out" x="840" y="107" width="150" height="52" rx="10"/><text class="d-t" x="915" y="130" text-anchor="middle">Caption</text><text class="d-s" x="915" y="147" text-anchor="middle">or photo answer</text>
+        <rect class="d-out" x="840" y="184" width="150" height="52" rx="10"/><text class="d-t" x="915" y="207" text-anchor="middle">Answer</text><text class="d-s" x="915" y="224" text-anchor="middle">with its source</text>
+        <rect class="d-out" x="840" y="261" width="150" height="52" rx="10"/><text class="d-t" x="915" y="284" text-anchor="middle">Intent</text><text class="d-s" x="915" y="301" text-anchor="middle">with a confidence</text>
+        <rect class="d-out" x="840" y="338" width="150" height="52" rx="10"/><text class="d-t" x="915" y="361" text-anchor="middle">Reply</text><text class="d-s" x="915" y="378" text-anchor="middle">Piper can speak it</text>
+        <path class="d-line" d="M800 56H836" marker-end="url(#ahw)"/><path class="d-line" d="M800 133H836" marker-end="url(#ahw)"/>
+        <path class="d-line" d="M800 210H836" marker-end="url(#ahw)"/><path class="d-line" d="M800 287H836" marker-end="url(#ahw)"/>
+        <path class="d-line" d="M800 364H836" marker-end="url(#ahw)"/>
+      </svg>
+
+      <!-- Tall layout for phones -->
+      <svg class="d-tall" viewBox="0 0 360 690" role="img" aria-labelledby="dt-title dt-desc">
+        <title id="dt-title">AnuLM-Omni architecture</title>
+        <desc id="dt-desc">Speech goes through the frozen Whisper-small encoder and a trained audio projector. A photo goes through the frozen SigLIP encoder and a trained image projector. Text goes through the tokenizer, and for lookups the frozen multilingual-e5-small model adds Wikipedia passages as text. All of it enters the one AnuLM decoder, which writes a transcript, a caption or photo answer, an answer with its source, an intent with a confidence, or a chat reply that Piper can speak.</desc>
+        <defs>
+          <marker id="aht" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-arrow" d="M0 0L10 5L0 10z"/></marker>
+        </defs>
+        <rect class="d-box" x="6" y="8" width="108" height="48" rx="10"/><text class="d-t" x="60" y="37" text-anchor="middle">Speech</text>
+        <rect class="d-box" x="126" y="8" width="108" height="48" rx="10"/><text class="d-t" x="180" y="37" text-anchor="middle">Photo</text>
+        <rect class="d-box" x="246" y="8" width="108" height="48" rx="10"/><text class="d-t" x="300" y="37" text-anchor="middle">Text</text>
+        <path class="d-line" d="M60 56V80" marker-end="url(#aht)"/><path class="d-line" d="M180 56V80" marker-end="url(#aht)"/><path class="d-line" d="M300 56V80" marker-end="url(#aht)"/>
+        <rect class="d-frozen" x="6" y="84" width="108" height="58" rx="10"/><text class="d-t" x="60" y="108" text-anchor="middle">Whisper-small</text><text class="d-s" x="60" y="127" text-anchor="middle">frozen</text>
+        <rect class="d-frozen" x="126" y="84" width="108" height="58" rx="10"/><text class="d-t" x="180" y="108" text-anchor="middle">SigLIP</text><text class="d-s" x="180" y="127" text-anchor="middle">frozen</text>
+        <rect class="d-frozen" x="246" y="84" width="108" height="58" rx="10"/><text class="d-t" x="300" y="108" text-anchor="middle">e5-small</text><text class="d-s" x="300" y="127" text-anchor="middle">finds Wikipedia</text>
+        <path class="d-line" d="M60 142V166" marker-end="url(#aht)"/><path class="d-line" d="M180 142V166" marker-end="url(#aht)"/><path class="d-line" d="M300 142V166" marker-end="url(#aht)"/>
+        <rect class="d-ours" x="6" y="170" width="108" height="58" rx="10"/><text class="d-t" x="60" y="194" text-anchor="middle">Audio</text><text class="d-s" x="60" y="213" text-anchor="middle">projector</text>
+        <rect class="d-ours" x="126" y="170" width="108" height="58" rx="10"/><text class="d-t" x="180" y="194" text-anchor="middle">Image</text><text class="d-s" x="180" y="213" text-anchor="middle">projector</text>
+        <rect class="d-ours" x="246" y="170" width="108" height="58" rx="10"/><text class="d-t" x="300" y="194" text-anchor="middle">Tokenizer</text><text class="d-s" x="300" y="213" text-anchor="middle">text + passages</text>
+        <path class="d-line" d="M60 228V252" marker-end="url(#aht)"/><path class="d-line" d="M180 228V252" marker-end="url(#aht)"/><path class="d-line" d="M300 228V252" marker-end="url(#aht)"/>
+        <rect class="d-core" x="6" y="256" width="348" height="116" rx="14"/>
+        <text class="d-big" x="180" y="298" text-anchor="middle">AnuLM decoder</text>
+        <text class="d-s" x="180" y="324" text-anchor="middle">456M parameters, 232M active per token</text>
+        <text class="d-s" x="180" y="344" text-anchor="middle">mixture of experts, from scratch</text>
+        <path class="d-line" d="M180 372V396" marker-end="url(#aht)"/>
+        <rect class="d-out" x="6" y="400" width="348" height="46" rx="10"/><text class="d-t" x="20" y="428">Transcript</text><text class="d-s" x="340" y="428" text-anchor="end">English, Hindi</text>
+        <rect class="d-out" x="6" y="456" width="348" height="46" rx="10"/><text class="d-t" x="20" y="484">Caption</text><text class="d-s" x="340" y="484" text-anchor="end">or photo answer</text>
+        <rect class="d-out" x="6" y="512" width="348" height="46" rx="10"/><text class="d-t" x="20" y="540">Answer</text><text class="d-s" x="340" y="540" text-anchor="end">with its source</text>
+        <rect class="d-out" x="6" y="568" width="348" height="46" rx="10"/><text class="d-t" x="20" y="596">Intent</text><text class="d-s" x="340" y="596" text-anchor="end">with a confidence</text>
+        <rect class="d-out" x="6" y="624" width="348" height="46" rx="10"/><text class="d-t" x="20" y="652">Reply</text><text class="d-s" x="340" y="652" text-anchor="end">Piper can speak it</text>
+      </svg>
+      <figcaption>
+        <ul class="legend">
+          <li><i class="l-ours" aria-hidden="true"></i>trained here</li>
+          <li><i class="l-frozen" aria-hidden="true"></i>frozen, borrowed, not in the weights</li>
+          <li><i class="l-io" aria-hidden="true"></i>inputs and outputs</li>
+        </ul>
+      </figcaption>
+    </figure>
+
+    <div class="specs">
+      <div class="spec">
+        <h3>The decoder</h3>
+        <p>20 layers, hidden size 1,024, mixture of experts: 456M parameters, 232M active per token. An independent
+          re-implementation of the published Sarvam 30B design, at small scale. No Sarvam weights are used.</p>
+      </div>
+      <div class="spec">
+        <h3>Pretraining</h3>
+        <p>From random weights on 11.3B tokens of English, Hindi and Python, on one RTX 5070 Ti with 16 GB.
+          That base is released as AnuLM-Base-v2-400M.</p>
+      </div>
+      <div class="spec">
+        <h3>Seven tasks at once</h3>
+        <p>Chat, reading, intents, English speech, Hindi speech, captions and image questions, sampled together
+          into one fine-tune. Each optimizer step sums 8 batches, so no single task drags the shared weights.</p>
+      </div>
+      <div class="spec">
+        <h3>Borrowed and credited</h3>
+        <p>Whisper-small's encoder for audio (MIT), SigLIP for images (Apache 2.0), multilingual-e5-small to
+          find passages (MIT), Piper for the demo's voice. They are fetched from their sources, not shipped in the weights.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DATA ================= -->
+<section class="alt" id="data" aria-labelledby="data-title">
+  <div class="wrap">
+    <div class="split">
+      <div>
+        <p class="eyebrow">Data</p>
+        <h2 id="data-title">Trained only on data you can use commercially.</h2>
+        <p style="color:var(--muted);font-size:1.1rem;margin-top:14px">Every training source allows commercial use.
+          Most ask for attribution; some are share-alike, which is why the weights are CC BY-SA 4.0. You may build
+          and sell a product on the model. If you redistribute the weights, keep the same licence.</p>
+        <ul class="checklist x" style="margin-top:22px" aria-label="Left out on purpose">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg><span><strong>Left out on purpose:</strong> Flickr30k, COCO photos, IndicTTS, and a synthetic Indian-banking set written with an AI assistant. Their terms do not allow commercial use, or are unclear.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 8v5M12 16.5v.5"/><circle cx="12" cy="12" r="9"/></svg><span><strong>Two open questions, disclosed:</strong> the base's Python data includes GitHub code under copyleft licences (via codeparrot-clean), and opc-sft-stage1 mixes model-generated answers. Neither is known to forbid this use; neither is settled. The <a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/restructure/docs/MODEL_CARD_OMNI.md">model card</a> has the details.</span></li>
+        </ul>
+      </div>
+      <dl class="src-list" aria-label="Training data by task">
+        <div><dt>Chat</dt><dd>databricks-dolly-15k, OpenAssistant oasst2, Aya Hindi, Hindi Wikipedia question pairs</dd></div>
+        <div><dt>Reading</dt><dd>SQuAD v1.1, MLQA translate-train Hindi, Wikipedia passages</dd></div>
+        <div><dt>Intents</dt><dd>BANKING77, MASSIVE hi-IN</dd></div>
+        <div><dt>English speech</dt><dd>LibriSpeech train-clean-100</dd></div>
+        <div><dt>Hindi speech</dt><dd>Kathbath (AI4Bharat), MUCS 2021 Hindi-English, FLEURS Hindi</dd></div>
+        <div><dt>Captions and image questions</dt><dd>Localized Narratives and TextVQA on Open Images photos (CC BY 2.0), DOCCI</dd></div>
+        <div><dt>Pretraining</dt><dd>fineweb-edu, fineweb-2 Hindi, Hindi Wikipedia, open Python code</dd></div>
+      </dl>
+    </div>
+    <p class="fineprint">Every source and its licence: <a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/restructure/docs/DATASETS.md">docs/DATASETS.md</a>
+      and <a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/restructure/NOTICE">NOTICE</a>. Every dataset is
+      fetched from its source by script; none is redistributed.</p>
+  </div>
+</section>
+
+<!-- ================= TRAIN IT ================= -->
+<section id="train" aria-labelledby="train-title">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Train it yourself</p>
+      <h2 id="train-title">Reproduce it in about 6 hours of GPU.</h2>
+      <p>Everything that made this model is in the repository: data scripts, training, evaluation and export.
+        Pick the route your machine allows, and move up later.</p>
+    </div>
+    <div class="route-grid">
+      <article class="card route" aria-labelledby="r-a">
+        <p class="eyebrow">Route A</p>
+        <h3 id="r-a">Learn the loop</h3>
+        <p class="time">Minutes <small>no GPU needed</small></p>
+        <ul>
+          <li>Train a 17M toy model, or a small Hindi model</li>
+          <li>30 s on a GPU, up to 30 min on a CPU</li>
+          <li>Under 1 GB of disk</li>
+        </ul>
+        <div class="links"><a class="btn small secondary" href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/restructure/docs/TRAIN_FROM_SCRATCH.md">Read the guide</a></div>
+      </article>
+      <article class="card route feature" aria-labelledby="r-b">
+        <p class="eyebrow">Route B · recommended</p>
+        <h3 id="r-b">Omni from the released base</h3>
+        <p class="time">~6 h <small>of GPU, plus downloads</small></p>
+        <ul>
+          <li>Starts from AnuLM-Base-v2-400M, downloaded for you</li>
+          <li>One NVIDIA card with 16 GB, 32 GB RAM, about 150 GB disk</li>
+          <li>One command trains, evaluates, exports and checks every gate</li>
+        </ul>
+        <div class="links"><a class="btn small primary" href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/restructure/docs/TRAIN_FROM_SCRATCH.md">Route B, step by step</a></div>
+      </article>
+      <article class="card route" aria-labelledby="r-c">
+        <p class="eyebrow">Learn it properly</p>
+        <h3 id="r-c">A course and a book</h3>
+        <p class="time">20 <small>chapters, each with a lab</small></p>
+        <ul>
+          <li><em>Build Your Own LLM, from Scratch to Omni</em>: write the pieces yourself, on a laptop or one 16 GB GPU</li>
+          <li><em>Inside AnuLM: A Language Model You Can Read, Line by Line</em>: a reference to this code (in progress)</li>
+        </ul>
+        <div class="links">
+          <a class="btn small secondary" href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/tree/restructure/course">The course</a>
+          <a class="btn small secondary" href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/tree/restructure/book">The book</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= LIMITS ================= -->
+<section class="alt" id="limits" aria-labelledby="limits-title">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Honest limits</p>
+      <h2 id="limits-title">What it is not good at.</h2>
+      <p>This is a 400M model. It is small enough to run anywhere and to study line by line. It is also often
+        wrong. Know where before you build on it.</p>
+    </div>
+    <div class="limits">
+      <article class="card limit">
+        <h3>Facts from memory</h3>
+        <p>Chat is fluent and often wrong on facts and Python code. For facts, use reading, which looks the answer
+          up in Wikipedia and names its source.</p>
+      </article>
+      <article class="card limit">
+        <h3>Names and specifics</h3>
+        <p>It struggles with names, in speech and in lookups. In the sample library, "Who wrote Hamlet?" came back
+          as <em>Hamlet</em>, and rare words like <em>mountebank</em> were misheard.</p>
+      </article>
+      <article class="card limit">
+        <h3>Hindi reading</h3>
+        <p>Answering from Hindi passages is weak: MLQA Hindi F1 12.9. Hindi speech mixed with English is the
+          hardest speech test: 52.9% WER on MUCS.</p>
+      </article>
+      <article class="card limit">
+        <h3>Questions about photos</h3>
+        <p>Image answers are often wrong: 11.4% on TextVQA. Captions read well but miss details, such as counting
+          one duck where there are two.</p>
+      </article>
+      <article class="card limit">
+        <h3>Audio conditions</h3>
+        <p>Read and conversational speech in English and Hindi only. Noisy audio, other languages and long
+          recordings make it worse.</p>
+      </article>
+      <article class="card limit">
+        <h3>No safety tuning</h3>
+        <p>It has no safety tuning beyond what its chat data carries. Do not deploy it where a wrong answer causes
+          harm without a person in the loop.</p>
+      </article>
+    </div>
+    <article class="card miss-strip" aria-labelledby="miss-title">
+      <figure>
+        <img src="assets/textvqa-sign.jpg" width="640" height="480" loading="lazy" alt="A roadside sign for Taco Bell and KFC, photographed sideways at dusk. A board under it reads Closed due to fire.">
+      </figure>
+      <div>
+        <p class="eyebrow">A miss, shown as it happened</p>
+        <h3 id="miss-title">The sign says Taco Bell. The model says "mcq".</h3>
+        <dl class="io" style="margin-top:14px">
+          <dt>Asked</dt><dd>what mexican restaurant is being advertised?</dd>
+          <dt>AnuLM</dt><dd class="out"><mark class="miss">mcq</mark></dd>
+          <dt>Annotators</dt><dd>taco bell</dd>
+        </dl>
+        <p class="credit" style="margin-top:14px">10 of the library's 12 photo questions were missed, this one included. Photo by
+          <a href="https://www.flickr.com/photos/tenpoundhammer/5063268345">Bobby P.</a>,
+          <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>, via Open Images, resized. Question: TextVQA, CC BY 4.0.</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ================= GET STARTED ================= -->
+<section id="start" aria-labelledby="start-title">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Get started</p>
+      <h2 id="start-title">From clone to first model in minutes.</h2>
+      <p>The docs and the <code>anulm</code> package layout currently live on the <code>restructure</code> branch.
+        Use Python 3.11 or newer.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <h3>Clone and install</h3>
+        <p>Work in a virtual environment. Pick the torch wheel that matches your machine: <code>cu128</code> for an NVIDIA card, <code>cpu</code> otherwise.</p>
+        <div class="code-block">
+          <div class="code-head"><span>Terminal</span>
+            <button class="copy" type="button" data-target="code-install" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
+              <span class="copy-label" aria-live="polite">Copy</span><span class="visually-hidden"> install commands</span>
+            </button>
+          </div>
+<pre id="code-install"><code>git clone -b restructure https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM
+cd AnuLM
+pip install torch --index-url https://download.pytorch.org/whl/cu128
+pip install -r requirements.txt</code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <h3>Check your machine, train a first model</h3>
+        <p><code>quickstart</code> reports what your install can do and what to run next. <code>--train</code>
+          trains a 17M model right away: about 30 s on a GPU, 3 to 6 minutes on a CPU.</p>
+        <div class="code-block">
+          <div class="code-head"><span>Terminal</span>
+            <button class="copy" type="button" data-target="code-quick" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
+              <span class="copy-label" aria-live="polite">Copy</span><span class="visually-hidden"> quickstart commands</span>
+            </button>
+          </div>
+<pre id="code-quick"><code>python -m anulm quickstart
+python -m anulm quickstart --train</code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <h3>Get the Omni data</h3>
+        <p>Kathbath is gated: accept its terms on Hugging Face and log in first. Each command resumes after a
+          dropped connection. Run the checks before you train.</p>
+        <div class="code-block">
+          <div class="code-head"><span>Terminal</span>
+            <button class="copy" type="button" data-target="code-data" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
+              <span class="copy-label" aria-live="polite">Copy</span><span class="visually-hidden"> data commands</span>
+            </button>
+          </div>
+<pre id="code-data"><code>hf auth login
+python -m anulm omni_data fetch all
+python -m anulm omni_images fetch
+python -m anulm omni_data check
+python -m anulm omni_images check</code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <h3>Train, evaluate, export, then run the demo</h3>
+        <p>One command trains the chat model and the Omni model, scores every gate and exports
+          <code>release/AnuLM-Omni-400M</code>. It publishes nothing.</p>
+        <div class="code-block">
+          <div class="code-head"><span>Terminal</span>
+            <button class="copy" type="button" data-target="code-train" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
+              <span class="copy-label" aria-live="polite">Copy</span><span class="visually-hidden"> training commands</span>
+            </button>
+          </div>
+<pre id="code-train"><code>python experiments/omni_one.py
+python -m anulm app_omni</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MODELS ================= -->
+<section class="alt" id="models" aria-labelledby="models-title">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Open weights</p>
+      <h2 id="models-title">The AnuLM family on Hugging Face.</h2>
+      <p>The Omni model joins these once it is published. The coder and translator were trained on
+        non-commercial data and keep those terms; Omni was built to avoid them.</p>
+    </div>
+    <div class="table-wrap stack" role="region" aria-labelledby="models-cap" tabindex="0">
       <table>
-        <thead><tr><th scope="col">model</th><th scope="col">what it is</th><th scope="col">licence</th></tr></thead>
+        <caption id="models-cap" class="visually-hidden">Released and upcoming AnuLM models</caption>
+        <thead><tr><th scope="col">Model</th><th scope="col">What it is</th><th scope="col">Licence</th></tr></thead>
         <tbody>
-          <tr><td>AnuLM-Omni-400M</td><td>this model: one set of weights for all five skills</td><td><span class="soon">coming soon</span>, CC BY-SA 4.0</td></tr>
-          <tr><td><a href="https://huggingface.co/toonist/AnuLM-Base-v2-400M">toonist/AnuLM-Base-v2-400M</a></td><td>the base it starts from: Hindi, English, Python, 11.3B tokens</td><td>CC BY-SA 4.0</td></tr>
-          <tr><td><a href="https://huggingface.co/toonist/AnuLM-Base-400M">toonist/AnuLM-Base-400M</a></td><td>the first three-language base</td><td>CC BY-SA 4.0</td></tr>
-          <tr><td><a href="https://huggingface.co/toonist/AnuLM-Base-2K-400M">toonist/AnuLM-Base-2K-400M</a></td><td>the same base at 2,048 tokens of context</td><td>CC BY-SA 4.0</td></tr>
-          <tr><td><a href="https://huggingface.co/toonist/AnuLM-Hindi-QA-400M">toonist/AnuLM-Hindi-QA-400M</a></td><td>Hindi and English question answering</td><td>CC BY-SA 4.0</td></tr>
-          <tr><td><a href="https://huggingface.co/toonist/AnuLM-Coder-400M">toonist/AnuLM-Coder-400M</a></td><td>Python coder</td><td>CC BY-NC-SA 4.0 (non-commercial)</td></tr>
-          <tr><td><a href="https://huggingface.co/toonist/AnuLM-Translate-400M">toonist/AnuLM-Translate-400M</a></td><td>English ↔ Hindi translation</td><td>CC BY-NC 4.0 (non-commercial)</td></tr>
+          <tr><th scope="row">AnuLM-Omni-400M <span class="soon">not yet published</span></th><td data-label="What">this model: one set of weights for every skill above</td><td data-label="Licence">CC BY-SA 4.0</td></tr>
+          <tr><th scope="row"><a href="https://huggingface.co/toonist/AnuLM-Base-v2-400M">AnuLM-Base-v2-400M</a></th><td data-label="What">the base Omni starts from: Hindi, English, Python, 11.3B tokens</td><td data-label="Licence">CC BY-SA 4.0</td></tr>
+          <tr><th scope="row"><a href="https://huggingface.co/toonist/AnuLM-Base-400M">AnuLM-Base-400M</a></th><td data-label="What">the first three-language base</td><td data-label="Licence">CC BY-SA 4.0</td></tr>
+          <tr><th scope="row"><a href="https://huggingface.co/toonist/AnuLM-Base-2K-400M">AnuLM-Base-2K-400M</a></th><td data-label="What">the same base at 2,048 tokens of context</td><td data-label="Licence">CC BY-SA 4.0</td></tr>
+          <tr><th scope="row"><a href="https://huggingface.co/toonist/AnuLM-Hindi-QA-400M">AnuLM-Hindi-QA-400M</a></th><td data-label="What">Hindi and English question answering</td><td data-label="Licence">CC BY-SA 4.0</td></tr>
+          <tr><th scope="row"><a href="https://huggingface.co/toonist/AnuLM-Coder-400M">AnuLM-Coder-400M</a></th><td data-label="What">Python coder</td><td data-label="Licence">CC BY-NC-SA 4.0, non-commercial</td></tr>
+          <tr><th scope="row"><a href="https://huggingface.co/toonist/AnuLM-Translate-400M">AnuLM-Translate-400M</a></th><td data-label="What">English ↔ Hindi translation</td><td data-label="Licence">CC BY-NC 4.0, non-commercial</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="note">The earlier coder and translator were trained on non-commercial data and keep those terms;
-      AnuLM-Omni-400M was built to avoid them.</p>
   </div>
 </section>
 
-<section id="credits">
+<!-- ================= FAQ ================= -->
+<section id="faq" aria-labelledby="faq-title">
   <div class="wrap">
-    <h2>Credits</h2>
-    <p class="intro">AnuLM is built on other people's open work. Thank you to the authors of:</p>
-    <ul class="plain">
-      <li><strong>Encoders and tools:</strong> Whisper-small (OpenAI, MIT) via faster-whisper; SigLIP
-        (Google, Apache 2.0) via timm; multilingual-e5-small (MIT); Piper voices for the demo; Gradio.</li>
-      <li><strong>Speech:</strong> LibriSpeech (CC BY 4.0), FLEURS (Google, CC BY 4.0), Kathbath (AI4Bharat,
-        CC BY 4.0), MUCS 2021 (CC BY-SA 4.0).</li>
-      <li><strong>Images:</strong> DOCCI (Google, CC BY 4.0), Localized Narratives (CC BY 4.0) and TextVQA
-        (CC BY 4.0) on Open Images photos licensed CC BY 2.0, each photographer listed in the repository.</li>
-      <li><strong>Text:</strong> Wikipedia (CC BY-SA 4.0), SQuAD, MLQA, databricks-dolly-15k, OpenAssistant
-        oasst2, Aya, BANKING77 (PolyAI) and MASSIVE (Amazon Science); for pretraining, fineweb-edu,
-        fineweb-2 and open Python code.</li>
-      <li><strong>Architecture:</strong> the published Sarvam 30B / 105B design (Sarvam AI), re-implemented
-        independently. No Sarvam weights are used, and AnuLM is not affiliated with Sarvam AI, AI4Bharat or
-        any other organisation named here.</li>
-    </ul>
-    <p class="note">The samples on this page and in the demo's library come from the held-out splits above;
-      every file and its credit is listed in <code>examples/samples/ATTRIBUTION.md</code>.</p>
+    <div class="section-head">
+      <p class="eyebrow">FAQ</p>
+      <h2 id="faq-title">Questions, answered.</h2>
+    </div>
+    <div class="faq">
+      <details>
+        <summary>Can I use it in a commercial product?</summary>
+        <div><p>Yes. The weights are CC BY-SA 4.0: you may use them commercially and modify them, with attribution.
+          If you distribute the weights or a modified version, you must use CC BY-SA 4.0 too. Serving the model
+          behind an API distributes no weights. The code is MIT.</p>
+          <p>The demo's Piper voices have their own, non-commercial terms. A commercial deployment of the demo needs
+          other voices.</p></div>
+      </details>
+      <details>
+        <summary>Where can I download the Omni weights?</summary>
+        <div><p>Not yet. AnuLM-Omni-400M is a release candidate and is not on Hugging Face. You can train the same
+          model yourself with route B, in about 6 hours of GPU from the released base. The earlier AnuLM models
+          are already on <a href="https://huggingface.co/toonist">Hugging Face</a>.</p></div>
+      </details>
+      <details>
+        <summary>Is there an online demo?</summary>
+        <div><p>Not yet. The demo is a Gradio app you run locally with <code>python -m anulm app_omni</code>, at
+          <code>http://127.0.0.1:7863</code>. It runs on a 16 GB GPU, or on a CPU with <code>--device cpu</code>.</p></div>
+      </details>
+      <details>
+        <summary>Why is it one model instead of five?</summary>
+        <div><p>Before Omni, each skill was its own full copy of the decoder. One set of weights is simpler to ship
+          and serve. The cost is that the tasks share capacity, so each one gives up a little; the release gates
+          make sure none gives up too much.</p></div>
+      </details>
+      <details>
+        <summary>Was it really trained on one consumer GPU?</summary>
+        <div><p>Yes. The base was pretrained from random weights on 11.3B tokens on one RTX 5070 Ti with 16 GB, and
+          the seven-task training ran on the same card.</p></div>
+      </details>
+      <details>
+        <summary>Is it related to Sarvam AI?</summary>
+        <div><p>No. AnuLM independently re-implements the published Sarvam 30B design at small scale. No Sarvam
+          weights are used. AnuLM is not affiliated with Sarvam AI, AI4Bharat or any other organisation named on this page.</p></div>
+      </details>
+      <details>
+        <summary>How do I contribute?</summary>
+        <div><p>Open work is listed in the repository's <code>docs/TODO.md</code>, and <code>CONTRIBUTING.md</code>
+          says how. Several items need no GPU. Start on
+          <a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM">GitHub</a>.</p></div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FINAL CTA ================= -->
+<section class="alt final" aria-labelledby="final-title">
+  <div class="wrap">
+    <h2 id="final-title">Read it, run it, train it.</h2>
+    <p>The code, the data scripts, the evaluation and the demo are open. So is every number on this page.</p>
+    <div class="cta">
+      <a class="btn primary" href="#start">Get started</a>
+      <a class="btn secondary" href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM">View on GitHub</a>
+    </div>
   </div>
 </section>
 </main>
 
 <footer>
   <div class="wrap">
-    AnuLM · code MIT · AnuLM-Omni-400M not yet released ·
-    <a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM">GitHub</a>
+    <div class="foot-grid">
+      <div>
+        <h2>AnuLM-Omni-400M</h2>
+        <p style="margin:0">One open model that listens, looks, reads, routes and chats, in English and Hindi.
+          An independent project, released for research, teaching and products.</p>
+      </div>
+      <nav aria-label="Project">
+        <h2>Project</h2>
+        <ul>
+          <li><a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM">GitHub repository</a></li>
+          <li><a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/restructure/docs/OMNI.md">Omni guide</a></li>
+          <li><a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/restructure/docs/MODEL_CARD_OMNI.md">Model card</a></li>
+          <li><a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/restructure/docs/TRAIN_FROM_SCRATCH.md">Train from scratch</a></li>
+          <li><a href="https://huggingface.co/toonist">Hugging Face</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Licences">
+        <h2>Licences</h2>
+        <ul>
+          <li><a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/restructure/LICENSE">Code: MIT</a></li>
+          <li><a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/restructure/docs/MODEL_CARD_OMNI.md">Weights: CC BY-SA 4.0</a></li>
+          <li><a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/restructure/NOTICE">Third-party notices</a></li>
+          <li><a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/restructure/docs/DATASETS.md">Datasets and licences</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Learn">
+        <h2>Learn</h2>
+        <ul>
+          <li><a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/tree/restructure/course">The course</a></li>
+          <li><a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/tree/restructure/book">The book</a></li>
+          <li><a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/restructure/examples/samples/ATTRIBUTION.md">Sample credits</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="foot-bottom">
+      <p><strong>Media on this page.</strong> English clip: LibriSpeech dev-clean (Panayotov et al.), CC BY 4.0.
+        Hindi clip: Kathbath (AI4Bharat), CC BY 4.0. Duck photo: DOCCI (Google), CC BY 4.0.
+        Watch photo by <a href="https://www.flickr.com/photos/gsi-r/16781536062">Micky Aldridge</a> and sign photo by
+        <a href="https://www.flickr.com/photos/tenpoundhammer/5063268345">Bobby P.</a>, both
+        <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a> via Open Images, with questions from
+        TextVQA (CC BY 4.0). Messages: BANKING77 (PolyAI) and MASSIVE (Amazon Science), CC BY 4.0. All media resized
+        or converted; content unchanged.</p>
+      <p>Built on Whisper-small (OpenAI), SigLIP (Google), multilingual-e5-small, Piper and Gradio. Not affiliated with
+        Sarvam AI, AI4Bharat or any organisation named here. This page has no trackers and no analytics.</p>
+      <p>© 2026 The AnuLM authors.</p>
+    </div>
   </div>
 </footer>
 </body>

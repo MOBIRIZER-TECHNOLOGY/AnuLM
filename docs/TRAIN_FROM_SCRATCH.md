@@ -22,7 +22,7 @@ not recorded, the guide says so.
 | RAM | 8 GB | 32 GB (64 GB used here) | the same |
 | disk | under 1 GB | about 150 GB | about 150 GB + about 85 GB |
 | downloads | small: 1 MB of Shakespeare, part of a Wikipedia dump | about 60 GB, one gated set | about 60 GB + about 50 GB |
-| time | 30 s (GPU) to 30 min (CPU) | download time + about 26 h of GPU | B + about 7 days of GPU for the base |
+| time | 30 s (GPU) to 30 min (CPU) | download time + about 6 h of GPU | B + about 7 days of GPU for the base |
 | what you get | a model that writes Shakespeare-shaped or Hindi-shaped text | `ckpt_omni.pt`, an exported folder, and a report card | the same, with a base you trained |
 
 Sources for the table: route A from `README.md` and `docs/TUTORIAL.md` §0,

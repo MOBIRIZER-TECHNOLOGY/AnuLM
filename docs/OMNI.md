@@ -133,7 +133,7 @@ change them there.
 | 2026-11-03 | 12,500 steps, 24.2 h, intents 5% | step 9,375 | 3.475 | 87.7 | chat |
 | 2026-11-05 a | 3,125 steps, `--max-ratio chat=1.049`, 3.9 h | step 2,500 | 3.298 | 69.7 | intents |
 | 2026-11-05 b | as a, intents 15% (from Hindi speech and captions), 4.3 h | step 2,500 | 3.309 | 85.0 | chat, by 0.009 |
-| run b, 5% blend | `experiments/blend_weights.py --alpha 0.05` | - | 3.299 | 85.7 | none; exported copy: chat 3.2985, English WER 8.3%, Hindi speech being checked |
+| run b, 5% blend | `experiments/blend_weights.py --alpha 0.05` | - | 3.299 | 85.7 | none, on the exported copy too: chat 3.2985, English WER 8.3%, FLEURS 41.5%, Hindi mean 42.2% |
 
 - **Chat rises in the first 625 steps** (3.27 -> 3.37 on the training curve)
   and is then nearly flat, whatever the shares: the other tasks move the

@@ -142,11 +142,11 @@ def row_cells(name: str, i: int, r: dict) -> list:
     return [i + 1, inp, exp, r.get("got", ""), res, t]
 
 
-def add_tab(summary: dict | None = None, rows: dict | None = None, note: str = ""):
+def add_tab(summary: dict | None = None, rows: dict | None = None, note: str = "", title: str = "Benchmark"):
     """Call inside a `gr.Blocks` context. `note` is shown above the recording."""
     if summary is None:
         summary, rows = load()
-    with gr.Tab("Benchmark"):
+    with gr.Tab(title):
         if note and summary:
             gr.Markdown(note)
         if not summary:

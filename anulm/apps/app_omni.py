@@ -133,8 +133,17 @@ def _json(p: Path) -> dict:
         return {}
 
 
+# The measured results of the model this page serves. The pipeline's own
+# results.json by default; a model made outside it (a weight blend, say) is
+# served with ANULM_OMNI_RESULTS pointing at its own measurements, so the
+# page never shows one model's numbers beside another's answers.
+RESULTS = Path(os.environ.get("ANULM_OMNI_RESULTS") or OMNI_LOGS / "results.json")
+if not RESULTS.is_absolute():
+    RESULTS = HERE / RESULTS
+
+
 def omni_results() -> dict:
-    res = _json(OMNI_LOGS / "results.json")
+    res = _json(RESULTS)
     if res:
         _omni_one().gates(res)          # adds wer_hi_mean
     return res
@@ -153,7 +162,7 @@ def omni_status(res: dict, pointer: bool = True) -> str:
              "wer_hi_fleurs": "Hindi speech on FLEURS", "wer_hi_mean": "Hindi speech",
              "intent_banking77": "banking intents", "vqa_acc": "image questions"}
     failed = [short.get(k, k) for k, ok in g.items() if not ok]
-    when = time.strftime("%Y-%m-%d", time.localtime((OMNI_LOGS / "results.json").stat().st_mtime))
+    when = time.strftime("%Y-%m-%d", time.localtime(RESULTS.stat().st_mtime))
     if not failed:
         return f"Measured {when}: all {len(g)} release gates pass."
     return (f"Measured {when}: **not released yet**. {len(g) - len(failed)} of {len(g)} release gates "
@@ -327,10 +336,21 @@ def chat_text(models: Models, text: str, max_tokens: int = 300) -> tuple[str, fl
     return readable(out["completion"]), time.time() - t0
 
 
+# A Devanagari vowel sign or virama can only follow a Devanagari letter; the
+# recogniser sometimes emits one after an English word in code-mixed speech
+# ("corp्s"), which renders as a dotted circle.
+_STRAY_MARK = re.compile("(?<=[A-Za-z0-9 ])[\u0900-\u0903\u093a-\u094f\u0951-\u0957\u0962\u0963]+")
+
+
+def tidy_transcript(text: str) -> str:
+    return _STRAY_MARK.sub("", text)
+
+
 def hear(models: Models, lang: str, audio) -> dict:
     """models.ear(lang).hear(audio), under the shared-decoder lock."""
     with models.shared:
-        return models.ear(lang).hear(audio)
+        out = models.ear(lang).hear(audio)
+    return {**out, "text": tidy_transcript(out.get("text") or "")}
 
 
 def look(models: Models, image, question: str | None) -> str:
@@ -444,12 +464,12 @@ def sample_label(item: dict, n: int = 56) -> str:
     kind = item["kind"]
     if kind.startswith("asr"):
         where = item["source"].split(",")[0].replace(" hi_in test", "").replace(" Hindi held-out (valid split)", "")
-        return f"{'English' if item['language'] == 'en' else 'हिन्दी'} · {where} · {item.get('seconds', 0):.0f} s"
+        return f"{where} · {item.get('seconds', 0):.0f} s"
     if kind == "caption":
         return "describe: " + item["source"].replace("DOCCI test, ", "DOCCI ")
     text = item["inputs"].get("question") or item["inputs"].get("message") or item["id"]
     text = text if len(text) <= n else text[:n - 1] + "…"
-    return {"lookup": "look up: ", "vqa": "ask: "}.get(kind, "") + text
+    return text          # the sample groups are titled by kind, so no "look up:" prefix
 
 
 def whole_sentences(text: str) -> str:
@@ -472,7 +492,14 @@ def best_step(df) -> tuple[int, int] | None:
 
 def omni_tab(res: dict) -> None:
     """The Model & data tab: what the one model scores, how it got there, on what."""
-    gr.Markdown("## The one model\n" + omni_status(res, pointer=False))
+    served = OMNI_HUB if str(OMNI).startswith(OMNI_HUB) else Path(OMNI).name
+    where = RESULTS.relative_to(HERE).as_posix() if RESULTS.is_relative_to(HERE) else RESULTS.name
+    blend = ("It is the training run's kept checkpoint with a small share of the starting chat "
+             "model's weights mixed back in (`experiments/blend_weights.py`; `docs/OMNI.md`, "
+             "\"Runs so far\")." if "blend" in served else "")
+    gr.Markdown("## The one model\n" + omni_status(res, pointer=False)
+                + f"\n\nServing `{served}`; every number below is that model's own measurement "
+                  f"(`{where}`). " + blend)
     if res:
         oo = _omni_one()
         g = oo.gates(dict(res))
@@ -542,19 +569,118 @@ def omni_tab(res: dict) -> None:
             gr.Markdown("### Training data\n" + m.group(1).strip())
 
 
+GITHUB = "https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM"
+GUIDE = GITHUB + "/blob/restructure/docs/TRAIN_FROM_SCRATCH.md"
+HF_ORG = "https://huggingface.co/toonist"
+
+THEME = gr.themes.Soft(primary_hue="teal", secondary_hue="amber", neutral_hue="slate",
+                       radius_size="lg", font=[gr.themes.GoogleFont("Inter"), "system-ui", "sans-serif"])
+
+CSS = """
+.gradio-container { max-width: 1240px !important; width: 100% !important; min-width: 0 !important;
+                     margin: 0 auto !important; }
+.gradio-container table { display: block; overflow-x: auto; max-width: 100%; }
+#metrics .k, .how { overflow-wrap: anywhere; }
+#hero { border-radius: 20px; padding: 28px 30px 24px; margin-bottom: 6px; color: #f1f7f6;
+        background: radial-gradient(1200px 300px at 10% -40%, #2bb3a3 0%, transparent 60%),
+                    linear-gradient(135deg, #0b3b3c 0%, #0f2a3a 55%, #1b1f3a 100%); }
+#hero p, #hero span, #hero b, #hero div { color: #eaf6f4 !important; }
+#hero h1 { font-size: 2.1rem; line-height: 1.15; margin: 0 0 6px; color: #fff; letter-spacing: -0.02em; }
+#hero .tag { font-size: 1.06rem; opacity: .92; margin: 0 0 14px; max-width: 780px; }
+#hero .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+#hero .chip { font-size: .8rem; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.12);
+              border: 1px solid rgba(255,255,255,.18); }
+#hero .status { display: inline-block; font-size: .85rem; padding: 6px 12px; border-radius: 10px;
+                background: rgba(255,255,255,.10); margin-bottom: 14px; }
+#hero .status.ok { background: rgba(94, 214, 151, .18); border: 1px solid rgba(94,214,151,.45); }
+#hero .links a { display: inline-block; margin: 0 8px 6px 0; padding: 8px 14px; border-radius: 10px;
+                 font-weight: 600; font-size: .9rem; text-decoration: none; color: #0b3b3c !important; background: #e9fbf8; }
+#hero .links a.ghost { background: transparent; color: #e9fbf8 !important; border: 1px solid rgba(233,251,248,.5); }
+#hero h1 { color: #ffffff !important; }
+#metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin: 8px 0 4px; }
+#metrics .m { border: 1px solid var(--border-color-primary); border-radius: 14px; padding: 12px 14px;
+              background: var(--background-fill-primary); }
+#metrics .v { font-size: 1.45rem; font-weight: 700; letter-spacing: -0.01em; }
+#metrics .k { font-size: .8rem; color: var(--body-text-color-subdued); margin-top: 2px; }
+#metrics .g { font-size: .72rem; margin-top: 6px; color: var(--body-text-color-subdued); }
+#metrics .g b { color: #1d8a55; }
+.how { font-size: .92rem; color: var(--body-text-color-subdued); margin: 2px 0 6px; }
+.note { font-size: .82rem; color: var(--body-text-color-subdued); }
+.answer textarea { font-size: 1.02rem !important; line-height: 1.5 !important; }
+.sample-gallery .caption-label { font-size: .72rem !important; }
+#footer { margin-top: 18px; padding: 16px 4px; font-size: .82rem; color: var(--body-text-color-subdued);
+          border-top: 1px solid var(--border-color-primary); }
+#footer a { color: inherit; }
+@media (max-width: 640px) { #hero { padding: 20px 18px; } #hero h1 { font-size: 1.6rem; } }
+"""
+
+
+def hero_html(res: dict) -> str:
+    """The banner: what the model is, whether it passes its gates, where to go next."""
+    if res:
+        g = _omni_one().gates(dict(res))
+        ok = all(g.values())
+        status = (f"<span class='status ok'>All {len(g)} release gates pass · measured on the exported model</span>"
+                  if ok else f"<span class='status'>{sum(g.values())} of {len(g)} release gates pass · "
+                             f"not released yet</span>")
+    else:
+        status = ""
+    chips = ["456M mixture-of-experts · 232M active", "English + हिन्दी", "Pretrained from scratch on one GPU",
+             "Only commercially usable data", "Open code"]
+    return (
+        "<div id='hero'>"
+        "<h1>AnuLM-Omni-400M</h1>"
+        "<p class='tag'>One small open model that <b>listens</b>, <b>looks</b>, <b>reads</b>, "
+        "<b>routes</b> and <b>chats</b>, in English and Hindi. Every tab below runs the same weights.</p>"
+        "<div class='chips'>" + "".join(f"<span class='chip'>{c}</span>" for c in chips) + "</div>"
+        + status +
+        f"<div class='links'><a href='{GITHUB}' target='_blank' rel='noopener'>GitHub</a>"
+        f"<a class='ghost' href='{HF_ORG}' target='_blank' rel='noopener'>Hugging Face</a>"
+        f"<a class='ghost' href='{GUIDE}' target='_blank' rel='noopener'>Train it yourself</a></div>"
+        "</div>")
+
+
+def metrics_html(res: dict) -> str:
+    """Six headline numbers, each beside its release gate."""
+    if not res:
+        return ""
+    oo = _omni_one()
+    gates, passed = oo.GATES, oo.gates(dict(res))
+    cards = [("wer_en", "English speech, word error rate"), ("wer_hi_mean", "Hindi speech, word error rate"),
+             ("intent_banking77", "Banking intents, accuracy"), ("read_squad_en", "Reading, SQuAD F1"),
+             ("vqa_acc", "Image questions, TextVQA"), ("chat_heldout_loss", "Chat, held-out loss")]
+    out = []
+    for k, label in cards:
+        if res.get(k) is None:
+            continue
+        gate = gates.get(k)
+        sign = gate[0].replace("<=", "≤").replace(">=", "≥") if gate else ""
+        g = "" if not gate else (f"<div class='g'>release gate {sign} {gate[1]:g} · "
+                                 + ("<b>pass</b>" if passed.get(k) else "not yet") + "</div>")
+        v = f"{res[k]:.3f}" if k == "chat_heldout_loss" else f"{res[k]:.1f}{MEASURES[k][1]}"
+        out.append(f"<div class='m'><div class='v'>{v}</div><div class='k'>{label}</div>{g}</div>")
+    return "<div id='metrics'>" + "".join(out) + "</div>"
+
+
+def footer_html() -> str:
+    return (f"<div id='footer'>AnuLM is open source: <a href='{GITHUB}' target='_blank' rel='noopener'>code on "
+            f"GitHub</a> · <a href='{HF_ORG}' target='_blank' rel='noopener'>models on Hugging Face</a> · "
+            f"<a href='{GUIDE}' target='_blank' rel='noopener'>train it from scratch</a>. Sample photos and clips "
+            "are held-out test data, credited beside each sample and in <code>examples/samples/ATTRIBUTION.md"
+            "</code>. A small model: check what matters, especially facts from memory and names.</div>")
+
+
 def build(models: Models) -> gr.Blocks:
     res = omni_results() if USE_OMNI else {}
-    with gr.Blocks(title="AnuLM Omni") as demo:
+    with gr.Blocks(title="AnuLM-Omni-400M · live demo") as demo:
         if USE_OMNI:
-            gr.Markdown(
-                "# AnuLM-Omni-400M\n"
-                "**One model behind every tab.** A single 456M mixture-of-experts decoder (232M active "
-                "per token), pretrained from scratch on one consumer GPU, then trained on seven tasks at "
-                "once: it **listens** (English and Hindi speech), **looks** (captions, questions about a "
-                "photo), **reads**, **routes** messages and **chats**. Trained only on data that allows "
-                "commercial use. Hearing and seeing go through frozen borrowed encoders (Whisper-small, "
-                "SigLIP), lookup uses the multilingual-e5-small retriever, and the voice is Piper.\n\n"
-                + omni_status(res))
+            gr.HTML(hero_html(res))
+            gr.HTML(metrics_html(res))
+            gr.Markdown("Pick a sample under any tab and it runs in one click, with the reference answer "
+                        "beside the model's. Or use your own voice, photo or question. Hearing and seeing use "
+                        "frozen borrowed encoders (Whisper-small, SigLIP); lookup uses the multilingual-e5-small "
+                        "retriever; the voice is Piper. Everything else is AnuLM's own weights.",
+                        elem_classes="how")
         else:
             gr.Markdown(
                 "# AnuLM Omni\n"
@@ -564,8 +690,15 @@ def build(models: Models) -> gr.Blocks:
                 "read frozen pretrained encoders (Whisper-small, SigLIP), lookup uses the "
                 "multilingual-e5-small retriever, and the voice is Piper.")
 
-        with gr.Tab("Listen & reply"):
-            with gr.Row():
+        with gr.Tab("🎙️ Listen"):
+            gr.Markdown("**Speech to text, then an answer out loud.** Record yourself, upload a clip, or pick "
+                        "a held-out test clip below: it is transcribed and the transcript is checked against "
+                        "what was actually said.", elem_classes="how")
+            listen_lib = sample_library("asr_en", "asr_hi")
+            listen_ref = gr.Textbox(label="what was actually said", lines=3, interactive=False,
+                                    visible=bool(listen_lib), render=False)
+            listen_sets = []
+            with gr.Row(equal_height=False):
                 with gr.Column():
                     audio = gr.Audio(sources=["microphone", "upload"], type="numpy",
                                      label="speak or upload a clip")
@@ -573,14 +706,23 @@ def build(models: Models) -> gr.Blocks:
                                     label="language you speak")
                     speak_back = gr.Checkbox(value=True, label="answer the question out loud")
                     go_listen = gr.Button("Listen", variant="primary")
+                    # The sample lists sit under the button, beside the output,
+                    # so a click and its result are on screen together.
+                    for group, title in (("en", "English test clips"), ("hi", "हिन्दी test clips")):
+                        rows = [i for i in listen_lib if i["inputs"]["lang"] == group]
+                        if rows:
+                            listen_sets.append(gr.Examples(
+                                [[sample_file(i, "audio"), i["inputs"]["lang"], False, sample_reference(i)]
+                                 for i in rows], [audio, lang, speak_back, listen_ref],
+                                label=f"{title} · {len(rows)} held-out, click one to transcribe",
+                                example_labels=[f"{n:02d} · {sample_label(i)}" for n, i in enumerate(rows, 1)],
+                                examples_per_page=8))
                 with gr.Column():
-                    heard = gr.Textbox(label="AnuLM heard", lines=2)
-                    said = gr.Textbox(label="AnuLM answered", lines=4)
+                    heard = gr.Textbox(label="AnuLM heard", lines=2, elem_classes="answer")
+                    said = gr.Textbox(label="AnuLM answered", lines=4, elem_classes="answer")
                     voice_out = gr.Audio(label="spoken answer", autoplay=True)
                     listen_meta = gr.Markdown()
-                    listen_lib = sample_library("asr_en", "asr_hi")
-                    listen_ref = gr.Textbox(label="what was actually said (library samples)", lines=3,
-                                            interactive=False, visible=bool(listen_lib))
+                    listen_ref.render()
 
             def do_listen(a, lg, speak):
                 if a is None:
@@ -591,7 +733,8 @@ def build(models: Models) -> gr.Blocks:
                 if not h["text"]:
                     return "", "", None, f"heard nothing ({t_hear:.2f}s)"
                 if not speak:
-                    return h["text"], "", None, f"hear {t_hear:.2f}s"
+                    return h["text"], "", None, (f"hear {t_hear:.2f}s · transcript only (tick \"answer the "
+                                                 f"question out loud\" for a spoken reply)")
                 reply, t_think = answer_text(models, as_question(h["text"]))
                 t1 = time.time()
                 spoken = speech_or_none(models, reply)
@@ -605,14 +748,11 @@ def build(models: Models) -> gr.Blocks:
             if listen_lib:
                 # The clips are read sentences, not questions, so a sample turns
                 # "answer out loud" off: the transcript is what the reference checks.
-                ex = gr.Examples([[sample_file(i, "audio"), i["inputs"]["lang"], False, sample_reference(i)]
-                                  for i in listen_lib], [audio, lang, speak_back, listen_ref],
-                                 label=f"{len(listen_lib)} held-out clips: one click transcribes",
-                                 example_labels=[sample_label(i) for i in listen_lib], examples_per_page=10)
-                # Chained on the click rather than run_on_click, so the sample
-                # runs through the same handler, and settings, as the button.
-                ex.load_input_event.then(do_listen, [audio, lang, speak_back],
-                                         [heard, said, voice_out, listen_meta], api_visibility="undocumented")
+                for ex in listen_sets:
+                    # Chained on the click rather than run_on_click, so the sample
+                    # runs through the same handler, and settings, as the button.
+                    ex.load_input_event.then(do_listen, [audio, lang, speak_back],
+                                             [heard, said, voice_out, listen_meta], api_visibility="undocumented")
                 # A clip of the visitor's own makes the shown reference stale.
                 for ev in (audio.upload, audio.stop_recording):
                     ev(lambda: "", None, listen_ref, queue=False, api_visibility="private")
@@ -627,8 +767,26 @@ def build(models: Models) -> gr.Blocks:
                             "37.4% Hindi (100 held-out FLEURS clips), about 0.11 x real time; "
                             "the Benchmark tab has every transcript. It struggles most with names.*")
 
-        with gr.Tab("Look"):
+        with gr.Tab("🖼️ Look"):
+            gr.Markdown("**Describe a photo, or ask about it.** Click a photo in the gallery below (one click "
+                        "runs it), or drop in your own. Leave the question empty for a description.",
+                        elem_classes="how")
+            look_lib = sample_library("caption", "vqa") if USE_OMNI else []
+            # A gallery of the photos themselves, above the inputs: a button per
+            # sample named after its file told a visitor nothing about the photo.
+            galleries = []
             with gr.Row():
+                for kinds, title in ((("caption",), "Describe it: held-out DOCCI photos"),
+                                     (("vqa",), "Ask about it: held-out TextVQA photos")):
+                    rows = [i for i in look_lib if i["kind"] in kinds]
+                    if not rows:
+                        continue
+                    gal = gr.Gallery([(sample_file(i, "image"), i["inputs"]["question"] or None)
+                                      for i in rows], label=f"{title} · {len(rows)}, click one to run it",
+                                     columns=6, rows=None, height="auto", object_fit="cover",
+                                     allow_preview=False, interactive=False, elem_classes="sample-gallery")
+                    galleries.append((gal, rows))
+            with gr.Row(equal_height=False):
                 with gr.Column():
                     img = gr.Image(type="filepath", label="image", height=320)
                     question = gr.Textbox(label="question (leave empty for a caption)",
@@ -637,10 +795,9 @@ def build(models: Models) -> gr.Blocks:
                                         label="...or ask it out loud (English)")
                     go_look = gr.Button("Look", variant="primary")
                 with gr.Column():
-                    seen = gr.Textbox(label="AnuLM sees", lines=3)
-                    look_voice = gr.Audio(label="spoken", autoplay=True)
+                    seen = gr.Textbox(label="AnuLM sees", lines=4, elem_classes="answer")
+                    look_voice = gr.Audio(label="hear the answer", autoplay=False)
                     look_meta = gr.Markdown()
-                    look_lib = sample_library("caption", "vqa") if USE_OMNI else []
                     look_ref = gr.Textbox(label="reference (library samples)", lines=4,
                                           interactive=False, visible=bool(look_lib))
 
@@ -660,7 +817,7 @@ def build(models: Models) -> gr.Blocks:
                 else:
                     parts.append(f"caption ({'AnuLM-Omni' if USE_OMNI else 'Flickr30k-trained'}) "
                                  f"{time.time() - t1:.2f}s")
-                out = out or "(nothing)"
+                out = (out if q and q.strip() else whole_sentences(out or "")) or "(nothing)"
                 spoken = speech_or_none(models, out) if out != "(nothing)" else None
                 return q, out, spoken, " · ".join(parts)
 
@@ -671,13 +828,17 @@ def build(models: Models) -> gr.Blocks:
                 return do_look(image, q, None)
 
             if look_lib:
-                ex = gr.Examples([[sample_file(i, "image"), i["inputs"]["question"], sample_reference(i)]
-                                  for i in look_lib], [img, question, look_ref],
-                                 label=f"{len(look_lib)} held-out photos: one click describes it, or asks "
-                                       f"what is written",
-                                 example_labels=[sample_label(i) for i in look_lib], examples_per_page=11)
-                ex.load_input_event.then(look_sample, [img, question], [question, seen, look_voice, look_meta],
-                                         api_visibility="undocumented")
+                def pick(rows):
+                    def choose(evt: gr.SelectData):
+                        item = rows[evt.index]
+                        return sample_file(item, "image"), item["inputs"]["question"], sample_reference(item)
+                    return choose
+
+                for gal, rows in galleries:
+                    gal.select(pick(rows), None, [img, question, look_ref], queue=False,
+                               api_visibility="private").then(
+                        look_sample, [img, question], [question, seen, look_voice, look_meta],
+                        api_visibility="undocumented")
                 img.upload(lambda: "", None, look_ref, queue=False, api_visibility="private")
                 question.input(lambda: "", None, look_ref, queue=False, api_visibility="private")
                 gr.Markdown("*" + ("Captions learned from Localized Narratives and DOCCI; questions from "
@@ -699,18 +860,33 @@ def build(models: Models) -> gr.Blocks:
                     gr.Examples([[str(e), ""] for e in examples], [img, question],
                                 label="held-out Flickr30k test images")
 
-        with gr.Tab("Chat"):
-            q_in = gr.Textbox(label="ask in English, Hindi or about Python", lines=2,
-                              placeholder="भारत की राजधानी क्या है?")
-            chat_mode = gr.Radio([("Look it up (facts, from Wikipedia)", "lookup"),
-                                  ("Just talk (the chat model's own words)", "chat")],
-                                 value="lookup", label="how to answer")
-            go_chat = gr.Button("Ask", variant="primary")
-            a_out = gr.Textbox(label="AnuLM", lines=6)
-            chat_meta = gr.Markdown()
+        with gr.Tab("💬 Chat"):
+            gr.Markdown("**Ask anything.** *Look it up* answers facts from Wikipedia passages and names the "
+                        "page it used; *just talk* answers in the model's own words. English, हिन्दी or Python.",
+                        elem_classes="how")
             chat_lib = sample_library("lookup") + sample_library("chat")     # the default mode's first
-            chat_ref = gr.Textbox(label="reference (library samples)", lines=2, interactive=False,
-                                  visible=bool(chat_lib))
+            chat_ref = gr.Textbox(label="reference", lines=2, interactive=False, visible=bool(chat_lib),
+                                  render=False)
+            chat_sets = []
+            with gr.Row(equal_height=False):
+                with gr.Column():
+                    q_in = gr.Textbox(label="your question", lines=3, placeholder="भारत की राजधानी क्या है?")
+                    chat_mode = gr.Radio([("Look it up (facts, from Wikipedia)", "lookup"),
+                                          ("Just talk (the model's own words)", "chat")],
+                                         value="lookup", label="how to answer")
+                    go_chat = gr.Button("Ask", variant="primary")
+                    for kinds, title in ((("lookup",), "Look it up: facts from Wikipedia"),
+                                         (("chat",), "Just talk: English, हिन्दी and Python prompts")):
+                        rows = [i for i in chat_lib if i["kind"] in kinds]
+                        if rows:
+                            chat_sets.append(gr.Examples(
+                                [[i["inputs"]["question"], i["inputs"]["mode"], sample_reference(i)] for i in rows],
+                                [q_in, chat_mode, chat_ref], label=f"{title} · {len(rows)}, click one to ask",
+                                example_labels=[sample_label(i) for i in rows], examples_per_page=10))
+                with gr.Column():
+                    a_out = gr.Textbox(label="AnuLM", lines=9, elem_classes="answer")
+                    chat_meta = gr.Markdown()
+                    chat_ref.render()
 
             def do_chat(q, mode):
                 if not q or not q.strip():
@@ -725,13 +901,9 @@ def build(models: Models) -> gr.Blocks:
 
             go_chat.click(do_chat, [q_in, chat_mode], [a_out, chat_meta])
             if chat_lib:
-                ex = gr.Examples([[i["inputs"]["question"], i["inputs"]["mode"], sample_reference(i)]
-                                  for i in chat_lib], [q_in, chat_mode, chat_ref],
-                                 label=f"{len(chat_lib)} samples: Wikipedia lookups, then English, Hindi "
-                                       f"and Python prompts (one click asks)",
-                                 example_labels=[sample_label(i) for i in chat_lib], examples_per_page=10)
-                ex.load_input_event.then(do_chat, [q_in, chat_mode], [a_out, chat_meta],
-                                         api_visibility="undocumented")
+                for ex in chat_sets:
+                    ex.load_input_event.then(do_chat, [q_in, chat_mode], [a_out, chat_meta],
+                                             api_visibility="undocumented")
                 q_in.input(lambda: "", None, chat_ref, queue=False, api_visibility="private")
             if USE_OMNI:
                 start = _json(OMNI_LOGS / "eval_base_chat.json")
@@ -749,7 +921,7 @@ def build(models: Models) -> gr.Blocks:
                             "23k human-written instructions; fluent and on topic, but its facts from "
                             "memory are unreliable.*")
 
-        with gr.Tab("Decide"):
+        with gr.Tab("🧭 Decide"):
             if USE_OMNI:
                 gr.Markdown("A *System One* decision: no text is generated. The message and every "
                             "option go through the model **once**; it returns a probability for each, and "
@@ -783,7 +955,7 @@ def build(models: Models) -> gr.Blocks:
                                           DECIDE_OWN), (DECIDE_MB, DECIDE_MB)], value=DECIDE_OWN, label="model")
                     thr = gr.Slider(0.3, 0.99, value=0.7, step=0.01, label="hand to a human below this confidence")
                     go_dec = gr.Button("Decide", variant="primary")
-                    gr.Examples([["I still haven't received my new card", TASK_BANK],
+                    hand_rows = ([["I still haven't received my new card", TASK_BANK],
                                  ["Why was I charged twice for the same coffee?", TASK_BANK],
                                  ["How do I top up with Apple Pay?", TASK_BANK],
                                  ["Someone is using my card right now, block it!", TASK_BANK],
@@ -804,7 +976,10 @@ def build(models: Models) -> gr.Blocks:
                                     ["My KYC is pending and the account got frozen", TASK_IN],
                                     ["gas subsidy nahi aa rahi, aadhaar link check karna hai", TASK_IN],
                                     ["एटीएम से कैश नहीं निकला पर 5000 कट गए", TASK_IN]]
-                                   if have(DECIDE_ADAPTER_IN) else []), [msg, task])
+                                   if have(DECIDE_ADAPTER_IN) else []))
+                    hand_ex = gr.Examples(hand_rows, [msg, task], example_labels=[r[0] for r in hand_rows],
+                                          label="Try these messages · click one to decide",
+                                          examples_per_page=12)
                 with gr.Column():
                     choice = gr.Label(label="intent (top 3)", num_top_classes=3)
                     action = gr.Markdown()
@@ -835,6 +1010,8 @@ def build(models: Models) -> gr.Blocks:
                         {**out, "model": name, "task": tk})
 
             go_dec.click(do_decide, [msg, thr, backbone, task], [choice, action, typed])
+            hand_ex.load_input_event.then(do_decide, [msg, thr, backbone, task], [choice, action, typed],
+                                          api_visibility="undocumented")
             if decide_lib:
                 # Fills message and task only: the model and threshold stay as
                 # the visitor set them, and the chained run reads them.
@@ -848,7 +1025,7 @@ def build(models: Models) -> gr.Blocks:
                 msg.input(lambda: "", None, decide_ref, queue=False, api_visibility="private")
 
         if USE_OMNI:
-            with gr.Tab("Model & data"):
+            with gr.Tab("📊 Model & data"):
                 omni_tab(res)
 
         from anulm.apps import app_benchmark
@@ -858,7 +1035,9 @@ def build(models: Models) -> gr.Blocks:
                 "that AnuLM-Omni replaces (including test sets it does not use, such as Flickr30k and "
                 "A-OKVQA). The one model's own numbers are on the **Model & data** tab."
                 if USE_OMNI else "")
-        app_benchmark.wire_initial(demo, app_benchmark.add_tab(note=note))
+        app_benchmark.wire_initial(demo, app_benchmark.add_tab(note=note, title="🗂️ Earlier benchmark" if USE_OMNI else "Benchmark"))
+        if USE_OMNI:
+            gr.HTML(footer_html())
     return demo
 
 
@@ -891,6 +1070,7 @@ def main() -> None:
         print(f"note: {', '.join(missing)} not found; those tabs will fail until trained "
               f"(docs/SPEECH.md has the commands)")
     build(Models(args.device, args.brain)).launch(server_name=args.host, server_port=args.port,
+                                                  theme=THEME, css=CSS,
                                                   share=args.share, auth=auth)
 
 
