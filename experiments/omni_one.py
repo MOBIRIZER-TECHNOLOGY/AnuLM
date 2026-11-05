@@ -87,10 +87,12 @@ TASKS = [
     # half the learning rate (LR below) kept it closest to where it started.
     ("chat", "text", "data/chat_train.jsonl", 0.25, 8),
     ("read", "text", "data/rc_train.jsonl", 0.14, 4),
-    ("intent", "text", "data/omni/intent_train.jsonl", 0.06, 8),
+    # 0.06 (5%) reached BANKING77 87.7% in 12,500 steps but only 69.7% in
+    # 3,125 (2026-11-05); batches are ~30 answer tokens, so 15% costs little time.
+    ("intent", "text", "data/omni/intent_train.jsonl", 0.18, 8),
     ("asr_en", "asr", "data/speech_ls100", 0.12, 4),
-    ("asr_hi", "asr", "data/omni/hindi_train", 0.32, 4),
-    ("caption", "image", "data/omni/caption_train.jsonl", 0.17, 8),
+    ("asr_hi", "asr", "data/omni/hindi_train", 0.26, 4),
+    ("caption", "image", "data/omni/caption_train.jsonl", 0.13, 8),   # no gate
     ("vqa", "image", "data/omni/vqa_train.jsonl", 0.12, 8),
 ]
 HELD = {"chat": "data/chat_heldout.jsonl", "read": "data/rc_heldout.jsonl"}

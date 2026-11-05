@@ -113,19 +113,39 @@ print(chat.generate("What is the capital of India?", 40, 0.0, 1, 0, mode="questi
 |---|---|---|---|
 | chat | dolly-15k, oasst2, Aya Hindi, Hindi Wikipedia QA | 21% | 8 |
 | reading | SQuAD, MLQA hi, Wikipedia passages | 12% | 4 |
-| intents | BANKING77, MASSIVE hi-IN | 5% | 8 |
+| intents | BANKING77, MASSIVE hi-IN | 15% | 8 |
 | English speech | LibriSpeech train-clean-100 | 10% | 4 |
-| Hindi speech | Kathbath, MUCS 2021, FLEURS | 27% | 4 |
-| captions | Localized Narratives on Open Images, DOCCI | 14% | 8 |
+| Hindi speech | Kathbath, MUCS 2021, FLEURS | 22% | 4 |
+| captions | Localized Narratives on Open Images, DOCCI | 11% | 8 |
 | image questions | TextVQA | 10% | 8 |
 
 Hindi speech gets the most steps because it has the most data and is the
 weakest skill. Chat started at 7%: the model starts from the chat model and
 only has to keep it, but at 7% the other tasks pulled chat off course, so it
-was raised (with half the learning rate). Even so, chat is the one gate the
-2026-11-03 run missed (held-out loss 3.475 against a 3.30 gate): it re-read
-chat data the starting model had already learned. The shares are `TASKS` in `experiments/omni_one.py`;
+was raised (with half the learning rate). Intents went from 5% to 15% on
+2026-11-05 (below). The shares are `TASKS` in `experiments/omni_one.py`;
 change them there.
+
+### Runs so far, and what each changed
+
+| run | recipe | kept | chat loss (<= 3.30) | intents (>= 80) | failed gates |
+|---|---|---|---|---|---|
+| 2026-11-03 | 12,500 steps, 24.2 h, intents 5% | step 9,375 | 3.475 | 87.7 | chat |
+| 2026-11-05 a | 3,125 steps, `--max-ratio chat=1.049`, 3.9 h | step 2,500 | 3.298 | 69.7 | intents |
+| 2026-11-05 b | as a, intents 15% (from Hindi speech and captions), 4.3 h | step 2,500 | 3.309 | 85.0 | chat, by 0.009 |
+| run b, 5% blend | `experiments/blend_weights.py --alpha 0.05` | - | 3.299 | 85.7 | none; exported copy: chat 3.2985, English WER 8.3%, Hindi speech being checked |
+
+- **Chat rises in the first 625 steps** (3.27 -> 3.37 on the training curve)
+  and is then nearly flat, whatever the shares: the other tasks move the
+  shared decoder. Distilling chat from its starting model did not slow it
+  (`experiments/probe_distill.py`: 3.358 vs 3.351 at step 625).
+- **The gate's chat loss is about 0.067 below the training curve's** (a
+  different held-out set), so a curve above ~3.366 at the kept step fails.
+- **Blending** mixes a fraction of the starting chat model's decoder
+  weights back in (audio and image rows and the projectors stay as
+  trained). On run b, 5% / 10% / 15% / 20% gave chat 3.299 / 3.290 / 3.282 /
+  3.274, but 10% already put English speech at 9.2% (gate <= 9) and FLEURS
+  at 42.7% (<= 43): speech uses the same weights. Results: `logs/blend/`.
 
 **Release gates** (`GATES` in the same file) say how much a task may lose
 against the separate model it replaces before the run counts as a failure.

@@ -137,7 +137,7 @@ uses the same `bpe.py`, only bigger.
 
 ---
 
-## Route B: Omni from the released base (about a day of GPU)
+## Route B: Omni from the released base (about 6 hours of GPU)
 
 This skips pretraining. You start from `toonist/AnuLM-Base-v2-400M`, which
 the pipeline downloads for you. Everything else is trained on your machine.
@@ -212,7 +212,7 @@ publish anything. Only `--publish` uploads, and only if every release gate
 passes on the exported model.
 
 What it does, in order, with the times measured in the latest run
-(`logs/omni_one/pipeline.log`, 3 to 4 November 2026):
+(`logs/omni_one/pipeline.log`, 5 November 2026):
 
 | step | what it does | time |
 |---|---|---|
@@ -221,14 +221,15 @@ What it does, in order, with the times measured in the latest run
 | 3 | grows the vocabulary with audio and image ids: `ckpt_chat_mm.pt` | 5 s |
 | 4 | waits until no other process holds more than 1 GB of the GPU | 6 min here |
 | 5 | scores the chat model it starts from, as the baseline | about 1.5 min |
-| 6 | **trains**: 12,500 optimizer steps, each summing 8 batches drawn from seven tasks, into `ckpt_omni.pt` | **about 24 h** (87,141 s), plus about 11 min to fingerprint the data first |
+| 6 | **trains**: 3,125 optimizer steps, each summing 8 batches drawn from seven tasks, into `ckpt_omni.pt` | **about 4.3 h** (15,540 s), plus about 11 min to fingerprint the data first |
 | 7 | evaluates: WER on four speech sets, reading F1, intent accuracy, chat loss, VQA, captions | about 31 min |
 | 8 | writes `logs/omni_one/REPORT.md` with every number and each gate, pass or fail | seconds |
 | 9 | exports `release/AnuLM-Omni-400M` (safetensors, config, tokenizer, card) | seconds |
 | 10 | runs the whole evaluation again on the exported folder | about 32 min |
 
-`docs/OMNI.md` says "about 19 hours" for step 6; the latest run took 24.2
-hours on the same GPU.
+The 3 November run trained four times as long (12,500 steps, 24.2 hours)
+and failed the chat gate; `docs/OMNI.md` ("Runs so far") says why the run
+is now shorter and what each run measured.
 
 **If it stops** (reboot, crash, full disk, power cut): fix the cause, then
 run the same command again. That is the whole recovery. Finished steps are
