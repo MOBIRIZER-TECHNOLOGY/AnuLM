@@ -85,7 +85,10 @@ LR = 2.5e-5
 TASKS = [
     # 0.07 let the other tasks pull chat off course even with --accum; 0.25 with
     # half the learning rate (LR below) kept it closest to where it started.
-    ("chat", "text", "data/chat_train.jsonl", 0.25, 8),
+    # chat_train_v6 = the chat model's 23,022 pairs + 13,163 human-written English
+    # pairs (oasst2 later turns, Aya English; experiments/make_chat_v6.py): run b
+    # read the old pairs twice over and its chat loss still rose to 3.309.
+    ("chat", "text", "data/chat_train_v6.jsonl", 0.25, 8),
     ("read", "text", "data/rc_train.jsonl", 0.14, 4),
     # 0.06 (5%) reached BANKING77 87.7% in 12,500 steps but only 69.7% in
     # 3,125 (2026-11-05); batches are ~30 answer tokens, so 15% costs little time.

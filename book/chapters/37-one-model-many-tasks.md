@@ -736,11 +736,55 @@ score only picks checkpoints and gates decide releases (37.6).
 
 `IN THE REPO` · `MEASURED`
 
-**The next run.** Chat needs something new to learn from, not the same file
-again: fresh chat data, or distillation from chat v3, training the joint model
-to match chat v3's own next-token probabilities so that keeping chat means
-staying close to the starting model. Neither is in the repository at the pin;
-this is a plan, not a result.
+**The 5 November runs.** Two probes came first. Distilling chat from chat v3
+did not slow the drift: at step 625 chat's held-out loss was 3.358 with
+distillation and 3.351 without (`experiments/probe_distill.py`). So the drift
+comes from the other tasks moving the shared decoder, not from rereading the
+chat file. Chat also rose almost entirely in the first 625 steps, 3.27 to 3.37
+on the trainer's curve, and then stayed nearly flat. Two changes followed from
+that, both in `experiments/omni_one.py` at @e0302d7:
+
+1. **A quarter of the steps.** 3,125 steps of eight batches, with the learning
+   rate fully decayed by the end, about 4 hours instead of 24.
+2. **Gate-aware selection.** `--max-ratio chat=1.049` makes the trainer skip
+   any checkpoint whose chat loss is more than 1.049 times its first
+   evaluation (3.30, the gate, over 3.146, chat v3). The score still picks
+   among the rest (37.4), but it can no longer trade chat away.
+
+| run | change | kept | chat (≤ 3.30) | BANKING77 (≥ 80) | failed |
+|---|---|---|---|---|---|
+| 2026-11-03 | 12,500 steps, intents 5% | 9,375 | 3.475 | 87.7 | chat |
+| 2026-11-05 a | 3,125 steps, `--max-ratio` | 2,500 | 3.298 | 69.7 | intents |
+| 2026-11-05 b | as a, intents 15% | 2,500 | 3.309 | 85.0 | chat, by 0.009 |
+| b, 5% blend | 0.95 · b + 0.05 · chat model | | 3.2985 | 85.7 | none |
+
+*measured*: `logs/omni_one/results.json` of each run and `logs/blend/`;
+summarised in `docs/OMNI.md`, "Runs so far". Run a fixed chat but broke
+intents. In 12,500 steps, 5% of the steps had been enough for intents; in
+3,125 they were not. Run b gave intents 15%, taken from Hindi speech and
+captions, and intents passed. Chat then missed by 0.009.
+
+The blend is the last row. `experiments/blend_weights.py` mixes a fraction α
+of the starting chat model's weights back into the trained one,
+(1 − α) · omni + α · chat. The audio and image rows of the embedding table
+and the two projectors stay as trained, because the chat model never learned
+them. Chat improved steadily with α: 3.299, 3.290, 3.282, 3.274 for 5%, 10%,
+15%, 20%. Speech uses the same weights, though, and at 10% English speech
+reached 9.2% WER, over its 9.0 gate. At 5% every gate passed, on the exported
+bf16 copy too, but chat passed by 0.0015. A margin that thin is not a release.
+
+**Two numbers for one chat.** The trainer's held-out chat loss sat about 0.067
+above the gate's on these runs. They score different held-out rows in
+different ways (37.6). So a trainer curve above about 3.366 at the kept step
+predicts a failed gate, which helps read a run while it is still going.
+
+`IN THE REPO` · `MEASURED`
+
+**The next run.** Chat needs something new to learn from. The 6 November run
+adds 13,163 human-written English chat pairs: later turns and alternative
+replies from oasst2, and Aya's English rows, both Apache 2.0, deduplicated
+against the held-out set (`experiments/make_chat_v6.py`). Its results are not
+in this book yet.
 
 > **Build it.** The lab book's Chapter 14 (`course/ch14-one-model`) builds the
 > task draw, the score and the gates on a small model, with checks that catch
@@ -793,6 +837,9 @@ chat's training loss can fall while its held-out loss rises.
 - In November, 8 batches per step at lr 2.5e-5 with chat at 0.25, six of seven
   gates passed; chat, read 7.4 more times, drifted to 3.48 against a gate of
   3.30, so the model was not released.
+- On 5 November a quarter of the steps and gate-aware selection
+  (`--max-ratio`) fixed chat but not intents; intents at 15% passed while
+  chat missed by 0.009; a 5% weight blend passed every gate, by 0.0015.
 
 > **In one breath.** One decoder learns seven tasks because each arrives as
 > embeddings with answer-only targets. Each step sums several drawn batches; a

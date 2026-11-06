@@ -112,8 +112,8 @@ dense retriever.
 | --- | --- | --- | --- | --- |
 | Hindi / English question pairs | built from the Wikipedia corpora above by `make_qa.py`, `make_qa_en.py` | CC BY-SA 4.0 (derived) | `experiments/run_qa_multi.sh`; `omni_data.py fetch chat` | `ckpt_multi_qa`; 4,000 Hindi pairs in chat v3 and AnuLM-Omni-400M |
 | databricks-dolly-15k | https://huggingface.co/datasets/databricks/databricks-dolly-15k | CC BY-SA 3.0 | read by `make_chat.py` → `data/chat_train.jsonl` (`omni_data.py fetch chat` rebuilds it) | `ckpt_chat_v3`; AnuLM-Omni-400M |
-| OpenAssistant oasst2 | https://huggingface.co/datasets/OpenAssistant/oasst2 | Apache 2.0 | `make_chat.py` (first turn of each tree, its rank-0 reply) | `ckpt_chat_v3`; AnuLM-Omni-400M |
-| Aya dataset, Hindi rows | https://huggingface.co/datasets/CohereForAI/aya_dataset | Apache 2.0 | `make_chat.py` (native Hindi, ~1.1k rows) | `ckpt_chat_v3`; AnuLM-Omni-400M |
+| OpenAssistant oasst2 | https://huggingface.co/datasets/OpenAssistant/oasst2 | Apache 2.0 | `make_chat.py` (first turn of each tree, its rank-0 reply); from 2026-11-06 also later turns and alternative rank-1 first-turn replies (`experiments/make_chat_v6.py`, 9,753 pairs) | `ckpt_chat_v3`; AnuLM-Omni-400M |
+| Aya dataset, Hindi and English rows | https://huggingface.co/datasets/CohereForAI/aya_dataset | Apache 2.0 | `make_chat.py` (native Hindi, ~1.1k rows); from 2026-11-06 also 3,410 English rows, test split excluded (`experiments/make_chat_v6.py`) | `ckpt_chat_v3`; AnuLM-Omni-400M |
 | indic-instruct-data-v0.1, Hindi subsets | https://huggingface.co/datasets/ai4bharat/indic-instruct-data-v0.1 | per subset; `anudesh` holds Llama 2 outputs | `experiments/indic_v4.py` | `ckpt_chat_v4`, `ckpt_chat_v5` only, never released; **not used by AnuLM-Omni-400M** |
 | Python docstring pairs | built from codeparrot-clean by `make_qa_py.py` | as codeparrot-clean | `experiments/run_qa_multi.sh`, `coder_sft.sh` | `ckpt_multi_qa`, `ckpt_coder_sft` |
 | Samanantar, Hindi | https://huggingface.co/datasets/ai4bharat/samanantar | **CC BY-NC 4.0** | `fetch_hf.py ai4bharat/samanantar --prefix hi/` | `ckpt_translate` |
@@ -138,6 +138,20 @@ deciders are fine-tunes of `answerdotai/ModernBERT-base` (Apache 2.0), kept as
 a comparison baseline; they are not trained from scratch here. None of these
 is released; AnuLM-Omni-400M learns the BANKING77 and MASSIVE intents as text
 instead.
+
+
+### Added for the run-2 data mix (2026-11-06)
+
+`experiments/make_omni_v2_data.py` merges these with the files above; the sources,
+licences and dedupe are in `data/next/MANIFEST.md` (built 2026-11-04).
+
+| Dataset | Source | Licence | Rows | Into |
+|---|---|---|---|---|
+| LibriSpeech `train-clean-360` | https://www.openslr.org/12/ | CC BY 4.0 | 103,997 clips, 363.5 h, no speaker shared with the test sets | `data/speech_ls460.jsonl` (English speech) |
+| VizWiz-VQA train, answerable rows | https://vizwiz.org/tasks-and-datasets/vqa/ | CC BY 4.0 (Gurari et al.) | 12,935 of 20,523; "unanswerable" rows dropped | `data/omni/vqa_train_v2.jsonl` |
+| Localized Narratives on 60k more Open Images photos | https://google.github.io/localized-narratives/ | annotations CC BY 4.0; photos CC BY 2.0 only, authors in `data/next/ATTRIBUTION_open_images_extra.csv` | 59,999 | `data/omni/caption_train_v2.jsonl` |
+| MLQA `hi.hi` dev and unused translate-train hi | https://huggingface.co/datasets/facebook/mlqa | CC BY-SA 3.0 | 506 + 52,160; eval and held-out questions removed | `data/rc_train_v2.jsonl` |
+| oasst2 later turns, Aya English | as above | Apache 2.0 | 13,163 (from run 1, `make_chat_v6.py`) | `data/chat_train_v6.jsonl` |
 
 ## Evaluation sets (never trained on)
 

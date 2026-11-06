@@ -9,7 +9,7 @@ target is a goal, not a result. Update the status column as work lands.
 
 | Skill | Now | Target | Why it falls short | Plan | Status |
 |---|---|---|---|---|---|
-| Chat | held-out loss 3.475, fails the 3.30 gate; Python code from memory broken; invented details | <= 3.30, ideally ~3.15 (where it started) | re-read the same 22,873 chat pairs 7.4 times after chat v3 had learned them | 1. distil from chat v3 on chat batches (`--distill chat`): probed, no help (step 625: 3.358 vs 3.351 without), so the drift is the other tasks, not repetition. 2. a shorter run (3,125 steps) keeping only checkpoints within `--max-ratio chat=1.049`. 3. more human-written chat data (multi-turn oasst2, Aya Hindi); short correct Python answers | 2 done: run b, 3.309 (misses by 0.009); a 5% weight blend gives 3.299 (exported copy 3.2985). Next: 3, more chat steps |
+| Chat | held-out loss 3.475, fails the 3.30 gate; Python code from memory broken; invented details | <= 3.30, ideally ~3.15 (where it started) | re-read the same 22,873 chat pairs 7.4 times after chat v3 had learned them | 1. distil from chat v3 on chat batches (`--distill chat`): probed, no help (step 625: 3.358 vs 3.351 without), so the drift is the other tasks, not repetition. 2. a shorter run (3,125 steps) keeping only checkpoints within `--max-ratio chat=1.049`. 3. more human-written chat data (multi-turn oasst2, Aya Hindi); short correct Python answers | 2 done: run b, 3.309 (misses by 0.009); a 5% weight blend gives 3.299 (exported copy 3.2985). 3 running: run 1 (2026-11-06) adds 13,163 human-written chat pairs; training-curve chat 3.306 at step 2,500 against run b's 3.376 |
 | Reading, English | SQuAD F1 48.4 (gate >= 30) | >= 55 (the separate reader: 57.2) | 12% of steps; answers are generated, not pointed to | raise reading's share; a short-answer prompt format | next run |
 | Reading, Hindi | MLQA F1 11.7 | >= 25 | trained only on machine-translated MLQA | native Hindi extractive QA; eval files always linked (a missing file used to skip silently) | data being collected |
 | Wikipedia lookup | 4/10 demo questions | >= 7/10 | the retriever picks the wrong page ("Hamlet" -> the 1964 film) | the misses were the reader repeating the question: retry with the passages rotated, cite the passage used; `rag build-dense` builds the index | 6/10 demo, done |
@@ -36,7 +36,8 @@ target is a goal, not a result. Update the status column as work lands.
 1. Chat A/B probes (distillation did not help), then 4 h runs with gate-aware
    selection (`omni_one.py --retrain`): run a failed intents, run b (intents
    15%) missed chat by 0.009, a 5% weight blend passes (see `docs/OMNI.md`).
-   Next: chat at ~25% with the new human-written chat pairs (`data/next/`).
+   2026-11-06: run 1 adds the human-written chat pairs (`chat_train_v6.jsonl`);
+   run 2 follows with the rest of `data/next/` (`omni_one.py --data v2`).
 2. During the run, no GPU: lookup fixes and the index command, gate-aware model
    selection, the Chat tab's code display, new data under `data/next/`, the book.
 3. After the run: gates on the exported model, the GPU demo check, the

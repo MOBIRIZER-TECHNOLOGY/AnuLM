@@ -64,6 +64,8 @@ CHECKPOINTS may be used for, which is a separate question from the code.
   oasst2 (OpenAssistant)     Apache 2.0                     ckpt_chat_v3, Omni
   aya_dataset, Hindi rows    Apache 2.0                     ckpt_chat_v3, Omni
   (CohereForAI)
+  aya_dataset, English rows  Apache 2.0                     Omni (from the
+  (CohereForAI)                                             2026-11-06 run)
   Hindi Wikipedia QA pairs   CC BY-SA 4.0 (derived)         ckpt_chat_v3, Omni
   (make_qa.py)
   indic-instruct-data-v0.1   per subset; the anudesh        ckpt_chat_v4, ckpt_chat_v5
@@ -79,8 +81,10 @@ CHECKPOINTS may be used for, which is a separate question from the code.
                              names as vocabulary only
   SQuAD v1.1                 CC BY-SA 4.0  share-alike      ckpt_rc_pointer_v2, Omni
   MLQA translate-train hi    CC BY-SA 3.0  share-alike      ckpt_rc_pointer_v2, Omni
+  MLQA hi.hi dev             CC BY-SA 3.0  share-alike      Omni (run-2 data mix)
   LibriSpeech                CC BY 4.0                      ckpt_asr_en_v3, Hindi ASR,
-  (train-clean-100)                                         Omni
+  (train-clean-100; and                                     Omni
+  train-clean-360 in the run-2 data mix)
   FLEURS hi (google)         CC BY 4.0                      Hindi ASR, Omni
   IndicTTS-Hindi (SPRINGLab) NO LICENCE STATED: the card    Hindi ASR v3-v5,
                              defers to the IIT Madras       ckpt_tts_hi;
@@ -97,8 +101,8 @@ CHECKPOINTS may be used for, which is a separate question from the code.
   DOCCI (Google)             CC BY 4.0, images and          Omni (captions)
                              descriptions
   TextVQA                    CC BY 4.0; Open Images photos  Omni (image questions)
-  VizWiz-VQA                 CC BY 4.0                      Omni only with --vizwiz,
-                                                            off by default
+  VizWiz-VQA                 CC BY 4.0 (Gurari et al.)      Omni (run-2 data mix,
+                                                            answerable rows only)
   Flickr30k                  NON-COMMERCIAL research and    ckpt_caption_v3,
                              education only                 ckpt_vqa_v3; NOT in Omni
   A-OKVQA                    Apache 2.0 upstream; COCO      ckpt_vqa_v3; NOT in Omni
@@ -137,14 +141,15 @@ CHECKPOINTS may be used for, which is a separate question from the code.
     ---------------  -------------------------------------------  ---------------
     chat             databricks-dolly-15k                         CC BY-SA 3.0
                      oasst2 (OpenAssistant)                       Apache 2.0
-                     Aya, Hindi rows                              Apache 2.0
+                     Aya, Hindi and English rows                  Apache 2.0
                      Hindi Wikipedia QA pairs                     CC BY-SA
     reading          SQuAD v1.1                                   CC BY-SA 4.0
                      MLQA translate-train hi                      CC BY-SA 3.0
                      Wikipedia passages                           CC BY-SA 4.0
     intents          BANKING77; MASSIVE hi-IN -- as generated     CC BY 4.0
                      label text, data/omni/intent_*.jsonl
-    English speech   LibriSpeech train-clean-100                  CC BY 4.0
+    English speech   LibriSpeech train-clean-100 (run-2 mix: and  CC BY 4.0
+                     train-clean-360)
     Hindi speech     Kathbath (gated)                             CC BY 4.0
                      MUCS 2021, OpenSLR 104                       CC BY-SA 4.0
                      FLEURS hi                                    CC BY 4.0
@@ -153,10 +158,12 @@ CHECKPOINTS may be used for, which is a separate question from the code.
     captions         Google Localized Narratives (annotations)    CC BY 4.0
                      on Open Images V7 photos filtered to         CC BY 2.0
                      CC BY 2.0, each photo's author in
-                     data/omni/ATTRIBUTION_open_images.csv
+                     data/omni/ATTRIBUTION_open_images.csv (the
+                     run-2 mix's 60k more photos: data/next/
+                     ATTRIBUTION_open_images_extra.csv)
                      DOCCI (Google), images and descriptions      CC BY 4.0
     image questions  TextVQA, on Open Images photos               CC BY 4.0
-                     VizWiz-VQA, optional, off by default         CC BY 4.0
+                     VizWiz-VQA, answerable rows (run-2 mix)      CC BY 4.0
     frozen encoders  Whisper-small (audio)                        MIT
                      SigLIP vit_base_patch16_siglip_224 (images)  Apache 2.0
                      -- not in the weights; see section 4
