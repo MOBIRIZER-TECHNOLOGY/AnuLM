@@ -74,7 +74,7 @@
           <a class="btn secondary" href="#demo">Run the demo</a>
           <a class="btn secondary" href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM">View on GitHub</a>
         </div>
-        <p class="hero-note">Code MIT. Weights CC BY-SA 4.0. The Omni weights are not on Hugging Face yet.</p>
+        <p class="hero-note">Free for commercial use. Code MIT, weights CC BY-SA 4.0, on <a href="https://huggingface.co/toonist/AnuLM-Omni-400M">Hugging Face</a>.</p>
       </div>
 
       <figure class="showcase" aria-labelledby="showcase-cap">
@@ -127,7 +127,7 @@
       <p class="eyebrow">What it does</p>
       <h2 id="cap-title">Five skills, one decoder.</h2>
       <p>Each card shows a real held-out sample from the demo's library and what the model actually said.
-        Misses are marked. The headline number is the release candidate's score on the full test set.</p>
+        Misses are marked. The headline number is the published model's score on the full test set.</p>
     </div>
 
     <div class="cap-grid">
@@ -274,7 +274,7 @@
     </div>
 
     <p class="fineprint">Sample outputs come from a CPU run of the demo's 117-sample library on 4 November 2026
-      (<code>examples/samples/results.md</code>). Headline numbers are the release candidate's, measured on the
+      (<code>examples/samples/results.md</code>). Headline numbers are measured on the
       published weights (<a href="https://huggingface.co/toonist/AnuLM-Omni-400M">toonist/AnuLM-Omni-400M</a>),
       measured on 6 November 2026.</p>
   </div>
@@ -374,7 +374,7 @@
         <ul class="checklist">
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg><span>Every model together fits a 16 GB card. <code>--device cpu</code> runs without one; on CPU most samples answer in under two seconds.</span></li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg><span>Spoken replies use Piper voices. Their own terms are non-commercial, so a commercial deployment of the demo needs other voices. The model is not affected.</span></li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg><span>There is no hosted demo yet. Until the Omni weights are published, the demo needs <code>ckpt_omni.pt</code>, which <a href="#train">route B</a> trains in about 6 hours.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg><span>A hosted demo on Hugging Face Spaces is being prepared. Until then, the local demo downloads the published weights on first use; <a href="#train">route B</a> trains the same model yourself in about 6 hours.</span></li>
         </ul>
       </div>
       <div class="code-block">
@@ -816,7 +816,18 @@ python -m anulm app_omni</code></pre>
     </div>
 
     <div class="enquire-grid" id="enquire">
-      <form class="card enquiry" id="enquiry-form" novalidate
+      <div class="card enquiry contact-fallback" id="contact-fallback" aria-labelledby="cf-title">
+        <h3 id="cf-title">Get in touch</h3>
+        <p class="sub">Tell us what you would like to do: a workshop for your college, fine-tuning on your data, or a
+          research collaboration. Write to us in the open, and we will reply there or by email.</p>
+        <div class="links">
+          <a class="btn primary" href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/issues/new?title=Enquiry%3A%20&amp;labels=enquiry">Open an enquiry on GitHub</a>
+          <a class="btn secondary" href="https://huggingface.co/toonist/AnuLM-Omni-400M/discussions">Ask on Hugging Face</a>
+        </div>
+        <p class="fineprint">Both are public pages. Do not post anything you would not want others to read; once our
+          enquiry form is ready, it will appear here for private messages.</p>
+      </div>
+      <form class="card enquiry" id="enquiry-form" novalidate hidden
             data-endpoint="" data-access-key="" data-email=""
             aria-labelledby="enq-title" aria-describedby="enq-note">
         <h3 id="enq-title">Send an enquiry</h3>
@@ -992,7 +1003,7 @@ python -m anulm app_omni</code></pre>
           <li><a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/tree/restructure/book">The book</a></li>
           <li><a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/restructure/examples/samples/ATTRIBUTION.md">Sample credits</a></li>
           <li><a href="#enquire">Contact us</a></li>
-          <li><a href="privacy.html">Privacy notice</a></li>
+          <li data-requires-form hidden><a href="privacy.html">Privacy notice</a></li>
         </ul>
       </nav>
     </div>

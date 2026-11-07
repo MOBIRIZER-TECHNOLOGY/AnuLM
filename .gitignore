@@ -66,3 +66,4 @@ checkpoints/
 # The book's HTML/PDF preview is build output (book/tools/build_preview.py).
 book/preview/
 course/preview/
+_site/

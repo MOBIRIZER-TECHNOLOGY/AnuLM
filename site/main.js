@@ -93,6 +93,16 @@
   //   data-access-key  the service's public key, if it wants one in the body (Web3Forms)
   //   data-email       fallback: open the visitor's mail app addressed here
   var form = document.getElementById("enquiry-form");
+  // The form ships hidden, with a public contact card in its place, and appears only
+  // once it is connected: until then the page collects no personal data at all.
+  if (form && (form.getAttribute("data-endpoint") || form.getAttribute("data-email"))) {
+    form.hidden = false;
+    var fallback = document.getElementById("contact-fallback");
+    if (fallback) fallback.hidden = true;
+    Array.prototype.forEach.call(document.querySelectorAll("[data-requires-form]"), function (el) { el.hidden = false; });
+  } else {
+    form = null;
+  }
   if (form) {
     var status = form.querySelector(".form-status");
     var say = function (msg, kind) {
