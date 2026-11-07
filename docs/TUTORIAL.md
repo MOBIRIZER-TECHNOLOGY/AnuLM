@@ -70,20 +70,20 @@ path CI walks.
 ## 3. Your first model (20 minutes, CPU)
 
 ```bash
-python -m anulm train --preset 30b            # downloads tinyshakespeare (1 MB), trains 1,000 steps
+python -m anulm train --preset tiny-gqa            # downloads tinyshakespeare (1 MB), trains 1,000 steps
 python -m anulm sample --ckpt ckpt.pt --prompt "KING RICHARD II:"
 ```
 
 Expected: val loss around **1.52**, and Shakespeare-shaped text. This is
-the 17M-parameter preset in the shape of Sarvam 30B (GQA, 8 layers, MoE).
-`--preset 105b` is the MLA-shaped one (47M, ~30 min). `README.md`
+the 17M-parameter `tiny-gqa` preset (GQA, 8 layers, MoE).
+`--preset tiny-mla` is the latent-attention one (47M, ~30 min). `README.md`
 "Results" has the exact numbers to compare with.
 
 ## 4. A Hindi model from scratch (30 minutes, CPU or GPU)
 
 ```bash
 python -m anulm fetch_hindi --mb 8 --out data/hindi.txt          # streams the Hindi Wikipedia dump, keeps 8 MB of clean prose
-python -m anulm train --preset 30b --data data/hindi.txt --steps 1000
+python -m anulm train --preset tiny-gqa --data data/hindi.txt --steps 1000
 python -m anulm sample --ckpt ckpt.pt --prompt "भारत"
 ```
 
@@ -93,7 +93,7 @@ This is the byte-level path (no tokenizer to train) that `docs/RESULTS.md`
 ```bash
 python -m anulm bpe train  --data data/hindi.txt --vocab 16384 --out data/hi16k.json
 python -m anulm bpe encode --tokenizer data/hi16k.json --data data/hindi.txt --out data/hindi.hi16k.bin
-python -m anulm train --preset 30b --data data/hindi.hi16k.bin --steps 1000
+python -m anulm train --preset tiny-gqa --data data/hindi.hi16k.bin --steps 1000
 ```
 
 ## 5. The recipe the released models use (GPU, hours)
@@ -300,7 +300,7 @@ describes the packing and how to add a new template or language.
 
 | run | script | time on a 16 GB card | number to expect |
 | --- | --- | --- | --- |
-| tinyshakespeare, `30b` preset | `train.py --preset 30b` | 22 min CPU | val 1.52 |
+| tinyshakespeare, `tiny-gqa` preset | `train.py --preset tiny-gqa` | 22 min CPU | val 1.52 |
 | Hindi mixed, 18k steps | `run_long.sh` | ~3 h | golden 11.2% / 85.8% |
 | three-language base | `run_multi.sh` | ~5 h | val 4.44 |
 | question answering | `run_qa_multi.sh` | ~1 h | held-out answer loss 3.32 |
@@ -314,7 +314,7 @@ stable. If yours land within that of the table, you have reproduced the
 run.
 
 **How much does the machine matter?** Less than the noise. The 50-step
-`--preset 30b` run that CI does on every push lands at val **2.7868** on
+`--preset tiny-gqa` run that CI does on every push lands at val **2.7868** on
 Ubuntu (python 3.12, torch 2.14.0+cpu), **2.7867** on Windows with the same
 wheel, and **2.7865** on the RTX 5070 Ti this project was built on (torch
 2.11.0+cu128, bf16 autocast, `--moe-impl grouped`). Three operating

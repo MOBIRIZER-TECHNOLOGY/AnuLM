@@ -1,10 +1,10 @@
 """
 Does YaRN actually buy anything? Measure a model past its training context.
 
-    python -m anulm eval_context --ckpt ckpt_105b.pt
+    python -m anulm eval_context --ckpt ckpt_mla.pt
 
-The 105B's whole long-context story is YaRN: trained at 4096, served at 128K.
-This reproduces that experiment at nano scale. Take a checkpoint trained at
+YaRN's promise: train at a short context, serve at a much longer one.
+This tests it at small scale. Take a checkpoint trained at
 block_size B with plain RoPE, then evaluate at 2B and 4B two ways:
 
   naive   -- same rotary, just feed longer sequences. The slow frequency dims
@@ -106,7 +106,7 @@ def main():
     length with plain RoPE and with YaRN, print the paired difference and a
     verdict, then the loss by window quarter at the longest length."""
     p = argparse.ArgumentParser()
-    p.add_argument("--ckpt", type=str, default="ckpt_105b.pt")
+    p.add_argument("--ckpt", type=str, default="ckpt_mla.pt")
     p.add_argument("--data", type=str, default=str(HERE / "data" / "input.txt"))
     p.add_argument("--batches", type=int, default=24)
     p.add_argument("--multipliers", type=int, nargs="+", default=[1, 2, 4])

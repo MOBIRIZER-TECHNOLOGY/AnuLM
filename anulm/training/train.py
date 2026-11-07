@@ -1,16 +1,15 @@
 """
 AnuLM training loop.
 
-    python -m anulm train --preset 30b --steps 2000
-    python -m anulm train --preset 105b --data mycorpus.txt --device cuda --compile
+    python -m anulm train --preset tiny-gqa --steps 2000
+    python -m anulm train --preset tiny-mla --data mycorpus.txt --device cuda --compile
+    python -m anulm train --preset 1b --data data/v3/meta.json ...   # docs/PLAN_1B.md
 
-Byte-level tokenisation, so any script works out of the box -- Devanagari,
-Tamil, Latin, code-mixed Hinglish -- without a tokenizer to train first. That is
-a deliberate stand-in for the real thing: Sarvam's actual contribution at this
-layer is a 262144-token tokenizer covering 22 languages across 12 scripts, whose
-fertility (tokens per word) on Indic text is the reason their models are cheap
-to run in those languages. Bytes are the honest placeholder -- worst possible
-fertility, zero training cost -- not an imitation of it.
+With a plain text file, tokenisation is byte-level, so any script works out of
+the box -- Devanagari, Tamil, Latin, code-mixed Hinglish -- without a tokenizer
+to train first. Bytes have the worst fertility (tokens per word) and cost
+nothing to set up; the project's own BPE (bpe.py, multi32k) is what the real
+runs use, through a pre-encoded corpus (`--data <meta.json or .bin>`).
 """
 
 from __future__ import annotations
@@ -27,6 +26,10 @@ import torch
 from anulm.bigram_teacher import teacher_kl, teacher_weight
 from anulm.bpe import DOC_SEP
 from anulm.model import AnuLM, AnuLMConfig, Router, UnsafeCheckpointError, safe_load
+
+# `--preset` names -> AnuLMConfig builders (anulm/model.py).
+PRESETS = {"tiny-gqa": AnuLMConfig.tiny_gqa, "tiny-mla": AnuLMConfig.tiny_mla,
+           "350m": AnuLMConfig.base_350m, "1b": AnuLMConfig.base_1b}
 
 
 def atomic_save(obj, path) -> None:
@@ -546,9 +549,10 @@ def main():
     point to `<out>.last`. With a test split, the best checkpoint is scored on
     it at the end."""
     p = argparse.ArgumentParser()
-    p.add_argument("--preset", choices=["30b", "105b", "350m"], default="30b",
-                   help="30b = GQA + high rope_theta; 105b = MLA + YaRN-ready; "
-                        "350m = 353M params, needs a GPU and --grad-ckpt")
+    p.add_argument("--preset", choices=list(PRESETS), default="tiny-gqa",
+                   help="tiny-gqa = 17M, grouped-query attention (CPU is fine); tiny-mla = the same "
+                        "scale with latent attention; 350m = 353M, needs a GPU and --grad-ckpt; "
+                        "1b = 1,008M (284M active), needs --grad-ckpt and --optimizer adamw-lowmem")
     p.add_argument("--data", type=str, default=None)
     p.add_argument("--steps", type=int, default=2000)
     p.add_argument("--batch-size", type=int, default=16)
@@ -716,9 +720,7 @@ def main():
           f"{args.steps * args.grad_accum / len(sampler.order) * args.batch_size:.2f} epochs planned")
 
     # --- model -------------------------------------------------------------
-    builder = {"30b": AnuLMConfig.nano_30b,
-               "105b": AnuLMConfig.nano_105b,
-               "350m": AnuLMConfig.nano_350m}[args.preset]
+    builder = PRESETS[args.preset]
     overrides = {}
     for kv in args.cfg:
         key, _, val = kv.partition("=")
@@ -747,7 +749,7 @@ def main():
         model.enable_chunked_loss(args.ce_chunk)
     total, active = model.num_params()
     n_routers = sum(1 for m in model.modules() if isinstance(m, Router))
-    print(f"nano_{args.preset}: attn={cfg.attn}  layers={cfg.n_layer}  "
+    print(f"preset {args.preset}: attn={cfg.attn}  layers={cfg.n_layer}  "
           f"experts={cfg.num_experts} top-{cfg.num_experts_per_tok} "
           f"(+{cfg.num_shared_experts} shared)  moe layers={n_routers}")
     print(f"params: {total/1e6:.2f}M total, {active/1e6:.2f}M active/token "

@@ -7,8 +7,7 @@ docstrings. Full log and decoded samples: `docs/RESULTS.md` §23.
 
 **Licence: CC BY-SA 4.0.** The pairs derive from Hindi and English
 Wikipedia (CC BY-SA); the base model also saw C4 (ODC-BY) and GitHub Python
-via codeparrot-clean (mixed licences). Not affiliated with Sarvam AI,
-AI4Bharat, BharatGen or the Government of India.
+via codeparrot-clean (mixed licences). Not affiliated with AI4Bharat, BharatGen or the Government of India.
 
 ## What it does, and does not
 

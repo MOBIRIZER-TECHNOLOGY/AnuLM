@@ -46,7 +46,7 @@ def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--impl", choices=["model", "build", "solution"], default="model")
     p.add_argument("--dim", type=int, default=64, help="rotary dimensions per head (the 400M model: 64)")
-    p.add_argument("--theta", type=float, default=1e6, help="rope_theta (the 30b preset and the 400M: 1e6)")
+    p.add_argument("--theta", type=float, default=1e6, help="rope_theta (the tiny-gqa preset and the 400M: 1e6)")
     a = p.parse_args()
     try:
         Rotary, apply_rope = rotary_factory(a.impl)

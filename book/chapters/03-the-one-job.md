@@ -226,7 +226,7 @@ def initial_loss(cfg: AnuLMConfig, B: int = 16, S: int = 128, seed: int = 0) -> 
 The script runs it on three configurations at std 0.02 and one at std 1.0:
 
 ```python
-    for name, cfg in [("tiny()", tiny()), ("nano_30b", AnuLMConfig.nano_30b()), ("released 400M", released()),
+    for name, cfg in [("tiny()", tiny()), ("tiny_gqa", AnuLMConfig.tiny_gqa()), ("released 400M", released()),
                       ("tiny(), init std 1.0", tiny(initializer_range=1.0))]:
         got, pred = initial_loss(cfg)                       # 16 sequences of up to 128 tokens: a small sample
         # ...
@@ -236,7 +236,7 @@ The script runs it on three configurations at std 0.02 and one at std 1.0:
 
 ```text
   tiny()                 V=    64 D=   32  loss  4.1704  ln V  4.1589  predicted  4.1653
-  nano_30b               V=   259 D=  384  loss  5.6242  ln V  5.5568  predicted  5.6336
+  tiny_gqa               V=   259 D=  384  loss  5.6242  ln V  5.5568  predicted  5.6336
   released 400M          V= 32768 D= 1024  loss 10.6166  ln V 10.3972  predicted 10.6020
   tiny(), init std 1.0   V=    64 D=   32  loss 14.5305  ln V  4.1589  predicted 20.1589
 ```
@@ -313,9 +313,9 @@ write into the residual stream (shown above; Chapter 15, 15.5).
 > ```
 >
 > ```text
-> nano_30b (GQA)      total  17.44M   active/token   6.60M (37.9%)   layers 8
+> tiny_gqa (GQA)      total  17.44M   active/token   6.60M (37.9%)   layers 8
 >                     logits (2, 64, 259)  loss 5.6245  (ln(V) = 5.5568)
->                     [two more lines for nano_30b, and the nano_105b block, omitted]
+>                     [two more lines for tiny_gqa, and the tiny_mla block, omitted]
 > ```
 >
 > *verified*: `python -m anulm model` at the pin, output trimmed. 5.6245 is ln V plus

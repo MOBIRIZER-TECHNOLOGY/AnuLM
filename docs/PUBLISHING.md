@@ -37,7 +37,6 @@ optimizer state, are not — `docs/history/TASKS.md` records what that means.
 | artefact | where | licence | why |
 | --- | --- | --- | --- |
 | code, docs, data recipes, tokenizers | GitHub repository | MIT (`LICENSE`) | original work |
-| `sarvam/sarvam-30b/`, `sarvam/sarvam-105b/` | in the repository, unmodified | Apache 2.0 (Sarvam AI, `NOTICE` §1) | redistributed reference code |
 | `AnuLM-Coder-400M` (`ckpt_coder_sft.pt`) and its base | Hugging Face | **CC BY-NC-SA 4.0** | tuned on jinaai/code_exercises, which is CC BY-NC-SA 4.0 and ChatGPT-generated |
 | `AnuLM-Translate-400M` (`ckpt_translate.pt`) | Hugging Face | **CC BY-NC 4.0**, research only | Samanantar is CC BY-NC 4.0; the IIT Bombay corpus is research-only |
 | `AnuLM-Hindi-QA-400M` (`ckpt_multi_qa.pt`) and `AnuLM-Base-400M` (`ckpt_multi36k.pt`) | Hugging Face | **CC BY-SA 4.0** | Wikipedia / Wikisource are CC BY-SA; C4 and fineweb-edu are ODC-BY |
@@ -51,15 +50,11 @@ full provenance table; keep it in sync with this one.
 
 ## 2. Repository hygiene (done 2026-09-18)
 
-- Project renamed from nanosarvam to AnuLM. Class names `NanoSarvam` and
-  `NanoSarvamConfig` remain as aliases in `model.py` so existing
-  checkpoints, which pickle the config class by name, still load, and
-  `BPE.load` still accepts the old `"nanosarvam-bpe"` format id, which the
-  tokenizers uploaded with the weights carry; `bpe.py` writes `"anulm-bpe"`
-  now and the committed tokenizers under `data/` were migrated in place
-  (only the type string changed — the merges are byte-for-byte identical,
-  so re-uploading the Hub copies is optional). Everything else carrying the
-  old name was renamed with the project: the corpus fetchers'
+- Project renamed to AnuLM. `bpe.py` writes the `"anulm-bpe"` format id;
+  the committed tokenizers under `data/` and every tokenizer on the Hub carry
+  it (checked 2026-11-07), so the old class and format aliases were removed
+  then, with the reference code that used to sit in the repository. Everything
+  else carrying the old name was renamed with the project: the corpus fetchers'
   User-Agent, the scheduled tasks (`anulm_*`) and the paths in `docs/history/TASKS.md`
   and `update_tasks.py`. The old working directory and its five scheduled
   tasks were deleted on 2026-09-18; `docs/history/TASKS.md` records what that took with
@@ -120,7 +115,7 @@ and push it to a separate model id — 29 seconds on a GPU, five minutes on
 a CPU, and it exercises every step above plus the download:
 
 ```bash
-python -m anulm train --preset 30b --steps 200 --eval-every 50 --out ckpt_smoke.pt
+python -m anulm train --preset tiny-gqa --steps 200 --eval-every 50 --out ckpt_smoke.pt
 python -m anulm export_hf ckpt_smoke.pt release/AnuLM-Smoke-30B \
     --license mit --card docs/MODEL_CARD_SMOKE.md --repo toonist/AnuLM-Smoke-30B
 python -m anulm sample --ckpt release/AnuLM-Smoke-30B --prompt "KING RICHARD II:" --tokens 100

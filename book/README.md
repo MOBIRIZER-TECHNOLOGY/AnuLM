@@ -59,7 +59,8 @@ each other. The decision, option A, is recorded at the end of this file.
 
 - A decoder-only sparse-MoE transformer written from scratch in PyTorch:
   `anulm/model.py`, 1,224 lines.
-- It follows the design of Sarvam 30B and 105B, which descend from DeepSeek.
+- Its attention and routing follow published designs: GQA (Ainslie et al. 2023),
+  MLA and DeepSeek-V3's sigmoid routing with bias-only balancing.
 - Released models: 400M total / about 173M active parameters, a 32k byte-level
   BPE, RoPE at θ = 1e6, and GQA 16:4 with QK-norm.
 - Sliding-window attention on half the layers, SwiGLU, and 24 experts with
@@ -120,7 +121,7 @@ each other. The decision, option A, is recorded at the end of this file.
 | LayerNorm | No (RMSNorm) | Compare it with RMSNorm, then show the repo's `RMSNorm` |
 | Plain MHA / MQA | As GQA config cases | Teach GQA as the general case |
 | GELU 4× FFN | No (SwiGLU) | History, then SwiGLU |
-| Weight tying | Flag only, off | Explain the flag and why both Sarvam and AnuLM untie |
+| Weight tying | Flag only, off | Explain the flag and why AnuLM unties |
 | Top-p | No | Teach it, mark it absent, and give a 6-line `EXTENSION` patch |
 | KV caching | **Yes** | Full chapter |
 | Mixed precision | bf16 autocast | Full section; fp16 + GradScaler marked absent |
@@ -139,7 +140,7 @@ each other. The decision, option A, is recorded at the end of this file.
 |---|---|
 | 1 · Repository discovery | **done**: core files read in full; 25 peripheral files inventoried; 14 of 14 spot-checks matched |
 | 2 · Book blueprint | **done**: `BOOK_PLAN.md` (41 chapters in 10 parts, file and test map, 17 diagrams, capstone, writing order); `RESEARCH_REFERENCES.md` (49 references, all at *cited*) |
-| 3 · Technical validation of the blueprint | **in progress.** Research half **done** (2026-10-31): all 66 references opened at their sources (arXiv API and full texts, Crossref, the originals) and CHECKED; 3 metadata corrections (R36's volume, R37 and S05's DOIs), 6 claims narrowed, R15's unconfirmed venue dropped; PyTorch docs pinned to 2.11; Sarvam provenance traced to the upstream revisions (the local 105B modelling file predates Sarvam's 2026-09-21 routing change); three historical orders corrected in `BOOK_PLAN.md`. Audit: references verified, research-complete **no** until the Stage 5 claim review. Repository half **done** (2026-10-31): `tools/verify_source_map.py` checked all 94 source-map rows and 61 test-map entries at `@b42998d` with Python's parser; `tools/verify_claims.py` recomputed 23 claims from the code and `ckpt_base_v2.pt` (all hold), including that every file and test the plan names exists. Fixed: two `anulm/multimodal/omni_train.py` rows that cited uncommitted code, one range 3 lines long, two rows naming a method for a class range, and a shared-expert statement (the released model has none). **Stage 3 is complete**; Stage 4 may start |
+| 3 · Technical validation of the blueprint | **in progress.** Research half **done** (2026-10-31): all 66 references opened at their sources (arXiv API and full texts, Crossref, the originals) and CHECKED (R49 withdrawn 2026-11-07, so 65 stand); 3 metadata corrections (R36's volume, R37 and S05's DOIs), 6 claims narrowed, R15's unconfirmed venue dropped; PyTorch docs pinned to 2.11; three historical orders corrected in `BOOK_PLAN.md`. Audit: references verified, research-complete **no** until the Stage 5 claim review. Repository half **done** (2026-10-31): `tools/verify_source_map.py` checked all 94 source-map rows and 61 test-map entries at `@b42998d` with Python's parser; `tools/verify_claims.py` recomputed 23 claims from the code and `ckpt_base_v2.pt` (all hold), including that every file and test the plan names exists. Fixed: two `anulm/multimodal/omni_train.py` rows that cited uncommitted code, one range 3 lines long, two rows naming a method for a class range, and a shared-expert statement (the released model has none). **Stage 3 is complete**; Stage 4 may start |
 | 4 · Chapter authoring | **in progress**: 2 of 41 written (Ch 20; Ch 11, "Attention from first principles", 2026-10-31, with `code-examples/attention_by_hand.py`). Next in the writing order: Ch 12–13 |
 | 5 · Independent review | **in progress**, chapter by chapter: 2 of 2 written chapters reviewed (Ch 11, Ch 20), each by an independent technical review, then revised after a simulated target-reader review and re-checked (record: `technical-review/claims-review.md`). The trained model is now measured where a chapter explains a behaviour (`measurements/`). Styled preview: `tools/build_preview.py`, published as an artifact. **Not yet done: human reviews** by an expert and a target reader (`technical-review/REVIEWER_GUIDE.md`) |
 | 6 · Integration | pending |
@@ -152,7 +153,6 @@ each other. The decision, option A, is recorded at the end of this file.
 - `app*.py`
 - `anulm/multimodal/speech_data.py`, `anulm/inference/voice.py`
 - `web/`, `space/`
-- `sarvam/` annotated references
 - `docs/RESULTS.md`, beyond its index
 
 These are needed only for the chapters that cite them, and will be read

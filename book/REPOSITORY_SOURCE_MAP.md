@@ -43,7 +43,7 @@ the arithmetic and narrative claims about the released model were recomputed by
 
 | Component | Symbol | Lines | Status | Concepts | Verified |
 |---|---|---|---|---|---|
-| Configuration and presets | `AnuLMConfig`, `nano_30b`, `nano_350m`, `nano_105b` | 39–218 | implemented | hyperparameters, GQA/MLA switch, MoE sizes | read |
+| Configuration and presets | `AnuLMConfig`, `tiny_gqa`, `base_350m`, `tiny_mla` | 39–218 | implemented | hyperparameters, GQA/MLA switch, MoE sizes | read |
 | Config validation | `AnuLMConfig.__post_init__` | 126–156 | implemented | top-k reachable through groups | read |
 | RMSNorm | `RMSNorm` | 225–239 | implemented | computed in fp32, learned gain, no mean subtraction | read |
 | SwiGLU MLP / expert body | `SwiGLU` | 242–253 | implemented | gate · up, SiLU, 3·D·I parameters | read |
@@ -195,7 +195,7 @@ it is wrong.
 | Sliding window | `sliding_window_limits_reach` (750), `sliding_window_agrees_with_cache` (776) |
 | GQA | `native_gqa_matches_repeat_interleave` (1767) |
 | Compile | `dense_moe_compiles_without_graph_breaks` (588), `sparse_moe_breaks_the_graph_as_documented` (603), `compiled_forward_matches_eager` (619), `compiled_backward_produces_gradients` (639), `grouped_moe_compiles_without_graph_breaks` (866), `grouped_moe_trains` (848) |
-| Tokenizer | `bpe_documents_get_eos_and_the_vocab_is_exact` (970), `bpe_files_load_under_both_format_ids` (1544), `hf_tokenizer_conversion_is_exact` (1517), `byte_loader_inserts_eos_at_document_boundaries` (1595) |
+| Tokenizer | `bpe_documents_get_eos_and_the_vocab_is_exact` (970), `bpe_files_load_and_foreign_ones_are_refused` (1544), `hf_tokenizer_conversion_is_exact` (1517), `byte_loader_inserts_eos_at_document_boundaries` (1595) |
 | Checkpoints and export | `checkpoint_roundtrip_is_exact` (460), `an_exported_folder_loads_everywhere_a_pt_does` (1057), `transformers_wrapper_matches_the_native_model` (1450), `an_export_keeps_what_makes_a_checkpoint_more_than_a_language_model` (1342) |
 | Fine-tuning | `lora_starts_as_the_base_model_and_merges_back_exactly` (1163), `lora_scale_is_alpha_over_r` (1262), `qa_packing_masks_prompts_and_keeps_examples_whole` (1676), `decide_scores_each_option_at_its_last_token_and_calibrates` (1875) |
 | Merge tree, Muon | `merge_tree_composes_trains_and_bakes_losslessly` (1813), `merge_tree_eval_cache_sees_optimizer_updates` (1849), `batched_muon_matches_per_matrix_muon` (1902) |

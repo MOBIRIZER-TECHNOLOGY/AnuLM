@@ -57,7 +57,7 @@
   "eval_code_sandbox_contains_generated_code",
   "transformers_wrapper_matches_the_native_model",
   "hf_tokenizer_conversion_is_exact",
-  "bpe_files_load_under_both_format_ids",
+  "bpe_files_load_and_foreign_ones_are_refused",
   "byte_loader_inserts_eos_at_document_boundaries",
   "prose_filter_drops_lists_and_keeps_prose",
   "golden_items_are_well_formed_and_the_scorer_runs",

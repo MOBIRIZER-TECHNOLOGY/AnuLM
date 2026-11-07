@@ -503,8 +503,8 @@ python -m anulm app_omni --device cpu</code></pre>
     <div class="specs">
       <div class="spec">
         <h3>The decoder</h3>
-        <p>20 layers, hidden size 1,024, mixture of experts: 456M parameters, 232M active per token. An independent
-          re-implementation of the published Sarvam 30B design, at small scale. No Sarvam weights are used.</p>
+        <p>20 layers, hidden size 1,024, mixture of experts: 456M parameters, 232M active per token. Written and trained from scratch;
+          no other model's weights are used.</p>
       </div>
       <div class="spec">
         <h3>Pretraining</h3>
@@ -810,9 +810,11 @@ python -m anulm app_omni</code></pre>
           the seven-task training ran on the same card.</p></div>
       </details>
       <details>
-        <summary>Is it related to Sarvam AI?</summary>
-        <div><p>No. AnuLM independently re-implements the published Sarvam 30B design at small scale. No Sarvam
-          weights are used. AnuLM is not affiliated with Sarvam AI, AI4Bharat or any other organisation named on this page.</p></div>
+        <summary>Is it built on another company's model?</summary>
+        <div><p>No. AnuLM's model, tokenizer and training code were written for this project, and every model was
+          trained from scratch on this one GPU. The ideas it uses come from published papers (grouped-query attention,
+          DeepSeek-style mixture-of-experts routing, rotary positions), cited in the repository. AnuLM is not affiliated
+          with any organisation named on this page.</p></div>
       </details>
       <details>
         <summary>How do I contribute?</summary>
@@ -882,7 +884,7 @@ python -m anulm app_omni</code></pre>
         TextVQA (CC BY 4.0). Messages: BANKING77 (PolyAI) and MASSIVE (Amazon Science), CC BY 4.0. All media resized
         or converted; content unchanged.</p>
       <p>Built on Whisper-small (OpenAI), SigLIP (Google), multilingual-e5-small, Piper and Gradio. Not affiliated with
-        Sarvam AI, AI4Bharat or any organisation named here. This page has no trackers and no analytics.</p>
+        any organisation named here. This page has no trackers and no analytics.</p>
       <p>© 2026 The AnuLM authors.</p>
     </div>
   </div>

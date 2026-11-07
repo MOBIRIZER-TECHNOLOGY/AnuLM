@@ -292,7 +292,7 @@ PyTorch for the causal mask whenever no mask is passed and S > 1.
 
 The layer that calls it sets up its projections and scale once:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 430–449 · @b42998d
+> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 440–459 · @WORKTREE
 
 ```python
     def __init__(self, cfg: AnuLMConfig, rotary: Rotary):
@@ -302,7 +302,7 @@ The layer that calls it sets up its projections and scale once:
         self.n_rep = cfg.n_head // cfg.n_kv_head
         self.head_dim = cfg.head_dim
         self.dropout = cfg.dropout
-        # One fused projection: (H + 2*Hkv) * Dh, exactly as the 30B does.
+        # One fused projection: (H + 2*Hkv) * Dh, split on the head axis.
         self.query_key_value = nn.Linear(
             cfg.hidden_size, (cfg.n_head + 2 * cfg.n_kv_head) * cfg.head_dim, bias=False
         )
@@ -317,19 +317,19 @@ The layer that calls it sets up its projections and scale once:
         self.scale = cfg.head_dim ** -0.5 * (rotary.attn_mscale ** 2)
 ```
 
-- **Lines 438–441.** W<sub>Q</sub>, W<sub>K</sub> and W<sub>V</sub> are one
+- **Lines 448–451.** W<sub>Q</sub>, W<sub>K</sub> and W<sub>V</sub> are one
   matrix, `query_key_value`, 1,024 → (16 + 2·4)·64 = 1,536 wide. `dense` is
   the output projection back to D. Both are Chapter 13's subject.
-- **Lines 443–445.** One RMSNorm for queries and one for keys (11.7).
-- **Line 449.** The scale is 1/√64 = 0.125, times a temperature that YaRN adds
+- **Lines 453–455.** One RMSNorm for queries and one for keys (11.7).
+- **Line 459.** The scale is 1/√64 = 0.125, times a temperature that YaRN adds
   when the context is stretched (Chapter 29). Without YaRN, `attn_mscale` is
-  1.0 (line 298), so the released scale is exactly 0.125. MLA and the band
+  1.0 (line 308), so the released scale is exactly 0.125. MLA and the band
   blend in the comment belong to Chapters 19 and 29; the test that pins the
   YaRN temperature is in the Details at the end of this section.
 
 The forward pass first makes the queries, keys and values for every head:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 451–476 · @b42998d
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 461–486 · @WORKTREE
 
 ```python
     def forward(self, x, cos, sin, cache: Optional[dict] = None, start: int = 0,
@@ -343,23 +343,23 @@ The forward pass first makes the queries, keys and values for every head:
         k = k.transpose(1, 2)                         # (B, Hkv, S, Dh)
         v = v.transpose(1, 2)                         # (B, Hkv, S, Dh)
 
-        if self.use_qk_norm:                          # before RoPE, as in the 30B
+        if self.use_qk_norm:                          # before RoPE
             q = self.query_layernorm(q)
             k = self.key_layernorm(k)
         q, k = apply_rope(q, k, cos, sin)
 
         if cache is not None:
             # Cache the Hkv heads, not their H broadcast copies -- that ratio
-            # (16:1 in the real 30B) is GQA's entire inference saving.
+            # (4:1 in base v2) is GQA's entire inference saving.
             if "k" in cache:
                 k = torch.cat([cache["k"], k], dim=2)
                 v = torch.cat([cache["v"], v], dim=2)
             cache["k"], cache["v"] = k, v
 ```
 
-Lines 458–463 are x **W** for all three roles at once, then a cut into
+Lines 468–473 are x **W** for all three roles at once, then a cut into
 16 query heads and 4 key and 4 value heads, each (B, heads, S, 64). Lines
-465–468 normalise (11.7) and rotate (Chapter 14). Lines 470–476 append to the
+475–478 normalise (11.7) and rotate (Chapter 14). Lines 480–486 append to the
 KV cache (Chapter 27). Then comes the attention call:
 
 > **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 477–494 · @b42998d
@@ -526,9 +526,7 @@ the gains.
 
 > **Details.** QK-norm was proposed with ℓ2 normalisation and a single learned
 > scale [R14]. AnuLM uses RMSNorm with a gain per dimension, before the
-> rotation. AnuLM's design follows Sarvam AI's open 30B and 105B models, whose
-> modelling code the repository keeps, annotated, in `sarvam/`; the comment at
-> line 465 says "before RoPE, as in the 30B".
+> rotation; the comment at line 475 (@WORKTREE) says "before RoPE".
 
 `IN THE REPO`
 

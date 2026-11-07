@@ -82,7 +82,7 @@ and `measure_attention.py`) and labelled **Book example, not repository code**.
 It imports the repository's code unchanged and checks itself against it, and
 the chapter prints what it prints. They fall into three kinds:
 
-- **Self-contained examples** run on a CPU in seconds, on `tiny()`, `nano_30b`
+- **Self-contained examples** run on a CPU in seconds, on `tiny()`, `tiny_gqa`
   or hand-sized tensors, and write nothing into the book.
 - **Examples that need the released model or data**: every `chNN_measure_*.py`,
   `measure_attention.py`, `ch41_checkpoints.py released`, and others whose
@@ -245,11 +245,13 @@ def at_pin(path: str) -> list[str]:
 def tree_at_pin() -> list[str]:
     names = subprocess.run(["git", "ls-tree", "-r", "--name-only", PIN], cwd=ROOT, capture_output=True,
                            text=True, check=True).stdout.split()
-    return [f for f in names if f.endswith(".py")]
+    # A folder of third-party reference code was at the pin and has since been
+    # removed from the repository; count only what a clone still holds.
+    return [f for f in names if f.endswith(".py") and (ROOT / f.split("/")[0]).exists()]
 
 
 def repo_map() -> dict:
-    """The package, its tests and tools (everything outside the five folders below), by role."""
+    """The package, its tests and tools (everything outside the four folders below), by role."""
     files = [f for f in tree_at_pin() if not f.startswith(tuple(d + "/" for d in FOLDERS))]
     groups: dict[str, list] = {}
     for f in files:
@@ -263,7 +265,7 @@ def repo_map() -> dict:
 
 
 def subdirectories() -> None:
-    """The rest of the Python: the lab book, run scripts, the reference code, examples, the book."""
+    """The rest of the Python: the lab book, run scripts, examples, the book."""
     py = tree_at_pin()
     print(f"\nPython files in the whole tree @{PIN}: {len(py)}")
     for d in FOLDERS:
@@ -271,8 +273,8 @@ def subdirectories() -> None:
         print(f"  {d + '/':24s} {len(fs):3d} files {sum(len(at_pin(f)) for f in fs):6,d} lines")
 ```
 
-`FOLDERS` is `course`, `experiments`, `sarvam`, `examples` and `book`, the
-folders Chapter 1.5's table counts on rows of their own.
+`FOLDERS` is `course`, `experiments`, `examples` and `book`, the folders
+Chapter 1.5's table counts on rows of their own.
 
 The citation check is the core of what `verify_chapters.py` does for every
 excerpt (F.2):

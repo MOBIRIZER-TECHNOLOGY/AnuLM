@@ -423,7 +423,7 @@ only idle experts, so the whole input table counts as active.
 uses. *verified*: the figure's script asserts the sum against `num_params()`.
 
 *verified*: recomputed by `trace_forward.py` from `released()`, which builds
-`AnuLMConfig.nano_350m`, one of `anulm/model.py`'s presets, with the released
+`AnuLMConfig.base_350m`, one of `anulm/model.py`'s presets, with the released
 run's settings. It matches every field of `ckpt_base_v2.pt`'s configuration that
 sets a shape or a parameter count. Six training and serving settings differ:
 `tokenizer_path`, `bias_update_rate` (0.003 in the run), `moe_impl`
@@ -453,11 +453,11 @@ each storage choice; the 256-token window does not shrink them.
 
 > **In the repo** · `tests/test_model.py` · `param_count_matches_analysis` · line 507 · @b42998d
 
-It builds two more presets, `nano_30b` and `nano_105b`, small models shaped
-like Sarvam's 30B and 105B, and requires 17,440,384 parameters (6,602,368 active)
+It builds two more presets, `tiny_gqa` and `tiny_mla`, small models with
+grouped-query and latent attention, and requires 17,440,384 parameters (6,602,368 active)
 and 47,389,728 (13,327,392 active), each within 1,000. That catches a missing
 matrix, the smallest being 6,144 numbers, but not a missing gain vector (64 or 384
-numbers in `nano_30b`, 48, 72 or 384 in `nano_105b`). `all_parameters_receive_gradients` (line 415) catches a parameter that
+numbers in `tiny_gqa`, 48, 72 or 384 in `tiny_mla`). `all_parameters_receive_gradients` (line 415) catches a parameter that
 is built but never used, and `initial_loss_is_ln_vocab` (line 428) a badly
 scaled initialisation. To print the trace:
 
@@ -491,7 +491,7 @@ python book/code-examples/trace_forward.py
 ## 20.12  Exercises
 
 1. Using the eight terms, compute total and active parameters of
-   `AnuLMConfig.nano_30b()`: one dense layer 0, QK-norm, D = 384, L = 8, H = 6,
+   `AnuLMConfig.tiny_gqa()`: one dense layer 0, QK-norm, D = 384, L = 8, H = 6,
    H<sub>kv</sub> = 2, D<sub>h</sub> = 64, V = 259, E = 16, A = 2, I = 768,
    I<sub>e</sub> = 96, one shared expert.
 2. Set `n_kv_head = 1` in `tiny()`. Predict `query_key_value`'s output width
@@ -502,7 +502,7 @@ python book/code-examples/trace_forward.py
 
 **Answers.**
 1. 17,440,384 and 6,602,368. From `book/code-examples`:
-   `python -c "import trace_forward as t, model as M; t.arithmetic('nano_30b', M.AnuLMConfig.nano_30b())"`
+   `python -c "import trace_forward as t, model as M; t.arithmetic('tiny_gqa', M.AnuLMConfig.tiny_gqa())"`
 2. (4 + 2·1)·8 = 48 wide; `k` is (2, 1, 5, 8), then (2, 4, 5, 8).
 3. 20·2·16·64·2 = 81,920 bytes, 80 KiB.
 4. (B, V) logits would break `generate`'s three-dimensional `logits[:, -1, :]`.

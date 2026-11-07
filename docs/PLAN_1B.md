@@ -1,9 +1,9 @@
 # AnuLM 1B: plan
 
 Written 2026-11-06. **Decision (the user, 2026-11-06): train from scratch on clean
-data**, not grow base v2. Status: data and tools built and tested on the CPU;
-nothing has run on the GPU yet. Every time below is an estimate until the probe
-(step 3) measures it.
+data**, not grow base v2. Status: **pretraining since 2026-11-06 20:52**
+(the equivalent of `experiments/base_1b_train.sh`; logs in `logs/base_1b/`). The probe's checks
+are under "The probe" below, with what the first 75,000 steps measured.
 
 ## Goal
 
@@ -99,11 +99,11 @@ going over silently pages to system RAM and runs ~20x slower
 
 | # | step | time | GPU |
 |---|---|---|---|
-| 0 | finish Omni runs 1 and 2 (running now) | until ~21:00, 2026-11-06 | busy |
+| 0 | finish Omni runs 1 and 2 | **done** 2026-11-06 18:10; run 1 published | busy |
 | 1 | data: collect permissive Python, assemble `data/v3` | **done** (1 h 15 min) | none |
-| 2 | wire `--optimizer adamw-lowmem` into `train.py` | ~1 h | none |
-| 3 | **probe**: 12 h from scratch, measuring speed, memory and the loss curve against base v2's at equal tokens | 0.5 day | yes |
-| 4 | pretraining | **~15-22 days** (below) | yes |
+| 2 | wire `--optimizer adamw-lowmem` into `train.py` | **done** | none |
+| 3 | **probe**: 12 h from scratch, measuring speed, memory and the loss curve against base v2's at equal tokens | **done**: memory and speed pass; loss on track (below) | yes |
+| 4 | pretraining | **running**; ~17 days for 8B tokens, ~24 for the full 11.3B | yes |
 | 5 | chat model on the new base (as chat v3, `chat_train_v6.jsonl`) | ~0.5 day | yes |
 | 6 | AnuLM-Omni on the new base (`experiments/omni_one.py --data v2`) | ~0.5-1 day | yes |
 | 7 | gates, export, demo check, docs, book | ~0.5 day | partly |
@@ -122,19 +122,22 @@ warmup-stable-decay, so the decay can start early if the run must end sooner.
 
 ```
 python -I experiments/build_v3.py --v2 data/v2 --code data/code_clean --out data/v3
-python -m anulm.training.train --preset 350m --device cuda --moe-impl grouped --data data/v3/meta.json ^
-  --out ckpt_base_1b.pt --block-size 1024 --batch-size 4 --steps 2770000 ^
-  --optimizer adamw-lowmem --grad-ckpt --lr 6e-4 --min-lr 6e-5 --warmup 2000 --schedule wsd --decay-frac 0.16 ^
-  --eval-every 10000 --eval-windows 400 --log-every 1000 --seed 2026 ^
-  --seq-balance-alpha 1e-4 --router-z-alpha 1e-3 ^
-  --cfg n_layer=24 sliding_window=256 max_window_layers=10 num_experts=24 num_experts_per_tok=4 ^
-        num_shared_experts=0 moe_intermediate_size=512 bias_update_rate=0.003
+bash experiments/base_1b_train.sh
 ```
+
+`experiments/base_1b_train.sh` runs `python -m anulm train --preset 1b` with
+`--optimizer adamw-lowmem --grad-ckpt` and the rest of base v2's flags; route D
+of `docs/TRAIN_FROM_SCRATCH.md` is the step-by-step version. (The run on the
+training machine was started on 2026-11-06 with `--preset 350m` and the same
+shape as `--cfg` overrides, before `--preset 1b` existed; `tests/test_model.py`
+checks that the two build the identical configuration, so either command
+resumes it.)
 
 The flags are base v2's (`_v2_run.cmd`) with three changes: the 1B shape, the
 low-memory optimizer and gradient checkpointing. Validation reads 400 strided
 windows of `data/v3/val.u16`. Its English and Hindi part is base v2's own
-validation data, so the curves compare directly; the code part is new.
+validation data; its code part is new and harder to predict (measured below),
+so the two runs' validation losses differ by more than the models do.
 
 Go on to step 4 only if, after 12 h:
 
@@ -142,6 +145,22 @@ Go on to step 4 only if, after 12 h:
 2. at equal tokens, the training loss is at or below base v2's curve
    (`v2_train_run.log`); a bigger model should learn faster per token;
 3. no expert collapse: the router imbalance stays near base v2's (median ~1.4-1.6x).
+
+**Measured (2026-11-07):**
+
+| check | base v2 at the same step | 1B |
+|---|---|---|
+| peak GPU memory | - | 13.8 GB of 16: pass |
+| speed | 12,704 tokens/s | 5,360 tokens/s: pass, at the low end of the estimate |
+| validation loss, step 70,000 | 4.147 | 4.217 |
+| router imbalance, median | 1.56x (step 1,000) | 1.35-1.57x: pass |
+
+The validation gap is mostly the code. Base v2's final checkpoint scores 3.76
+on the English and Hindi windows, 2.68 on base v2's old code (part of it was
+model-written text it had trained on) and 3.87 on the new permissively
+licensed code. Code is about 6.5% of the validation data, so the new set reads
+about 0.08 harder for the same model: about the whole 0.07 gap. That estimate
+used 4 windows per set; a larger text-only comparison is due near step 200,000.
 
 ## Risks
 

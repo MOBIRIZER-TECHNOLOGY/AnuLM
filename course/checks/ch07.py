@@ -192,7 +192,7 @@ def shared_expert_sees_every_token(M):
 # --- the whole model ----------------------------------------------------------------------------
 
 # Every field set explicitly: model.py's config and MoELM have different defaults
-# (rope_theta 1e4 against the 30b preset's 1e6), and a check that relied on either
+# (rope_theta 1e4 against the tiny-gqa preset's 1e6), and a check that relied on either
 # would compare two different models.
 SMALL = dict(vocab_size=64, block_size=64, n_layer=3, hidden_size=D, n_head=4, head_dim=8, n_kv_head=2,
              num_experts=8, num_experts_per_tok=2, moe_intermediate_size=16, intermediate_size=64,
@@ -235,7 +235,7 @@ def your_model_is_model_py(M):
 
 @check
 def thirty_b_preset_has_the_right_parameter_count(M):
-    """The defaults are the `30b` preset: 17,440,384 parameters, 6,602,368 active per token."""
+    """The defaults are the `tiny-gqa` preset: 17,440,384 parameters, 6,602,368 active per token."""
     total, active = M.MoELM().num_params()
     assert (total, active) == (17_440_384, 6_602_368), \
         f"(total, active) = ({total:,}, {active:,}), expected (17,440,384, 6,602,368)"

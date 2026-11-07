@@ -35,11 +35,11 @@ def tiny() -> M.AnuLMConfig:
 
 
 def released() -> M.AnuLMConfig:
-    """AnuLM-Base-v2-400M's configuration: nano_350m with the settings the released run changed.
+    """AnuLM-Base-v2-400M's configuration: base_350m with the settings the released run changed.
     Every field that sets a shape or a parameter count matches ckpt_base_v2.pt's own config (397,659,648
     parameters). Six training and serving settings differ and change no shape: tokenizer_path,
     bias_update_rate, moe_impl, seq_balance_alpha, router_z_alpha, yarn_original_context."""
-    return M.AnuLMConfig.nano_350m(vocab_size=32768, block_size=1024, sliding_window=256, max_window_layers=10,
+    return M.AnuLMConfig.base_350m(vocab_size=32768, block_size=1024, sliding_window=256, max_window_layers=10,
                                    num_experts=24, num_experts_per_tok=4, num_shared_experts=0,
                                    moe_intermediate_size=192)
 

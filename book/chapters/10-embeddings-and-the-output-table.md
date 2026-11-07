@@ -80,8 +80,8 @@ class AnuLM(nn.Module):
   score, a *logit*, per id.
 - **Tying:** with `tie_word_embeddings`, line 843 makes the head's weight *the
   same tensor* as the embedding. Tying the input and output embeddings is
-  recommended by [S17]. The default is `False` (line 117, "Sarvam
-  unties both models"), and so is the released model (*verified*).
+  recommended by [S17]. The default is `False` (line 113 @WORKTREE, "untied
+  input and output tables"), and so is the released model (*verified*).
 
 ```
 tie_word_embeddings=False: same tensor? False parameters 47,888

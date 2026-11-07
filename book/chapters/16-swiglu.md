@@ -166,12 +166,12 @@ upward: close to 0 for very negative g, about g itself for large g (SiLU(4) =
 These are I<sub>e</sub>, an expert's width; I, layer 0's; and the number of
 dense layers from the bottom. The released model's preset sets I:
 
-> **In the repo** · `anulm/model.py` · `AnuLMConfig.nano_350m` · lines 191–200 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLMConfig.base_350m` · lines 187–196 · @WORKTREE
 
 ```python
         cfg = dict(
             attn="gqa", n_layer=20, hidden_size=1024, n_head=16, head_dim=64,
-            n_kv_head=4,                   # 4:1, closer to the real 30B's 16:1
+            n_kv_head=4,                   # 4 query heads per key/value head
             num_experts=12, num_experts_per_tok=3,
             moe_intermediate_size=384,
             intermediate_size=2816,
@@ -220,9 +220,9 @@ Two readings (*verified*):
   width is 2,730.67; I = 2,816 is that width rounded up to a multiple of 256. The code
   does not say that this is how it was chosen.
 
-> **Details.** The smaller presets set I to 2·D (`nano_30b`, line 166) and
-> 4·D (`nano_105b`, line 213), mirroring Sarvam's 30B and 105B
-> (`docs/RESULTS.md`, "The two presets").
+> **Details.** The smaller presets set I to 2·D (`tiny_gqa`, line 163) and
+> 4·D (`tiny_mla`, line 223), both @WORKTREE (`docs/RESULTS.md`, "The two
+> presets").
 
 `IN THE REPO`
 
@@ -231,14 +231,14 @@ Two readings (*verified*):
 > **In the repo** · `anulm/model.py` · `Block.__init__` · lines 809–811 · @b42998d
 
 ```python
-        # Layer 0 dense, the rest MoE -- first_k_dense_replace = 1 in both models.
+        # Layer 0 dense, the rest MoE -- first_k_dense_replace = 1 in every preset.
         self.is_moe = layer_idx >= cfg.first_k_dense_replace
         self.mlp = MoE(cfg) if self.is_moe else SwiGLU(cfg.hidden_size, cfg.intermediate_size)
 ```
 
 Only layers below `first_k_dense_replace`, here layer 0, get a SwiGLU of width
-I. "Both models" are Sarvam's 30B and 105B, whose configurations set the value
-to 1 [R49]; the repository gives no other reason. Every expert is a SwiGLU:
+I. Every preset keeps the default of 1, and the repository gives no reason for
+the value beyond this comment. Every expert is a SwiGLU:
 
 > **In the repo** · `anulm/model.py` · `MoE.__init__` · lines 688–694 · @b42998d
 
@@ -377,7 +377,7 @@ output scale 0.4609; gate/up swapped: max difference 0.1585; gate transposed: 0.
 
 1. Change the toy's second `W_gate` row to [0, 1, 0]. What is the output?
 2. How many parameters would layer 0 hold at I = 4,096?
-3. For `nano_30b` (D = 384, I = 768, I<sub>e</sub> = 96, A = 2, one shared
+3. For `tiny_gqa` (D = 384, I = 768, I<sub>e</sub> = 96, A = 2, one shared
    expert), compare layer 0's multiply-adds per token with an MoE layer's
    experts.
 
@@ -420,18 +420,15 @@ used only for the claim in its register row:
 | ID | Used for | Status |
 |---|---|---|
 | [R11] | gated FFN variants, SwiGLU among them; the inner width shrunk by 2/3 to keep parameters and computation constant | CHECKED |
-| [R49] | Sarvam's 30B and 105B configurations, which set `first_k_dense_replace` to 1 | CHECKED |
 | [S04] | the GELU activation | CHECKED |
 
-Repository evidence, all at @b42998d:
-- `anulm/model.py`: `AnuLMConfig` 77–79, `nano_30b` line 166, `nano_350m` 191–200,
-  `nano_105b` line 213; `SwiGLU` 242–253, `MoE.__init__` 688–694,
-  `Block.__init__` 809–811, `AnuLM.__init__` 860–863.
+Repository evidence, at @b42998d unless marked:
+- `anulm/model.py`: `AnuLMConfig` 77–79, `SwiGLU` 242–253, `MoE.__init__` 688–694,
+  `Block.__init__` 809–811, `AnuLM.__init__` 860–863; at @WORKTREE, `tiny_gqa`
+  line 163, `base_350m` 187–196, `tiny_mla` line 223.
 - `tests/test_model.py`: `rmsnorm_and_swiglu_match_their_formulas` 252,
   `all_parameters_receive_gradients` 415,
   `transformers_wrapper_matches_the_native_model` 1450.
-- `sarvam/sarvam-30b/config.json`, `sarvam/sarvam-105b/config.json`:
-  `first_k_dense_replace`.
 - `docs/RESULTS.md`, "The two presets".
 - Measurements: `book/measurements/part_iv_b_trained.json` and
   `part_iv_b_trained_report.txt`, from `code-examples/ch16_measure_trained.py`.

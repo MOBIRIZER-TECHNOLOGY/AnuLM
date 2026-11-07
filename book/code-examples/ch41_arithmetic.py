@@ -106,8 +106,8 @@ def config_table() -> None:
     line = {m.group(1): i + 1 for i, l in enumerate(src[:end]) if (m := re.match(r"    (\w+): ", l))}
     ck = torch.load(ROOT / "ckpt_base_v2.pt", map_location="cpu", weights_only=False, mmap=True)["cfg"]
     declared = {f.name: f.default for f in dataclasses.fields(M.AnuLMConfig)}   # before __post_init__
-    cols = [declared] + [dataclasses.asdict(c) for c in (M.AnuLMConfig.nano_30b(), M.AnuLMConfig.nano_350m(), ck)]
-    print("| Field | Line | Default | `nano_30b` | `nano_350m` | Released |")
+    cols = [declared] + [dataclasses.asdict(c) for c in (M.AnuLMConfig.tiny_gqa(), M.AnuLMConfig.base_350m(), ck)]
+    print("| Field | Line | Default | `tiny_gqa` | `base_350m` | Released |")
     print("|---|---|---|---|---|---|")
     for f in dataclasses.fields(M.AnuLMConfig):
         vals = [c[f.name] for c in cols]
@@ -121,8 +121,8 @@ def config_table() -> None:
 
 def main() -> None:
     res = {}
-    for name, cfg in (("tiny()", tiny()), ("nano_30b", M.AnuLMConfig.nano_30b()),
-                      ("nano_350m", M.AnuLMConfig.nano_350m()), ("released", released())):
+    for name, cfg in (("tiny()", tiny()), ("tiny_gqa", M.AnuLMConfig.tiny_gqa()),
+                      ("base_350m", M.AnuLMConfig.base_350m()), ("released", released())):
         arithmetic(name, cfg)
         total, active = M.AnuLM(cfg).num_params()
         kv, st = kv_cache(cfg), training_state(total)

@@ -10,9 +10,6 @@ data/
 *.txt.gz
 *.xml.bz2
 
-# Sarvam's downloaded weights, if anyone pulls them alongside the code.
-sarvam/sarvam-*/*.safetensors
-sarvam/sarvam-*/*.gguf
 
 __pycache__/
 *.py[cod]

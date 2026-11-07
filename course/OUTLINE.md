@@ -27,7 +27,7 @@ repository already has 66 such tests; each is assigned to a chapter below.
      `model.py`'s, and the outputs must match;
    - *silent-failure tests* from `test_model.py`, run against the learner's
      code.
-4. **Run it.** Plug it into the real `train.py` on the `30b` preset
+4. **Run it.** Plug it into the real `train.py` on the `tiny-gqa` preset
    (17M parameters, about 20 minutes on a CPU) and watch it learn.
 5. **Code tour.** The same component in `model.py`, line by line, including
    the choices a teaching version leaves out.
@@ -37,7 +37,7 @@ repository already has 66 such tests; each is assigned to a chapter below.
 
 ## Tracks
 
-- **CPU track:** every default. Toy and `30b`-preset models, minutes per run.
+- **CPU track:** every default. Toy and `tiny-gqa`-preset models, minutes per run.
 - **GPU track (one 16 GB card):** the real 398M model, starting from the
   released base `toonist/AnuLM-Base-v2-400M`, so nobody has to pre-train
   for a week.
@@ -82,15 +82,15 @@ repository already has 66 such tests; each is assigned to a chapter below.
   `tools_hf_tokenizer.py`.
 - **Catch it:** `bpe_documents_get_eos_and_the_vocab_is_exact`,
   `byte_loader_inserts_eos_at_document_boundaries`,
-  `hf_tokenizer_conversion_is_exact`, `bpe_files_load_under_both_format_ids`.
+  `hf_tokenizer_conversion_is_exact`, `bpe_files_load_and_foreign_ones_are_refused`.
 - **Lab notebook:** §7 bytes vs BPE at matched compute; §22 a 32k tokenizer
   for Hindi, English and Python.
 
 ## Part II · Build AnuLM from scratch
 
 ### 4 · The skeleton: embeddings, RMSNorm, SwiGLU
-- **Topics:** the config object and its presets (`AnuLMConfig.nano_30b`,
-  `nano_105b`, `nano_350m`); token embeddings and the output head (tied or
+- **Topics:** the config object and its presets (`AnuLMConfig.tiny_gqa`,
+  `tiny_mla`, `base_350m`); token embeddings and the output head (tied or
   untied); RMSNorm vs LayerNorm; the SwiGLU MLP; pre-norm residual blocks;
   counting parameters by hand.
 - **Code:** `model.py`: `AnuLMConfig`, `RMSNorm`, `SwiGLU`, `Block`.

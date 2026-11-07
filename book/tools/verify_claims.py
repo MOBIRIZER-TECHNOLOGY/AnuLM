@@ -85,10 +85,10 @@ def main() -> int:
     claim("experts 269.0M", abs(exp / 1e6 - 269.0) < 0.05, f"{exp:,} (moe_intermediate_size {c['moe_intermediate_size']})")
     claim("untied head", c.get("tie_word_embeddings") is False, f"tie_word_embeddings {c.get('tie_word_embeddings')}")
 
-    preset = M.AnuLMConfig.nano_30b()
+    preset = M.AnuLMConfig.tiny_gqa()
     if preset is not None:
         pt, pa = M.AnuLM(preset).num_params()
-        claim("nano_30b is the 17M preset", abs(pt / 1e6 - 17) < 1, f"total {pt:,}, active {pa:,}")
+        claim("tiny_gqa is the 17M preset", abs(pt / 1e6 - 17) < 1, f"total {pt:,}, active {pa:,}")
     lines = src.splitlines()
     # Located by content, not by line, so a moved line cannot make this pass or fail.
     router = next(n for n in ast.parse(src).body if isinstance(n, ast.ClassDef) and n.name == "Router")

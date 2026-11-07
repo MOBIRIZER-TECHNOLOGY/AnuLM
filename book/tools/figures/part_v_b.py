@@ -244,7 +244,7 @@ def fig_25_curves():
     sx = lambda s: x0 + (x1 - x0) * s / 59
     sy = lambda v: y1 - (y1 - y0) * (v - lo) / (hi - lo)
     b = [text(20, 28, "Resuming exactly, and resuming without the optimizer", 15, weight=700, family=SERIF),
-         text(20, 48, "train.py --preset 30b on a byte corpus, CPU · logged training loss per step · book example "
+         text(20, 48, "train.py --preset tiny-gqa on a byte corpus, CPU · logged training loss per step · book example "
                       "ch25_resume.py", 12, "f-muted", MUTED)]
     for t in (1, 2, 3, 4, 5):
         b.append(line(x0, sy(t), x1, sy(t)))

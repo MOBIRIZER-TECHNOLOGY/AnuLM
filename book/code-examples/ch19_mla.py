@@ -4,7 +4,7 @@ Chapter 19: multi-head latent attention, as `model.MLAttention` computes it.
 
     python book/code-examples/ch19_mla.py
 
-1. One forward pass of `MLAttention` at the `nano_105b` sizes, recomputed step
+1. One forward pass of `MLAttention` at the `tiny_mla` sizes, recomputed step
    by step with every shape printed, and checked against the module.
 2. What the cache holds after a prompt and one more token, and a check that
    the cached step equals the uncached forward.
@@ -13,12 +13,11 @@ Chapter 19: multi-head latent attention, as `model.MLAttention` computes it.
    while a rotated key cannot. AnuLM does not do this; it re-expands the
    latent every step.
 4. Cache arithmetic: numbers per token per layer for MLA and GQA, at the
-   repository's sizes and at Sarvam 105B's configured sizes.
+   repository's sizes.
 """
 
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 
@@ -40,7 +39,7 @@ def shape(t):
 
 def build():
     torch.manual_seed(0)
-    cfg = M.AnuLMConfig.nano_105b()
+    cfg = M.AnuLMConfig.tiny_mla()
     rot = M.Rotary(cfg, cfg.qk_rope_head_dim)          # AnuLM.__init__ sizes the tables to the rope slice
     attn = M.MLAttention(cfg, rot).eval()
     return cfg, rot, attn
@@ -66,7 +65,7 @@ def by_steps():
         y = F.scaled_dot_product_attention(torch.cat([q_nope, q_pe], -1), k, v, is_causal=True, scale=a.scale)
         out = a.o_proj(y.transpose(1, 2).reshape(B, S, -1))
         ref = a(x, cos, sin)
-    print(f"nano_105b: D={cfg.hidden_size}, H={cfg.n_head}, Dc={cfg.kv_lora_rank}, Dr={cfg.qk_rope_head_dim}, "
+    print(f"tiny_mla: D={cfg.hidden_size}, H={cfg.n_head}, Dc={cfg.kv_lora_rank}, Dr={cfg.qk_rope_head_dim}, "
           f"Dn={cfg.qk_nope_head_dim}, Dv={cfg.v_head_dim}; scale = (Dn+Dr)^-0.5 = {a.scale:.4f}")
     for name, t in (("x", x), ("q", q), ("q_nope", q_nope), ("q_pe", q_pe), ("compressed", compressed), ("c", c),
                     ("k_pe", k_pe), ("kv", kv), ("k", k), ("v", v), ("y", y), ("out", out)):
@@ -157,40 +156,31 @@ def mutant_shift():
 
 def arithmetic():
     rows = []
-    c105 = M.AnuLMConfig.nano_105b()
-    rows.append(("nano_105b, MLA (cached)", c105.kv_lora_rank + c105.qk_rope_head_dim))
-    rows.append(("nano_105b, same heads as full K and V",
-                 c105.n_head * (c105.qk_nope_head_dim + c105.qk_rope_head_dim) + c105.n_head * c105.v_head_dim))
-    c30 = M.AnuLMConfig.nano_30b()
-    rows.append(("nano_30b, GQA", 2 * c30.n_kv_head * c30.head_dim))
-    rows.append(("nano_30b, if every head kept its K and V", 2 * c30.n_head * c30.head_dim))
+    cm = M.AnuLMConfig.tiny_mla()
+    rows.append(("tiny_mla, MLA (cached)", cm.kv_lora_rank + cm.qk_rope_head_dim))
+    rows.append(("tiny_mla, same heads as full K and V",
+                 cm.n_head * (cm.qk_nope_head_dim + cm.qk_rope_head_dim) + cm.n_head * cm.v_head_dim))
+    cg = M.AnuLMConfig.tiny_gqa()
+    rows.append(("tiny_gqa, GQA", 2 * cg.n_kv_head * cg.head_dim))
+    rows.append(("tiny_gqa, if every head kept its K and V", 2 * cg.n_head * cg.head_dim))
     r = released()
     rows.append(("released 400M, GQA", 2 * r.n_kv_head * r.head_dim))
     rows.append(("released 400M, if every head kept its K and V", 2 * r.n_head * r.head_dim))
-    s = json.loads((ROOT / "sarvam" / "sarvam-105b" / "config.json").read_text(encoding="utf-8"))
-    mla = s["kv_lora_rank"] + s["qk_rope_head_dim"]
-    full = s["num_attention_heads"] * (s["qk_nope_head_dim"] + s["qk_rope_head_dim"] + s["v_head_dim"])
-    s30 = json.loads((ROOT / "sarvam" / "sarvam-30b" / "config.json").read_text(encoding="utf-8"))
-    rows.append(("Sarvam 30B config, GQA", 2 * s30["num_key_value_heads"] * s30["head_dim"]))
-    rows.append(("Sarvam 30B config, if every head kept its K and V", 2 * s30["num_attention_heads"] * s30["head_dim"]))
-    rows.append(("Sarvam 105B config, MLA (cached)", mla))
-    rows.append(("Sarvam 105B config, full per-head K and V", full))
     for name, n in rows:
         print(f"  {name:48s} {n:6,} numbers per token per layer")
-    print(f"Sarvam 105B: {full:,} / {mla} = {full / mla:.1f} times smaller; over {s['num_hidden_layers']} layers in bf16: "
-          f"{mla * s['num_hidden_layers'] * 2:,} bytes per token")
-    T = c105.block_size                                              # the longest context nano_105b accepts
-    Dc, H, Dn, Dv = c105.kv_lora_rank, c105.n_head, c105.qk_nope_head_dim, c105.v_head_dim
-    print(f"re-expanding the cache every step, nano_105b, T = block_size = {T}: kv_b_proj does T*Dc*H*(Dn+Dv) = "
+    mla, full = rows[0][1], rows[1][1]
+    print(f"tiny_mla: {full:,} / {mla} = {full / mla:.1f} times smaller; over {cm.n_layer} layers in bf16: "
+          f"{mla * cm.n_layer * 2:,} bytes per token")
+    T = cm.block_size                                                # the longest context tiny_mla accepts
+    Dc, H, Dn, Dv = cm.kv_lora_rank, cm.n_head, cm.qk_nope_head_dim, cm.v_head_dim
+    print(f"re-expanding the cache every step, tiny_mla, T = block_size = {T}: kv_b_proj does T*Dc*H*(Dn+Dv) = "
           f"{T * Dc * H * (Dn + Dv):,} multiply-adds per layer, {T * Dc * H * Dn:,} for keys, {T * Dc * H * Dv:,} for values")
-    print(f"kv_b_proj's output width in nano_105b, H*(Dn+Dv) = {H * (Dn + Dv)} (the same number as Sarvam 105B's "
-          f"cache, {mla}, by coincidence)")
 
 
 def exercises():
     print("exercise 1: Dc + Dr for kv_lora_rank 64, rope 32:", 64 + 32)
-    c = M.AnuLMConfig.nano_105b()
-    print("exercise 2: nano_105b cache over 12 layers, fp32, per token:", (c.kv_lora_rank + c.qk_rope_head_dim) * 12 * 4, "bytes")
+    c = M.AnuLMConfig.tiny_mla()
+    print("exercise 2: tiny_mla cache over 12 layers, fp32, per token:", (c.kv_lora_rank + c.qk_rope_head_dim) * 12 * 4, "bytes")
     print("exercise 3: q_proj width, H*(Dn+Dr):", c.n_head * (c.qk_nope_head_dim + c.qk_rope_head_dim))
 
 

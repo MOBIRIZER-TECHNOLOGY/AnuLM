@@ -29,12 +29,12 @@ Prerequisites: the KV cache (Chapter 27), precision (Chapter 23), serving
         return [dict() for _ in self.layers]
 ```
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 470–476 · @b42998d
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 480–486 · @WORKTREE
 
 ```python
         if cache is not None:
             # Cache the Hkv heads, not their H broadcast copies -- that ratio
-            # (16:1 in the real 30B) is GQA's entire inference saving.
+            # (4:1 in base v2) is GQA's entire inference saving.
             if "k" in cache:
                 k = torch.cat([cache["k"], k], dim=2)
                 v = torch.cat([cache["v"], v], dim=2)

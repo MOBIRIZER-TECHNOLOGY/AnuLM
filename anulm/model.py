@@ -1,23 +1,19 @@
 """
-AnuLM -- a small, trainable model with Sarvam 30B / 105B's architecture.
+AnuLM -- a decoder-only mixture-of-experts language model that trains on one GPU.
 
-Distilled from the annotated reference in sarvam/. Every non-obvious choice
-here traces to a specific line of Sarvam's released modelling code; the mapping
-is in README.md and in the comments below.
+The pieces, each with the paper it comes from in docs/ARCHITECTURE.md:
+  * sparse MoE: SwiGLU experts, an optional shared expert, a dense first layer
+  * sigmoid router with aux-loss-free bias balancing and group-limited top-k
+    (DeepSeek-V3)
+  * two attention variants, switchable per model: grouped-query attention
+    (GQA) and multi-head latent attention (MLA, DeepSeek-V2)
+  * QK-norm, pre-norm blocks, RMSNorm, untied embeddings
+  * rotary positions (split-halves convention) with optional YaRN context
+    extension, including the band blend and the logit-temperature term
 
-What is faithful:
-  * sparse MoE with a shared expert and a dense first layer
-  * sigmoid router, aux-loss-free bias balancing, group-limited top-k
-  * BOTH attention variants -- GQA (30B) and MLA (105B) -- switchable
-  * QK-norm, pre-norm blocks, RMSNorm, SwiGLU, untied embeddings
-  * YaRN context extension with the band blend and the logit-temperature term
-
-What is deliberately different:
-  * it can actually train (the released 105B file cannot -- see README)
-  * RoPE uses the split-halves convention throughout, not the 105B
-    checkpoint's interleaved layout, since we train from scratch
-  * no expert parallelism, no vLLM branch, no FlashAttention subclass:
-    SDPA everywhere, which is what a single-GPU run wants anyway
+Single-GPU by design: no expert parallelism and no custom attention kernels,
+SDPA everywhere, and every training path (sparse, dense, grouped experts;
+gradient checkpointing) is covered by tests/test_model.py.
 """
 
 from __future__ import annotations
@@ -40,8 +36,8 @@ import torch.nn.functional as F
 class AnuLMConfig:
     """Every hyperparameter of an AnuLM model. Pickled into each checkpoint as
     ``cfg``. `__post_init__` checks that the routing and attention settings are
-    consistent and fills `head_dim`; the static presets give the scaled-down
-    Sarvam 30B, 105B and the 350M shapes."""
+    consistent and fills `head_dim`; the static presets are the shapes the
+    project trains (tiny_gqa, tiny_mla, base_350m, base_1b)."""
 
     # --- tokens / context -----------------------------------------------
     vocab_size: int = 259           # 256 bytes + BOS + EOS + PAD (byte mode)
@@ -56,7 +52,7 @@ class AnuLMConfig:
     n_head: int = 6
 
     # --- attention ---------------------------------------------------------
-    attn: str = "gqa"               # "gqa" (30B-style) | "mla" (105B-style)
+    attn: str = "gqa"               # "gqa" (grouped-query) | "mla" (latent)
     head_dim: Optional[int] = None  # gqa: defaults to hidden_size // n_head
     n_kv_head: int = 2              # gqa only
     kv_lora_rank: int = 48          # mla only
@@ -65,8 +61,7 @@ class AnuLMConfig:
     v_head_dim: int = 48            # mla only
     use_qk_norm: bool = True
     # Sliding-window attention on layers [0, max_window_layers) -- Qwen2's
-    # semantics, which the real 30B config inherits: it ships
-    # `max_window_layers: 19` with no window set, i.e. off. None disables.
+    # semantics; full attention on the layers above. None disables.
     sliding_window: Optional[int] = None
     max_window_layers: int = 0
 
@@ -114,7 +109,7 @@ class AnuLMConfig:
     # --- misc --------------------------------------------------------------
     rms_norm_eps: float = 1e-6
     dropout: float = 0.0
-    tie_word_embeddings: bool = False   # Sarvam unties both models
+    tie_word_embeddings: bool = False   # untied input and output tables
     initializer_range: float = 0.02
     # Merge-tree reparameterisation of the token tables ("in", "out", "both"):
     # row t is trained as W[t] + (E[a] + E[b]) / 2 for BPE merge t = (a, b),
@@ -155,23 +150,24 @@ class AnuLMConfig:
         else:
             self.head_dim = self.qk_nope_head_dim + self.qk_rope_head_dim
 
-    # --- presets: the two real models, scaled down ------------------------
+    # --- presets ------------------------------------------------------------
     @staticmethod
-    def nano_30b(**kw) -> "AnuLMConfig":
-        """GQA + high rope_theta, no YaRN. Sarvam 30B's shape."""
+    def tiny_gqa(**kw) -> "AnuLMConfig":
+        """17M total / 6.6M active: grouped-query attention, high rope_theta,
+        no YaRN. The quickstart and test model."""
         cfg = dict(
             attn="gqa", n_layer=8, hidden_size=384, n_head=6, head_dim=64,
             n_kv_head=2, num_experts=16, num_experts_per_tok=2,
-            moe_intermediate_size=96,      # hidden/4, as in the real model
+            moe_intermediate_size=96,      # hidden/4
             intermediate_size=768,         # hidden*2
-            n_group=1, topk_group=1,       # grouping is a no-op, like the 30B
+            n_group=1, topk_group=1,       # no group-limited routing
             rope_theta=1e6, yarn=False,
         )
         cfg.update(kw)
         return AnuLMConfig(**cfg)
 
     @staticmethod
-    def nano_350m(**kw) -> "AnuLMConfig":
+    def base_350m(**kw) -> "AnuLMConfig":
         """353M total / 152M active. The largest that trains comfortably on 8 GB.
 
         Sized by measurement, not arithmetic. Memory is the binding constraint:
@@ -190,7 +186,7 @@ class AnuLMConfig:
         """
         cfg = dict(
             attn="gqa", n_layer=20, hidden_size=1024, n_head=16, head_dim=64,
-            n_kv_head=4,                   # 4:1, closer to the real 30B's 16:1
+            n_kv_head=4,                   # 4 query heads per key/value head
             num_experts=12, num_experts_per_tok=3,
             moe_intermediate_size=384,
             intermediate_size=2816,
@@ -202,16 +198,30 @@ class AnuLMConfig:
         return AnuLMConfig(**cfg)
 
     @staticmethod
-    def nano_105b(**kw) -> "AnuLMConfig":
-        """MLA + YaRN-ready. Sarvam 105B's shape."""
+    def base_1b(**kw) -> "AnuLMConfig":
+        """1,008M total / 284M active: base_350m's design, 24 layers, experts 512
+        wide, 24 experts with 4 per token, sliding-window attention (256) on the
+        first 10 layers, 1,024-token context. The from-scratch 1B base
+        (docs/PLAN_1B.md); needs `--grad-ckpt` and `--optimizer adamw-lowmem`
+        to fit 16 GB."""
+        cfg = dict(n_layer=24, num_experts=24, num_experts_per_tok=4, num_shared_experts=0,
+                   moe_intermediate_size=512, sliding_window=256, max_window_layers=10,
+                   bias_update_rate=0.003, block_size=1024)
+        cfg.update(kw)
+        return AnuLMConfig.base_350m(**cfg)
+
+    @staticmethod
+    def tiny_mla(**kw) -> "AnuLMConfig":
+        """Multi-head latent attention, YaRN-ready, group-limited routing; the
+        same scale as tiny_gqa, for comparing the two attention variants."""
         cfg = dict(
             attn="mla", n_layer=12, hidden_size=384, n_head=6,
-            kv_lora_rank=48,               # hidden/8, as in the real model
+            kv_lora_rank=48,               # hidden/8
             qk_nope_head_dim=48, qk_rope_head_dim=24, v_head_dim=48,
             num_experts=16, num_experts_per_tok=2,
             moe_intermediate_size=192,     # hidden/2
             intermediate_size=1536,        # hidden*4
-            n_group=4, topk_group=2,       # group-limited, like the 105B
+            n_group=4, topk_group=2,       # group-limited top-k
             rope_theta=10000.0, yarn=False,
         )
         cfg.update(kw)
@@ -254,7 +264,7 @@ class SwiGLU(nn.Module):
 
 
 # =============================================================================
-# ROPE  (see sarvam/yarn_rotary_annotated.py)
+# ROPE AND YaRN
 # =============================================================================
 
 def _yarn_correction_dim(num_rotations, dim, base, orig_ctx):
@@ -276,8 +286,8 @@ def yarn_mscale(scale: float, mscale: float) -> float:
 
 
 class Rotary(nn.Module):
-    """One instance at model level, shared by every layer (the 30B's pattern --
-    the 105B rebuilds this per layer and pays 2.15 GB for it at load)."""
+    """One instance at model level, shared by every layer: a table per layer
+    would cost n_layer copies of the same cos/sin buffers."""
 
     def __init__(self, cfg: AnuLMConfig, dim: int):
         super().__init__()
@@ -285,7 +295,7 @@ class Rotary(nn.Module):
         self.cfg = cfg
         inv_freq = self._build_inv_freq(cfg, dim)
         self.register_buffer("inv_freq", inv_freq, persistent=False)
-        # YaRN's temperature, split the way DeepSeek (and so the 105B) splits
+        # YaRN's temperature, split the way DeepSeek-V2 splits
         # it: attention multiplies its softmax scale by attn_mscale**2, and the
         # cos/sin tables are scaled by mscale(f, mscale) / mscale(f, mscale_all_dim).
         # With the shipped 1.0 / 1.0 the table factor is exactly 1.0 and the
@@ -353,9 +363,9 @@ def rotate_half(x):
 def apply_rope(q, k, cos, sin):
     """q, k: (B, H, S, Dr). cos/sin: (S, Dr) -> broadcast over batch and heads.
 
-    Split-halves (GPT-NeoX) convention. Sarvam's 105B checkpoint stores its rope
-    dims interleaved and permutes before rotating; we train from scratch, so we
-    pick one convention and stay in it.
+    Split-halves (GPT-NeoX) convention, used everywhere in AnuLM. Some
+    checkpoints store rotary dims interleaved instead; mixing the two layouts
+    silently scrambles positions, so there is one convention and no switch.
     """
     cos = cos[None, None, :, :]
     sin = sin[None, None, :, :]
@@ -419,11 +429,11 @@ def _sdpa(q, k, v, mask, S, scale, dropout_p):
 
 
 # =============================================================================
-# ATTENTION -- GQA  (see sarvam/gqa_forward_annotated.py)
+# ATTENTION -- GQA
 # =============================================================================
 
 class GQAttention(nn.Module):
-    """Grouped-query attention, Sarvam 30B style: one fused QKV projection,
+    """Grouped-query attention: one fused QKV projection,
     n_head query heads sharing n_kv_head key/value heads, optional QK-norm
     before RoPE, and SDPA for the attention itself."""
 
@@ -434,7 +444,7 @@ class GQAttention(nn.Module):
         self.n_rep = cfg.n_head // cfg.n_kv_head
         self.head_dim = cfg.head_dim
         self.dropout = cfg.dropout
-        # One fused projection: (H + 2*Hkv) * Dh, exactly as the 30B does.
+        # One fused projection: (H + 2*Hkv) * Dh, split on the head axis.
         self.query_key_value = nn.Linear(
             cfg.hidden_size, (cfg.n_head + 2 * cfg.n_kv_head) * cfg.head_dim, bias=False
         )
@@ -462,14 +472,14 @@ class GQAttention(nn.Module):
         k = k.transpose(1, 2)                         # (B, Hkv, S, Dh)
         v = v.transpose(1, 2)                         # (B, Hkv, S, Dh)
 
-        if self.use_qk_norm:                          # before RoPE, as in the 30B
+        if self.use_qk_norm:                          # before RoPE
             q = self.query_layernorm(q)
             k = self.key_layernorm(k)
         q, k = apply_rope(q, k, cos, sin)
 
         if cache is not None:
             # Cache the Hkv heads, not their H broadcast copies -- that ratio
-            # (16:1 in the real 30B) is GQA's entire inference saving.
+            # (4:1 in base v2) is GQA's entire inference saving.
             if "k" in cache:
                 k = torch.cat([cache["k"], k], dim=2)
                 v = torch.cat([cache["v"], v], dim=2)
@@ -495,11 +505,11 @@ class GQAttention(nn.Module):
 
 
 # =============================================================================
-# ATTENTION -- MLA  (see sarvam/mla_forward_annotated.py)
+# ATTENTION -- MLA
 # =============================================================================
 
 class MLAttention(nn.Module):
-    """Multi-head latent attention, Sarvam 105B style: keys and values are
+    """Multi-head latent attention (DeepSeek-V2): keys and values are
     rebuilt from a small shared latent (kv_lora_rank wide) plus one rotary key
     shared by all heads, and only that latent and rotary key are cached."""
 
@@ -554,7 +564,7 @@ class MLAttention(nn.Module):
 
         if cache is not None:
             # MLA's cache IS the point of MLA: kv_lora_rank + qk_rope_head_dim
-            # numbers per token (48 + 24 here; 512 + 64 in the 105B) regardless
+            # numbers per token (48 + 24 in tiny_mla) regardless
             # of head count, against GQA's 2 * Hkv * Dh. K and V are re-expanded
             # from it through kv_b_proj every step.
             if "c" in cache:
@@ -579,7 +589,7 @@ class MLAttention(nn.Module):
 
 
 # =============================================================================
-# MoE  (see sarvam/moe_routing_annotated.py)
+# MIXTURE OF EXPERTS
 # =============================================================================
 
 class Router(nn.Module):
@@ -719,7 +729,7 @@ class MoE(nn.Module):
             if sel.numel() == 0:
                 continue
             # index_select + index_put with distinct indices: differentiable,
-            # so unlike the released 105B this path trains. No repeat_interleave
+            # so this path trains (an inference-only dispatch would not). No repeat_interleave
             # of the hidden states, so peak memory stays at O(N*k) rows touched
             # rather than O(N*k) rows materialised up front.
             out[sel] = self.experts[e](x_flat[tok_of_slot[sel]]).to(out.dtype)
@@ -806,7 +816,7 @@ class Block(nn.Module):
             GQAttention(cfg, rotary) if cfg.attn == "gqa" else MLAttention(cfg, rotary)
         )
         self.post_attention_layernorm = RMSNorm(cfg.hidden_size, cfg.rms_norm_eps)
-        # Layer 0 dense, the rest MoE -- first_k_dense_replace = 1 in both models.
+        # Layer 0 dense, the rest MoE -- first_k_dense_replace = 1 in every preset.
         self.is_moe = layer_idx >= cfg.first_k_dense_replace
         self.mlp = MoE(cfg) if self.is_moe else SwiGLU(cfg.hidden_size, cfg.intermediate_size)
         # Sliding window on the first max_window_layers layers, full attention
@@ -1062,9 +1072,9 @@ class AnuLM(nn.Module):
         return out
 
     def enable_gradient_checkpointing(self, enable: bool = True):
-        """Unlike the released Sarvam 105B file -- which advertises support and
-        then never calls the checkpoint function -- this actually takes effect.
-        See sarvam/decoder_and_model_annotated.py note 3."""
+        """Recompute each block's activations in the backward pass instead of
+        keeping them: about 30% slower, far less activation memory.
+        tests/test_model.py checks that it is used and changes no gradient."""
         self.grad_ckpt = enable
 
     # --- aux-loss-free load balancing -------------------------------------
@@ -1181,8 +1191,8 @@ class AnuLM(nn.Module):
 
 
 if __name__ == "__main__":
-    for name, cfg in [("nano_30b (GQA)", AnuLMConfig.nano_30b()),
-                      ("nano_105b (MLA)", AnuLMConfig.nano_105b())]:
+    for name, cfg in [("tiny_gqa", AnuLMConfig.tiny_gqa()),
+                      ("tiny_mla", AnuLMConfig.tiny_mla())]:
         # Seed per preset, not once up front: every number below is then
         # reproducible and quotable in the README, and stays that way if the
         # list is reordered or another preset is added. It matters most for the
@@ -1207,13 +1217,6 @@ if __name__ == "__main__":
               f"{' -> ' + ', '.join(no_grad[:3]) if no_grad else ''}")
         print(f"{'':18s}  expert load imbalance after 1 step: {imbalance:.2f}x\n")
 
-# The project was called nanosarvam until 2026-09-18. Checkpoints saved before
-# then pickle their config as ``model.NanoSarvamConfig``; keep both names
-# resolvable so torch.load keeps working on them.
-NanoSarvamConfig = AnuLMConfig
-NanoSarvam = AnuLM
-
-
 # Set to 1 to load a legacy checkpoint that holds Python objects beyond the
 # allow-list below. Only for a file you made yourself: unpickling runs code.
 TRUST_PICKLE_ENV = "ANULM_TRUST_PICKLE"
@@ -1227,9 +1230,9 @@ class UnsafeCheckpointError(Exception):
 
 def safe_load(path, map_location="cpu", trust_pickle: Optional[bool] = None, **kwargs):
     """``torch.load`` with ``weights_only=True``: tensors, containers, numbers,
-    strings and AnuLMConfig -- under all three names it has been pickled as
-    (``anulm.model``, the root alias ``model``, and pre-rename
-    ``NanoSarvamConfig``). A checkpoint from the Hub or anywhere else cannot
+    strings and AnuLMConfig -- under both names it has been pickled as
+    (``anulm.model`` and ``model``, from before the package layout). A
+    checkpoint from the Hub or anywhere else cannot
     run code on load. Every project ``.pt`` (weights, ``.last`` resume points
     with optimizer and sampler state, encoded corpora) needs nothing more.
 
@@ -1244,7 +1247,7 @@ def safe_load(path, map_location="cpu", trust_pickle: Optional[bool] = None, **k
         trust_pickle = os.environ.get(TRUST_PICKLE_ENV, "") not in ("", "0")
     if trust_pickle:
         return torch.load(str(path), map_location=map_location, weights_only=False, **kwargs)
-    allowed = [AnuLMConfig, (AnuLMConfig, "model.AnuLMConfig"), (AnuLMConfig, "model.NanoSarvamConfig")]
+    allowed = [AnuLMConfig, (AnuLMConfig, "model.AnuLMConfig")]
     try:
         with torch.serialization.safe_globals(allowed):
             return torch.load(str(path), map_location=map_location, weights_only=True, **kwargs)

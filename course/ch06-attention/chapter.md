@@ -100,7 +100,7 @@ return self.dense(y.transpose(1, 2).reshape(B, S, -1))
 
 Four details, each a place for a silent bug:
 
-- **One fused projection** makes q, k and v together, as Sarvam's 30B does.
+- **One fused projection** makes q, k and v together, split on the head axis.
 - **QK-norm** (an RMSNorm on each query and key head) keeps the attention scores
   from growing too large. It must come *before* RoPE. We measured what happens if
   it comes after: with the norm's gains at their starting value of 1, the two
@@ -227,9 +227,9 @@ at.
   yours, plus two extras: a `NATIVE_GQA` switch that lets PyTorch broadcast the
   shared heads itself instead of copying them, and a `bidir_mask` argument for
   `bidirectional.py`, which reuses the model as a two-way encoder.
-- **`MLAttention`** (line 472) is the 105B's alternative, *multi-head latent
-  attention*. Instead of caching keys and values, it caches one small latent
-  vector per token (48 numbers in the `105b` preset, 512 in the real 105B) plus
+- **`MLAttention`** (line 472) is the alternative, *multi-head latent
+  attention* (DeepSeek-V2, 2024). Instead of caching keys and values, it caches one small latent
+  vector per token (48 numbers in the `tiny-mla` preset, 512 in DeepSeek-V2) plus
   one shared rotary key, and rebuilds keys and values from it at every step.
   Its cache is smaller still, at the cost of extra computation. Exercise 5
   builds it.
@@ -262,7 +262,7 @@ at.
    it attends to?
 5. *Open-ended:* build `MLAttention` from `model.py`'s description, add a check
    that compares it with the original, and measure its cache per token against
-   GQA's for the `105b` preset.
+   GQA's for the `tiny-mla` preset.
 
 ## Key takeaways
 

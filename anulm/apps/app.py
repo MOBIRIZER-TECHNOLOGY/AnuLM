@@ -226,7 +226,7 @@ def build(loader: Loader, initial: str | None = None) -> gr.Blocks:
     output, plus the recorded samples when docs/samples.json exists. `initial`
     is a picker label to load when the page opens."""
     with gr.Blocks(title="AnuLM") as demo:
-        gr.Markdown("# AnuLM · a small Sarvam-shaped MoE\n"
+        gr.Markdown("# AnuLM · a small mixture-of-experts model for Hindi, English and Python\n"
                     "398M parameters, 174M active per token, trained from scratch on one "
                     "consumer GPU for Hindi, English and Python. Pick a checkpoint; they are "
                     "the same network tuned on different data.")
@@ -325,8 +325,8 @@ def build(loader: Loader, initial: str | None = None) -> gr.Blocks:
             "when continuing text. Raise the **repetition penalty** to about 1.2 when that "
             "happens — it is left at 1.0 because every number in the model cards was "
             "measured without it.\n\n"
-            "Independent academic project, not affiliated with Sarvam AI, BharatGen, AI4Bharat "
-            "or the Government of India. Every checkpoint invents things: run the code, check "
+            "Independent project, not affiliated with any company or government body. "
+            "Every checkpoint invents things: run the code, check "
             "the facts. Licences and data are on each model card.")
 
         if initial:

@@ -7,7 +7,7 @@ sentence pairs. Full log and samples: `docs/RESULTS.md` §24 and
 
 **Licence: CC BY-NC 4.0, research use only.** Samanantar is CC BY-NC 4.0
 and the IIT Bombay corpus is released for research; the weights inherit
-those terms. Not affiliated with Sarvam AI, AI4Bharat, BharatGen or the
+those terms. Not affiliated with AI4Bharat, BharatGen or the
 Government of India.
 
 ## Results

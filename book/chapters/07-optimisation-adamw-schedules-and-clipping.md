@@ -191,7 +191,7 @@ AdamW on everything: 16 bytes/param -> 6.36 GB
 embedding table, the output head, the routers and the 1-D gains on AdamW
 (`anulm/muon.py` lines 152–165), so the saving is 1.32 GB, not the 1.59 GB that
 12 bytes on every parameter would give. Every expert's state exists whether or not a token used
-it, which is why the `nano_350m` preset (353M parameters; the released
+it, which is why the `base_350m` preset (353M parameters; the released
 configuration is that preset with `--cfg` overrides) was sized by peak memory
 on an 8 GB card (§6).
 

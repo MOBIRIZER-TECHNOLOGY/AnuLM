@@ -1,6 +1,6 @@
 """Run an AnuLM program: python -m anulm COMMAND [options].
 
-    python -m anulm train --preset 30b --steps 50
+    python -m anulm train --preset tiny-gqa --steps 50
     python -m anulm sample --ckpt ckpt.pt --prompt "KING RICHARD II:"
 
 Each command is a module of the package, and `python -m anulm.training.train`
@@ -71,6 +71,7 @@ COMMANDS = {
     "finetune": "anulm.training.finetune",
     "train": "anulm.training.train",
     "train_from_scratch": "anulm.training.train_from_scratch",
+    "grow": "anulm.training.grow",
 }
 
 

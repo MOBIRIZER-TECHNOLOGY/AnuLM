@@ -43,7 +43,7 @@
 </head>
 <body>
 <main>
-  <h1>AnuLM <span>a small Sarvam-shaped MoE</span></h1>
+  <h1>AnuLM <span>a small mixture-of-experts model</span></h1>
   <div class="info" id="info">loading model info…</div>
 
   <div class="card">
@@ -158,7 +158,7 @@ fetch("/info").then(r => r.json()).then(i => {
   if (i.coder) {
     coder = true;
     document.documentElement.lang = "en";
-    document.querySelector("h1 span").textContent = "a small Sarvam-shaped MoE that writes Python";
+    document.querySelector("h1 span").textContent = "a small mixture-of-experts model that writes Python";
     $("modes").hidden = false;
     $("mode-question").lastChild.textContent = " write a function";
     document.querySelector("label:has(input[value=continue])").lastChild.textContent = " continue the code";
@@ -168,7 +168,7 @@ fetch("/info").then(r => r.json()).then(i => {
     $("out").querySelector(".prompt").textContent = "Describe a function, or start one, and the model writes Python.";
     $("temp").value = 0.2; $("tempv").textContent = "0.20";
     $("tokens").value = 200; $("tokensv").textContent = "200";
-    $("note").innerHTML = "This checkpoint is a <b>Python coder</b>: a 398M-parameter Sarvam-shaped MoE (174M active " +
+    $("note").innerHTML = "This checkpoint is a <b>Python coder</b>: a 398M-parameter mixture-of-experts model (174M active " +
       "per token) pretrained on 2.78B tokens that are two-thirds Python, then instruction-tuned on 1.38M " +
       "exercise-style pairs. Measured pass@1: <b>MBPP 12.5%</b> asked as a question, <b>HumanEval 4.9%</b> " +
       "(base) / 3.0% (tuned) as a continuation. Short, common functions often work; anything longer often " +

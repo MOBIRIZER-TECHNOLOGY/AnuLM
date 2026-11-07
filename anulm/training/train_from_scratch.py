@@ -375,11 +375,8 @@ def resume_identity(path: Path, identity: dict) -> None:
 def expected_config(args, tokenizer: Path, vocab_size: int):
     from anulm.model import AnuLMConfig
 
-    builder = {
-        "30b": AnuLMConfig.nano_30b,
-        "105b": AnuLMConfig.nano_105b,
-        "350m": AnuLMConfig.nano_350m,
-    }[args.preset]
+    from anulm.training.train import PRESETS
+    builder = PRESETS[args.preset]
     return builder(
         block_size=args.block_size,
         yarn=False,
@@ -556,7 +553,7 @@ def main() -> None:
     p.add_argument("--work-dir", default="runs/from_scratch", help="new directory for all pipeline artifacts")
     p.add_argument("--vocab", type=int, default=16384, help="target BPE size, including EOS; at most 32768")
     p.add_argument("--workers", type=int, default=16, help="BPE encoding worker processes")
-    p.add_argument("--preset", choices=("30b", "105b", "350m"), default="30b")
+    p.add_argument("--preset", choices=("tiny-gqa", "tiny-mla", "350m", "1b"), default="tiny-gqa")
     p.add_argument("--block-size", type=int, default=256)
     p.add_argument("--pretrain-steps", type=int, default=2000)
     p.add_argument("--batch-size", type=int, default=16)

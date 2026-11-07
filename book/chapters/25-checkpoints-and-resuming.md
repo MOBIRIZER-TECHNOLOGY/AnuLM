@@ -394,7 +394,7 @@ colleague's disk can run any code on your machine the moment it is loaded.
 numbers and strings, and any class you allow-list by name. Every load now goes
 through one function:
 
-> **In the repo** · `anulm/model.py` · `safe_load` · lines 1228–1258 · @b42998d
+> **In the repo** · `anulm/model.py` · `safe_load` · lines 1231–1261 · @WORKTREE
 
 ```python
 def safe_load(path, map_location="cpu", trust_pickle: Optional[bool] = None, **kwargs):
@@ -405,7 +405,7 @@ def safe_load(path, map_location="cpu", trust_pickle: Optional[bool] = None, **k
         trust_pickle = os.environ.get(TRUST_PICKLE_ENV, "") not in ("", "0")
     if trust_pickle:
         return torch.load(str(path), map_location=map_location, weights_only=False, **kwargs)
-    allowed = [AnuLMConfig, (AnuLMConfig, "model.AnuLMConfig"), (AnuLMConfig, "model.NanoSarvamConfig")]
+    allowed = [AnuLMConfig, (AnuLMConfig, "model.AnuLMConfig")]
     try:
         with torch.serialization.safe_globals(allowed):
             return torch.load(str(path), map_location=map_location, weights_only=True, **kwargs)
@@ -422,19 +422,17 @@ def safe_load(path, map_location="cpu", trust_pickle: Optional[bool] = None, **k
 1. **The escape.** `trust_pickle=True`, or `ANULM_TRUST_PICKLE` set to
    anything but empty or `0`, loads the old way. It is never chosen for you.
 2. **The allow-list.** Every project checkpoint stores its configuration as a
-   pickled `AnuLMConfig`, so the class must be allowed, under each of the
-   three names it has been pickled as.
+   pickled `AnuLMConfig`, so the class must be allowed, under both of the
+   names it has been pickled as.
 3. **The refusal.** Anything else raises `pickle.UnpicklingError`, which
    becomes `UnsafeCheckpointError` naming both escapes. It is its own type so
    a caller can tell "refused by policy" from "truncated or corrupt".
 
-> **Details.** The three names. A pickle names a class by the module path it
-> had *when it was saved*: `anulm.model.AnuLMConfig` (the plain entry),
-> `model.AnuLMConfig` (from before the `anulm/` package, when `anulm/model.py` sat at
-> the root) and `model.NanoSarvamConfig` (from before the project's rename).
-> The pairs map each old name onto today's class; without them, every older
-> checkpoint would be refused. `NanoSarvamConfig = AnuLMConfig` (line 1213)
-> keeps the old name importable for the trusted path.
+> **Details.** The two names. A pickle names a class by the module path it
+> had *when it was saved*: `anulm.model.AnuLMConfig` (the plain entry) and
+> `model.AnuLMConfig` (from before the `anulm/` package, when `anulm/model.py`
+> sat at the root). The pair maps the old name onto today's class; without it,
+> every older checkpoint would be refused.
 
 That is why the resume path (25.4) re-raises it. If a refused `.last` took the
 `except Exception` fallback, a run would quietly restart from the best-val
@@ -614,9 +612,9 @@ Repository evidence, all at @b42998d:
 - `anulm/training/train.py`: `atomic_save` 32–46, `WindowSampler.state` and `load_state`
   152–160, `lr_at` 375–400, `main` 788–840 (resume), 849–850 (`--stop-at`),
   857–876 (one step), 891–905 (saves).
-- `anulm/model.py`: `NanoSarvamConfig` alias 1213, `TRUST_PICKLE_ENV` 1219,
+- `anulm/model.py`: `TRUST_PICKLE_ENV` 1219,
   `UnsafeCheckpointError` 1222–1225, `safe_load` 1228–1258, `_HUB_ID` 1261,
-  `load_checkpoint` 1280–1342.
+  `load_checkpoint` 1280–1342; `safe_load` 1231–1261 @WORKTREE.
 - `tests/test_quality_loading.py`: `SafeLoad` 54–141.
 - `tests/test_model.py`: `checkpoint_roundtrip_is_exact` 460–477,
   `window_sampler_resumes_exactly` 956–966, `expert_bias_is_not_trainable`

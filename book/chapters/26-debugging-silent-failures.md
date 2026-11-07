@@ -490,7 +490,7 @@ batch); no test checks how a move between evaluations is read.
 | five evaluation scripts crashed on exported folders | §27; test docstring | `an_exported_folder_loads_everywhere_a_pt_does` (line 1057) |
 | a generated `random.py` could shadow the standard library for every later problem (Part VII+) | `anulm/eval/eval_code.py` docstring; test | `eval_code_sandbox_contains_generated_code` (line 1390) |
 | the golden-set builder's check passed by luck on a small vocabulary | test comment ("It did, once.") | `golden_items_are_well_formed_and_the_scorer_runs` (line 1630), on 400 words |
-| a project rename changed the tokenizer format id, which every older tokenizer (four on the Hub) still carries | test docstring | `bpe_files_load_under_both_format_ids` (line 1544) |
+| a project rename changed the tokenizer format id, which every older tokenizer (four on the Hub) still carries | test docstring | `bpe_files_load_and_foreign_ones_are_refused` (line 1544) |
 | a documented hazard, not a recorded incident: `is_causal` aligns top-left, wrong for a multi-token step against a cache | `_attn_mask` docstring | `incremental_forward_matches_full_forward` (line 658) |
 | a checkpoint killed mid-write; a restart loop for three hours | §25 | `atomic_save` and the fallback (Chapter 25); no test |
 | a benchmark with 11% of its documents leaked into a training corpus | §9 | `anulm/data/make_bench.py`'s signature filter; no test in the suite |

@@ -22,9 +22,8 @@ SOFTWARE.
 
 -------------------------------------------------------------------------------
 
-This licence covers the code written for this project. It does NOT cover the
-third-party files redistributed under `sarvam/sarvam-30b/` and
-`sarvam/sarvam-105b/`, which are Sarvam AI's and are Apache 2.0 -- see NOTICE.
+This licence covers the code written for this project, which is all of the
+code in this repository.
 
 It also says nothing about the trained checkpoints or the data they were
 trained on. Several training corpora carry terms that restrict what the

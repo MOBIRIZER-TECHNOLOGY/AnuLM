@@ -28,8 +28,9 @@ the mathematics you need, on the model's own lines.
 
 **What you will be able to do.** By the end you can read, trace, test and
 change a real language model. The model is AnuLM: a mixture of experts with
-397.7M parameters, trained from scratch on one consumer GPU, whose
-architecture follows Sarvam AI's released 30B and 105B models, scaled down.
+397.7M parameters, trained from scratch on one consumer GPU, built from
+published ideas: grouped-query and latent attention, sigmoid routing with
+bias-only balancing, SwiGLU, RMSNorm, QK-norm and YaRN.
 You will be able to:
 
 - read `anulm/model.py`, the 1,364 lines that define it, and say what each
@@ -108,18 +109,16 @@ which the "Build it" boxes point to, is in the pin.
 - **Code:** MIT (`LICENSE` in the repository).
 - **AnuLM-Base-v2-400M weights:** CC BY-SA 4.0, inherited from its training
   data (the repository's `NOTICE` §2 and `docs/DATASETS.md`).
-- **The redistributed Sarvam files** in `sarvam/` keep their own Apache 2.0
-  licence and headers.
 - **This book's text:** not yet chosen; to be settled before publication.
 
 AnuLM is an independent project. It is not affiliated with or endorsed by
-Sarvam AI, BharatGen, AI4Bharat or the Government of India.
+BharatGen, AI4Bharat or the Government of India.
 
 ## How to cite
 
 The repository's `CITATION.cff` gives the citation for AnuLM itself:
 
 > The AnuLM authors (2026). *AnuLM: a small, trainable mixture-of-experts
-> language model in the shape of Sarvam 30B, trained from scratch on one GPU
-> for Hindi, English and Python.* Version 0.1.0.
+> language model, trained from scratch on one GPU for Hindi, English and
+> Python.* Version 0.1.0.
 > https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM

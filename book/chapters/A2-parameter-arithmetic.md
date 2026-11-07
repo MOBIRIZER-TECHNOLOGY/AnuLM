@@ -36,7 +36,7 @@ gives each field's line and declared default at @b42998d, the two presets this
 book uses, and the value stored in `ckpt_base_v2.pt`. "=" means the same as
 the default.
 
-| Field | Line | Default | `nano_30b` | `nano_350m` | Released | Meaning |
+| Field | Line | Default | `tiny_gqa` | `base_350m` | Released | Meaning |
 |---|---|---|---|---|---|---|
 | `vocab_size` | 47 | `259` | = | = | `32768` | V: token ids, 256 bytes + BOS, EOS, PAD by default |
 | `block_size` | 48 | `256` | = | `512` | `1024` | longest context |
@@ -88,7 +88,7 @@ unreachable top-k with a `ValueError` (not an `assert`, which `python -O`
 would strip).
 
 **`released()` is not the stored configuration.** `trace_forward.released()`
-builds `nano_350m` with the released run's architecture. It differs from the
+builds `base_350m` with the released run's architecture. It differs from the
 checkpoint in six fields, none of which changes a parameter's shape:
 `tokenizer_path`, `bias_update_rate`, `moe_impl`, `seq_balance_alpha`,
 `router_z_alpha` and `yarn_original_context`
@@ -100,7 +100,7 @@ both.
 No layer has a bias, a SwiGLU has 3·D·I weights, and the MoE layers are
 L − 1 of the L layers (`first_k_dense_replace` = 1).
 
-| Term | Formula | `tiny()` | `nano_30b` | `nano_350m` | Released |
+| Term | Formula | `tiny()` | `tiny_gqa` | `base_350m` | Released |
 |---|---|---|---|---|---|
 | embedding + output head | 2·V·D | 4,096 | 198,912 | 530,432 | 67,108,864 |
 | attention | L·((H + 2H<sub>kv</sub>)·D<sub>h</sub>·D + H·D<sub>h</sub>·D) | 9,216 | 3,145,728 | 52,428,800 | 52,428,800 |
@@ -113,7 +113,7 @@ L − 1 of the L layers (`first_k_dense_replace` = 1).
 | **total = `num_params()`** | | **47,888** | **17,440,384** | **353,261,056** | **397,659,648** |
 
 *verified*: for every model, the script's sum equals `num_params()` exactly.
-`nano_350m` keeps the default byte vocabulary, which is why its tables are tiny.
+`base_350m` keeps the default byte vocabulary, which is why its tables are tiny.
 
 The released checkpoint's state dict holds 397,660,560 numbers. The extra 912
 are buffers, not parameters: each of the 19 routers keeps a 24-number
@@ -124,7 +124,7 @@ balancing bias and a 24-number load count.
 An MoE layer runs A of its E routed experts per token. `num_params()` subtracts
 the idle ones: (L − 1)·(E − A)·3·D·I<sub>e</sub>.
 
-| | `tiny()` | `nano_30b` | `nano_350m` | Released |
+| | `tiny()` | `tiny_gqa` | `base_350m` | Released |
 |---|---|---|---|---|
 | idle per token | 2·6·1,536 = 18,432 | 7·14·110,592 = 10,838,016 | 19·9·1,179,648 = 201,719,808 | 19·20·589,824 = 224,133,120 |
 | active | 29,456 | 6,602,368 | 151,541,248 | 173,526,528 |
@@ -141,8 +141,8 @@ key/value head: L·2·H<sub>kv</sub>·D<sub>h</sub> numbers.
 | | numbers per token | bf16 | fp32 keys, bf16 values | fp32 | full context in bf16 |
 |---|---|---|---|---|---|
 | `tiny()` | 96 | 192 B | 288 B | 384 B | 32 tokens: 0.01 MiB |
-| `nano_30b` | 2,048 | 4,096 B | 6,144 B | 8,192 B | 256 tokens: 1.00 MiB |
-| `nano_350m` | 10,240 | 20,480 B | 30,720 B | 40,960 B | 512 tokens: 10.00 MiB |
+| `tiny_gqa` | 2,048 | 4,096 B | 6,144 B | 8,192 B | 256 tokens: 1.00 MiB |
+| `base_350m` | 10,240 | 20,480 B | 30,720 B | 40,960 B | 512 tokens: 10.00 MiB |
 | Released | 10,240 | 20,480 B | 30,720 B | 40,960 B | 1,024 tokens: 20.00 MiB |
 
 *verified*: printed by the script. Chapter 20 explains the middle column: under
@@ -157,14 +157,14 @@ stored.
 
 | | parameters | weights | gradients | moments | total |
 |---|---|---|---|---|---|
-| `nano_30b` | 17,440,384 | 0.07 GB | 0.07 GB | 0.14 GB | 279,046,144 B: 0.28 GB (0.26 GiB) |
-| `nano_350m` | 353,261,056 | 1.41 GB | 1.41 GB | 2.83 GB | 5,652,176,896 B: 5.65 GB (5.26 GiB) |
+| `tiny_gqa` | 17,440,384 | 0.07 GB | 0.07 GB | 0.14 GB | 279,046,144 B: 0.28 GB (0.26 GiB) |
+| `base_350m` | 353,261,056 | 1.41 GB | 1.41 GB | 2.83 GB | 5,652,176,896 B: 5.65 GB (5.26 GiB) |
 | Released | 397,659,648 | 1.59 GB | 1.59 GB | 3.18 GB | 6,362,554,368 B: 6.36 GB (5.93 GiB) |
 
 *verified*: arithmetic, printed by the script.
 
 **Against a measurement.** `docs/RESULTS.md` §6's table measured the peak of
-the 353M `nano_350m` preset with AdamW at 6.34 GB, at batch 8 × 512 with bf16
+the 353M `base_350m` preset with AdamW at 6.34 GB, at batch 8 × 512 with bf16
 autocast and gradient checkpointing. What it holds beyond the 5.65 GB of state
 is activations and workspace, which this arithmetic does not count. *measured*,
 `docs/RESULTS.md` §6 (table).

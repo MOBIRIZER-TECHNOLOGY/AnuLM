@@ -24,7 +24,7 @@ id is coarse or fine, which is the kind of thing a 400M model spends capacity
 on if you let it.
 
 **The cost, and it is the number that decides your schedule.** 28,675 new ids at
-hidden size 1024, untied (Sarvam unties, and so does AnuLM), is two matrices:
+hidden size 1024, untied (AnuLM keeps separate input and output tables), is two matrices:
 29.4M parameters in `embed_tokens` and another 29.4M in `lm_head`. Measured on
 `ckpt_ctx2k.pt`, that takes the checkpoint from 398M/173.5M to **456M total and
 232M active** -- 15% more parameters but **34% more active parameters**, because

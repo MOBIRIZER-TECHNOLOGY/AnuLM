@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 350" role="img" aria-labelledby="t d" class="figure-svg">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" role="img" aria-labelledby="t d" class="figure-svg">
 <title id="t">Figure 19.2 · What each design caches</title>
-<desc id="d">nano_105b&#x27;s MLA caches 72 numbers against 720 for full per-head K and V; the released GQA model caches 512 against 2,048; Sarvam 30B&#x27;s GQA 512 against 8,192; Sarvam 105B&#x27;s configured MLA caches 576 against 20,480, 35.6 times fewer, but more than the 30B&#x27;s GQA.</desc>
+<desc id="d">tiny_mla&#x27;s MLA caches 72 numbers against 720 for full per-head K and V, 10 times fewer; tiny_gqa&#x27;s GQA caches 256 against 768; the released GQA model caches 512 against 2,048.</desc>
 <defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
 <text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">Numbers cached per token per layer</text>
 <text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">what each design caches, against full per-head keys and values · log scale · verified</text>
@@ -8,32 +8,25 @@
 <text x="244.0" y="74.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">cached</text>
 <circle cx="324" cy="70" r="5" fill="#C4532F" class="f-coral"/>
 <text x="334.0" y="74.0" class="f-ink" fill="#17262E" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">if every head kept its own K and V</text>
-<line x1="308.2" y1="90.0" x2="308.2" y2="300.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
-<text x="308.2" y="316.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">10</text>
-<line x1="386.4" y1="90.0" x2="386.4" y2="300.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
-<text x="386.4" y="316.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">100</text>
-<line x1="464.5" y1="90.0" x2="464.5" y2="300.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
-<text x="464.5" y="316.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1,000</text>
-<line x1="542.7" y1="90.0" x2="542.7" y2="300.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
-<text x="542.7" y="316.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">10,000</text>
-<text x="218.0" y="124.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">nano_105b (MLA)</text>
-<rect x="230.0" y="112.0" width="145.2" height="12.0" rx="3" fill="#0E9488" class="f-teal"><title>nano_105b (MLA): cached 72</title></rect>
-<rect x="230.0" y="127.0" width="223.4" height="12.0" rx="3" fill="#C4532F" class="f-coral"><title>nano_105b (MLA): full 720</title></rect>
-<text x="381.2" y="122.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">72</text>
-<text x="459.4" y="137.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">720  (10.0×)</text>
-<text x="218.0" y="174.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">released 400M (GQA)</text>
-<rect x="230.0" y="162.0" width="211.8" height="12.0" rx="3" fill="#0E9488" class="f-teal"><title>released 400M (GQA): cached 512</title></rect>
-<rect x="230.0" y="177.0" width="258.9" height="12.0" rx="3" fill="#C4532F" class="f-coral"><title>released 400M (GQA): full 2,048</title></rect>
-<text x="447.8" y="172.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">512</text>
-<text x="494.9" y="187.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">2,048  (4.0×)</text>
-<text x="218.0" y="224.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">Sarvam 30B config (GQA)</text>
-<rect x="230.0" y="212.0" width="211.8" height="12.0" rx="3" fill="#0E9488" class="f-teal"><title>Sarvam 30B config (GQA): cached 512</title></rect>
-<rect x="230.0" y="227.0" width="305.9" height="12.0" rx="3" fill="#C4532F" class="f-coral"><title>Sarvam 30B config (GQA): full 8,192</title></rect>
-<text x="447.8" y="222.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">512</text>
-<text x="541.9" y="237.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">8,192  (16.0×)</text>
-<text x="218.0" y="274.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">Sarvam 105B config (MLA)</text>
-<rect x="230.0" y="262.0" width="215.8" height="12.0" rx="3" fill="#0E9488" class="f-teal"><title>Sarvam 105B config (MLA): cached 576</title></rect>
-<rect x="230.0" y="277.0" width="337.0" height="12.0" rx="3" fill="#C4532F" class="f-coral"><title>Sarvam 105B config (MLA): full 20,480</title></rect>
-<text x="451.8" y="272.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">576</text>
-<text x="573.0" y="287.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">20,480  (35.6×)</text>
+<line x1="324.6" y1="90.0" x2="324.6" y2="250.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="324.6" y="266.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">10</text>
+<line x1="419.2" y1="90.0" x2="419.2" y2="250.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="419.2" y="266.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">100</text>
+<line x1="513.9" y1="90.0" x2="513.9" y2="250.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
+<text x="513.9" y="266.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="middle">1,000</text>
+<text x="218.0" y="124.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">tiny_mla (MLA)</text>
+<rect x="230.0" y="112.0" width="175.7" height="12.0" rx="3" fill="#0E9488" class="f-teal"><title>tiny_mla (MLA): cached 72</title></rect>
+<rect x="230.0" y="127.0" width="270.4" height="12.0" rx="3" fill="#C4532F" class="f-coral"><title>tiny_mla (MLA): full 720</title></rect>
+<text x="411.7" y="122.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">72</text>
+<text x="506.4" y="137.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">720  (10.0×)</text>
+<text x="218.0" y="174.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">tiny_gqa (GQA)</text>
+<rect x="230.0" y="162.0" width="227.9" height="12.0" rx="3" fill="#0E9488" class="f-teal"><title>tiny_gqa (GQA): cached 256</title></rect>
+<rect x="230.0" y="177.0" width="273.0" height="12.0" rx="3" fill="#C4532F" class="f-coral"><title>tiny_gqa (GQA): full 768</title></rect>
+<text x="463.9" y="172.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">256</text>
+<text x="509.0" y="187.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">768  (3.0×)</text>
+<text x="218.0" y="224.0" class="f-ink" fill="#17262E" font-size="12.5" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="700" text-anchor="end">released 400M (GQA)</text>
+<rect x="230.0" y="212.0" width="256.4" height="12.0" rx="3" fill="#0E9488" class="f-teal"><title>released 400M (GQA): cached 512</title></rect>
+<rect x="230.0" y="227.0" width="313.3" height="12.0" rx="3" fill="#C4532F" class="f-coral"><title>released 400M (GQA): full 2,048</title></rect>
+<text x="492.4" y="222.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">512</text>
+<text x="549.3" y="237.0" class="f-ink" fill="#17262E" font-size="11" font-family="'JetBrains Mono', Consolas, monospace" font-weight="700" text-anchor="start">2,048  (4.0×)</text>
 </svg>

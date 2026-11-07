@@ -352,7 +352,7 @@ def fig_03_init():
     from anulm import model as M
     from tests.test_model import tiny
     rows = []
-    for name, cfg, want in (("tiny()", tiny(), 4.1704), ("nano_30b", M.AnuLMConfig.nano_30b(), 5.6242),
+    for name, cfg, want in (("tiny()", tiny(), 4.1704), ("tiny_gqa", M.AnuLMConfig.tiny_gqa(), 5.6242),
                             ("released 400M", released(), 10.6166)):
         got, pred = initial_loss(cfg)
         close(got, want, 5e-4, name)

@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 380" role="img" aria-labelledby="t d" class="figure-svg">
 <title id="t">Figure 41.2 · The run you are reproducing</title>
-<desc id="d">Training loss of the recorded nano_30b run falls from 5.5869 at step 0, close to ln 259 = 5.557, to 2.7887 at step 50, 1.6047 at 250, 1.3917 at 500 and 1.2182 at 999. With today&#x27;s train.py the first batch scores 5.6203; validation loss is 5.6090 before any step, 2.7868 after the 50-step CI run and 1.5190 after 1,000 steps.</desc>
+<desc id="d">Training loss of the recorded tiny_gqa run falls from 5.5869 at step 0, close to ln 259 = 5.557, to 2.7887 at step 50, 1.6047 at 250, 1.3917 at 500 and 1.2182 at 999. With today&#x27;s train.py the first batch scores 5.6203; validation loss is 5.6090 before any step, 2.7868 after the 50-step CI run and 1.5190 after 1,000 steps.</desc>
 <defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#DCE1DF" class="f-rule" stroke-width="2"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5E6E72" class="f-muted-fill"/></marker></defs>
-<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">nano_30b on tinyshakespeare: the recorded run</text>
+<text x="20.0" y="28.0" class="f-ink" fill="#17262E" font-size="15" font-family="Lora, Georgia, serif" font-weight="700" text-anchor="start">tiny_gqa on tinyshakespeare: the recorded run</text>
 <text x="20.0" y="48.0" class="f-muted" fill="#5E6E72" font-size="12" font-family="Lato, 'Segoe UI', system-ui, sans-serif" font-weight="400" text-anchor="start">README.md&#x27;s log at @773b6a8 · batch 16 × 256 bytes · CPU · 1,000 steps</text>
 <line x1="80.0" y1="320.0" x2="700.0" y2="320.0" stroke="#DCE1DF" class="f-rule" stroke-width="1"/>
 <text x="70.0" y="324.0" class="f-muted" fill="#5E6E72" font-size="10" font-family="'JetBrains Mono', Consolas, monospace" font-weight="400" text-anchor="end">1</text>

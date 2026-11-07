@@ -11,7 +11,7 @@ trains nothing.
     python book/code-examples/ch41_checkpoints.py released --save       # the book's own run
 
 first-loss
-    Builds the model `python train.py --preset 30b --device cpu` builds, from
+    Builds the model `python train.py --preset tiny-gqa --device cpu` builds, from
     the same seed, data and flags. It prints the loss of the first training
     batch the sampler draws (what train.py logs as step 0, before any update)
     and the validation loss before any step, from train.py's own `evaluate`.
@@ -67,7 +67,7 @@ def first_loss() -> None:
     sampler = T.WindowSampler(len(train_data), 256, 16, 1337)
     print(f"sampler: {len(sampler.order)} windows/epoch; 1000 steps of 16 = "
           f"{1000 * 16 / len(sampler.order):.2f} epochs")
-    cfg = M.AnuLMConfig.nano_30b(block_size=256, yarn=False, yarn_original_context=256, moe_impl="sparse",
+    cfg = M.AnuLMConfig.tiny_gqa(block_size=256, yarn=False, yarn_original_context=256, moe_impl="sparse",
                                  vocab_size=259, tokenizer_path=None, seq_balance_alpha=0.0,
                                  router_z_alpha=0.0, sliding_window=None, max_window_layers=0)
     model = M.AnuLM(cfg)
@@ -83,7 +83,7 @@ def first_loss() -> None:
     print(f"val loss before any step: {val:.4f} +/- {sem:.4f}   ln V = ln 259 = {math.log(259):.4f}"
           f"   (difference {val - math.log(259):.4f})")
     assert abs(val - math.log(259)) < 0.35, "the same tolerance as test_model.py's initial_loss_is_ln_vocab"
-    t1, a1 = M.AnuLM(M.AnuLMConfig.nano_30b(n_kv_head=1)).num_params()    # Exercise 1: --cfg n_kv_head=1
+    t1, a1 = M.AnuLM(M.AnuLMConfig.tiny_gqa(n_kv_head=1)).num_params()    # Exercise 1: --cfg n_kv_head=1
     print(f"exercise 1, n_kv_head=1: {t1:,} total, {a1:,} active ({total - t1:,} fewer)")
 
 
@@ -117,8 +117,8 @@ def released_vs_yours(ckpt: str, out: Path, windows=8, seq=512, seed=0) -> None:
     print(f"params: {total:,} total, {active:,} active; stored step {ck.get('step', 0):,}, "
           f"val {ck.get('val_loss', float('nan')):.4f} +/- {ck.get('val_sem', float('nan')):.4f} "
           f"({ck.get('eval_spec')})")
-    t30, a30 = M.AnuLM(M.AnuLMConfig.nano_30b()).num_params()
-    print(f"against nano_30b ({t30:,} / {a30:,}): {total / t30:.1f}x the parameters, {active / a30:.1f}x the active")
+    t30, a30 = M.AnuLM(M.AnuLMConfig.tiny_gqa()).num_params()
+    print(f"against tiny_gqa ({t30:,} / {a30:,}): {total / t30:.1f}x the parameters, {active / a30:.1f}x the active")
     dev = pick_device()
     m = m.to(dev).eval()
     val = np.memmap(ROOT / "data" / "v2" / "val.u16", dtype=np.uint16, mode="r")

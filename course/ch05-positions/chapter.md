@@ -22,8 +22,8 @@ vectors came from.
 There are two ways to give it positions. You can *add* a learned vector for
 each position to the embeddings, as Chapter 1's tiny transformer did. Or you
 can *rotate* each query and key by an angle that grows with its position, so
-the dot product itself becomes position-aware. AnuLM, like Sarvam's models and
-most current LLMs, rotates.
+the dot product itself becomes position-aware. AnuLM, like most current LLMs,
+rotates (RoPE, Su et al. 2021).
 
 ## 5.2 Rotary embeddings: turn every pair by its position
 
@@ -53,8 +53,8 @@ def apply_rope(q, k, cos, sin):
 `q * cos + rotate_half(q) * sin` is the 2-D rotation formula, applied to every
 pair at once. *Which* numbers form a pair is a convention. AnuLM pairs
 dimension *i* with *i* + 32 (the "split-halves" layout, from GPT-NeoX).
-Sarvam's 105B checkpoint pairs neighbours (*i* with *i* + 1). Both are
-correct; mixing them is not.
+The RoPE paper, and some released checkpoints, pair neighbours (*i* with
+*i* + 1). Both are correct; mixing them silently scrambles positions.
 
 ## 5.3 Why it works: the angles subtract
 
@@ -118,19 +118,19 @@ Shakespeare models were trained on 256-byte windows, then read 1,024 bytes
 with no fine-tuning, plainly ("naive") or with YaRN at 4×. Loss by position,
 lower is better:
 
-| positions | `105b` naive | `105b` YaRN | `30b` naive | `30b` YaRN |
+| positions | `tiny-mla` naive | `tiny-mla` YaRN | `tiny-gqa` naive | `tiny-gqa` YaRN |
 |---|---|---|---|---|
 | 0–256 (trained range) | **1.5421** | 1.6802 | **1.5076** | 1.6808 |
 | 256–512 | 1.7924 | **1.6989** | **1.6046** | 1.7052 |
 | 512–768 | 2.8697 | **1.7034** | **1.6861** | 1.6898 |
 | 768–1,024 | 3.0342 | **1.7131** | 1.8616 | **1.6882** |
 
-For the `105b` preset, YaRN is the difference between working and not: 3.03
-against 1.71 at the far end. For the `30b` preset, whose high `rope_theta`
+For the `tiny-mla` preset, YaRN is the difference between working and not: 3.03
+against 1.71 at the far end. For the `tiny-gqa` preset, whose high `rope_theta`
 (1e6) already extends gently, YaRN only wins in the last quarter. Both pay
-for it inside the trained range (1.68 against 1.51–1.54). That is why Sarvam
-chose opposite strategies for its two models: a very high theta and no YaRN
-for the 30B, YaRN at 40× for the 105B.
+for it inside the trained range (1.68 against 1.51–1.54). So a long context has
+two routes: a very high theta and no YaRN, or a lower theta with YaRN (Peng
+et al. 2023). On these small models, neither wins in every range.
 
 ## 5.5 Catch it
 
@@ -193,9 +193,8 @@ What you should see, with the 400M model's settings (64 dimensions, theta 1e6):
 - **`rotate_half`** and **`apply_rope`** (`model.py`, lines 327 and 332) are
   yours, line for line.
 - **`Rotary`** (line 259) takes the whole config instead of separate
-  arguments, and is created once by `AnuLM` and shared by every layer, the
-  30B's pattern. (The real 105B builds one per layer and pays 2.15 GB for it at
-  load time.)
+  arguments, and is created once by `AnuLM` and shared by every layer: a
+  table per layer would cost `n_layer` copies of the same cos/sin buffers.
 - **`_build_inv_freq`** (line 286) is your frequency code, YaRN ramp included;
   **`_grow`** (line 305) is your cache.
 - The temperature is used in attention, in Chapter 6: each attention module

@@ -72,10 +72,10 @@ positions, each a D = 32 vector.
 
 The attention layer's two matrices are built here:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 437–441 · @b42998d
+> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 447–451 · @WORKTREE
 
 ```python
-        # One fused projection: (H + 2*Hkv) * Dh, exactly as the 30B does.
+        # One fused projection: (H + 2*Hkv) * Dh, split on the head axis.
         self.query_key_value = nn.Linear(
             cfg.hidden_size, (cfg.n_head + 2 * cfg.n_kv_head) * cfg.head_dim, bias=False
         )

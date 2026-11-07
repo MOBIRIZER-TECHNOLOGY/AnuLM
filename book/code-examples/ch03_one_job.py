@@ -73,7 +73,7 @@ def bits_per_byte(nats_per_token: float, bytes_per_token: float) -> float:
 if __name__ == "__main__":
     check_loss()
     print("\nfresh model: loss on random targets against ln V and ln V + D*0.02^2/2")
-    for name, cfg in [("tiny()", tiny()), ("nano_30b", AnuLMConfig.nano_30b()), ("released 400M", released()),
+    for name, cfg in [("tiny()", tiny()), ("tiny_gqa", AnuLMConfig.tiny_gqa()), ("released 400M", released()),
                       ("tiny(), init std 1.0", tiny(initializer_range=1.0))]:
         got, pred = initial_loss(cfg)                       # 16 sequences of up to 128 tokens: a small sample
         print(f"  {name:22s} V={cfg.vocab_size:6d} D={cfg.hidden_size:5d}  loss {got:7.4f}  ln V {math.log(cfg.vocab_size):7.4f}"

@@ -122,7 +122,7 @@ def regularisers():
 
 def graph_breaks():
     import torch._dynamo as dynamo
-    for name, cfg in (("tiny()", tiny(moe_impl="sparse")), ("nano_30b", M.AnuLMConfig.nano_30b(moe_impl="sparse"))):
+    for name, cfg in (("tiny()", tiny(moe_impl="sparse")), ("tiny_gqa", M.AnuLMConfig.tiny_gqa(moe_impl="sparse"))):
         torch.manual_seed(0)
         m = M.AnuLM(cfg).eval()
         x = torch.randint(0, cfg.vocab_size, (2, 16))

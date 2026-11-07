@@ -45,7 +45,7 @@ Test functions defined in `tests/test_model.py` at the pin: 84.
 | dense layer 0: 8.7M | yes | 8,650,752 (intermediate_size 2816) |
 | experts 269.0M | yes | 268,959,744 (moe_intermediate_size 192) |
 | untied head | yes | tie_word_embeddings False |
-| nano_30b is the 17M preset | yes | total 17,440,384, active 6,602,368 |
+| tiny_gqa is the 17M preset | yes | total 17,440,384, active 6,602,368 |
 | router in fp32 because bf16 flipped 3.2% of choices (Router, line 618) | yes | # routed in bf16 (3.2% of expert sets differed from fp32 on a real |
 | atomic save exists because a kill at step 265,000 destroyed a checkpoint (anulm/training/train.py 32–46) | yes | 265,000 of the coder run on 2026-09-12 and cost the optimizer state. |
 | anulm/inference/api.py accepts top_p and ignores it | yes | top_p on lines [219, 238]; check that none reaches generate() |

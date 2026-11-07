@@ -14,12 +14,12 @@ vector per token and rebuilds every head's keys and values from it. That is far
 smaller than every head keeping its own keys and values; against GQA it need
 not be smaller (19.5). `anulm/model.py` has MLA as `MLAttention`, lines
 501–578, selected with `attn="mla"`. **The released model does not use it** (it is GQA), but the
-`nano_105b` preset does, after Sarvam's 105B. Every shape below is at
-`nano_105b`'s sizes.
+`tiny_mla` preset does. Every shape below is at
+`tiny_mla`'s sizes.
 
 **New words and symbols.**
 
-| Term | Meaning | `nano_105b` | in the code |
+| Term | Meaning | `tiny_mla` | in the code |
 |---|---|---|---|
 | latent, c | the compressed vector cached per token and layer | | `compressed` |
 | D<sub>c</sub> | its width | 48 | `kv_lora_rank`, `Lkv` in comments |
@@ -94,8 +94,9 @@ D<sub>r</sub> extra numbers per token.
 ```
 
 - **`q_proj`**: D → H·(D<sub>n</sub> + D<sub>r</sub>), 384 → 6·72 = 432. No
-  query compression: Sarvam 105B's code makes it optional
-  (`q_lora_rank`), and its configuration leaves it unset [R49].
+  query compression: DeepSeek-V2 also compresses the queries through a
+  low-rank latent, to save activation memory in training [R19]; `MLAttention`
+  does not.
 - **`kv_a_proj_with_mqa`**: D → D<sub>c</sub> + D<sub>r</sub>, 384 → 72; "MQA"
   because the rotary key is one head shared by all, as in multi-query attention.
 - **`kv_a_layernorm`**: an RMSNorm on the latent, D<sub>c</sub> wide.
@@ -199,7 +200,7 @@ shape, and checks it against the module:
 ```
 
 ```
-nano_105b: D=384, H=6, Dc=48, Dr=24, Dn=48, Dv=48; scale = (Dn+Dr)^-0.5 = 0.1179
+tiny_mla: D=384, H=6, Dc=48, Dr=24, Dn=48, Dv=48; scale = (Dn+Dr)^-0.5 = 0.1179
   x          (2, 5, 384)
   q          (2, 6, 5, 72)
   compressed (2, 5, 72)
@@ -220,18 +221,18 @@ recomputed vs MLAttention.forward: 0.0e+00
 
 *Figure 19.1 · Latent attention, one layer.* The cached pair, in gold, is the
 latent and the shared rotary key; everything per head is rebuilt from them.
-Shapes for `nano_105b`.
+Shapes for `tiny_mla`.
 
 `IN THE REPO`
 
 ## 19.4  What the cache holds
 
-> **In the repo** · `anulm/model.py` · `MLAttention.forward` · lines 555–563 · @b42998d
+> **In the repo** · `anulm/model.py` · `MLAttention.forward` · lines 565–573 · @WORKTREE
 
 ```python
         if cache is not None:
             # MLA's cache IS the point of MLA: kv_lora_rank + qk_rope_head_dim
-            # numbers per token (48 + 24 here; 512 + 64 in the 105B) regardless
+            # numbers per token (48 + 24 in tiny_mla) regardless
             # of head count, against GQA's 2 * Hkv * Dh. K and V are re-expanded
             # from it through kv_b_proj every step.
             if "c" in cache:
@@ -292,41 +293,36 @@ every head. `incremental_forward_matches_full_forward` and
 ## 19.5  Cache arithmetic, and the cost
 
 Numbers cached per token per layer, computed by the example from `anulm/model.py`'s
-configurations and Sarvam 105B's `config.json`:
+configurations:
 
 ```python
-    c105 = M.AnuLMConfig.nano_105b()
-    rows.append(("nano_105b, MLA (cached)", c105.kv_lora_rank + c105.qk_rope_head_dim))
-    rows.append(("nano_105b, same heads as full K and V",
-                 c105.n_head * (c105.qk_nope_head_dim + c105.qk_rope_head_dim) + c105.n_head * c105.v_head_dim))
-    c30 = M.AnuLMConfig.nano_30b()
-    rows.append(("nano_30b, GQA", 2 * c30.n_kv_head * c30.head_dim))
-    rows.append(("nano_30b, if every head kept its K and V", 2 * c30.n_head * c30.head_dim))
+    cm = M.AnuLMConfig.tiny_mla()
+    rows.append(("tiny_mla, MLA (cached)", cm.kv_lora_rank + cm.qk_rope_head_dim))
+    rows.append(("tiny_mla, same heads as full K and V",
+                 cm.n_head * (cm.qk_nope_head_dim + cm.qk_rope_head_dim) + cm.n_head * cm.v_head_dim))
+    cg = M.AnuLMConfig.tiny_gqa()
+    rows.append(("tiny_gqa, GQA", 2 * cg.n_kv_head * cg.head_dim))
+    rows.append(("tiny_gqa, if every head kept its K and V", 2 * cg.n_head * cg.head_dim))
     r = released()
     rows.append(("released 400M, GQA", 2 * r.n_kv_head * r.head_dim))
     rows.append(("released 400M, if every head kept its K and V", 2 * r.n_head * r.head_dim))
-    s = json.loads((ROOT / "sarvam" / "sarvam-105b" / "config.json").read_text(encoding="utf-8"))
-    mla = s["kv_lora_rank"] + s["qk_rope_head_dim"]
-    full = s["num_attention_heads"] * (s["qk_nope_head_dim"] + s["qk_rope_head_dim"] + s["v_head_dim"])
 ```
 
 *verified*:
 
 | model | attention | cached | if every head kept its own K and V |
 |---|---|---|---|
-| `nano_105b` | MLA | 48 + 24 = 72 | 6·(72 + 48) = 720 |
-| `nano_30b` | GQA | 2·2·64 = 256 | 2·6·64 = 768 |
+| `tiny_mla` | MLA | 48 + 24 = 72 | 6·(72 + 48) = 720 |
+| `tiny_gqa` | GQA | 2·2·64 = 256 | 2·6·64 = 768 |
 | released 400M | GQA | 2·4·64 = 512 | 2·16·64 = 2,048 |
-| Sarvam 30B (config) | GQA | 2·4·64 = 512 | 2·64·64 = 8,192 |
-| Sarvam 105B (config) | MLA | 512 + 64 = 576 | 64·(192 + 128) = 20,480 |
 
-At Sarvam 105B's sizes the latent is 35.6 times smaller than full per-head
-keys and values: 36,864 bytes per token over its 32 layers in bf16. Against
-GQA it is not smaller: Sarvam's own 30B, with 4 key/value heads, caches 512
-numbers per token and layer, the 105B's MLA 576. MLA's saving is measured
-against full multi-head keys and values. (`nano_105b`'s `kv_b_proj` also
-outputs 6·(48 + 48) = 576 numbers; that equality with Sarvam's 576 is a
-coincidence.)
+At `tiny_mla`'s sizes the latent is 10 times smaller than full per-head keys
+and values: 1,728 bytes per token over its 12 layers in bf16. Against GQA the
+saving depends on the sizes. `tiny_mla` caches fewer numbers than `tiny_gqa`,
+72 against 256, but the released GQA model caches 512, and DeepSeek-V2's own
+sizes, a latent of 512 and a rotary key of 64, cache 576: as much as GQA with
+2.25 groups, in that paper's words [R19]. MLA's saving is measured against
+full multi-head keys and values.
 
 ![Figure 19.2 · What each design caches](../figures/fig19-2-cache.svg)
 
@@ -335,7 +331,7 @@ against full per-head keys and values, on a log scale. *verified*.
 
 **The price is computation.** Every step, `kv_b_proj` re-expands all T cached
 latents: T·D<sub>c</sub>·H·(D<sub>n</sub> + D<sub>v</sub>) multiply-adds per
-layer, 7,077,888 for `nano_105b` at its full context, T = `block_size` = 256.
+layer, 7,077,888 for `tiny_mla` at its full context, T = `block_size` = 256.
 Half of that, T·D<sub>c</sub>·H·D<sub>n</sub> = 3,538,944, makes the keys;
 absorbing `kv_b_proj`'s key half into the query removes that half. The value
 half needs its own move: weight the cached c by the attention weights first,
@@ -366,7 +362,7 @@ a rotated vector depends on its position: the same input at positions 0 and 4 di
 The second line is why the rotary slice is kept apart: a rotation depends on
 the key's position, so it cannot be folded into one fixed matrix (19.1).
 
-**Quality.** `docs/RESULTS.md` §1–§2 compare the `nano_105b` and `nano_30b`
+**Quality.** `docs/RESULTS.md` §1–§2 compare the `tiny_mla` and `tiny_gqa`
 presets, which differ in more than attention (12 layers against 8, twice the
 active parameters, groups). At 600 steps on English the MLA preset reached
 1.5467 against 1.5701, but at half the throughput (1,393 against 2,692 tokens
@@ -426,9 +422,9 @@ mutant with a rotated latent: positions 0-7 vs 100-107 differ by 1.202 (output s
 
 1. A latent of 64 with a rotary slice of 32: how many numbers per token per
    layer?
-2. How many bytes does `nano_105b`'s cache take per token over its 12 layers in
+2. How many bytes does `tiny_mla`'s cache take per token over its 12 layers in
    fp32?
-3. How wide is `nano_105b`'s `q_proj` output?
+3. How wide is `tiny_mla`'s `q_proj` output?
 
 **Answers.** 1. 96. 2. 72 · 12 · 4 = 3,456. 3. 6 · 72 = 432. *verified*:
 printed by `ch19_mla.py`.
@@ -447,9 +443,8 @@ printed by `ch19_mla.py`.
   latent itself could be cached either way.
 - `MLAttention` projects queries without compression, normalises only queries
   and the latent, and scales by 1/√(D<sub>n</sub> + D<sub>r</sub>).
-- `nano_105b` caches 72 numbers per token and layer; Sarvam 105B's sizes give
-  576, 35.6 times fewer than full per-head keys and values, though more than
-  Sarvam 30B's GQA, 512.
+- `tiny_mla` caches 72 numbers per token and layer, 10 times fewer than full
+  per-head keys and values; against GQA the saving depends on the sizes.
 - The repository re-expands the whole cache every step; absorbing
   `kv_b_proj`'s key half into the query and its value half into `o_proj` would
   avoid that, and is not implemented here.
@@ -469,18 +464,15 @@ used only for the claim in its register row:
 
 | ID | Used for | Status |
 |---|---|---|
-| [R19] | multi-head latent attention; the decoupled RoPE strategy with a shared rope key; absorbing the key and value up-projections at inference, and why RoPE blocks that | CHECKED |
-| [R49] | Sarvam 105B's configuration and modelling code (`q_lora_rank` optional and unset; the 512 + 64 sizes) | CHECKED |
+| [R19] | multi-head latent attention; the decoupled RoPE strategy with a shared rope key; low-rank query compression; its sizes (latent 512, rotary key 64) and a cache equal to GQA with 2.25 groups; absorbing the key and value up-projections at inference, and why RoPE blocks that | CHECKED |
 
 Repository evidence, all at @b42998d:
 - `anulm/model.py`: `AnuLMConfig.__post_init__` 150–156; `MLAttention.__init__`
-  516–533, `MLAttention.forward` 539–553, 555–563, 564–578; `AnuLM.__init__`
+  516–533, `MLAttention.forward` 539–553, 564–578 (and 565–573 @WORKTREE); `AnuLM.__init__`
   line 837.
 - `tests/test_model.py`: `mla_shares_one_rope_key_across_heads` 529–541;
   `incremental_forward_matches_full_forward`, `cache_holds_what_it_should`,
   `dense_and_sparse_moe_agree` (all run with MLA).
-- `sarvam/sarvam-105b/config.json`; `sarvam/sarvam-105b/modeling_sarvam_moe.py`
-  486–499 (optional `q_lora_rank`).
 - `docs/RESULTS.md` §1, §2, "The two presets".
 
 The book example is `code-examples/ch19_mla.py`.

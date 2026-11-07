@@ -40,14 +40,14 @@ Appendix A: 47 distinct concrete shapes, 0 not in ch41_shapes.py's output
 - **B:** `code-examples/ch41_arithmetic.py` (reuses `trace_forward.arithmetic`)
   writes `book/measurements/part_x_arithmetic.json`. B.1 comes from `--config`:
   the declared defaults (`dataclasses.fields`, before `__post_init__`), field
-  lines from `git show 773b6a8:model.py`, the `nano_30b()` and `nano_350m()`
+  lines from `git show 773b6a8:model.py`, the `tiny_gqa()` and `base_350m()`
   presets, and the `cfg` pickled in `ckpt_base_v2.pt`. The meaning column was
   written by hand from the code. File sizes come from `ckpt_base_v2.pt` (1,591,281,456 B)
   and `.last` (4,862,324,329 B), opened with `mmap=True`. The script asserts
   AdamW state = 8·397,659,648 + 4·1,513 B, and model bytes = 4 × state-dict
   numbers. 1,513 parameter tensors and 912 buffer numbers (19 routers ×
   `expert_bias` and `load_counts`, 24 each) were checked separately in Python.
-  The `nano_350m` peak memory is *measured*, `docs/RESULTS.md` §6 (6.34 GB with
+  The `base_350m` peak memory is *measured*, `docs/RESULTS.md` §6 (6.34 GB with
   checkpointing, 15.75 GB without), quoted in RESULTS's own units.
 - **C:** names, `def` lines and order checked by `ch41_audit.py` against the
   AST of `test_model.py` at the pin. The "what it checks" column was written
@@ -92,7 +92,7 @@ Appendix A: 47 distinct concrete shapes, 0 not in ch41_shapes.py's output
    naming it there. `ch41_audit.py --run` ran all 43 teaching examples then
    present: every one exited 0 (measurement scripts were not run).
 5. `README.md` and `docs/TUTORIAL.md` say 55 tests; the pin has 66. And
-   `docs/TUTORIAL.md` §3 says the bare `--preset 30b` command trains 1,000 steps,
+   `docs/TUTORIAL.md` §3 says the bare `--preset tiny-gqa` command trains 1,000 steps,
    though the default is 2,000. Repository docs, not book files.
 
 ### Review fixes (2026-11-01)
@@ -109,7 +109,7 @@ above (appendices not read by the tools) no longer applies.
 - **B:**
   - The 15.75 GB is now attributed to RESULTS §6's table row for the 443M AdamW
     run without checkpointing. The conflict with §6's prose and with
-    `nano_350m`'s docstring (`model.py` 175–176) is stated.
+    `base_350m`'s docstring (`model.py` 175–176) is stated.
   - Units unified: exact bytes, then GB (10⁹, RESULTS' unit) with GiB beside.
   - `ch41_arithmetic.py` no longer needs `ckpt_base_v2.pt.last`: it prints
     B.2–B.4 and B.6 first, skips the B.5 file check when the files are absent,

@@ -132,7 +132,7 @@ def exercises():
     D, I, Ie, A, E = 384, 768, 96, 2, 16
     print(f"exercise 3: layer 0 {3 * D * I:,}; MoE {A}*{3 * D * Ie:,} + shared {3 * D * Ie:,} = "
           f"{A * 3 * D * Ie + 3 * D * Ie:,}, router {E * D:,}")
-    cfg = M.AnuLMConfig.nano_30b()
+    cfg = M.AnuLMConfig.tiny_gqa()
     assert sum(p.numel() for p in M.SwiGLU(cfg.hidden_size, cfg.intermediate_size).parameters()) == 3 * D * I
 
 

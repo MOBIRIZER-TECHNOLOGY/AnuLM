@@ -411,7 +411,7 @@ plain step here.
 ## 23.8  Speed: `torch.compile` and the MoE paths
 
 Chapter 18's three dispatch paths compute the same thing at different speeds.
-In eager mode `nano_30b` took 574 ms per step with `sparse` and 1,350 ms with
+In eager mode `tiny_gqa` took 574 ms per step with `sparse` and 1,350 ms with
 `dense`. But `sparse` uses `nonzero`, whose output shape depends on the data.
 Under `torch.compile` [R52] the model is captured as graphs of operations; a
 **graph break** is a point where capture stops and Python runs the code instead:

@@ -4,7 +4,7 @@ Part X figures (Chapter 41, the capstone).
     python book/tools/make_figures.py part_x
 
 - fig41-1: the four checkpoints, each with the number it should print;
-- fig41-2: the recorded nano_30b run (README.md "Status: trained and verified"),
+- fig41-2: the recorded tiny_gqa run (README.md "Status: trained and verified"),
   with ln V and the measured loss before any step;
 - fig41-3: how many tokens top-p keeps on the released model, measured by
   code-examples/ch41_checkpoints.py (book/measurements/part_x_released.json).
@@ -44,7 +44,7 @@ def fig_checkpoints():
     b = [text(20, 28, "The capstone in four checkpoints", 15, weight=700, family=SERIF),
          text(20, 48, "each one prints a number you can compare against the book's", 12, "f-muted", MUTED)]
     cards = [
-        ("1 · train", "train.py --preset 30b", ["loss 5.62 at step 0", "(ln 259 = 5.56)", "val 1.52 ± 0.03"]),
+        ("1 · train", "train.py --preset tiny-gqa", ["loss 5.62 at step 0", "(ln 259 = 5.56)", "val 1.52 ± 0.03"]),
         ("2 · trace", "ch41_shapes.py", ["(2, 5) ids", "→ (2, 5, 32) stream", "→ (2, 1, 64) logits"]),
         ("3 · extend", "ch41_top_p.py", ["top-p: 3 tests pass", "off by one: fails 3", "no renorm: fails 1"]),
         ("4 · test", "tests/test_model.py", ["76 passed, 0 failed", "then the released", "model, 397.7M"]),
@@ -80,7 +80,7 @@ def fig_loss():
     x0, x1, y0, y1 = 80, 700, 70, 320
     sx = lambda s: x0 + (x1 - x0) * s / 1000
     sy = lambda v: y1 - (y1 - y0) * (v - 1.0) / (6.0 - 1.0)
-    b = [text(20, 28, "nano_30b on tinyshakespeare: the recorded run", 15, weight=700, family=SERIF),
+    b = [text(20, 28, "tiny_gqa on tinyshakespeare: the recorded run", 15, weight=700, family=SERIF),
          text(20, 48, "README.md's log at @773b6a8 · batch 16 × 256 bytes · CPU · 1,000 steps", 12, "f-muted", MUTED)]
     for v in (1, 2, 3, 4, 5, 6):
         b.append(line(x0, sy(v), x1, sy(v)))
@@ -118,7 +118,7 @@ def fig_loss():
     b.append(rect(lx - 5, ly + 15, 10, 10, TEAL, "f-teal", 1))
     b.append(text(lx + 12, ly + 24, "validation loss", 11))
     return svg("fig41-2-loss.svg", w, h, "Figure 41.2 · The run you are reproducing",
-               "Training loss of the recorded nano_30b run falls from 5.5869 at step 0, close to ln 259 = 5.557, "
+               "Training loss of the recorded tiny_gqa run falls from 5.5869 at step 0, close to ln 259 = 5.557, "
                "to 2.7887 at step 50, 1.6047 at 250, 1.3917 at 500 and 1.2182 at 999. With today's train.py the "
                "first batch scores 5.6203; validation loss is 5.6090 "
                "before any step, 2.7868 after the 50-step CI run and 1.5190 after 1,000 steps.", b)

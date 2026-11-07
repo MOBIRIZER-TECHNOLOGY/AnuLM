@@ -65,7 +65,7 @@ def upgrade(folder: Path) -> list[str]:
     meta["dtype"] = "float32"
     meta["torch_dtype"] = "float32"
     meta["auto_map"] = AUTO_MAP
-    meta["architecture"] = ("decoder-only MoE in the shape of Sarvam 30B; loads with "
+    meta["architecture"] = ("AnuLM: decoder-only mixture-of-experts transformer; loads with "
                             "transformers (trust_remote_code) or with model.py from "
                             "the AnuLM repository")
     cfg_path.write_text(json.dumps(meta, indent=2, ensure_ascii=False),

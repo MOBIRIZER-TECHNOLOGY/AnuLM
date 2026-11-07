@@ -51,7 +51,7 @@ summary line counts it as skipped, not passed.
 | `checkpoint_roundtrip_is_exact` | 460 | `torch.save` and reload reproduce the logits exactly (MLA) | 25 |
 | `block_size_boundary` | 481 | a sequence of exactly `block_size` runs; one token more raises `ValueError` | 20 |
 | `generation_is_deterministic_at_top_k_1` | 495 | greedy decoding twice gives identical ids, of shape (1, 4 + 12) | 28, 41 |
-| `param_count_matches_analysis` | 507 | `nano_30b` and `nano_105b` have the analytical totals and active counts, within 1,000 | 20, 41 |
+| `param_count_matches_analysis` | 507 | `tiny_gqa` and `tiny_mla` have the analytical totals and active counts, within 1,000 | 20, 41 |
 | `config_rejects_unreachable_topk` | 520 | a top-k larger than the reachable groups hold is refused at construction with `ValueError` | 17 |
 | `mla_shares_one_rope_key_across_heads` | 529 | MLA projects one rope key per token, not one per head, and `kv_b_proj` has the right width | 19 |
 | `gradient_accumulation_equals_large_batch` | 545 | two half-batches, each loss halved, give the full batch's gradients to 2·10⁻⁵ | 22 |
@@ -95,7 +95,7 @@ summary line counts it as skipped, not passed.
 | `eval_code_sandbox_contains_generated_code` | 1390 | `anulm/eval/eval_code.py` runs generated code with a timeout, a private directory and no surviving children | 24 |
 | `transformers_wrapper_matches_the_native_model` | 1450 | the `transformers` wrapper gives the native logits and greedy tokens, and survives a save and reload; *optional* (`transformers`) | 39 |
 | `hf_tokenizer_conversion_is_exact` | 1517 | the converted `tokenizer.json` encodes every probe exactly as `anulm/bpe.py` does; *optional* (`tokenizers`) | 9, 39 |
-| `bpe_files_load_under_both_format_ids` | 1544 | tokenizer files load under the old and new format ids, refuse foreign ones, and every committed tokenizer loads | 9 |
+| `bpe_files_load_and_foreign_ones_are_refused` | 1544 | tokenizer files load under the old and new format ids, refuse foreign ones, and every committed tokenizer loads | 9 |
 | `byte_loader_inserts_eos_at_document_boundaries` | 1595 | `load_bytes` puts one EOS per document, normalises CRLF, and stays uint8 without separators | 8 |
 | `prose_filter_drops_lists_and_keeps_prose` | 1617 | the prose filter keeps prose lines and the title and drops list-shaped articles | 21 |
 | `golden_items_are_well_formed_and_the_scorer_runs` | 1630 | golden-set items satisfy their contract and the scorer runs on a byte checkpoint | 24 |

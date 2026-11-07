@@ -117,7 +117,7 @@ class GrowTests(unittest.TestCase):
             cast = {"int": int, "float": float, "bool": lambda s: s.lower() in ("1", "true", "yes"),
                     "str": str}.get(str(field.type).replace("Optional[", "").rstrip("]"), str)
             kw[key] = None if val.lower() == "none" else cast(val)
-        rebuilt = AnuLMConfig.nano_350m(**kw, vocab_size=new_cfg.vocab_size,
+        rebuilt = AnuLMConfig.base_350m(**kw, vocab_size=new_cfg.vocab_size,
                                        tokenizer_path=new_cfg.tokenizer_path,
                                        block_size=new_cfg.block_size,
                                        yarn_original_context=new_cfg.yarn_original_context,

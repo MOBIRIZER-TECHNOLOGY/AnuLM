@@ -3,9 +3,8 @@
 [![tests](https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/actions/workflows/tests.yml/badge.svg)](https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/actions/workflows/tests.yml)
 
 **AnuLM** (अणु, *anu*: atom, the smallest unit) is a small, **trainable**
-mixture-of-experts language model carrying Sarvam 30B / 105B's
-architecture, distilled from a line-by-line study of their released code,
-and trained from scratch on one consumer GPU for Hindi, English and Python.
+mixture-of-experts language model, written from scratch in plain PyTorch and
+trained from scratch on one consumer GPU for Hindi, English and Python.
 It ships the code, the data recipes, the experiment log, and five
 checkpoints: a Python coder (MBPP 12.5% pass@1), an English ↔ Hindi
 translator (chrF 41.5 / 43.4 on FLORES-200), a Hindi/English question
@@ -86,27 +85,18 @@ Want to help? [TODO.md](docs/TODO.md)
 lists the open work, several items need no GPU, and [CONTRIBUTING.md](CONTRIBUTING.md)
 says how; each item is also a GitHub issue.
 
-> Independent academic project, released for research and teaching. Not
-> affiliated with or endorsed by Sarvam AI, BharatGen, AI4Bharat or the
-> Government of India. The project was called *nanosarvam* until
-> 2026-09-18. Two compatibility shims survive that rename and nothing
-> else does: `model.py` keeps the old config class names as aliases, so a
-> checkpoint pickled before it still unpickles, and `bpe.py` still loads a
-> tokenizer file carrying the old format id, which is what the tokenizers
-> beside the released weights say. Both are pinned by tests. The
-> redistributed Sarvam code under `sarvam/` keeps its own name and Apache
-> 2.0 licence. The code is MIT; each
-> checkpoint carries the licence of its training data, see `NOTICE` §2.
+> Independent project, released for research, teaching and commercial use
+> under each checkpoint's licence. Not affiliated with any company or
+> government body. The code is MIT; each checkpoint carries the licence of
+> its training data, see `NOTICE` §2.
 
-Two things live in this repository:
-
-1. **`sarvam/`** — Sarvam AI's open-weight modelling code (Sarvam 30B and
-   105B, Apache 2.0, released February 2026), downloaded unmodified, plus five
-   annotated walkthroughs of every non-obvious part. The reading.
-2. **Everything else** — AnuLM itself: the same architecture at 1/1000th
-   the size in pure PyTorch, no HuggingFace dependency, trained on Hindi,
-   then on Hindi + English + Python, then fine-tuned to answer questions and
-   to translate. The verification that the reading was understood.
+What is in this repository: the model (`anulm/model.py`, pure PyTorch, no
+Hugging Face dependency), the tokenizer, the data recipes, the training,
+evaluation, export and serving code, the demos, and the experiment log. It was
+trained on Hindi, then on Hindi + English + Python, then fine-tuned to answer
+questions, translate, write Python, and, as AnuLM-Omni-400M, to listen and see.
+`docs/ARCHITECTURE.md` says what each part of the model is and which paper it
+comes from.
 
 ```bash
 python -m anulm quickstart                 # checks this machine and says what to run next
@@ -114,11 +104,12 @@ python -m anulm quickstart --train         # ... or just trains a 17M model now 
 python -m anulm quickstart --demo          # ... or downloads a released 400M model and serves it
 
 pip install -r requirements.txt      # torch, safetensors; pyarrow only for the parquet converters
-python -m tests.test_model                 # 80 tests, under a minute, no pytest needed
+python -m tests.test_model                 # 82 tests, under a minute, no pytest needed
 python -m anulm model                      # shape + param sanity check, no data needed
-python -m anulm train --preset 30b         # GQA, high rope_theta  (Sarvam 30B's shape); downloads tinyshakespeare
-python -m anulm train --preset 105b        # MLA, YaRN-ready       (Sarvam 105B's shape)
+python -m anulm train --preset tiny-gqa    # 17M, grouped-query attention; downloads tinyshakespeare
+python -m anulm train --preset tiny-mla    # 47M, multi-head latent attention, YaRN-ready
 python -m anulm train --preset 350m --grad-ckpt   # 353M; needs a GPU
+bash experiments/base_1b_train.sh          # the 1B base from scratch (docs/TRAIN_FROM_SCRATCH.md, route D)
 python -m anulm sample --ckpt ckpt.pt --prompt "भारत"
 python -m anulm serve --ckpt ckpt_translate.pt    # a web page: continue text, answer a question, translate
 python -m anulm serve --ckpt ckpt_coder_sft.pt    # the Python coder: describe a function, or start one
@@ -142,7 +133,7 @@ number to expect at each step.
 
 To train AnuLM-Omni-400M yourself, from a toy model up to pretraining your own base, follow [docs/TRAIN_FROM_SCRATCH.md](docs/TRAIN_FROM_SCRATCH.md).
 
-`30b` and `105b` run on CPU; `350m` needs a GPU (8 GB is enough with
+`tiny-gqa` and `tiny-mla` run on CPU; `350m` needs a GPU (8 GB is enough with
 `--grad-ckpt`; every 350M-class run here used an RTX 5050 and then an RTX
 5070 Ti). If you have an NVIDIA card, install the CUDA wheel — the default
 CPU wheel silently reports cuda unavailable.
@@ -150,7 +141,8 @@ CPU wheel silently reports cuda unavailable.
 | doc | what's in it |
 | --- | --- |
 | [docs/API.md](docs/API.md) | `api.py`: every demo model behind OpenAI-compatible endpoints (chat with streaming, vision, speech in and out) plus typed decisions and Wikipedia lookup; works with the `openai` client and LangChain (`langchain_anulm.py`). What is borrowed, the limits, the error contract. |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | How Sarvam 30B/105B are built — MLA, GQA, sparse MoE, aux-loss-free routing, YaRN — and (§10) which of those choices held up when rebuilt and trained at nano scale. The research output. |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | The model, part by part — GQA and MLA attention, rotary positions and YaRN, the sparse mixture of experts and its aux-loss-free router — with the paper each comes from and what training it here measured. |
+| [docs/PLAN_1B.md](docs/PLAN_1B.md) | The 1B base trained from scratch on a commercially clean corpus: the data, the model, the memory budget, the schedule and its go/no-go checks. In training. |
 | [docs/RESULTS.md](docs/RESULTS.md) | Every experiment run here, with numbers: §1–21 the Hindi ladder, §22 three languages, §23 question answering in all three, §24 English ↔ Hindi translation (chrF 41.5 / 43.4 on FLORES-200), §25 the Python coder, finished: MBPP 12.5%, HumanEval 4.9%. |
 | [docs/MODEL_CARD.md](docs/MODEL_CARD.md) | The finished Python coder on one page: every data source with its size and share, the architecture as read from the checkpoint, the training run, the benchmark numbers with the prompt mode that produced each, and how to try it. |
 | The other cards: [base](docs/MODEL_CARD_BASE.md), [base at 2K](docs/MODEL_CARD_BASE2K.md), [question answerer](docs/MODEL_CARD_HINDI_QA.md), [translator](docs/MODEL_CARD_TRANSLATE.md), [base v2](docs/MODEL_CARD_BASE_V2.md), [the one model](docs/MODEL_CARD_OMNI.md) ([how to train it](docs/OMNI.md)) | One page each — what the checkpoint does and does not do, its data and licence, its numbers, how to run it. `export_hf.py` copies these into the Hugging Face repos, so the card on the Hub and the card here are the same file. |
@@ -166,18 +158,19 @@ CPU wheel silently reports cuda unavailable.
 | [experiments/README.md](experiments/README.md) | One script per results section from §9 on, and how to resume the long ones. |
 | [demo_colab.ipynb](examples/demo_colab.ipynb), [app.py](anulm/apps/app.py), [space/](space/) | The hosted demo: three cells in Colab that download a checkpoint and launch `app.py` with a public link, and the Space files for the day Gradio Spaces are free to host again. |
 | [docs/history/](docs/history/) | Historical and working notes, kept for provenance: [TASKS.md](docs/history/TASKS.md), the machine's run log and recovery procedure for the finished coder and translation runs (its live-status block is rewritten by `tools/update_tasks.py`); [CODER_PLAN.md](docs/history/CODER_PLAN.md) and [TRANSLATE_PLAN.md](docs/history/TRANSLATE_PLAN.md), the two finished demo plans; [ANNOUNCEMENT.md](docs/history/ANNOUNCEMENT.md), the launch post drafts with the source of every number. |
-| `sarvam/*_annotated.py` | The annotated Sarvam code, read beside `sarvam/sarvam-30b/` and `sarvam/sarvam-105b/`. |
 
 |                     | total   | active/token | experts hold | layers | attention |
 | ------------------- | ------- | ------------ | ------------ | ------ | --------- |
-| `nano_30b`          | 17.44 M | 6.60 M (38%) | 71%          | 8      | GQA 6q/2kv |
-| `nano_105b`         | 47.39 M | 13.33 M (28%)| 82%          | 12     | MLA        |
-| `nano_350m`         | 353.3 M | 151.5 M (43%)| —            | 20     | GQA 16q/4kv |
+| `tiny-gqa`          | 17.44 M | 6.60 M (38%) | 71%          | 8      | GQA 6q/2kv |
+| `tiny-mla`          | 47.39 M | 13.33 M (28%)| 82%          | 12     | MLA        |
+| `350m`              | 353.3 M | 151.5 M (43%)| —            | 20     | GQA 16q/4kv |
 | `350m` + combo `--cfg` | 364 M † | 140 M (38%) | —          | 20     | GQA 16q/4kv, window 256 on layers 0–9 |
 | the same with the 32k head | 398 M | 174 M (44%) | —       | 20     | every released checkpoint: `ckpt_multi36k`, `ckpt_multi_qa`, `ckpt_translate`, `ckpt_coder_sft` |
+| `1b`                | 1,008 M | 284 M (28%)  | —            | 24     | GQA 16q/4kv, window 256 on layers 0–9; experts 24 × 512 top-4 (`docs/PLAN_1B.md`) |
 
-`nano_350m` needs a GPU (8 GB is enough) and `--grad-ckpt`; it was sized by
-measurement against an RTX 5050 — see `docs/RESULTS.md` §6. The other two run
+`350m` needs a GPU (8 GB is enough) and `--grad-ckpt`; it was sized by
+measurement against an RTX 5050 — see `docs/RESULTS.md` §6. `1b` needs 16 GB,
+`--grad-ckpt` and `--optimizer adamw-lowmem`. The two tiny presets run
 anywhere.
 
 The last row is not a preset but the configuration the ablations converged on
@@ -202,88 +195,57 @@ python -m anulm train --preset 350m --grad-ckpt --moe-impl grouped \
 the preset's byte-vocabulary figure is 353 M / 152 M, and 386 M / 185 M with
 the same head.
 
-## Where each piece comes from
+## What the model is made of
 
-| AnuLM | real model | annotated in |
+| AnuLM (`anulm/model.py`) | what it is | from |
 | --- | --- | --- |
-| `GQAttention` | `SarvamMoEAttention` (30B :371) | `gqa_forward_annotated.py` |
-| `MLAttention` | `SarvamMLAAttention` (105B :467) | `mla_forward_annotated.py` |
-| `Router` | `MoEGate` (105B :267) / `SarvamMoEGate` (30B :196) | `moe_routing_annotated.py` |
-| `MoE` | `SarvamMLAMoE` (105B :331) / `SarvamMoESparseMoeBlock` (30B :320) | `moe_routing_annotated.py` |
-| `Rotary` + YaRN | `SarvamMLAYarnRotaryEmbedding` (105B :170) | `yarn_rotary_annotated.py` |
-| `Block` / `AnuLM` | `SarvamMLADecoderLayer` (:645) / `SarvamMLAModel` (:721) | `decoder_and_model_annotated.py` |
+| `GQAttention` | grouped-query attention, one fused QKV projection, QK-norm before RoPE | Ainslie et al. 2023 |
+| `MLAttention` | multi-head latent attention: a small latent plus one shared rotary key is all that is cached | DeepSeek-V2 2024 |
+| `Router` | sigmoid scores, aux-loss-free bias balancing, optional group-limited top-k | DeepSeek-V3 2024 |
+| `MoE` | sparse SwiGLU experts, optional shared expert, three dispatch paths (sparse, dense, grouped GEMM) | Shazeer et al. 2017, 2020 |
+| `Rotary` + YaRN | split-halves rotary embeddings; NTK-by-parts band blend and temperature for longer context | Su et al. 2021; Peng et al. 2023 |
+| `Block` / `AnuLM` | pre-norm blocks, RMSNorm, dense layer 0, untied embeddings, KV cache, generation | |
 
-The annotated files live in `sarvam/`; the line numbers are into
-`sarvam/sarvam-30b/modeling_sarvam_moe.py` and `sarvam/sarvam-105b/modeling_sarvam_moe.py`.
+`docs/ARCHITECTURE.md` explains each with the measurements behind the choices.
 
-## What is faithful
-
-- **Sigmoid router, not softmax.** Experts are scored independently, which is
-  what makes the bias trick below possible.
 - **Aux-loss-free load balancing.** `Router.expert_bias` is a *buffer*, not a
   parameter — no gradient, no weight decay. `update_expert_biases()` nudges it
   by `±bias_update_rate` against each expert's load error after every optimizer
-  step. Critically the bias steers *selection only*: combine weights are
-  gathered from the unbiased scores, so balancing never enters the loss.
-  Training logs `imbalance` (max load / mean load); it should fall toward 1.0.
-- **Group-limited routing.** `n_group`/`topk_group` reproduce the 105B's
-  constraint that all k experts come from a few groups. Presets mirror the real
-  configs: `nano_30b` uses `n_group=1` (a no-op, like the real 30B), `nano_105b`
-  uses 4 groups keeping 2. `__post_init__` rejects a top-k larger than the
-  surviving groups can supply — a footgun the real code leaves unguarded.
-- **Shared expert + dense layer 0.** `first_k_dense_replace=1`; the shared
-  expert is always-on and added outside the routing.
-- **MLA's compression.** One `kv_a_proj_with_mqa` producing a `kv_lora_rank`
-  latent plus a single MQA-style rope key shared across heads; RoPE applied
-  before expansion so the latent stays position-free.
-- **QK-norm before RoPE**, RMSNorm, SwiGLU, pre-norm blocks, untied embeddings,
-  fp32 router logits, fp32 loss.
-- **YaRN** (`--yarn`): the NTK-by-parts band blend, with the temperature term
-  applied to the attention scale rather than the rotary tables — exactly where
-  the 105B puts it, and in both attention paths rather than only the MLA one.
-
-## What is deliberately different
-
-- **It trains.** The released 105B modelling file cannot: `assert not
-  self.training` in the gate, `@torch.no_grad()` on `moe_infer`, no real
-  training branch, and a model loop that never calls the gradient-checkpointing
-  function. The MoE here dispatches with `index_select` + indexed assignment,
-  which is differentiable, and avoids the 30B training path's up-front
-  `repeat_interleave` of every hidden state.
-- **Split-halves RoPE throughout.** The 105B checkpoint stores rope dims
-  interleaved and permutes before rotating; training from scratch, we pick one
-  convention and stay in it.
-- **SDPA only.** No FlashAttention subclass, no vLLM branch, no expert
-  parallelism. There *is* a KV cache (`generate(use_cache=True)`, the default):
-  GQA caches its `n_kv_head` heads, MLA caches the `kv_lora_rank` latent plus
-  the single rope key — the thing MLA exists for — and the tests hold both to
-  the uncached path token-for-token, including after the window fills. Decoding
-  is still launch-bound at this size (≈1,000 small kernels per token on the
-  350M); the cache is worth ~1.35×, a compiler would be worth more.
+  step. The bias steers *selection only*: combine weights are gathered from the
+  unbiased scores, so balancing never enters the loss. Training logs
+  `imbalance` (max load / mean load); it should fall toward 1.0.
+- **Group-limited routing.** `n_group`/`topk_group` make all k experts come
+  from a few groups; `tiny-gqa` uses `n_group=1` (off), `tiny-mla` 4 groups
+  keeping 2. `__post_init__` rejects a top-k larger than the surviving groups
+  can supply.
+- **It trains, on one GPU.** The MoE dispatches with `index_select` + indexed
+  assignment, which is differentiable and never materialises a copy of every
+  hidden state per expert; gradient checkpointing takes effect (tested).
+- **One rotary layout, split halves, throughout.**
+- **SDPA only**, no expert parallelism. There *is* a KV cache
+  (`generate(use_cache=True)`, the default): GQA caches its `n_kv_head` heads,
+  MLA caches the `kv_lora_rank` latent plus the single rope key, and the tests
+  hold both to the uncached path token-for-token, including after the window
+  fills. Decoding is launch-bound at this size (≈1,000 small kernels per token
+  on the 350M); the cache is worth ~1.35×.
 - **Byte-level tokenizer by default**, 256 bytes + BOS/EOS/PAD, and a
-  from-scratch BPE (`bpe.py`) for the real runs. Sarvam's real contribution
-  at this layer is a 262,144-token tokenizer spanning 22 languages and 12
-  scripts, whose low fertility on Indic text is a large part of why their
-  models are cheap in those languages. Bytes are the honest placeholder —
-  worst possible fertility, zero training cost — and the 16k Hindi and 32k
-  three-script tokenizers trained here (`docs/RESULTS.md` §7, §22) are the
-  nano version of that moat: 9.5 bytes per token on Hindi against 1.0.
-- **Ratios drift at small scale.** The real models route 6/128 and 8/128 experts
-  (≈5–6%); with 16 experts, top-2 is 12.5%. Top-1 would be degenerate. Sparsity
-  is milder here than in the originals.
+  from-scratch BPE (`bpe.py`) for the real runs. Bytes have the worst possible
+  fertility and cost nothing to set up; the 16k Hindi and 32k three-script
+  tokenizers trained here (`docs/RESULTS.md` §7, §22) reach 9.5 bytes per token
+  on Hindi against 1.0, the largest single lever measured.
 
 ## Long-context extension: does YaRN earn its place?
 
 ```bash
-python -m anulm eval_context --ckpt ckpt_105b.pt     # rope_theta 1e4, YaRN's home turf
-python -m anulm eval_context --ckpt ckpt_30b.pt      # rope_theta 1e6, extrapolation instead
+python -m anulm eval_context --ckpt ckpt_mla.pt     # tiny-mla: rope_theta 1e4, YaRN's home turf
+python -m anulm eval_context --ckpt ckpt_gqa.pt     # tiny-gqa: rope_theta 1e6, extrapolation instead
 ```
 
 Both checkpoints were trained at `block_size=256` with plain RoPE. Evaluate them
 at 2x and 4x that, either naively or with the rotary rebuilt for YaRN
 (`factor = length/256`). Same weights, **zero fine-tuning at the longer length**.
 
-| context | `nano_105b` naive | `nano_105b` YaRN | | `nano_30b` naive | `nano_30b` YaRN |
+| context | `tiny-mla` naive | `tiny-mla` YaRN | | `tiny-gqa` naive | `tiny-gqa` YaRN |
 | --- | --- | --- | --- | --- | --- |
 | 256 (trained) | 1.5368 | — | | 1.5212 | — |
 | 512 | 1.7000 | **1.6516** | | **1.5871** | 1.6460 |
@@ -291,23 +253,23 @@ at 2x and 4x that, either naively or with the rotary rebuilt for YaRN
 
 Loss by position inside a 1024-byte window tells the real story:
 
-| positions | `105b` naive | `105b` YaRN | | `30b` naive | `30b` YaRN |
+| positions | `tiny-mla` naive | `tiny-mla` YaRN | | `tiny-gqa` naive | `tiny-gqa` YaRN |
 | --- | --- | --- | --- | --- | --- |
 | 0–256 *(in-distribution)* | **1.5421** | 1.6802 | | **1.5076** | 1.6808 |
 | 256–512 | 1.7924 | **1.6989** | | **1.6046** | 1.7052 |
 | 512–768 | 2.8697 | **1.7034** | | **1.6861** | 1.6898 |
 | 768–1024 | 3.0342 | **1.7131** | | 1.8616 | **1.6882** |
 
-**For the 105b preset YaRN is the difference between working and not.** Naive
+**For the tiny-mla preset YaRN is the difference between working and not.** Naive
 extension collapses — 1.54 → 3.03 as you walk out the window, the slow frequency
 dims hitting phases they never saw in training. With YaRN the curve is nearly
 flat: 1.68 → 1.71 across a 4x extension, no retraining.
 
-**For the 30b preset YaRN is a net loss — but a close one.** `rope_theta=1e6`
+**For the tiny-gqa preset YaRN is a net loss — but a close one.** `rope_theta=1e6`
 already spreads the frequency ladder wide enough that naive extension degrades
 gently (1.51 → 1.86), so there is less for YaRN to repair, and on average the
 repair does not pay for itself: +0.059 at 512, +0.026 at 1024. What it does buy
-is the same flat curve the 105b preset gets — it never leaves 1.68–1.71 across
+is the same flat curve the tiny-mla preset gets — it never leaves 1.68–1.71 across
 the whole window, against naive's 1.51 → 1.86 — so it ties in the third quarter
 and wins
 outright in the fourth (768–1024: 1.6882 vs 1.8616).
@@ -317,15 +279,13 @@ positions 0–256 YaRN is *worse* than naive (1.68 vs 1.54, 1.68 vs 1.51). You a
 trading accuracy on the range you trained for, in exchange for not falling apart
 beyond it.
 
-The 30b column was regenerated after a bug fix: `GQAttention` applied YaRN's band
+The tiny-gqa column was regenerated after a bug fix: `GQAttention` applied YaRN's band
 blend but not its logit-temperature term (`mscale**2 = 1.296` at factor 4), which
 `MLAttention` had all along. The earlier table measured the band blend alone. The
-105b columns are unchanged and reproduce to the fourth decimal.
+tiny-mla columns are unchanged and reproduce to the fourth decimal.
 
-Which is exactly why Sarvam chose oppositely for the two real models — 30B at
-`rope_theta=8e6` with `rope_scaling: null`, 105B at `rope_theta=1e4` with YaRN
-factor 40. Two answers to one problem, and at nano scale each one wins on its
-own model.
+Two answers to one problem — a wide `rope_theta`, or a narrow one with YaRN —
+and each one wins on its own model.
 
 ## The v4 recipe: documents, sampling, regularisers, a shared benchmark
 
@@ -355,8 +315,7 @@ mostly data-side. Each piece is a flag or a file, and each is tested.
   loss only; the log prints the LM loss and `aux` separately so runs stay
   comparable. The aux-loss-free bias rule is still the balancer.
 - **Sliding window**: `--sliding-window W --max-window-layers K` windows the
-  first K layers (Qwen2 semantics — the real 30B config carries
-  `max_window_layers: 19` with no window set). Off by default; the tests check
+  first K layers (Qwen2 semantics). Off by default; the tests check
   a token outside the window cannot move the output and that cached decoding
   agrees.
 - **`make_bench.py` / `eval_bench.py`.** Own-val numbers cannot be compared
@@ -629,8 +588,8 @@ RTX 5050 and then an RTX 5070 Ti. Inductor is still the one untested path.)
 ## Knobs worth turning
 
 ```bash
-python -m anulm train --preset 105b --yarn        # band-blended RoPE for extension runs
-python -m anulm train --preset 30b  --grad-accum 4 --batch-size 8
+python -m anulm train --preset tiny-mla --yarn    # band-blended RoPE for extension runs
+python -m anulm train --preset tiny-gqa --grad-accum 4 --batch-size 8
 python -m anulm train --preset 350m --grad-ckpt --moe-impl grouped \
                 --data data/hindi_v4.hi16k.bin \
                 --seq-balance-alpha 1e-4 --router-z-alpha 1e-3     # the v4 recipe
@@ -653,7 +612,7 @@ many small expert matrices it is a memory knob, not a speed one (§6).
 Three runs, CPU (torch 2.14.0+cpu), batch 16 × block 256, tinyshakespeare,
 identical seed and data order.
 
-| | `nano_30b` | `nano_30b` | `nano_105b` |
+| | `tiny-gqa` | `tiny-gqa` | `tiny-mla` |
 | --- | --- | --- | --- |
 | attention | GQA | GQA | MLA |
 | params total / active | 17.44M / 6.60M (38%) | 17.44M / 6.60M | 47.39M / 13.33M (28%) |
@@ -667,17 +626,17 @@ identical seed and data order.
 At **matched steps** (600) MLA wins: 1.5467 vs 1.5701, worth 0.034 bits/byte —
 which it should, carrying 2× the active parameters. At **matched wall clock**
 GQA wins outright: it reaches a *better* loss (1.5190) in *less* time (1345 s)
-than the MLA preset needs for 1.5467. That is the trade the two real models
-make, and at this scale on CPU it lands the same way round.
+than the MLA preset needs for 1.5467: on this hardware the cheaper attention
+wins the race to a given loss.
 
-Group-limited routing (105b: 4 groups, keep 2) makes balancing visibly harder —
+Group-limited routing (tiny-mla: 4 groups, keep 2) makes balancing visibly harder —
 it peaks higher (7.02× vs 3.35×) and stays imbalanced longer, since half the
 experts are unreachable for any given token — but it finishes *lowest* of the
 three at 1.13×. The constraint slows the balancer without defeating it.
 
 ## Status: trained and verified
 
-`nano_30b`, 1000 steps, 22 min:
+`tiny-gqa`, 1000 steps, 22 min:
 
 ```
 step    0 | loss 5.5869 | imbalance 4.43x
@@ -709,28 +668,24 @@ MoE dispatch/combine index math checked against naive reference implementations
 `routed_scaling_factor`).
 
 One expected quirk in `python -m anulm model` (which seeds per preset, so these
-numbers reproduce): `nano_30b` reports 45 parameters without gradients. That is
+numbers reproduce): `tiny_gqa` reports 45 parameters without gradients. That is
 not a bug — with only 2×64 tokens, 15 of the 112 experts across its 7 MoE layers
 receive no tokens at all in that batch and correctly get no gradient, 3 weights
-each (`gate_proj`, `up_proj`, `down_proj`). `nano_105b` reports 0, and so does
-`nano_30b` at realistic batch sizes.
+each (`gate_proj`, `up_proj`, `down_proj`). `tiny_mla` reports 0, and so does
+`tiny_gqa` at realistic batch sizes.
 
 ## Licence and provenance
 
-The code here is MIT (`LICENSE`). The redistributed Sarvam files and the
-training-data terms are recorded in `NOTICE`, which is the file to read
+The code here is MIT (`LICENSE`). The training-data terms are recorded in
+`NOTICE`, which is the file to read
 before any commercial use — **two of the translation corpora are
 non-commercial, and `ckpt_translate` is trained on them**; likewise
 Flickr30k, under the caption and VQA models.
 
-Sarvam's models and code are Apache 2.0. The files under `sarvam/sarvam-30b/`
-and `sarvam/sarvam-105b/` are theirs, downloaded unmodified from
-`sarvamai/sarvam-30b` and `sarvamai/sarvam-105b` on Hugging Face; their
-headers and licence apply. Everything else here — the annotations, the model,
-the training and evaluation code, the documents — was written from scratch
-for this study. **No Sarvam weights are used or redistributed.** AnuLM
-is a re-implementation of published architecture, in the same sense that
-nanoGPT is a re-implementation of GPT-2. The training data are public:
+Everything here — the model, the tokenizer, the training and evaluation code,
+the documents — was written for this project. The architecture's ideas come
+from published papers, cited in `docs/ARCHITECTURE.md`; no other model's
+weights are used. The training data are public:
 Wikimedia dumps, C4, codeparrot-clean, fineweb-edu, code_exercises,
 OpenCodeInstruct, glaive-code-assistant, Samanantar, the IIT Bombay
 English-Hindi corpus, FLORES-200, HumanEval and MBPP, each under its own

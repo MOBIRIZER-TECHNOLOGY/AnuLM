@@ -10,7 +10,7 @@ SigLIP for images.
 
 Part of AnuLM: code, data scripts and the demo app (`app_omni.py`) at
 https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM.
-Not affiliated with Sarvam AI, AI4Bharat, BharatGen or the Government of
+Not affiliated with AI4Bharat, BharatGen or the Government of
 India.
 
 ## What it is
@@ -102,7 +102,7 @@ docs/OMNI.md has the hardware, disk and time each step needs.
 
 ```bibtex
 @software{anulm2026,
-  title  = {AnuLM: a small, trainable mixture-of-experts language model in the shape of Sarvam 30B, trained from scratch on one GPU for Hindi, English and Python},
+  title  = {AnuLM: a small, trainable mixture-of-experts language model, trained from scratch on one GPU for Hindi, English and Python},
   author = {{The AnuLM authors}},
   year   = {2026},
   url    = {https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM}

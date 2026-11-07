@@ -260,15 +260,15 @@ def rotate_half(x):
     return torch.cat((-x2, x1), dim=-1)
 ```
 
-> **In the repo** · `anulm/model.py` · `apply_rope` · lines 353–362 · @b42998d
+> **In the repo** · `anulm/model.py` · `apply_rope` · lines 363–372 · @WORKTREE
 
 ```python
 def apply_rope(q, k, cos, sin):
     """q, k: (B, H, S, Dr). cos/sin: (S, Dr) -> broadcast over batch and heads.
 
-    Split-halves (GPT-NeoX) convention. Sarvam's 105B checkpoint stores its rope
-    dims interleaved and permutes before rotating; we train from scratch, so we
-    pick one convention and stay in it.
+    Split-halves (GPT-NeoX) convention, used everywhere in AnuLM. Some
+    checkpoints store rotary dims interleaved instead; mixing the two layouts
+    silently scrambles positions, so there is one convention and no switch.
     """
     cos = cos[None, None, :, :]
     sin = sin[None, None, :, :]
@@ -302,9 +302,9 @@ form out and compares, after listing the dimensions as 0, 2, …, 62, 1, …, 63
   scores, the two conventions: 2.0e-06
 ```
 
-*verified*: the same rotation in another order. The docstring says Sarvam's
-105B code permutes the dimensions at run time, before rotating. Converting the
-weights instead would mean permuting the query and key rows of the projection
+*verified*: the same rotation in another order. Loading a checkpoint stored in
+the interleaved layout would mean either permuting the dimensions at run time,
+before rotating, or converting the weights. Converting the weights would mean permuting the query and key rows of the projection
 and also QK-norm's per-dimension gains, which act before RoPE.
 
 ![Figure 14.3 · Split halves against consecutive pairs](../figures/fig14-3-split-halves.svg)
@@ -472,7 +472,7 @@ used only for the claim in its register row:
 | [S03] | ALiBi: linear biases on attention scores | CHECKED |
 
 Repository evidence, all at @b42998d:
-- `anulm/model.py`: `Rotary` 278–343, `rotate_half` 346–350, `apply_rope` 353–362,
+- `anulm/model.py`: `Rotary` 278–343, `rotate_half` 346–350, `apply_rope` 353–362 (363–372 @WORKTREE),
   `MoE` 756 and 784 (bf16 casts), `AnuLM.__init__` 837–839, `AnuLM.forward` 899.
 - `tests/test_model.py`: tests at lines 101, 120 and 733.
 - `docs/RESULTS.md` §3; `book/measurements/part_iv_a_shift.json`.

@@ -175,11 +175,11 @@ They were remapped with the same line map and checked by
 | chapters/16-swiglu.md:427 | tests/test_model.py | 336 | 415 | same | def all_parameters_receive_gradients(): | def all_parameters_receive_gradients(): |
 | chapters/16-swiglu.md:428 | tests/test_model.py | 1285 | 1450 | same | def transformers_wrapper_matches_the_native_model(): | def transformers_wrapper_matches_the_native_model(): |
 | chapters/17-router.md:339 | tests/test_model.py | 423 | 520 | same | def config_rejects_unreachable_topk(): | def config_rejects_unreachable_topk(): |
-| chapters/17-router.md:340 | sarvam/sarvam-105b/modeling_sarvam_moe.py | 629–638 |  | reattributed | quoted code is in sarvam/sarvam-105b/modeling_sarvam_moe.py, not tests |  |
+| chapters/17-router.md:340 | (removed reference file) | 629–638 |  | reattributed | quoted code is in (removed reference file), not tests |  |
 | chapters/17-router.md:480 | anulm/model.py | 629–638 | 629–638 | sweep | ard' 611–622, 'Router._gate' 624–645 (groups 629–638). |  |
 | chapters/17-router.md:483 | tests/test_model.py | 423 | 520 | same | def config_rejects_unreachable_topk(): | def config_rejects_unreachable_topk(): |
-| chapters/17-router.md:485 | sarvam/sarvam-105b/modeling_sarvam_moe.py | 276–277 | 276–277 | sweep | 'sarvam/sarvam-105b/modeling_sarvam_moe.py' 276–277, |  |
-| chapters/17-router.md:486 | sarvam/sarvam-105b/modeling_sarvam_moe.py | 305–313 | 305–313 | sweep | 305–313: the |  |
+| chapters/17-router.md:485 | (removed reference file) | 276–277 | 276–277 | sweep | '(removed reference file)' 276–277, |  |
+| chapters/17-router.md:486 | (removed reference file) | 305–313 | 305–313 | sweep | 305–313: the |  |
 | chapters/18-dispatch-and-balance.md:217 | tests/test_model.py | 694–711 | 827–844 | same | def grouped_moe_matches_sparse_under_bf16(): | def grouped_moe_matches_sparse_under_bf16(): |
 | chapters/18-dispatch-and-balance.md:461 | tests/test_model.py | 774–790 | 907–923 | same | def seq_balance_loss_matches_the_formula(): | def seq_balance_loss_matches_the_formula(): |
 | chapters/18-dispatch-and-balance.md:119 | tests/test_model.py | 506 | 603 | same | def sparse_moe_breaks_the_graph_as_documented(): | def sparse_moe_breaks_the_graph_as_documented(): |
@@ -203,7 +203,7 @@ They were remapped with the same line map and checked by
 | chapters/19-latent-attention.md:477 | anulm/model.py | 516–533 | 516–533 | sweep | 516–533, 'ML |  |
 | chapters/19-latent-attention.md:478 | anulm/model.py | 837 |  | override | decided in repin-overrides.tsv |  |
 | chapters/19-latent-attention.md:479 | tests/test_model.py | 432–444 | 529–541 | same | def mla_shares_one_rope_key_across_heads(): | def mla_shares_one_rope_key_across_heads(): |
-| chapters/19-latent-attention.md:483 | sarvam/sarvam-105b/modeling_sarvam_moe.py | 486–499 | 486–499 | sweep | 486–499 (opt |  |
+| chapters/19-latent-attention.md:483 | (removed reference file) | 486–499 | 486–499 | sweep | 486–499 (opt |  |
 | chapters/20-the-whole-model.md:213 | anulm/model.py | 242–253 |  | reattributed | 'SwiGLU' is in anulm/model.py, not book/code-examples/trace_forward.py |  |
 | chapters/20-the-whole-model.md:252 | tests/test_model.py | 474 | 571 | def | 'dense_and_sparse_moe_agree' | def dense_and_sparse_moe_agree(): |
 | chapters/20-the-whole-model.md:253 | tests/test_model.py | 694 | 827 | def | 'grouped_moe_matches_sparse_under_bf16' | def grouped_moe_matches_sparse_under_bf16(): |
@@ -304,7 +304,7 @@ They were remapped with the same line map and checked by
 | chapters/25-checkpoints-and-resuming.md:615 | anulm/training/train.py | 849–850 | 849–850 | sweep | 0, 'lr_at' 375–400, 'main' 788–840 (resume), 849–850 ('-- |  |
 | chapters/25-checkpoints-and-resuming.md:616 | anulm/training/train.py | 857–876 | 857–876 | sweep | 857–876 (one |  |
 | chapters/25-checkpoints-and-resuming.md:616 | anulm/training/train.py | 891–905 | 891–905 | sweep | 857–876 (one step), 891–905 (sav |  |
-| chapters/25-checkpoints-and-resuming.md:617 | anulm/model.py | 1213 | 1213 | sweep | - 'anulm/model.py': 'NanoSarvamConfig' alias 1213, 'TR |  |
+| chapters/25-checkpoints-and-resuming.md:617 | anulm/model.py | 1213 | 1213 | sweep | - 'anulm/model.py': (pre-rename alias, since dropped) 1213, 'TR |  |
 | chapters/25-checkpoints-and-resuming.md:621 | tests/test_model.py | 363–380 | 460–477 | same | def checkpoint_roundtrip_is_exact(): | def checkpoint_roundtrip_is_exact(): |
 | chapters/25-checkpoints-and-resuming.md:622 | tests/test_model.py | 823–833 | 956–966 | same | def window_sampler_resumes_exactly(): | def window_sampler_resumes_exactly(): |
 | chapters/25-checkpoints-and-resuming.md:623 | tests/test_model.py | 321–328 | 400–407 | same | def expert_bias_is_not_trainable(): | def expert_bias_is_not_trainable(): |

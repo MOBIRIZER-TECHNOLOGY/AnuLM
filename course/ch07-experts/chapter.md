@@ -17,16 +17,16 @@ into it and give the same outputs, digit for digit.
 
 In AnuLM, every layer after the first replaces its MLP with:
 
-- **routed experts**: 16 small SwiGLU MLPs in the `30b` preset, each
+- **routed experts**: 16 small SwiGLU MLPs in the `tiny-gqa` preset, each
   an eighth of the dense MLP's width (96 against 768); the router picks 2 per
   token;
 - **a shared expert**, one more SwiGLU that every token goes through, outside
   the routing.
 
-So the `30b` preset has **17,440,384 parameters, but any one token uses
+So the `tiny-gqa` preset has **17,440,384 parameters, but any one token uses
 6,602,368** of them: the experts it wasn't routed to do no work for it. That
-ratio is the point of the design. Sarvam's real models push it much further,
-with 128 experts.
+ratio is the point of the design. Large MoE models push it much further, with
+hundreds of experts.
 
 ## 7.2 The router
 
@@ -44,14 +44,14 @@ w = w / (w.sum(-1, keepdim=True) + 1e-20) * self.routed_scaling_factor
 
 ![](figures/fig7_2_router.svg)
 
-Three choices here are DeepSeek-V3's, which Sarvam's models follow.
+Three choices here are DeepSeek-V3's (2024).
 
 - **Sigmoid, not softmax.** Each expert is scored independently, so one expert
   winning doesn't push the others down.
 - **The bias picks, but never weights.** `expert_bias`, introduced in Section
   7.5, is added only when choosing. The winners are then weighted by their
   *unbiased* scores, normalised to sum to 1 and scaled by 2.5.
-- **Group-limited routing** (the `105b` preset): experts are split into
+- **Group-limited routing** (the `tiny-mla` preset): experts are split into
   groups, and a token may only use experts from its best few groups. On large
   machines, each group lives on one device, so this limits traffic.
 
@@ -88,8 +88,8 @@ outputs; the tests hold them to it.
 
 `ExpertBlock` is Chapter 6's block with the MLP replaced by an MoE layer, and
 `MoELM` stacks them: one dense block first, then expert blocks, exactly as
-AnuLM does (`first_k_dense_replace = 1`). Its default settings are the `30b`
-preset. That gives the strongest check in this book so far:
+AnuLM does (`first_k_dense_replace = 1`). Its default settings are the
+`tiny-gqa` preset. That gives the strongest check in this book so far:
 
 ```python
 theirs = model.AnuLM(model.AnuLMConfig(**settings))
@@ -164,7 +164,7 @@ python course/checks/ch07.py --self-test  # proves the checks catch their bugs
 
 The self-test runs fourteen broken versions; all fourteen are caught. It also
 caught a mistake in our own check. `model.py`'s config and `MoELM` have
-different default rotary settings (theta 1e4 against the `30b` preset's 1e6),
+different default rotary settings (theta 1e4 against the `tiny-gqa` preset's 1e6),
 so the first version of `your_model_is_model_py` compared two different models
 and failed on the correct solution. An equivalence check must set every
 setting explicitly, never trust two sets of defaults to agree.
@@ -246,7 +246,7 @@ small CPU run you don't see the bill.
 ## Key takeaways
 
 - A mixture of experts gives a model more parameters at the same compute per
-  token: the `30b` preset has 17.4M parameters, 6.6M active.
+  token: the `tiny-gqa` preset has 17.4M parameters, 6.6M active.
 - The router scores experts with sigmoids and picks the top *k*; a balancing
   bias steers the choice, but the weights come from the unbiased scores.
 - Balance is kept by a bias nudged after each step, with no gradient and no

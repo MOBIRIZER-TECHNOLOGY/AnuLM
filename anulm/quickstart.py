@@ -157,7 +157,7 @@ def report(state: dict) -> bool:
     print(f"  python -m tests.test_model              {n_tests()} tests, ~2 min")
     print("  python -m anulm model                   build both presets, forward + backward, no data")
     if not gpu:
-        print("\n  The 30b and 105b presets run on any CPU. The 400M presets need a GPU")
+        print("\n  The tiny-gqa and tiny-mla presets run on any CPU. The 350m and 1b presets need a GPU")
         print("  (8 GB with --grad-ckpt); on CPU you can still *run* the released")
         print("  checkpoints, at a few tokens per second.")
     print("\n  docs/TUTORIAL.md goes from here to every checkpoint in the project.")
@@ -171,18 +171,18 @@ def run(cmd: list[str]) -> int:
 
 
 def train(state: dict) -> int:
-    """The smallest honest run: 200 steps of the Sarvam-30B-shaped preset."""
+    """The smallest honest run: 200 steps of the tiny-gqa preset."""
     if not state["torch"]:
         print("\ntorch is not installed; see above.")
         return 1
     print("\n" + "=" * 70)
-    print("Training nano_30b (17.4M parameters, 6.6M active per token) for 200")
+    print("Training tiny-gqa (17.4M parameters, 6.6M active per token) for 200")
     print("steps on tinyshakespeare, which train.py downloads if it is not there.")
     print("Expect val loss around 1.85, and expert imbalance that RISES to 4-8x")
     print("before falling under 2x -- that rise is correct, and README.md")
     print('"Status: trained and verified" explains why.')
     print("=" * 70)
-    rc = run([sys.executable, "-u", "-m", "anulm", "train", "--preset", "30b", "--steps", "200",
+    rc = run([sys.executable, "-u", "-m", "anulm", "train", "--preset", "tiny-gqa", "--steps", "200",
               "--eval-every", "50", "--out", "ckpt_quickstart.pt"])
     if rc:
         print("\nTraining failed. The full log is above; docs/TUTORIAL.md has a")
@@ -192,7 +192,7 @@ def train(state: dict) -> int:
               "--prompt", "KING RICHARD II:", "--tokens", "120"])
     print("\nThat is a 17M model after 200 steps: Shakespeare-shaped, and made of")
     print("non-words. 1,000 steps reaches val 1.52 and reads far better:")
-    print("\n  python -m anulm train --preset 30b --steps 1000 --out ckpt.pt")
+    print("\n  python -m anulm train --preset tiny-gqa --steps 1000 --out ckpt.pt")
     print("\nNext: docs/TUTORIAL.md section 4 trains on Hindi instead, and section 5")
     print("is the recipe every released checkpoint uses.")
     return rc

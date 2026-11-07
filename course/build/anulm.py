@@ -350,7 +350,7 @@ class MoELM(nn.Module):
       sign(mean load - load); zero its load_counts; return the largest max/mean ratio.
     num_params(): (total, active), where active leaves out, in every MoE layer, the
       experts a token is not routed to: (num_experts - num_experts_per_tok) x one expert.
-    The defaults are the `30b` preset: 17,440,384 parameters, 6,602,368 active.
+    The defaults are the `tiny-gqa` preset: 17,440,384 parameters, 6,602,368 active.
     """
 
     def __init__(self, vocab_size: int = 259, block_size: int = 256, n_layer: int = 8, hidden_size: int = 384,

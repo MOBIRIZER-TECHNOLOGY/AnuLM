@@ -284,12 +284,12 @@ position (Chapter 12). Reading one way gives three things: S graded
 predictions per window of S tokens (Chapter 3); generation that is just
 reading one more token; and a past that never changes, so it can be cached:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 470–476 · @b42998d
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 480–486 · @WORKTREE
 
 ```python
         if cache is not None:
             # Cache the Hkv heads, not their H broadcast copies -- that ratio
-            # (16:1 in the real 30B) is GQA's entire inference saving.
+            # (4:1 in base v2) is GQA's entire inference saving.
             if "k" in cache:
                 k = torch.cat([cache["k"], k], dim=2)
                 v = torch.cat([cache["v"], v], dim=2)
@@ -299,8 +299,8 @@ reading one more token; and a past that never changes, so it can be cached:
 Each call appends the new tokens' keys and values (Chapter 11) along the
 position axis, dimension 2. The comment's terms: H<sub>kv</sub> is the number
 of key/value heads, fewer than the H query heads, which share them
-(grouped-query attention, Chapter 13); "the 30B" is the Sarvam model AnuLM
-follows. In a bidirectional model a new token would change every earlier
+(grouped-query attention, Chapter 13); "base v2" is the released 400M model,
+whose 16 query heads share 4 key/value heads. In a bidirectional model a new token would change every earlier
 position, and the cache would go stale (Chapter 27).
 
 ![Figure 2.3 · Who may see whom](../figures/fig02-3-masks.svg)

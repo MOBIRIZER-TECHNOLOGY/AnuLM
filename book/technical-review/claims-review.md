@@ -54,7 +54,7 @@ read every cited test, and checked every chapter and course cross-reference.
 | 8 | excerpt | `Router._gate` hid group-limited top-k without saying so | fixed: one sentence; `n_group = 1` in both models |
 | 9 | improvement | the model never shifts targets | fixed: `make_batch` (`train.py` 199–208) cited; a common mistake added |
 | 10 | improvement | "from the configuration" and "equals the state dict" were loose; internal process references | fixed: `released()` matches every checkpoint field; total = checkpoint tensors less 912 buffer numbers |
-| 11 | improvement | "a matrix anywhere fails the suite" overstated the coverage; the exact sum is not in CI | fixed: limited to what `nano_30b`/`nano_105b` build; the book script named as such |
+| 11 | improvement | "a matrix anywhere fails the suite" overstated the coverage; the exact sum is not in CI | fixed: limited to what `tiny_gqa`/`tiny_mla` build; the book script named as such |
 | 12 | improvement | the windowed layers still cache every position, so 20 MiB needed a note | fixed: the mask limits reach, the cache never trims (441–447); Ch 27 and 29 |
 | 13 | improvement | cache layout cross-referenced to Ch 13, where the plan covers it in Ch 27 | fixed |
 | 14 | improvement | notation table missed I, I<sub>e</sub>, T; `k` meant two things; `Dh` vs D<sub>h</sub>; a parameter count in a shape diagram | fixed: table extended; K for experts per token, `k` for the key tensor; `Dh` named as the diagram spelling; diagram carries only shapes |
@@ -63,7 +63,7 @@ read every cited test, and checked every chapter and course cross-reference.
 | 17 | improvement | rotary tables are cached across calls (`Rotary._grow`), not computed once per call | fixed |
 | 18 | editorial | stray badge; Stage references; "Chapters 11 to 19"; Ch 14, 16, 17 never cross-referenced | fixed |
 | 19 | style (author) | no equations; the trace stopped at the loss; no common mistakes, debugging or exercises; badges not at section ends | fixed: 20.3 equations mapped to lines; 20.7 logits to a token; 20.11 common mistakes; 20.12 five exercises with answers; badges added |
-| 20 | error (author) | the first draft of exercise 1 gave `nano_30b` H = 16, H<sub>kv</sub> = 4 from memory | fixed: H = 6, H<sub>kv</sub> = 2, read from the preset |
+| 20 | error (author) | the first draft of exercise 1 gave `tiny_gqa` H = 16, H<sub>kv</sub> = 4 from memory | fixed: H = 6, H<sub>kv</sub> = 2, read from the preset |
 
 ### Claim inventory after the fixes
 
@@ -139,7 +139,7 @@ plan, the style guide and the course. It also reviewed the companion script.
 | 13 | improvement | "a width-64 head" read as a statement about the model | fixed: "a random width-64 head"; table headers say "mean" |
 | 14 | improvement | notation: D, D<sub>h</sub> versus d versus d<sub>k</sub>, B and H used before they are defined; diagram T = S | fixed |
 | 15 | improvement | "a layer holds H·S·T scores" contradicted "if stored" | fixed: "computes"; the causal half that a kernel may skip noted |
-| 16 | improvement | "as Sarvam's 30B model does" uncited; RMSNorm's own chapter not referenced | fixed: the line-436 comment quoted; Chapter 15 added |
+| 16 | improvement | a comparison with an outside model's code uncited; RMSNorm's own chapter not referenced | fixed: the line-436 comment quoted; Chapter 15 added |
 | 17 | improvement | "kernel", "bf16" used without definition | defined |
 | 18 | improvement | the `NATIVE_GQA` call site omitted | one sentence added (366) |
 | 19 | improvement | script printed an unused line; unmasked scores not labelled | fixed |

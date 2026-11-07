@@ -14,7 +14,7 @@ that uses it is `app_omni.py` in that repository.
 **Licence: CC BY-SA 4.0.** Hindi Wikipedia is CC BY-SA; fineweb-edu and
 fineweb-2 are ODC-BY; the Python slice includes codeparrot-clean, scraped
 GitHub code under its files' own mixed licences (including GPL and AGPL).
-Not affiliated with Sarvam AI, AI4Bharat, BharatGen or the Government of
+Not affiliated with AI4Bharat, BharatGen or the Government of
 India.
 
 ## What it does, and does not
@@ -79,8 +79,7 @@ GQA with 16 query / 4 key-value heads and QK-norm, RoPE, sliding window
 256 on layers 0–9, a dense SwiGLU MLP on layer 0 and 24 routed experts of
 192 with top-4 routing on layers 1–19, aux-loss-free bias balancing, no
 shared expert, 32,768-entry vocabulary, untied embeddings. 397.7M
-parameters, 173.5M active per token. An independent re-implementation of
-the Sarvam 30B design.
+parameters, 173.5M active per token (`docs/ARCHITECTURE.md`).
 
 ## Intended use
 
@@ -108,7 +107,7 @@ tuning.
 
 ```bibtex
 @software{anulm2026,
-  title  = {AnuLM: a small, trainable mixture-of-experts language model in the shape of Sarvam 30B, trained from scratch on one GPU for Hindi, English and Python},
+  title  = {AnuLM: a small, trainable mixture-of-experts language model, trained from scratch on one GPU for Hindi, English and Python},
   author = {{The AnuLM authors}},
   year   = {2026},
   url    = {https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM}

@@ -40,12 +40,18 @@ python -m anulm train --preset 350m --device cuda --moe-impl grouped --data data
 
 ## 22.2  From a preset and `--cfg` to a model
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 712–732 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `PRESETS` · lines 30–32 · @WORKTREE
 
 ```python
-    builder = {"30b": AnuLMConfig.nano_30b,
-               "105b": AnuLMConfig.nano_105b,
-               "350m": AnuLMConfig.nano_350m}[args.preset]
+# `--preset` names -> AnuLMConfig builders (anulm/model.py).
+PRESETS = {"tiny-gqa": AnuLMConfig.tiny_gqa, "tiny-mla": AnuLMConfig.tiny_mla,
+           "350m": AnuLMConfig.base_350m, "1b": AnuLMConfig.base_1b}
+```
+
+> **In the repo** · `anulm/training/train.py` · `main` · lines 723–741 · @WORKTREE
+
+```python
+    builder = PRESETS[args.preset]
     overrides = {}
     for kv in args.cfg:
         key, _, val = kv.partition("=")
@@ -66,7 +72,7 @@ python -m anulm train --preset 350m --device cuda --moe-impl grouped --data data
     cfg = builder(**kw)
 ```
 
-- **Preset.** `--preset 350m` picks `AnuLMConfig.nano_350m`, one of the
+- **Preset.** `--preset 350m` picks `AnuLMConfig.base_350m`, one of the
   configurations in `anulm/model.py` (Chapter 20).
 - **Parse and cast.** Each `--cfg KEY=VALUE` must name a field of
   `AnuLMConfig`; its value is cast to the field's declared type.
@@ -508,7 +514,7 @@ no reason to record the graph and keep activations for it.
 | [R52] | `torch.compile`, the API the probe calls | CHECKED |
 
 Repository evidence, all at @b42998d:
-- `anulm/training/train.py`: `main` 536–924 (646, 712–732, 736, 747, 749–772, 849–873, 869,
+- `anulm/training/train.py`: `main` 536–924 (646, 712–732 (723–741 @WORKTREE), 736, 747, 749–772, 849–873, 869,
   874–880, 882–889, 891–908), `lr_at` 375–400, `OptimizerSet.set_lr_scale` 416–420.
 - `anulm/model.py`: `from __future__ import annotations` 23,
   `AnuLM.update_expert_biases` 1071–1101.

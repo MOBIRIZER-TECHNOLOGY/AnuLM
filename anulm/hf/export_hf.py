@@ -78,7 +78,7 @@ def front_matter(args, cfg, ck) -> str:
     fine-tuned open encoder (ModernBERT), which gets its own tag list."""
     langs = ["hi", "en"]
     tags = ["mixture-of-experts", "moe", "hindi", "indic", "small-language-model",
-            "pytorch", "sarvam-architecture"]
+            "pytorch"]
     if cfg is not None and "code" in Path(cfg.tokenizer_path or "").stem:
         tags += ["code", "python"]
     if cfg is None:                                    # an open encoder (ModernBERT) fine-tuned here
@@ -321,7 +321,7 @@ def main() -> None:
                 "AutoConfig": "configuration_anulm.AnuLMConfig",
                 "AutoModelForCausalLM": "modeling_anulm.AnuLMForCausalLM",
             },
-            "architecture": "decoder-only MoE in the shape of Sarvam 30B; loads with transformers (trust_remote_code) or with model.py from the AnuLM repository",
+            "architecture": "AnuLM: decoder-only mixture-of-experts transformer; loads with transformers (trust_remote_code) or with anulm/model.py from the AnuLM repository",
             "config": cfg_d,
             "tokenizer_file": tok_file,
             "tokenizer_format": TOKENIZER_NOTE if tok_file else "bytes",

@@ -8,8 +8,8 @@ cannot do, and how to try it. Written 2026-09-18 from the files on disk;
 
 ## In one paragraph
 
-A 398M-parameter decoder-only mixture-of-experts model in the shape of
-Sarvam 30B (GQA attention, 24 routed experts, aux-loss-free balancing),
+A 398M-parameter decoder-only mixture-of-experts model (AnuLM: GQA
+attention, 24 routed experts, aux-loss-free balancing),
 174M parameters active per token, pretrained from scratch on one pass over
 2.78B tokens that are two-thirds Python, then instruction-tuned for one
 epoch on 1.38M exercise-style question/answer pairs. On the two standard
@@ -103,9 +103,8 @@ Where the parameters are:
 | output head | 33.6M |
 | dense MLP (layer 0) | 9.1M |
 
-What this shares with Sarvam 30B and what it deliberately changes is in
-`README.md` ("What is faithful" / "What is deliberately different") and
-`docs/ARCHITECTURE.md` §10.
+What each part of the model is, and the paper it comes from, is in
+`docs/ARCHITECTURE.md`.
 
 ## Training
 

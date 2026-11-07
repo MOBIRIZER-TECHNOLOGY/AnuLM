@@ -1,34 +1,18 @@
-AnuLM (formerly nanosarvam)
+AnuLM
 Copyright (c) 2026 The AnuLM authors
 
 This product includes software developed for this project (MIT, see LICENSE)
 and third-party material listed below.
 
 ===============================================================================
-1. REDISTRIBUTED THIRD-PARTY CODE
+1. THIRD-PARTY CODE
 ===============================================================================
 
-  sarvam/sarvam-30b/   config.json, configuration_sarvam_moe.py,
-                       modeling_sarvam_moe.py
-  sarvam/sarvam-105b/  the same three files, different implementation
-
-  Copyright (c) Sarvam AI. Licensed under the Apache License, Version 2.0.
-  Obtained unmodified from the Hugging Face repositories `sarvamai/sarvam-30b`
-  and `sarvamai/sarvam-105b`. NO CHANGES have been made to these files.
-
-  A copy of the Apache 2.0 licence is available at:
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Sarvam's own header in the 105B file records that their implementation is
-  "based on Llama and Deepseek MoE implementations ... modified to accommodate
-  Sarvam's MLA MoE architecture."
-
-  NO SARVAM MODEL WEIGHTS ARE USED OR REDISTRIBUTED HERE. The rest of this
-  project is an independent re-implementation of the published architecture,
-  in the sense that nanoGPT is a re-implementation of GPT-2.
-
-  The five `sarvam/*_annotated.py` files are original commentary written for
-  this project and are MIT, like the rest of the code.
+  None is redistributed in this repository. The architecture's ideas come
+  from published papers (docs/ARCHITECTURE.md, "Sources"); every file here was
+  written for this project and is MIT. No other model's weights are used.
+  Frozen encoders loaded at run time (Whisper-small, MIT; SigLIP, Apache 2.0)
+  are downloaded from their own sources, see section 4.
 
 ===============================================================================
 2. TRAINING DATA PROVENANCE  --  READ BEFORE ANY COMMERCIAL USE

@@ -3,8 +3,8 @@ Byte-level BPE, from scratch, stdlib only.
 
 Why this exists: the byte tokenizer costs 2.48 tokens per Devanagari character
 (docs/RESULTS.md §2). Every one of those is context, KV cache and latency. This
-is the nano version of Sarvam's actual moat — their 262,144-token, 22-language
-tokenizer — and it is the single largest efficiency lever in this project.
+is the single largest efficiency lever in this project: a tokenizer fitted to
+Hindi, English and Python cuts the tokens per word several-fold.
 
     python -m anulm bpe train  --data data/hindi.txt --vocab 16384 --out data/hi16k.json
     python -m anulm bpe encode --tokenizer data/hi16k.json --data data/hindi_big.txt \
@@ -218,12 +218,9 @@ class BPE:
 
     # ---------------- persistence ----------------
 
-    # The format id the project wrote before it was renamed on 2026-09-18.
-    # Every tokenizer trained until then carries it, including the four
-    # uploaded to the Hub beside the released weights, so load() keeps
-    # accepting it: the bytes after the type field are identical either way.
+    # The format id written into every saved tokenizer and checked on load.
     TYPE = "anulm-bpe"
-    TYPES = (TYPE, "nanosarvam-bpe")
+    TYPES = (TYPE,)
 
     def save(self, path: str | Path):
         """Write the merge list as JSON, the format `load` reads."""
@@ -234,8 +231,7 @@ class BPE:
 
     @classmethod
     def load(cls, path: str | Path) -> "BPE":
-        """Read a tokenizer `save` wrote; also accepts the pre-rename
-        ``nanosarvam-bpe`` type."""
+        """Read a tokenizer `save` wrote."""
         d = json.loads(Path(path).read_text(encoding="utf-8"))
         if d.get("type") not in cls.TYPES:          # a real check: python -O strips asserts
             raise ValueError(
@@ -351,7 +347,7 @@ def _stats(tok, text):
     words = len([c for c in CHUNK_RE.findall(text) if c.strip()])
     print(f"  bytes/token : {len(raw)/len(ids):5.2f}   (byte tokenizer: 1.00)")
     print(f"  tokens/word : {len(ids)/max(words,1):5.2f}   "
-          f"(Sarvam reports 1.4-2.1 on Indic; bytes were ~15-20)")
+          f"(bytes were ~15-20)")
     rt = tok.decode(ids)
     print(f"  exact roundtrip: {rt == text}")
 

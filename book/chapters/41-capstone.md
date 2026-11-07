@@ -9,7 +9,7 @@ pinned: "@b42998d"
 
 This chapter is a lab in four checkpoints, each ending in a number to compare:
 
-1. **Train** the 17M preset `nano_30b` on text. Its loss starts near ln V and
+1. **Train** the 17M preset `tiny_gqa` on text. Its loss starts near ln V and
    falls along a recorded curve.
 2. **Trace** one prediction through the code of every earlier chapter, printing
    shapes that match Appendix A.
@@ -42,7 +42,7 @@ run measured at @fdbb09a, with 76 tests; at this pin the suite holds 80 (41.5).
 The run you will reproduce is the repository's own reference run, on the CPU:
 
 ```bash
-python -m anulm train --preset 30b --steps 1000 --device cpu --out ckpt_capstone.pt
+python -m anulm train --preset tiny-gqa --steps 1000 --device cpu --out ckpt_capstone.pt
 ```
 
 With no `--data`, `anulm/training/train.py` reads `data/input.txt`, downloading
@@ -56,7 +56,7 @@ For a one-minute check first, run the first 50 steps, as the repository's CI
 does (`.github/workflows/tests.yml` line 132):
 
 ```bash
-python -m anulm train --preset 30b --steps 50 --eval-every 25 --device cpu --out ckpt_check.pt
+python -m anulm train --preset tiny-gqa --steps 50 --eval-every 25 --device cpu --out ckpt_check.pt
 ```
 
 These are exactly the first 50 steps of the 1,000-step run. The warmup lasts
@@ -73,17 +73,15 @@ def lr_at(step: int, args, start_step: int = 0) -> float:
 
 `docs/TUTORIAL.md` reports this check's validation loss as 2.7868.
 
-`--preset 30b` picks a configuration, and `--cfg KEY=VALUE` can override any
+`--preset tiny-gqa` picks a configuration, and `--cfg KEY=VALUE` can override any
 field of it; a misspelt field is a usage error.
 
 > **Details.** How `train.py` builds the configuration:
 >
-> **In the repo** · `anulm/training/train.py` · `main` · lines 712–731 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `main` · lines 723–740 · @WORKTREE
 >
 > ```python
->     builder = {"30b": AnuLMConfig.nano_30b,
->                "105b": AnuLMConfig.nano_105b,
->                "350m": AnuLMConfig.nano_350m}[args.preset]
+>     builder = PRESETS[args.preset]
 >     overrides = {}
 >     for kv in args.cfg:
 >         key, _, val = kv.partition("=")
@@ -103,14 +101,15 @@ field of it; a misspelt field is a usage error.
 >     kw.update(overrides)                      # --cfg wins over the named flags
 > ```
 >
-> - **Lines 712–714** map the preset name to an `AnuLMConfig` static method
->   (Appendix B lists every field).
-> - **Lines 716–723** parse each `KEY=VALUE`. A misspelt field makes
+> - **Line 723** maps the preset name to an `AnuLMConfig` static method
+>   through the table `PRESETS` (lines 30–32: `tiny-gqa`, `tiny-mla`, `350m`,
+>   `1b`; Appendix B lists every field).
+> - **Lines 725–732** parse each `KEY=VALUE`. A misspelt field makes
 >   `p.error` print the usage and exit with status 2 (a real error, which
 >   `python -O` cannot strip as it would an `assert`); the field's declared
 >   type picks the cast, so
 >   `--cfg n_kv_head=1 sliding_window=None` gives an int and a `None`.
-> - **Lines 726–731** add the command-line flags and the data's vocabulary
+> - **Lines 735–740** add the command-line flags and the data's vocabulary
 >   (259 for bytes), then let `--cfg` override them all.
 
 Before training you can check two things: the parameter count, which
@@ -129,7 +128,7 @@ def first_loss() -> None:
     # ...
     sampler = T.WindowSampler(len(train_data), 256, 16, 1337)
     # ...
-    cfg = M.AnuLMConfig.nano_30b(block_size=256, yarn=False, yarn_original_context=256, moe_impl="sparse",
+    cfg = M.AnuLMConfig.tiny_gqa(block_size=256, yarn=False, yarn_original_context=256, moe_impl="sparse",
                                  vocab_size=259, tokenizer_path=None, seq_balance_alpha=0.0,
                                  router_z_alpha=0.0, sliding_window=None, max_window_layers=0)
     model = M.AnuLM(cfg)
@@ -144,7 +143,7 @@ def first_loss() -> None:
     val, sem = T.evaluate(model, val_data, args)
 ```
 
-The keyword arguments are those of lines 726–730 for this command. The sampler
+The keyword arguments are those of lines 735–739 (@WORKTREE) for this command. The sampler
 has its own random generator, so it leaves the weights' seed untouched, and its
 first draw is the batch `anulm/training/train.py` trains on at step 0.
 
@@ -712,7 +711,7 @@ fields where ckpt_base_v2.pt differs from released():
   router_z_alpha         released() 0.0            checkpoint 0.001
   yarn_original_context  released() 256            checkpoint 1024
 params: 397,659,648 total, 173,526,528 active; stored step 1,899,999, val 3.3523 +/- 0.0491 ({'mode': 'strided', 'windows': 400, 'block_size': 1024})
-against nano_30b (17,440,384 / 6,602,368): 22.8x the parameters, 26.3x the active
+against tiny_gqa (17,440,384 / 6,602,368): 22.8x the parameters, 26.3x the active
 ```
 
 *verified*. None changes a parameter's shape: they are training settings, the
@@ -805,7 +804,7 @@ extensions, on the released model:
 
 ## 41.8  Exercises
 
-1. Run `python -m anulm train --preset 30b --steps 1000 --device cpu --out
+1. Run `python -m anulm train --preset tiny-gqa --steps 1000 --device cpu --out
    ckpt_kv1.pt --cfg n_kv_head=1`, with its own `--out` so that checkpoint 1's
    file survives. Before it starts, predict the parameter count (Chapter 20's
    eight terms; D = 384, D<sub>h</sub> = 64, L = 8).
@@ -841,7 +840,7 @@ toy.
 
 ## Key points
 
-- `python -m anulm train --preset 30b --steps 1000 --device cpu` builds a
+- `python -m anulm train --preset tiny-gqa --steps 1000 --device cpu` builds a
   17,440,384-parameter model whose first logged loss, 5.6203, and validation
   loss before any step, 5.6090, sit near ln 259 = 5.5568.
 - Expect val 1.52 ± 0.03 after 1,000 steps; the first 50 steps, run alone as CI
@@ -877,6 +876,8 @@ Repository evidence, all at @b42998d:
   726–731, the step 855–878, evaluation and saves 891–908), `load_bytes` 62–98,
   `WindowSampler` 104–160, `lr_at` 375–400, `evaluate` 477–533; defaults:
   `--steps` 2000 (line 548), `--warmup` 100 (554), `--device` (575–576).
+- `anulm/training/train.py` at @WORKTREE: `PRESETS` 30–32; in `main`, the
+  preset builder 723–732 and the keyword arguments 735–740.
 - `.github/workflows/tests.yml` line 132: the CI's 50-step run.
 - `anulm/model.py`: `AnuLM.generate` 1115–1180 (greedy and sampling 1161–1169),
   `AnuLM.num_params` 1104–1113.

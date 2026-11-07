@@ -1,7 +1,7 @@
 # Project map: what this is, how it fits together, and where the data comes from
 
-`docs/ARCHITECTURE.md` explains how Sarvam 30B/105B are built and which of
-those choices survived at nano scale. This file is the layer above: the whole
+`docs/ARCHITECTURE.md` explains each part of the model and what training it
+measured. This file is the layer above: the whole
 project as a system — every stage from a public dataset to a served model, which
 file owns each stage, and what has actually been measured.
 
@@ -15,8 +15,7 @@ For the corpora themselves — links, licences, fetch commands, disk sizes — s
 
 ## 1. What the thing is
 
-One sparse mixture-of-experts transformer, carrying Sarvam's architecture,
-trained from scratch on one consumer GPU: 353M parameters with the byte
+One sparse mixture-of-experts transformer, trained from scratch on one consumer GPU: 353M parameters with the byte
 vocabulary, 397.7M (about 174M active per token) with the 32k vocabulary of
 every released model. The `350m` preset:
 

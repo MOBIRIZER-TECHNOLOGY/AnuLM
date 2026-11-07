@@ -329,7 +329,7 @@ def all_parameters_receive_gradients():
 After one backward pass, any parameter whose `.grad` is still `None` was never
 on a path to the loss. The batch of 512 tokens is large enough that every
 expert is chosen at least once; `anulm/model.py`'s own smoke test, with 128 tokens,
-reports 45 parameters without a gradient in `nano_30b`, all belonging to
+reports 45 parameters without a gradient in `tiny_gqa`, all belonging to
 experts that batch happened to miss (Chapter 3).
 
 Gradients also give evidence of causality: a zero gradient is necessary for

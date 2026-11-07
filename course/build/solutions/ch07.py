@@ -4,7 +4,7 @@ Reference solution for Chapter 7: mixture of experts.
 Router, MoE (sparse dispatch) and ExpertBlock match model.py's Router, MoE and
 MoE layers exactly. MoELM is the whole model: with these, a MoELM's weights
 load into model.py's AnuLM (grouped-query attention) and give the same logits,
-which course/checks/ch07.py proves. Its defaults are the `30b` preset.
+which course/checks/ch07.py proves. Its defaults are the `tiny-gqa` preset.
 """
 
 from __future__ import annotations
@@ -132,7 +132,7 @@ class ExpertBlock(nn.Module):
 
 
 class MoELM(nn.Module):
-    """The whole AnuLM (grouped-query attention). Defaults are the `30b` preset."""
+    """The whole AnuLM (grouped-query attention). Defaults are the `tiny-gqa` preset."""
 
     def __init__(self, vocab_size: int = 259, block_size: int = 256, n_layer: int = 8, hidden_size: int = 384,
                  n_head: int = 6, head_dim: int = 64, n_kv_head: int = 2, use_qk_norm: bool = True,

@@ -166,8 +166,8 @@ def main():
     print(f"bytes per character: {len(raw_b)/len(txt):.2f}   (ASCII 1.00, Devanagari 3.00)")
     print(f"Devanagari fraction: {devanagari_ratio(txt):.1%}")
     print(f"\nA byte-level model sees {len(raw_b)/len(txt):.2f}x more tokens per character "
-          f"here than on English.\nThat is the fertility problem Sarvam's 262k-token "
-          f"tokenizer exists to solve.")
+          f"here than on English.\nThat is the fertility problem a BPE tokenizer "
+          f"(anulm/bpe.py) exists to solve.")
 
 
 if __name__ == "__main__":

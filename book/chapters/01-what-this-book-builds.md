@@ -21,9 +21,12 @@ text, and it does that well enough to sound sure of itself. This book shows how
 that one job is built, line by line, in a model you can download and run.
 
 That model is AnuLM, a 400M-parameter language model trained from scratch on
-Hindi, English and Python on one consumer GPU. Its architecture follows the
-configurations and modelling code of Sarvam AI's released 30B and 105B models
-[R49], scaled down. It is a mixture of experts: of its 397.7M parameters,
+Hindi, English and Python on one consumer GPU. Its architecture combines
+published ideas, each credited to its paper where it is built: grouped-query
+attention [R12], multi-head latent attention [R19], sigmoid routing with
+bias-only load balancing [R20], SwiGLU [R11], RMSNorm [R08], QK-norm [R14]
+and YaRN [R07]. It is a
+mixture of experts: of its 397.7M parameters,
 173.5M are used for any one token (Chapter 20). The released model is
 `AnuLM-Base-v2-400M`, the file `ckpt_base_v2.pt`, published on Hugging Face as
 `toonist/AnuLM-Base-v2-400M`.
@@ -46,7 +49,7 @@ rest of the book (1.5–1.7).
 | softmax | the function that turns logits into probabilities that sum to 1 (Chapter 5) |
 | loss | the average of −log p over the true next tokens (Chapter 3) |
 | checkpoint | a file of trained weights and their configuration, such as `ckpt_base_v2.pt` |
-| preset | a named configuration of sizes in `anulm/model.py`, such as `nano_30b` |
+| preset | a named configuration of sizes in `anulm/model.py`, such as `tiny_gqa` |
 | the pin | commit `b42998d`, which every line number in this book refers to: the `anulm/` package layout after a code-quality pass, on the GitHub branch `port-bundle-fixes` (1.7) |
 
 ---
@@ -324,12 +327,13 @@ Grouped by role, as `ch01_four_steps.py` counts them at the pin:
 | tools | 9 | 1,306 | `tools/sweep.py`, `tools/update_tasks.py` | |
 | `course/` | 87 | 13,589 | the lab book's code: stubs, solutions, checks | Build it boxes |
 | `experiments/` | 18 | 3,699 | run scripts, among them the released runs' | V, VII |
-| `sarvam/` | 9 | 3,409 | annotated copies of Sarvam's modelling code (Apache 2.0) | IV |
 | `examples/` | 3 | 683 | API usage examples | IX |
 | `book/` | 84 | 17,145 | this book's examples and figure tools | every chapter |
 
-*verified*: 294 Python files, 93 of them in `anulm/`, `tests/`, `tools/` and
+*verified*: 285 Python files, 93 of them in `anulm/`, `tests/`, `tools/` and
 the root, counted by `ch01_four_steps.py` with `git ls-tree` at the pin. The
+count leaves out one folder of third-party reference code that the pin held
+and the repository has since removed. The
 roles are the book's grouping, by package folder; Appendix F.7 shows the code
 that counts them.
 
@@ -348,10 +352,10 @@ command name to a module of the package.
 
 From a fresh clone, `quickstart.py --train` trains and samples a model:
 
-> **In the repo** · `anulm/quickstart.py` · `train` · lines 185–192 · @b42998d
+> **In the repo** · `anulm/quickstart.py` · `train` · lines 185–192 · @WORKTREE
 
 ```python
-    rc = run([sys.executable, "-u", "-m", "anulm", "train", "--preset", "30b", "--steps", "200",
+    rc = run([sys.executable, "-u", "-m", "anulm", "train", "--preset", "tiny-gqa", "--steps", "200",
               "--eval-every", "50", "--out", "ckpt_quickstart.pt"])
     if rc:
         print("\nTraining failed. The full log is above; docs/TUTORIAL.md has a")
@@ -363,21 +367,22 @@ From a fresh clone, `quickstart.py --train` trains and samples a model:
 
 It runs `anulm/training/train.py` for 200 steps, then `anulm/inference/sample.py` on the result. (`--demo`,
 line 226, instead downloads a released checkpoint, the coder model, and
-serves it.) The `30b`
+serves it.) The `tiny-gqa`
 preset is a method on `AnuLMConfig`:
 
-> **In the repo** · `anulm/model.py` · `AnuLMConfig.nano_30b` · lines 159–171 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLMConfig.tiny_gqa` · lines 154–167 · @WORKTREE
 
 ```python
     @staticmethod
-    def nano_30b(**kw) -> "AnuLMConfig":
-        """GQA + high rope_theta, no YaRN. Sarvam 30B's shape."""
+    def tiny_gqa(**kw) -> "AnuLMConfig":
+        """17M total / 6.6M active: grouped-query attention, high rope_theta,
+        no YaRN. The quickstart and test model."""
         cfg = dict(
             attn="gqa", n_layer=8, hidden_size=384, n_head=6, head_dim=64,
             n_kv_head=2, num_experts=16, num_experts_per_tok=2,
-            moe_intermediate_size=96,      # hidden/4, as in the real model
+            moe_intermediate_size=96,      # hidden/4
             intermediate_size=768,         # hidden*2
-            n_group=1, topk_group=1,       # grouping is a no-op, like the 30B
+            n_group=1, topk_group=1,       # no group-limited routing
             rope_theta=1e6, yarn=False,
         )
         cfg.update(kw)
@@ -457,7 +462,7 @@ Every number and section carries a label:
 | `MEASURED` | the section rests on a measurement |
 | `EXTENSION`, `ANALOGY`, `RULE OF THUMB`, `IMPLEMENTATION-DEPENDENT` | a proposed change; a teaching shortcut; a heuristic; behaviour that depends on the PyTorch version or hardware |
 
-A bracketed ID such as [R49] cites an entry of the book's research register,
+A bracketed ID such as [R12] cites an entry of the book's research register,
 listed at the end of each chapter and in full in Appendix E.
 
 `IN THE REPO`
@@ -524,11 +529,17 @@ used only for the claim in its register row:
 
 | ID | Used for | Status |
 |---|---|---|
-| [R49] | the configurations and modelling code AnuLM follows (Sarvam 30B and 105B) | CHECKED |
+| [R12] | grouped-query attention, AnuLM's default attention | CHECKED |
+| [R19] | multi-head latent attention, the `tiny-mla` preset's attention | CHECKED |
+| [R20] | the router's sigmoid scores and bias-only load balancing | CHECKED |
+| [R11] | SwiGLU, the experts' MLP | CHECKED |
+| [R08] | RMSNorm | CHECKED |
+| [R14] | QK-norm | CHECKED |
+| [R07] | YaRN, the context extension | CHECKED |
 
 Repository evidence, all at @b42998d:
 - `anulm/model.py`: banner lines 36, 222, 257, 422, 498, 582, 794;
-  `AnuLMConfig.nano_30b` 159–171; `Block` 797–824 (Figure 1.3's sublayers;
+  `AnuLMConfig.tiny_gqa` 154–167 (@WORKTREE); `Block` 797–824 (Figure 1.3's sublayers;
   layer 0 dense, line 811); `AnuLM.__init__` 827–843;
   `AnuLM.forward` 915–918; `AnuLM.generate` 1115–1180 (loop 1144–1173;
   the `temperature <= 0` greedy branch 1161–1162).

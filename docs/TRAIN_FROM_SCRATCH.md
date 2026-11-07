@@ -6,24 +6,26 @@ that chats, answers from a passage, routes a message to an intent,
 transcribes English and Hindi speech, and describes and answers questions
 about photos.
 
-You do not have to do everything at once. There are three routes. Pick the
-one your machine and your patience allow, and move up later.
+You do not have to do everything at once. There are four routes. Pick the
+one your machine and your patience allow, and move up later. Route D, the 1B
+base on a commercially clean corpus, is in training on the project's machine
+now; its section says what has been measured so far and what has not.
 
 Every command below exists in this repository with the flags shown. Every
 number comes from a log or a document named next to it. Where something was
 not recorded, the guide says so.
 
-## The three routes
+## The four routes
 
-| | A. Learn the loop | B. Omni from the released base | C. Everything from nothing |
-|---|---|---|---|
-| what you train | a 17M toy model, or a small Hindi model | the chat model and the Omni model, on top of the released pretrained base | your own tokenizer files, your own 400M base, then everything in B |
-| GPU | none needed | NVIDIA, 16 GB VRAM, CUDA, bf16 | the same |
-| RAM | 8 GB | 32 GB (64 GB used here) | the same |
-| disk | under 1 GB | about 150 GB | about 150 GB + about 85 GB |
-| downloads | small: 1 MB of Shakespeare, part of a Wikipedia dump | about 60 GB, one gated set | about 60 GB + about 50 GB |
-| time | 30 s (GPU) to 30 min (CPU) | download time + about 6 h of GPU | B + about 7 days of GPU for the base |
-| what you get | a model that writes Shakespeare-shaped or Hindi-shaped text | `ckpt_omni.pt`, an exported folder, and a report card | the same, with a base you trained |
+| | A. Learn the loop | B. Omni from the released base | C. Everything from nothing | D. The 1B base on clean data |
+|---|---|---|---|---|
+| what you train | a 17M toy model, or a small Hindi model | the chat model and the Omni model, on top of the released pretrained base | your own tokenizer files, your own 400M base, then everything in B | a 1,008M base (284M active) on English, Hindi and permissively licensed Python |
+| GPU | none needed | NVIDIA, 16 GB VRAM, CUDA, bf16 | the same | the same, 16 GB |
+| RAM | 8 GB | 32 GB (64 GB used here) | the same | the same |
+| disk | under 1 GB | about 150 GB | about 150 GB + about 85 GB | about 100 GB (raw parquet, `data/v2`, `data/v3`, checkpoints) |
+| downloads | small: 1 MB of Shakespeare, part of a Wikipedia dump | about 60 GB, one gated set | about 60 GB + about 50 GB | about 50 GB (C's English and Hindi) + 3.4 GB of code read remotely |
+| time | 30 s (GPU) to 30 min (CPU) | download time + about 6 h of GPU | B + about 7 days of GPU for the base | a few hours of CPU for the data + about 24 days of GPU (in progress) |
+| what you get | a model that writes Shakespeare-shaped or Hindi-shaped text | `ckpt_omni.pt`, an exported folder, and a report card | the same, with a base you trained | `ckpt_base_1b.pt`, a base for route B |
 
 Sources for the table: route A from `README.md` and `docs/TUTORIAL.md` §0,
 §3 and §4. Route B from `docs/OMNI.md` "What you need" and the logs of the
@@ -128,7 +130,7 @@ CPU or GPU):
 
 ```bash
 python -m anulm fetch_hindi --mb 8 --out data/hindi.txt
-python -m anulm train --preset 30b --data data/hindi.txt --steps 1000
+python -m anulm train --preset tiny-gqa --data data/hindi.txt --steps 1000
 python -m anulm sample --ckpt ckpt.pt --prompt "भारत"
 ```
 
@@ -511,6 +513,90 @@ The checks and expected numbers are in B3. Your numbers will move with your
 base; if your base reached about 3.35, they should land near B3's.
 
 ---
+
+## Route D: the 1B base, from scratch, on clean data (about 3 weeks of GPU)
+
+**Status (2026-11-07): in training on the project's machine, not finished.**
+The data steps below were run end to end; the training numbers are from its
+first 75,000 steps. The plan, the go/no-go checks and the reasons are in
+`docs/PLAN_1B.md`.
+
+Route D trains a 1,008M-parameter base (284M active per token) on a corpus
+with no copyleft and no model-generated code: base v2's English and Hindi,
+plus Python only from permissively licensed (MIT, Apache-2.0, BSD, ISC, CC0,
+Unlicense) GitHub repositories. Any model built on it inherits clean data
+provenance. It needs the same machine as route C: one 16 GB NVIDIA GPU,
+32 GB RAM or more, and about 100 GB of free disk.
+
+### D1. English and Hindi
+
+Do route C's C1 and C2, but only the English, Hindi web and Hindi Wikipedia
+downloads; skip every Python source. Then build the token files:
+
+```bash
+python experiments/build_v2.py
+```
+
+With no Python files on disk, `build_v2.py` writes English, Hindi web and
+Hindi Wikipedia only. **Check:** `data/v2/meta.json` should show about
+6.00B, 4.50B and 0.066B training tokens for the three sources.
+
+### D2. Permissively licensed Python
+
+```bash
+python -I experiments/build_code_clean.py --out data/code_clean --target-gb 3.4
+```
+
+Reads `codeparrot/github-code-clean` from the Hugging Face Hub shard by shard,
+column by column, keeping only Python files whose repository licence is on
+the list above, and applies StarCoder-style quality filters and exact
+deduplication. Each kept file keeps its repository, path and licence.
+`progress.json` lets a stopped run resume.
+
+- **Check:** the training machine kept 530,669 files, 3.43 GB, from 107 of
+  880 shards; 21,667 failed the filters; no shard failed.
+- **Time:** 49 minutes on the training machine; it is bound by download speed.
+
+### D3. Assemble the corpus
+
+```bash
+python -I experiments/build_v3.py --v2 data/v2 --code data/code_clean --out data/v3
+```
+
+Copies D1's English and Hindi tokens unchanged (they are the start of
+`data/v2`'s files; the script checks the boundary), drops any code file that
+shares a 13-word window with an MBPP or HumanEval prompt, solution or test,
+and appends the rest, encoded with `multi32k`.
+
+- **Needs:** the MBPP and HumanEval parquet files under `data/raw/` (route
+  C2's two benchmark `fetch_hf` lines).
+- **Check:** `data/v3/meta.json` on the training machine says 11,334,377,956
+  training and 113,708,517 validation tokens; Python 767,775,614 tokens from
+  528,850 files, 1,819 dropped for benchmark overlap.
+- **Time:** 16 minutes.
+
+### D4. Pretrain
+
+```bash
+bash experiments/base_1b_train.sh 2000    # a first test: stop at step 2,000, eval and save
+bash experiments/base_1b_train.sh         # the real run; resumes from the test
+```
+
+`--preset 1b` with `--grad-ckpt` and `--optimizer adamw-lowmem` (AdamW with
+its two moments in bf16: 12 bytes per parameter instead of 16). Without both,
+1B does not fit 16 GB.
+
+- **Check early:** the log should show `params: 1007.51M total, 284.00M
+  active/token`. On the training machine: loss 10.63 at step 0, 6.32 at
+  step 1,000; 5,360 tokens/s and about 760 ms per step; 13.8 GB of the
+  16 GB card in use. Validation loss 4.217 at step 70,000.
+- **How long:** 2,770,000 steps, one pass over `data/v3`, about 24 days at
+  that speed. The schedule is warmup-stable-decay, so the run can be cut short
+  by restarting with a smaller `--steps` before the last 16% (the decay) begins.
+- **Resume:** run the same command again; it adds `--resume` when
+  `ckpt_base_1b.pt.last` exists. At most 10,000 steps (about 2 hours) are lost.
+- **Not yet measured:** the final validation loss, and anything built on this
+  base (chat, Omni). Route B's pipeline will run on it once pretraining ends.
 
 ## Licensing: what the Omni recipe may and may not learn from
 

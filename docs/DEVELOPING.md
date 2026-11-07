@@ -9,7 +9,7 @@ python -m tests.test_model                   # 80 tests, under a minute on CPU �
 ```
 
 Everything runs from the repository root (this file lives in `docs/`, the
-annotated Sarvam code in `sarvam/`, the model beside them). One third-party
+model in `anulm/`). One third-party
 dependency for the model, training, sampling, serving and every evaluation:
 **torch**. No transformers, no datasets, no numpy. **safetensors** is used
 only to read and write the exported checkpoint folders (`export_hf.py`,
@@ -91,7 +91,6 @@ does the same from anywhere.
 │                         DATASETS.md, PUBLISHING.md, history/ (the operations log, finished plans), results/ (raw measurement files), TODO.md,
 │                         curves/ (val-loss curves of the recorded runs)
 ├── golden/               the golden set itself; committed, unlike data/
-├── sarvam/               Sarvam's released modelling code + the five annotated walkthroughs
 ├── space/                README front matter + requirements for a Gradio Space running app.py
 ├── web/index.html        the page serve.py serves
 ├── .github/              CI (tests on Ubuntu and Windows, CPU wheel) and the issue forms
@@ -167,8 +166,8 @@ silently rotting.
 ## Training
 
 ```bash
-python -m anulm train --preset 30b --steps 2000
-python -m anulm train --preset 105b --data data/hindi.txt --block-size 512 \
+python -m anulm train --preset tiny-gqa --steps 2000
+python -m anulm train --preset tiny-mla --data data/hindi.txt --block-size 512 \
                 --batch-size 8 --steps 2000
 ```
 
@@ -220,7 +219,7 @@ first few thousand steps and to cross back below the old best around the
 midpoint of the extension — RESULTS.md §21 has the curve. Copy the `.pt`
 and `.pt.last` to a new name first so the original stays put.
 
-**Budget.** On this CPU, `nano_30b` runs ~2200–3000 tok/s and `nano_105b`
+**Budget.** On this CPU, `tiny_gqa` runs ~2200–3000 tok/s and `tiny_mla`
 ~1300–1400. A 2000-step run at batch 8 × block 512 is roughly an hour. Plan
 long runs with `--resume` in mind. On the RTX 5070 Ti the combo preset runs
 ~10k tok/s: 36k steps at batch 8 × 512 is four hours, and the coder plan's
@@ -262,14 +261,15 @@ pack in two minutes and train through in ~7 hours.
 ## Extending
 
 **A new preset** — add a `@staticmethod` to `AnuLMConfig` beside
-`nano_30b` / `nano_105b` / `nano_350m`, then add it to `train.py`'s `--preset`
+`tiny_gqa` / `tiny_mla` / `base_350m`, then add it to `train.py`'s `--preset`
 choices. For a one-off shape, `--cfg key=value` on an existing preset is
 enough and is what every ablation and the §12 combo configuration use; a
 preset is worth adding once a configuration is reused across runs.
 `__post_init__` validates the combination; in particular it rejects a
 `num_experts_per_tok` larger than `topk_group` groups can supply, which is a
-footgun the real Sarvam code leaves unguarded. `param_count_matches_analysis`
-pins the `30b` and `105b` shapes to their analytical counts; add a line for a
+silent misconfiguration. `param_count_matches_analysis`
+pins the `tiny-gqa` and `tiny-mla` shapes to their analytical counts, and
+`the_1b_preset_is_the_shape_the_1b_run_trains` pins `1b`; add a line for a
 new preset so its shape cannot drift silently either.
 
 **A new attention type** — implement
@@ -305,12 +305,8 @@ has to get right, both learned the hard way and both now tested:
 
 **A different tokenizer** — the byte tokenizer (`vocab_size=259`) and the
 from-scratch BPE (`bpe.py`, `bpe.py train / encode`) both exist. A tokenizer
-file is `{"type": "anulm-bpe", "version": 1, "merges": [...]}`; `BPE.load`
-also accepts `"nanosarvam-bpe"`, the id written before the 2026-09-18
-rename, because every tokenizer trained until then carries it — including
-the four uploaded beside the released weights. `bpe_files_load_under_both_format_ids`
-pins that, and the committed tokenizers under `data/` were migrated to the
-new id in place, merges byte-for-byte unchanged. `train.py`
+file is `{"type": "anulm-bpe", "version": 1, "merges": [...]}`, and
+`BPE.load` refuses any other id (`bpe_files_load_and_foreign_ones_are_refused`). `train.py`
 takes either a text file or a `.bin` from `bpe.py encode`, which carries the
 vocab size, the EOS id and the bytes-per-token needed to report bits/byte.
 Anything else needs to produce the same `.bin` dict. Read the fertility
@@ -375,7 +371,7 @@ Traps specific to small-VRAM Windows machines:
   ~12x slower (measured: 443M params peaked 9.74 GB on an 8 GB card and crawled
   at 130 tok/s). If tok/s is inexplicably terrible, check
   `torch.cuda.max_memory_allocated()` against actual VRAM.
-- **`--grad-ckpt` is mandatory for `nano_350m`.** Without it the model peaks at
+- **`--grad-ckpt` is mandatory for `base_350m`.** Without it the model peaks at
   15.75 GB; with it, 6.34 GB and 4955 tok/s. The ~30% recompute cost is far
   cheaper than spilling.
 - **Optimizer choice is a memory knob.** AdamW costs 16 bytes/param
@@ -400,7 +396,7 @@ Stated plainly so nobody rediscovers them:
   a 386M MoE at batch 1 issues ~1,000 small kernels per token; on this machine
   that is ~33 tok/s with `--moe-impl grouped` and there is no C++ compiler for
   Inductor / CUDA graphs to fuse them. That, not the model, is the ceiling.
-- **No distributed training.** No expert parallelism, unlike the real 105B.
+- **No distributed training.** No expert parallelism: one GPU by design.
 - **The Hindi corpus has minor wikitext leakage** (~6 `{{` per MB, some
   `ref /ref` where HTML-escaped tags were entity-decoded after tag-stripping).
   Roughly 0.01% of text. `strip_wikitext` in `fetch_hindi.py` is a scrubber, not
@@ -422,17 +418,8 @@ Stated plainly so nobody rediscovers them:
 - **Byte-level models emit invalid UTF-8 mid-sequence**, especially early in
   training and always at a truncated tail. Decode with `errors="replace"`.
 
-## Reading the architecture study
+## Reading the architecture
 
-`sarvam/` at the repository root holds Sarvam's released code plus annotated
-walkthroughs. Read [ARCHITECTURE.md](ARCHITECTURE.md) first for the summary,
-then the annotated files beside the originals. Each AnuLM module names
-its counterpart:
-
-| AnuLM | annotated in `sarvam/` |
-| --- | --- |
-| `GQAttention` | `gqa_forward_annotated.py` |
-| `MLAttention` | `mla_forward_annotated.py` |
-| `Router`, `MoE` | `moe_routing_annotated.py` |
-| `Rotary` + YaRN | `yarn_rotary_annotated.py` |
-| `Block`, `AnuLM` | `decoder_and_model_annotated.py` |
+[ARCHITECTURE.md](ARCHITECTURE.md) describes each part of `anulm/model.py`
+(`GQAttention`, `MLAttention`, `Router` and `MoE`, `Rotary` with YaRN, `Block`
+and `AnuLM`), the paper each comes from, and what training it here measured.

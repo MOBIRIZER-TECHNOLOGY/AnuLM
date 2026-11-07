@@ -124,8 +124,8 @@ def cfg_overrides(old: AnuLMConfig, new: AnuLMConfig, preset: str = "350m") -> l
     """`--cfg KEY=VALUE` items that rebuild `new` from train.py's `--preset` (base v2
     was trained with 350m). The fields train.py sets from the data and its own
     flags are left out."""
-    base = {"30b": AnuLMConfig.nano_30b, "350m": AnuLMConfig.nano_350m,
-            "105b": AnuLMConfig.nano_105b}[preset]()
+    from anulm.training.train import PRESETS
+    base = PRESETS[preset]()
     out = []
     for f in dataclasses.fields(AnuLMConfig):
         v = getattr(new, f.name)
@@ -143,7 +143,7 @@ def main() -> None:
     ap.add_argument("--insert-after", type=int, nargs="*", default=[11, 14, 17, 19])
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--print-cfg", action="store_true", help="only print train.py --cfg overrides")
-    ap.add_argument("--preset", default="350m", choices=("30b", "350m", "105b"),
+    ap.add_argument("--preset", default="350m", choices=("tiny-gqa", "tiny-mla", "350m", "1b"),
                     help="the train.py --preset the overrides apply to")
     ap.add_argument("--sampler-from", help="a .last resume point whose data position (and eval spec) "
                     "to carry over, so training continues on the windows that run never read")

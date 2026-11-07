@@ -9,7 +9,7 @@ one to continue Hindi or English prose with. Full log: `docs/RESULTS.md`
 
 **Licence: CC BY-SA 4.0.** Hindi Wikipedia and Wikisource are CC BY-SA;
 C4 is ODC-BY; the Python slice is codeparrot-clean, de-duplicated GitHub
-Python with mixed licences. Not affiliated with Sarvam AI, AI4Bharat,
+Python with mixed licences. Not affiliated with AI4Bharat,
 BharatGen or the Government of India.
 
 ## What it does
@@ -40,9 +40,8 @@ QK-norm, RoPE θ = 1,000,000, sliding window 256 on layers 0–9, a dense
 SwiGLU MLP on layer 0 and 24 routed experts of 192 with top-4 routing on
 layers 1–19, aux-loss-free bias balancing (`bias_update_rate` 3e-3), no
 shared expert, context 512, 32,768-entry vocabulary, untied embeddings.
-397.7M parameters, 173.5M active per token. An independent
-re-implementation of the Sarvam 30B design; `docs/ARCHITECTURE.md` §10
-says which of Sarvam's choices held up at this scale.
+397.7M parameters, 173.5M active per token. `docs/ARCHITECTURE.md`
+describes each part and what training it measured.
 
 ## Use
 

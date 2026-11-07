@@ -416,13 +416,13 @@ def fig_18_imbalance():
 
 # --------------------------------------------------------------------------- Ch 19
 def fig_19_mla():
-    cfg = M.AnuLMConfig.nano_105b()
+    cfg = M.AnuLMConfig.tiny_mla()
     D, H, Dc, Dr, Dn, Dv = (cfg.hidden_size, cfg.n_head, cfg.kv_lora_rank, cfg.qk_rope_head_dim,
                             cfg.qk_nope_head_dim, cfg.v_head_dim)
     assert (D, H, Dc, Dr, Dn, Dv) == (384, 6, 48, 24, 48, 48)
     W, H_ = 760, 520
     b = [text(20, 28, "Latent attention, one layer: cache a latent and one rotary key", 15, weight=700, family=SERIF),
-         text(20, 48, f"model.py lines {_lines(M.MLAttention)} · shapes for nano_105b: D = {D}, H = {H}, Dc = {Dc}, Dr = {Dr}, "
+         text(20, 48, f"model.py lines {_lines(M.MLAttention)} · shapes for tiny_mla: D = {D}, H = {H}, Dc = {Dc}, Dr = {Dr}, "
                       f"Dn = {Dn}, Dv = {Dv}", 12, "f-muted", MUTED)]
     b += _box(20, 230, 100, 54, "x", "(B, S, D)")
     # query branch
@@ -469,20 +469,15 @@ def fig_19_mla():
 
 
 def fig_19_cache():
-    s = json.loads((BOOK.parent / "sarvam" / "sarvam-105b" / "config.json").read_text(encoding="utf-8"))
-    s30 = json.loads((BOOK.parent / "sarvam" / "sarvam-30b" / "config.json").read_text(encoding="utf-8"))
-    c105, r = M.AnuLMConfig.nano_105b(), released()
-    rows = [("nano_105b (MLA)", c105.kv_lora_rank + c105.qk_rope_head_dim,
-             c105.n_head * (c105.qk_nope_head_dim + c105.qk_rope_head_dim + c105.v_head_dim)),
-            ("released 400M (GQA)", 2 * r.n_kv_head * r.head_dim, 2 * r.n_head * r.head_dim),
-            ("Sarvam 30B config (GQA)", 2 * s30["num_key_value_heads"] * s30["head_dim"],
-             2 * s30["num_attention_heads"] * s30["head_dim"]),
-            ("Sarvam 105B config (MLA)", s["kv_lora_rank"] + s["qk_rope_head_dim"],
-             s["num_attention_heads"] * (s["qk_nope_head_dim"] + s["qk_rope_head_dim"] + s["v_head_dim"]))]
-    assert [(a, f) for _, a, f in rows] == [(72, 720), (512, 2048), (512, 8192), (576, 20480)]
-    W, H = 720, 350
+    cm, cg, r = M.AnuLMConfig.tiny_mla(), M.AnuLMConfig.tiny_gqa(), released()
+    rows = [("tiny_mla (MLA)", cm.kv_lora_rank + cm.qk_rope_head_dim,
+             cm.n_head * (cm.qk_nope_head_dim + cm.qk_rope_head_dim + cm.v_head_dim)),
+            ("tiny_gqa (GQA)", 2 * cg.n_kv_head * cg.head_dim, 2 * cg.n_head * cg.head_dim),
+            ("released 400M (GQA)", 2 * r.n_kv_head * r.head_dim, 2 * r.n_head * r.head_dim)]
+    assert [(a, f) for _, a, f in rows] == [(72, 720), (256, 768), (512, 2048)]
+    W, H = 720, 300
     x0, x1 = 230, 580
-    X = lambda v: x0 + (x1 - x0) * math.log10(v) / math.log10(30000)
+    X = lambda v: x0 + (x1 - x0) * math.log10(v) / math.log10(5000)
     b = [text(20, 28, "Numbers cached per token per layer", 15, weight=700, family=SERIF),
          text(20, 48, "what each design caches, against full per-head keys and values · log scale · verified", 12,
               "f-muted", MUTED)]
@@ -490,9 +485,9 @@ def fig_19_cache():
     b.append(text(x0 + 14, 74, "cached", 12))
     b.append(f'<circle cx="{x0 + 94}" cy="70" r="5" fill="{CORAL}" class="f-coral"/>')
     b.append(text(x0 + 104, 74, "if every head kept its own K and V", 12))
-    for t in (10, 100, 1000, 10000):
-        b.append(line(X(t), 90, X(t), 300))
-        b.append(text(X(t), 316, f"{t:,}", 10, "f-muted", MUTED, "middle", family=MONO))
+    for t in (10, 100, 1000):
+        b.append(line(X(t), 90, X(t), 250))
+        b.append(text(X(t), 266, f"{t:,}", 10, "f-muted", MUTED, "middle", family=MONO))
     for i, (name, cached, full) in enumerate(rows):
         y = 112 + i * 50
         b.append(text(x0 - 12, y + 12, name, 12.5, anchor="end", weight=700))
@@ -501,6 +496,5 @@ def fig_19_cache():
         b.append(text(X(cached) + 6, y + 10, f"{cached:,}", 11, weight=700, family=MONO))
         b.append(text(X(full) + 6, y + 25, f"{full:,}  ({full / cached:.1f}×)", 11, weight=700, family=MONO))
     return svg("fig19-2-cache.svg", W, H, "Figure 19.2 · What each design caches",
-               "nano_105b's MLA caches 72 numbers against 720 for full per-head K and V; the released GQA model caches "
-               "512 against 2,048; Sarvam 30B's GQA 512 against 8,192; Sarvam 105B's configured MLA caches 576 "
-               "against 20,480, 35.6 times fewer, but more than the 30B's GQA.", b)
+               "tiny_mla's MLA caches 72 numbers against 720 for full per-head K and V, 10 times fewer; tiny_gqa's "
+               "GQA caches 256 against 768; the released GQA model caches 512 against 2,048.", b)

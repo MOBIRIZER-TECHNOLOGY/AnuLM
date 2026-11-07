@@ -149,7 +149,7 @@ Each block owns two norms:
             GQAttention(cfg, rotary) if cfg.attn == "gqa" else MLAttention(cfg, rotary)
         )
         self.post_attention_layernorm = RMSNorm(cfg.hidden_size, cfg.rms_norm_eps)
-        # Layer 0 dense, the rest MoE -- first_k_dense_replace = 1 in both models.
+        # Layer 0 dense, the rest MoE -- first_k_dense_replace = 1 in every preset.
         self.is_moe = layer_idx >= cfg.first_k_dense_replace
         self.mlp = MoE(cfg) if self.is_moe else SwiGLU(cfg.hidden_size, cfg.intermediate_size)
 ```

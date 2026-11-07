@@ -83,10 +83,10 @@ class SafeLoad(unittest.TestCase):
         self.assertTrue(torch.equal(ck["model"]["lm_head.weight"], m.state_dict()["lm_head.weight"]))
 
     def test_legacy_config_names_load(self):
-        """Checkpoints pickle the config as model.AnuLMConfig (root alias) or,
-        before the rename, model.NanoSarvamConfig: both must stay loadable."""
+        """Checkpoints written before the package layout pickle the config as
+        model.AnuLMConfig (the root alias): it must stay loadable."""
         self.assertIsNotNone(safe_load, "anulm.model.safe_load is missing")
-        for name in ("AnuLMConfig", "NanoSarvamConfig"):
+        for name in ("AnuLMConfig",):
             cfg = tiny()
             saved = (AnuLMConfig.__module__, AnuLMConfig.__qualname__, AnuLMConfig.__name__)
             had = sys.modules.get("model")

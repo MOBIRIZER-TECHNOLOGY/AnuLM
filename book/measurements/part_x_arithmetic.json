@@ -16,7 +16,7 @@
   },
   "block_size": 32
  },
- "nano_30b": {
+ "tiny_gqa": {
   "total": 17440384,
   "active": 6602368,
   "kv": {
@@ -33,7 +33,7 @@
   },
   "block_size": 256
  },
- "nano_350m": {
+ "base_350m": {
   "total": 353261056,
   "active": 151541248,
   "kv": {

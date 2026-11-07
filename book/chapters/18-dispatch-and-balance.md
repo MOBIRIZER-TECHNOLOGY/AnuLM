@@ -65,7 +65,7 @@ sparse, dense and grouped paths. *illustrative*; the index tensors printed by
 
 ## 18.2  The sparse path: one GEMM per expert
 
-> **In the repo** · `anulm/model.py` · `MoE._route_sparse` · lines 709–727 · @b42998d
+> **In the repo** · `anulm/model.py` · `MoE._route_sparse` · lines 719–737 · @WORKTREE
 
 ```python
     def _route_sparse(self, x_flat, topk_idx, topk_w):
@@ -81,7 +81,7 @@ sparse, dense and grouped paths. *illustrative*; the index tensors printed by
             if sel.numel() == 0:
                 continue
             # index_select + index_put with distinct indices: differentiable,
-            # so unlike the released 105B this path trains. No repeat_interleave
+            # so this path trains (an inference-only dispatch would not). No repeat_interleave
             # of the hidden states, so peak memory stays at O(N*k) rows touched
             # rather than O(N*k) rows materialised up front.
             out[sel] = self.experts[e](x_flat[tok_of_slot[sel]]).to(out.dtype)
@@ -102,7 +102,7 @@ wherever a shape depends on the data: a *graph break*. The example counts them
 on this machine:
 
 ```python
-    for name, cfg in (("tiny()", tiny(moe_impl="sparse")), ("nano_30b", M.AnuLMConfig.nano_30b(moe_impl="sparse"))):
+    for name, cfg in (("tiny()", tiny(moe_impl="sparse")), ("tiny_gqa", M.AnuLMConfig.tiny_gqa(moe_impl="sparse"))):
         torch.manual_seed(0)
         m = M.AnuLM(cfg).eval()
         x = torch.randint(0, cfg.vocab_size, (2, 16))
@@ -112,7 +112,7 @@ on this machine:
 
 ```
 sparse path, tiny(), torch 2.11.0+cu128: 9 graph breaks, 10 graphs
-sparse path, nano_30b, torch 2.11.0+cu128: 10 graph breaks, 11 graphs
+sparse path, tiny_gqa, torch 2.11.0+cu128: 10 graph breaks, 11 graphs
 ```
 
 The count depends on the PyTorch version; the test `sparse_moe_breaks_the_graph_as_documented`
@@ -263,7 +263,7 @@ bf16's. Grouped was the fastest of the three in every run.
 > Each round is 20 calls after 3 warm-ups, on a GPU shared with other work.
 > Only "grouped is fastest" held in every run; sparse and dense swapped places
 > between runs, and `docs/RESULTS.md` §4 found sparse faster than dense, 574
-> against 1,350 ms a step, for the small `nano_30b` in eager mode. The grouped
+> against 1,350 ms a step, for the small `tiny_gqa` in eager mode. The grouped
 > timing is in evaluation mode, where `_stacked_weights` reuses its cached
 > copy (lines 753–754); in training it restacks the weights every step.
 

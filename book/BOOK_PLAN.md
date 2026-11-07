@@ -38,7 +38,7 @@ It is not for a reader who wants an API tutorial or a survey of models.
 - **Rebuilt in Part II:** matrix multiplication, dot products, exp and log,
   softmax, derivatives and the chain rule, and expectation.
 - **Software:** Python ≥ 3.10 and `torch` ≥ 2.1. Every chapter's
-  examples run on a CPU using the `tiny()` and `nano_30b` sizes. A GPU is
+  examples run on a CPU using the `tiny()` and `tiny_gqa` sizes. A GPU is
   needed only for the optional "at real scale" runs.
 
 ## Running examples
@@ -50,7 +50,7 @@ These follow `STYLE.md` §5.
 | **The released model**, `AnuLM-Base-v2-400M` | Every "at real scale" number: 397.7M parameters, about 173M active, 20 KiB of KV cache per token |
 | **The test model**, `tiny()` in `tests/test_model.py` | Every printed tensor shape |
 | **The 2-D toy:** three tokens, `The dog bit`, with two-number vectors | Every by-hand calculation, carried from Ch 11 to Ch 20 |
-| **The 17M preset**, `nano_30b` | Every training run the reader does (a few minutes on a CPU) |
+| **The 17M preset**, `tiny_gqa` | Every training run the reader does (a few minutes on a CPU) |
 
 ---
 
@@ -314,7 +314,7 @@ or a special case of what is · ○ not in the repo (background or extension).
 ### Part X: Capstone
 
 **41. Capstone: train it, open it, change it** ●
-1. Train `nano_30b` on your own text.
+1. Train `tiny_gqa` on your own text.
 2. Trace one prediction through every chapter's code, printing shapes.
 3. Implement top-p as a real extension, with a test that would catch the classic bugs (threshold off by one, renormalisation forgotten).
 4. Run the full test suite, then compare against the released model.

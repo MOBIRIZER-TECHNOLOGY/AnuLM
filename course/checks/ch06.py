@@ -124,7 +124,7 @@ def causality_holds_under_gradients_too(M):
 @check
 def cache_stores_the_shared_kv_heads(M):
     """The cache holds n_kv_head heads, not their copies: that ratio is GQA's whole memory
-    saving at inference (16:1 in the real 30B). Storing copies still gives correct output."""
+    saving at inference (4:1 in base v2). Storing copies still gives correct output."""
     _, mine, _ = pair(M)
     cache = {}
     with torch.no_grad():

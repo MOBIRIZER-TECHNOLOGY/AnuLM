@@ -8,7 +8,7 @@ repository's untrimmed one on the test model `tiny()` (CPU, a second).
 
     python book/code-examples/ch29_long_context.py
 
-It runs `model.py` unchanged. The released configuration is `nano_350m` with
+It runs `model.py` unchanged. The released configuration is `base_350m` with
 the released run's settings (as `trace_forward.released()` builds it); no
 weights are needed for anything here except the EXTENSION check, which uses
 `tiny()`'s random weights.
@@ -32,7 +32,7 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 def released(**kw) -> M.AnuLMConfig:
     """AnuLM-Base-v2-400M's configuration (Chapter 20), with optional changes."""
-    cfg = M.AnuLMConfig.nano_350m(vocab_size=32768, block_size=1024, sliding_window=256,
+    cfg = M.AnuLMConfig.base_350m(vocab_size=32768, block_size=1024, sliding_window=256,
                                   max_window_layers=10, num_experts=24, num_experts_per_tok=4,
                                   num_shared_experts=0, moe_intermediate_size=192)
     return replace(cfg, **kw)

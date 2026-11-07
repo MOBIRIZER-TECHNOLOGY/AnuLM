@@ -89,7 +89,7 @@ def router_flips():
 
 def step_cost(grad_ckpt: bool, ce_chunk: int, va):
     torch.manual_seed(0)
-    cfg = M.AnuLMConfig.nano_350m(vocab_size=32768, block_size=S, sliding_window=256, max_window_layers=10,
+    cfg = M.AnuLMConfig.base_350m(vocab_size=32768, block_size=S, sliding_window=256, max_window_layers=10,
                                   num_experts=24, num_experts_per_tok=4, num_shared_experts=0,
                                   moe_intermediate_size=192, moe_impl="grouped",
                                   seq_balance_alpha=1e-4, router_z_alpha=1e-3)

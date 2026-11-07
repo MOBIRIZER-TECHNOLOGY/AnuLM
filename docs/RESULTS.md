@@ -26,7 +26,7 @@ models.
 | [3](#3-does-yarn-earn-its-place) | YaRN against a wide `rope_theta`, 2× and 4× the training length | θ=1e4 collapses without YaRN (1.54 → 3.03), is flat with it |
 | [4](#4-moe-dispatch-sparse-vs-dense) | the three `moe_impl` paths: speed, Dynamo graphs, equivalence | `dense` bit-identical and 1 graph; `grouped` 1.48× on GPU |
 | [5](#5-load-balancing-behaviour) | the aux-loss-free bias rule | imbalance rises before it falls; the `sign()` rule oscillates |
-| [6](#6-scaling-to-the-gpu-sizing-nano_350m) | sizing a 350M preset to an 8 GB card; AdamW vs Muon | `--grad-ckpt` 6.34 GB vs 15.75; Muon 2.6× slower here |
+| [6](#6-scaling-to-the-gpu-sizing-base_350m) | sizing a 350M preset to an 8 GB card; AdamW vs Muon | `--grad-ckpt` 6.34 GB vs 15.75; Muon 2.6× slower here |
 | [7](#7-the-tokenizer-experiment-bytes-vs-bpe-at-matched-compute) | a 16k Hindi BPE against bytes at matched compute | −0.162 bits/byte — the largest single lever in the project |
 | [8](#8-corpus-cleaning-v2) | scrubbing wikitext out of the dump | −0.054 bits/byte |
 | [9](#9-the-v4-recipe-ab-at-matched-compute-on-a-shared-benchmark) | documents + sampling without replacement + regularisers | −0.022 bits/byte at matched compute |
@@ -58,7 +58,7 @@ models.
 
 ## The two presets
 
-| | `nano_30b` | `nano_105b` |
+| | `tiny_gqa` | `tiny_mla` |
 | --- | --- | --- |
 | attention | GQA, 6 q-heads / 2 kv-heads | MLA (`kv_lora_rank` 48) |
 | layers | 8 | 12 |
@@ -134,7 +134,7 @@ extra parameters have nothing to bite on. tinyshakespeare's 1 MB was small
 enough that the bigger model's fit mattered.
 
 **Group-limited routing damped rather than amplified collapse.** Prediction
-going in was that Devanagari's clustered byte statistics would make the 105B's
+going in was that Devanagari's clustered byte statistics would make the
 group constraint collapse harder. It started *better* balanced (5.41× vs 7.80×)
 and merely converged more slowly. Wrong prediction, recorded as such.
 
@@ -164,8 +164,8 @@ to predict and drag the average down. Per character Hindi is *harder*. Always
 report bits/char when comparing across scripts.
 
 This is the fertility argument made concrete: every Devanagari character costs
-2.48 positions of context, KV cache and latency. Sarvam's tokenizer reports
-1.4–2.1 tokens *per word*; bytes are ~15–20 per word.
+2.48 positions of context, KV cache and latency. Bytes are ~15–20 tokens
+per word; a tokenizer fitted to the language brings that to 1-2 (§7).
 
 ### Samples
 
@@ -182,7 +182,7 @@ the wikitext scrubber, not the model.
 
 ### The 17M model on the big corpus: stopped at step 999
 
-A 6000-step run of the same 17M `nano_30b` on a **107.7 MB** corpus
+A 6000-step run of the same 17M `tiny_gqa` on a **107.7 MB** corpus
 (`fetch_hindi.py --mb 100`, ~26 MB downloaded, 11% of the dump) — 24.6M tokens
 against a 96.9 MB split, i.e. **0.25 epochs**, the first run where no text
 would repeat. Prior runs did 0.36 and 2.9 epochs. It was **killed at step 999
@@ -207,11 +207,11 @@ was answered at 353M instead (§6, §7, §11).
 Both Shakespeare checkpoints were trained at `block_size=256` with plain RoPE.
 Evaluated at 2× and 4× that, either naively or with the rotary rebuilt for YaRN
 (`factor = length/256`). Same weights, **zero fine-tuning**.
-Reproduce with `python -m anulm eval_context --ckpt ckpt_105b.pt`.
+Reproduce with `python -m anulm eval_context --ckpt ckpt_mla.pt`.
 
 Loss by position inside a 1024-byte window:
 
-| positions | `105b` naive | `105b` YaRN | `30b` naive | `30b` YaRN |
+| positions | `tiny-mla` naive | `tiny-mla` YaRN | `tiny-gqa` naive | `tiny-gqa` YaRN |
 | --- | --- | --- | --- | --- |
 | 0–256 *(in-distribution)* | **1.5421** | 1.6802 | **1.5076** | 1.6808 |
 | 256–512 | 1.7924 | **1.6989** | **1.6046** | 1.7052 |
@@ -239,22 +239,21 @@ position-bucketed view is what exposes it.
 `scale = head_dim**-0.5` and never applied YaRN's logit-temperature term
 (`mscale**2`, 1.296 at factor 4), which `MLAttention` had carried since it was
 written — so the earlier GQA row measured the band blend alone while the prose
-credited both halves, and quoted 1.874×, which is `mscale**2` at the real 105B's
-factor 40, not at the factor 4 measured here. With the term applied, YaRN's far-end
+credited both halves, and quoted 1.874×, which is `mscale**2` at a factor of
+40, not at the factor 4 measured here. With the term applied, YaRN's far-end
 win on GQA roughly doubles (1.6882 vs the previous 1.7854, against naive 1.8616)
 and its in-distribution cost grows (1.6808 vs 1.6482). The verdict does not change.
 The MLA columns are untouched by the fix and reproduce to the fourth decimal,
 which is what says the harness itself is stable.
 
-The two presets independently reproduce **why Sarvam chose oppositely**: 30B at
-`rope_theta=8e6` with `rope_scaling: null`, 105B at `rope_theta=1e4` with YaRN
-factor 40. Each strategy wins on its own model.
+The two presets are **two answers to long context**: a wide `rope_theta`
+(tiny-gqa) or a narrow one with YaRN (tiny-mla). Each strategy wins on its own model.
 
 ---
 
 ## 4. MoE dispatch: `sparse` vs `dense`
 
-| | eager, `nano_30b` | eager, `nano_105b` | Dynamo | equivalence |
+| | eager, `tiny_gqa` | eager, `tiny_mla` | Dynamo | equivalence |
 | --- | --- | --- | --- | --- |
 | `sparse` (default) | **574 ms/step** | **1407 ms/step** | 9 graphs, 8 breaks | — |
 | `dense` | 1350 ms/step | 2955 ms/step | **1 graph, 0 breaks** | bit-identical |
@@ -296,7 +295,7 @@ implementing it:
 
 ---
 
-## 6. Scaling to the GPU: sizing `nano_350m`
+## 6. Scaling to the GPU: sizing `base_350m`
 
 Target was "500M on the 8 GB RTX 5050". The arithmetic said Muon would make
 443M fit; the measurement said otherwise. All rows: batch 8 × block 512, bf16
@@ -324,7 +323,7 @@ Two findings worth keeping:
   matrices; use `--optimizer muon` here only when memory, not time, is the
   constraint. Implementation in `muon.py`.
 
-Final preset: `nano_350m` — 353M total / 152M active, 20 layers, hidden 1024,
+Final preset: `base_350m` — 353M total / 152M active, 20 layers, hidden 1024,
 12 experts top-3 + 1 shared, GQA 16q/4kv, `rope_theta 1e6`. Requires
 `--grad-ckpt` (15.75 GB without, 6.34 GB with).
 
@@ -378,9 +377,7 @@ Fertility, measured on the held-out 107 MB corpus:
 | bytes | 1.00 | ~15–20 | ~206 Devanagari chars |
 | **hi16k BPE** | **9.64** | **1.34** | **~2,000 chars** |
 
-1.34 tokens/word sits inside the 1.4–2.1 Sarvam reports for their 262k-token,
-22-language tokenizer — achievable monolingually with 16k tokens and 10 seconds
-of training. Then two runs differing **only in tokenizer**: same 353M trunk
+1.34 tokens/word, from 16k tokens and 10 seconds of training. Then two runs differing **only in tokenizer**: same 353M trunk
 (the BPE model is 386M total — the extra 33M is the bigger embedding+head),
 6000 steps, batch 8 × 512, same schedule, same GPU.
 
@@ -480,10 +477,10 @@ behaviours are why the two-file checkpoint scheme exists.
 
 ```bash
 # from the repository root
-python -m anulm train --preset 30b --steps 1000 --batch-size 16 --block-size 256
-python -m anulm train --preset 105b --data data/hindi.txt --block-size 512 \
+python -m anulm train --preset tiny-gqa --steps 1000 --batch-size 16 --block-size 256
+python -m anulm train --preset tiny-mla --data data/hindi.txt --block-size 512 \
                 --batch-size 8 --steps 1000
-python -m anulm eval_context --ckpt ckpt_105b.pt
+python -m anulm eval_context --ckpt ckpt_mla.pt
 python -m tests.test_model
 ```
 
@@ -514,7 +511,7 @@ penalised), each checkpoint with its own tokenizer.
 
 ### The A/B
 
-Same trunk (`nano_350m`, 386M with the 16k head), same corpus *text*
+Same trunk (`base_350m`, 386M with the 16k head), same corpus *text*
 (`hindi_v4.txt`, 194 MB, 21,897 articles with titles), same tokenizer
 (`hi16k_v4`), same seed, 6000 steps × 8 × 512, lr 6e-4, `--grad-ckpt`,
 `--moe-impl grouped`, bf16.
@@ -621,8 +618,8 @@ active parameters (no shared expert, top-2) or the same (window), so the
   wall clock in this launch-bound regime, and on a compiled stack that tax
   mostly disappears.
 - **The shared expert is not earning its 22M parameters** at this scale on
-  this data. Drop it and the model gets *better*. Sarvam keeps one in both
-  real models; at 128 experts and 4T tokens the trade may differ.
+  this data. Drop it and the model gets *better*. With many more experts and
+  far more tokens the trade may differ.
 - **Top-2 ≥ top-3**: 12% fewer active parameters, slightly better loss. The
   aux-loss-free balancer keeps top-2 at 1.3× imbalance without trouble.
 - **Windowing half the layers is free** on 512-token training, as it should
@@ -802,7 +799,7 @@ see a position beyond 256, so only the other half meet unseen phases at 2048;
 the windowed model degrades 5.27 → 5.37 naive where the baseline goes
 5.28 → 5.44, and it still wins with YaRN on. The far-quarter gap is 0.145
 nats. At 386M with `rope_theta=1e6` YaRN now *helps* (−0.08 at 4× for the
-baseline), unlike the 17M `nano_30b` in §3 where it was a net loss — the
+baseline), unlike the 17M `tiny_gqa` in §3 where it was a net loss — the
 larger model's slow-frequency heads are doing more, so there is more to
 protect. This is the cheapest KV cache reduction available and it is free on
 quality; the §12 preset was right to keep it.
@@ -1241,9 +1238,8 @@ longer schedule.
 
 ## 22. Three scripts, one budget: Hindi + English + Python with a 32k tokenizer
 
-Everything to §21 is Hindi. Sarvam's models are not: the tokenizer covers
-22 languages, and the point of the low Indic fertility is that Hindi shares
-a vocabulary with English and code without paying for it. So: the same
+Everything to §21 is Hindi. The question here is whether Hindi can share a
+vocabulary and a budget with English and code without paying too much for it. So: the same
 preset, recipe and budget as `ckpt_hindi_mixed36k` — combo configuration,
 36k steps at 8 × 512, lr 6e-4, seq-balance and z-loss on — on a corpus that
 adds English and Python to the §17 Hindi, read through a 32k tokenizer
@@ -1922,7 +1918,7 @@ on and two runs stop being comparable. A strided set is N windows whatever the
 batch size, and needs no cache: the same corpus and the same N give the same
 windows on any machine.
 
-Measured on tinyshakespeare with the 200-step `nano_30b` (val split 111,540
+Measured on tinyshakespeare with the 200-step `tiny_gqa` (val split 111,540
 bytes; ground truth is the mean over **all 435** non-overlapping windows,
 1.8661):
 
@@ -1975,7 +1971,7 @@ Held-out Hindi, 1.98M tokens through the model's own `multi32k` tokenizer,
 | 2048 | 4.0507 | **4.0232** | **−0.0275** |
 
 **The headline is how little it degrades.** Walking out to 4x the training
-length costs 0.13 naively. The `nano_105b` preset in §3 — θ=1e4, no window —
+length costs 0.13 naively. The `tiny_mla` preset in §3 — θ=1e4, no window —
 went 1.54 to 3.03 over the same extension, a collapse. This model barely
 notices, and that is the θ=1e6 choice plus the sliding window doing exactly
 what §15 predicted: half the layers never meet a phase they were not trained

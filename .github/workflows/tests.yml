@@ -129,7 +129,7 @@ jobs:
         # of CPU. Catches breakage that unit tests cannot -- a bad data path,
         # a checkpoint that will not reload, a sampler that hangs.
         run: |
-          python -u -m anulm train --preset 30b --steps 50 --eval-every 25 --out ckpt_ci.pt
+          python -u -m anulm train --preset tiny-gqa --steps 50 --eval-every 25 --out ckpt_ci.pt
           python -u -m anulm sample --ckpt ckpt_ci.pt --prompt "KING RICHARD II:" --tokens 40
 
       - name: Reload the checkpoint, and load every shipped tokenizer

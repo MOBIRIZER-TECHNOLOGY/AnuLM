@@ -10,7 +10,7 @@ in §27.
 **Licence: CC BY-SA 4.0**, the same as the base and for the same reason:
 Hindi and English Wikipedia are CC BY-SA, C4 is ODC-BY, and the Python slice
 is codeparrot-clean, de-duplicated GitHub Python with mixed licences. Not
-affiliated with Sarvam AI, AI4Bharat, BharatGen or the Government of India.
+affiliated with AI4Bharat, BharatGen or the Government of India.
 
 ## Why this exists
 

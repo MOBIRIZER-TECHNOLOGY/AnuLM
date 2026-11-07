@@ -72,7 +72,7 @@ ROLES = [  # (role, test on the path at the pin); the first match wins
     ("package entry", lambda f: f in ("anulm/__init__.py", "anulm/__main__.py", "model.py")),
     ("tools", lambda f: f.startswith("tools/")),
 ]
-FOLDERS = ("course", "experiments", "sarvam", "examples", "book")
+FOLDERS = ("course", "experiments", "examples", "book")
 
 
 def at_pin(path: str) -> list[str]:
@@ -84,11 +84,13 @@ def at_pin(path: str) -> list[str]:
 def tree_at_pin() -> list[str]:
     names = subprocess.run(["git", "ls-tree", "-r", "--name-only", PIN], cwd=ROOT, capture_output=True,
                            text=True, check=True).stdout.split()
-    return [f for f in names if f.endswith(".py")]
+    # A folder of third-party reference code was at the pin and has since been
+    # removed from the repository; count only what a clone still holds.
+    return [f for f in names if f.endswith(".py") and (ROOT / f.split("/")[0]).exists()]
 
 
 def repo_map() -> dict:
-    """The package, its tests and tools (everything outside the five folders below), by role."""
+    """The package, its tests and tools (everything outside the four folders below), by role."""
     files = [f for f in tree_at_pin() if not f.startswith(tuple(d + "/" for d in FOLDERS))]
     groups: dict[str, list] = {}
     for f in files:
@@ -102,7 +104,7 @@ def repo_map() -> dict:
 
 
 def subdirectories() -> None:
-    """The rest of the Python: the lab book, run scripts, the reference code, examples, the book."""
+    """The rest of the Python: the lab book, run scripts, examples, the book."""
     py = tree_at_pin()
     print(f"\nPython files in the whole tree @{PIN}: {len(py)}")
     for d in FOLDERS:

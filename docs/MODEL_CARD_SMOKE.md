@@ -1,11 +1,10 @@
 # Model card: AnuLM-Smoke-30B (`ckpt_smoke.pt`)
 
 **This is not a usable language model.** It is a 17.4M-parameter
-`nano_30b` preset trained for **200 steps on 1 MB of tinyshakespeare**
+`tiny_gqa` preset trained for **200 steps on 1 MB of tinyshakespeare**
 (29 seconds on one RTX 5070 Ti) for one purpose: to exercise the whole
 pipeline — train, sample, export, upload, download, load, generate — end
-to end after the project was renamed from *nanosarvam* to AnuLM and its
-tokenizer format id changed. It exists so that the release machinery is
+to end after the project's rename and its tokenizer format id change. It exists so that the release machinery is
 tested by something other than the four real checkpoints.
 
 If you want a model that does something, use one of those instead:
@@ -19,12 +18,11 @@ If you want a model that does something, use one of those instead:
 
 **Licence: MIT.** tinyshakespeare is public domain, so unlike every other
 checkpoint in this project nothing constrains this one. Not affiliated
-with Sarvam AI, AI4Bharat, BharatGen or the Government of India.
+with AI4Bharat, BharatGen or the Government of India.
 
 ## What it is
 
-The reference `nano_30b` preset from `README.md`: the shape of Sarvam 30B
-at 1/1000th the size — GQA with 6 query / 2 key-value heads, 8 layers, 16
+The `tiny-gqa` preset from `README.md` — GQA with 6 query / 2 key-value heads, 8 layers, 16
 routed experts top-2 plus a shared expert on 7 MoE layers, a dense layer 0,
 RoPE θ = 1,000,000, QK-norm, sigmoid router with aux-loss-free bias
 balancing. **17.44M parameters, 6.60M active per token (37.9%).**
@@ -32,7 +30,7 @@ Byte-level vocabulary (256 bytes + BOS/EOS/PAD = 259), context 256, so
 there is no BPE tokenizer file beside the weights.
 
 ```
-python -m anulm train --preset 30b --steps 200 --eval-every 50 --out ckpt_smoke.pt
+python -m anulm train --preset tiny-gqa --steps 200 --eval-every 50 --out ckpt_smoke.pt
 ```
 
 | | |
@@ -95,7 +93,5 @@ decode with `errors="replace"`, which `sample.py` does.
 ## Provenance
 
 Trained 2026-09-18 from scratch on one machine, on public-domain text, by
-the pipeline in the repository. No Sarvam weights are used or
-redistributed; AnuLM is an independent re-implementation of a published
-architecture. `docs/PUBLISHING.md` is how anything here gets released and
+the pipeline in the repository. No other model's weights are used. `docs/PUBLISHING.md` is how anything here gets released and
 `docs/history/TASKS.md` is the operations log.

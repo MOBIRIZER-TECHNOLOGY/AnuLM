@@ -17,7 +17,7 @@ head, and the way all of it starts before training. You'll also learn why
 Every AnuLM model is described by one config object, `AnuLMConfig` in
 `model.py`. The fields this chapter uses:
 
-| field | what it sets | `30b` preset |
+| field | what it sets | `tiny-gqa` preset |
 |---|---|---|
 | `vocab_size` | how many different tokens exist | 259 (256 bytes, plus begin, end and padding) |
 | `hidden_size` (D) | numbers per token as it flows through the model | 384 |
@@ -26,7 +26,7 @@ Every AnuLM model is described by one config object, `AnuLMConfig` in
 | `rms_norm_eps` | a small constant that keeps the norm stable | 1e-6 |
 | `initializer_range` | the spread of the starting weights | 0.02 |
 
-The `30b` preset, a scaled-down copy of Sarvam 30B's shape, has
+The `tiny-gqa` preset, the small grouped-query-attention model, has
 **17,440,384 parameters**, of which 6,602,368 are used for any one token (the
 rest are experts that token was not routed to; Chapter 7). The model under
 every later chapter, AnuLM base v2, is the same design at 398M.
@@ -116,8 +116,8 @@ normalisation sits on the branch, not on the main path.
 **Embeddings** turn each token id into D numbers: a table of `vocab_size` × D
 learned values (`embed_tokens`). At the top, after a final RMSNorm, the
 **output head** (`lm_head`) turns D numbers back into one score per token.
-AnuLM keeps these two tables separate (*untied*), as Sarvam's models do;
-tying them saves V × D parameters.
+AnuLM keeps these two tables separate (*untied*); tying them saves V × D
+parameters.
 
 How the weights start matters. `model.py` draws every weight from a normal
 distribution with standard deviation 0.02, then redraws each `down_proj`,

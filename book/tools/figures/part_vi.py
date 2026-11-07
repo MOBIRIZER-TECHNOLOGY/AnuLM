@@ -230,7 +230,7 @@ def fig_nucleus():
 # --------------------------------------------------------------------------- Ch 29
 def _released(**kw):
     from dataclasses import replace
-    cfg = M.AnuLMConfig.nano_350m(vocab_size=32768, block_size=1024, sliding_window=256, max_window_layers=10,
+    cfg = M.AnuLMConfig.base_350m(vocab_size=32768, block_size=1024, sliding_window=256, max_window_layers=10,
                                   num_experts=24, num_experts_per_tok=4, num_shared_experts=0,
                                   moe_intermediate_size=192)
     return replace(cfg, **kw)

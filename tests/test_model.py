@@ -505,12 +505,12 @@ def generation_is_deterministic_at_top_k_1():
 
 @test
 def param_count_matches_analysis():
-    cfg = AnuLMConfig.nano_30b()
+    cfg = AnuLMConfig.tiny_gqa()
     m = AnuLM(cfg)
     total, active = m.num_params()
     assert abs(total - 17_440_384) < 1000, f"total {total} != 17.44M"
     assert abs(active - 6_602_368) < 1000, f"active {active} != 6.60M"
-    cfg = AnuLMConfig.nano_105b()
+    cfg = AnuLMConfig.tiny_mla()
     total, active = AnuLM(cfg).num_params()
     assert abs(total - 47_389_728) < 1000, f"total {total} != 47.39M"
     assert abs(active - 13_327_392) < 1000, f"active {active} != 13.33M"
@@ -1541,14 +1541,12 @@ def hf_tokenizer_conversion_is_exact():
 
 
 @test
-def bpe_files_load_under_both_format_ids():
-    """The project was renamed on 2026-09-18 and the tokenizer format id with
-    it. Every tokenizer trained before then -- including the four beside the
-    released weights on the Hub -- says "nanosarvam-bpe", so load() must keep
-    taking it, and the committed tokenizers under data/ must keep loading."""
+def bpe_files_load_and_foreign_ones_are_refused():
+    """save() writes the "anulm-bpe" format id and load() takes it back; any
+    other id is refused, and the committed tokenizers under data/ load."""
     import glob, json, os, tempfile
     from anulm.bpe import BPE
-    assert BPE.TYPE == "anulm-bpe" and "nanosarvam-bpe" in BPE.TYPES
+    assert BPE.TYPE == "anulm-bpe" and BPE.TYPES == ("anulm-bpe",)
     tok = BPE.train("दो शब्द, two words, def f(): " * 40, 300, verbose=False)
     with tempfile.TemporaryDirectory() as d:
         p = os.path.join(d, "t.json")
@@ -2202,7 +2200,7 @@ def legacy_half_keeps_routers_fp32_and_projectors_runnable():
     except ImportError as e:
         raise unittest.SkipTest(f"app dependency unavailable: {e}")
     from anulm.model import AnuLMConfig, Router
-    cfg = AnuLMConfig.nano_30b()
+    cfg = AnuLMConfig.tiny_gqa()
     module = torch.nn.Module()
     module.router = Router(cfg)
     module.proj = torch.nn.Linear(8, 8)
@@ -2409,7 +2407,7 @@ def from_scratch_pipeline_runs_and_skips_completed_stages():
         tasks.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8", newline="\n")
         cmd = [sys.executable, "-u", "-m", "anulm.training.train_from_scratch",
                "--corpus", str(corpus), "--work-dir", str(work / "run"),
-               "--workers", "1", "--vocab", "280", "--preset", "30b", "--device", "cpu",
+               "--workers", "1", "--vocab", "280", "--preset", "tiny-gqa", "--device", "cpu",
                "--block-size", "64", "--batch-size", "1", "--pretrain-steps", "1",
                "--warmup", "1", "--eval-every", "1", "--eval-iters", "1", "--log-every", "1",
                "--task", f"chat=text:{tasks}:1:1", "--omni-steps", "1",
@@ -2453,6 +2451,48 @@ def main():
     else:
         print(f"\n{len(passed)} passed, {len(failed)} failed, {len(TESTS)} total")
     return 1 if failed else 0
+
+
+@test
+def gradient_checkpointing_takes_effect_and_changes_no_gradient():
+    """enable_gradient_checkpointing() must actually route each block through
+    torch.utils.checkpoint (a flag that is set and never read still trains,
+    just out of memory), and recomputing must not change the loss or a gradient."""
+    import unittest.mock
+    torch.manual_seed(0)
+    cfg = tiny(moe_impl="sparse")
+    a = AnuLM(cfg)
+    b = AnuLM(cfg)
+    b.load_state_dict(a.state_dict())
+    b.enable_gradient_checkpointing()
+    x = torch.randint(0, cfg.vocab_size, (2, 16))
+    _, la = a(x, x)
+    la.backward()
+    real = torch.utils.checkpoint.checkpoint
+    with unittest.mock.patch("torch.utils.checkpoint.checkpoint", side_effect=real) as spy:
+        _, lb = b(x, x)
+        lb.backward()
+    assert spy.call_count >= cfg.n_layer, f"checkpoint called {spy.call_count} times for {cfg.n_layer} layers"
+    assert torch.allclose(la, lb, atol=1e-6), (la.item(), lb.item())
+    for (n, pa), (_, pb) in zip(a.named_parameters(), b.named_parameters()):
+        if pa.grad is None:
+            assert pb.grad is None, n
+            continue
+        assert torch.allclose(pa.grad, pb.grad, atol=1e-5), n
+
+
+@test
+def the_1b_preset_is_the_shape_the_1b_run_trains():
+    """--preset 1b must build exactly what the from-scratch 1B run was started
+    with (--preset 350m plus its --cfg overrides, docs/PLAN_1B.md), so a resume
+    with either command line loads the same checkpoint."""
+    ref = AnuLMConfig.base_350m(n_layer=24, sliding_window=256, max_window_layers=10, num_experts=24,
+                                num_experts_per_tok=4, num_shared_experts=0, moe_intermediate_size=512,
+                                bias_update_rate=0.003, block_size=1024)
+    assert AnuLMConfig.base_1b() == ref
+    with torch.device("meta"):
+        total, active = AnuLM(AnuLMConfig.base_1b(vocab_size=32768)).num_params()
+    assert round(total / 1e6) == 1008 and round(active / 1e6) == 284, (total, active)
 
 
 class ModelTests(unittest.TestCase):

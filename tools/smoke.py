@@ -124,14 +124,14 @@ def main() -> int:
 
     corpus, tok = ROOT / "data" / "input.txt", work / "tok.json"
     steps = [
-        ("train bytes (fetches data)", lambda: run(["-m", "anulm", "train", "--preset", "30b", "--steps", "10",
+        ("train bytes (fetches data)", lambda: run(["-m", "anulm", "train", "--preset", "tiny-gqa", "--steps", "10",
                                                     "--eval-every", "10", "--out", str(work / "bytes.pt"),
                                                     "--device", "cpu"])),
         ("train a BPE tokenizer", lambda: run(["-m", "anulm", "bpe", "train", "--data", str(corpus), "--vocab", "512",
                                                "--out", str(tok)])),
         ("encode the corpus", lambda: run(["-m", "anulm", "bpe", "encode", "--tokenizer", str(tok), "--data", str(corpus),
                                            "--out", str(work / "corpus.bin"), "--workers", "1"])),
-        ("train 30 steps on BPE", lambda: run(["-m", "anulm", "train", "--preset", "30b", "--steps", "30",
+        ("train 30 steps on BPE", lambda: run(["-m", "anulm", "train", "--preset", "tiny-gqa", "--steps", "30",
                                                "--eval-every", "15", "--data", str(work / "corpus.bin"),
                                                "--out", str(ckpt), "--device", "cpu"])),
         ("sample", lambda: run(["-m", "anulm", "sample", "--ckpt", str(ckpt), "--prompt", "KING", "--tokens", "20",

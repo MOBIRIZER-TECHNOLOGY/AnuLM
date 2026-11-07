@@ -39,8 +39,7 @@ choice.
 | 2024 | DeepSeekMoE [S07] | fine-grained experts, shared experts always on | fine-grained experts, 24 of width 192 (`docs/RESULTS.md` §10, §16); the shared expert, as an option |
 | 2024 | DeepSeek-V3 [R20] | sigmoid affinity scores | yes |
 
-AnuLM follows the last row, with a balancing bias used only to choose [R18],
-and Sarvam's settings [R49].
+AnuLM follows the last row, with a balancing bias used only to choose [R18].
 
 `NOT IN THE REPO` (the softmax gates and their losses)
 
@@ -230,8 +229,8 @@ def router_weights_come_from_unbiased_scores():
 
 Gathering from `scores_for_choice` instead would fail the last assertion.
 
-**Why 2.5.** Both Sarvam configurations set 2.5 [R49]; the code gives no other
-reason. In exact arithmetic the factor can be folded into the experts:
+**Why 2.5.** The code gives no reason for the value; it is the default of
+`routed_scaling_factor` in `AnuLMConfig`, and no preset changes it. In exact arithmetic the factor can be folded into the experts:
 
 ```python
     a = M.MoE(tiny(num_shared_experts=0)).eval()                     # routed_scaling_factor 2.5
@@ -337,9 +336,9 @@ otherwise fill with −∞ experts:
 `check` (lines 129–131) raises `ValueError`, a real exception rather than an
 assert, so `python -O` cannot remove it; `config_rejects_unreachable_topk`
 (`tests/test_model.py` line 520) expects that `ValueError`. The released model
-has `n_group = 1`, so lines 629–638 never run in it; `nano_105b` keeps 2 of 4
-groups per token, after Sarvam's 105B code of March 2026, which Sarvam later changed to remove grouping [R49]. DeepSeek-V3 limits
-routing by machine, a related idea [R20].
+has `n_group = 1`, so lines 629–638 never run in it; `tiny_mla` keeps 2 of 4
+groups per token. DeepSeek-V3 limits each token's routing to a few machines,
+the idea that group-limited top-k borrows [R20].
 
 `IN THE REPO`
 
@@ -470,7 +469,6 @@ used only for the claim in its register row:
 | [R16] | Switch Transformer: each token to a single expert; a load balancing loss | CHECKED |
 | [R18] | the expert-wise bias used only for selection | CHECKED |
 | [R20] | DeepSeek-V3: sigmoid affinity scores; node-limited routing | CHECKED |
-| [R49] | Sarvam's configurations (`routed_scaling_factor` 2.5) and the 105B's group-limited routing, March 2026 revision, removed later | CHECKED |
 | [S05] | the original mixture-of-experts idea | CHECKED |
 | [S06] | GShard: top-2 gating in every other layer | CHECKED |
 | [S07] | fine-grained and shared experts | CHECKED |
@@ -481,9 +479,6 @@ Repository evidence, all at @b42998d:
 - `tests/test_model.py`: `router_respects_group_limits` 218–229,
   `router_weights_come_from_unbiased_scores` 233–248,
   `config_rejects_unreachable_topk` 520.
-- `sarvam/sarvam-30b/config.json`, `sarvam/sarvam-105b/config.json`:
-  `routed_scaling_factor`; `sarvam/sarvam-105b/modeling_sarvam_moe.py` 276–277,
-  305–313: the group defaults and the best-two group score.
 - Measurements: `book/measurements/part_iv_b_trained.json`, from
   `code-examples/ch16_measure_trained.py`.
 

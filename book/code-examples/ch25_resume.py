@@ -49,7 +49,7 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 # Results go to book/measurements/ only with --save, so a reader's rerun never overwrites them.
 SAVE = "--save" in sys.argv[1:]
 OUT = (ROOT / "book" / "measurements" if SAVE else Path.cwd()) / "part_v_b_resume_curves.json"
-CMD = ["--preset", "30b", "--steps", "60", "--batch-size", "8", "--block-size", "64",
+CMD = ["--preset", "tiny-gqa", "--steps", "60", "--batch-size", "8", "--block-size", "64",
        "--eval-every", "10", "--eval-iters", "4", "--log-every", "1", "--warmup", "10",
        "--lr", "1e-3", "--device", "cpu"]
 

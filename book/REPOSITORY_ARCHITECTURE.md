@@ -13,10 +13,10 @@ therefore stable.
 ## 1. What kind of model this is
 
 **A decoder-only, sparse Mixture-of-Experts transformer, written from
-scratch in PyTorch.** Its design follows Sarvam AI's released 30B and 105B
-models, which descend from DeepSeek's architectures.
-`anulm/model.py` lines 1–21 say so, and `docs/ARCHITECTURE.md` documents the
-reading of Sarvam's code that it rests on.
+scratch in PyTorch.** Its pieces come from published papers: grouped-query
+attention, multi-head latent attention (DeepSeek-V2), and DeepSeek-V3's
+sigmoid router with bias-only balancing. `anulm/model.py` lines 1–17 list
+them, and `docs/ARCHITECTURE.md` gives the paper behind each.
 
 It is **not** a GPT-2 clone. The textbook model the book's prompt assumes
 (absolute positional embeddings, LayerNorm, a dense GELU MLP, multi-head
@@ -84,7 +84,6 @@ The repository root is flat. Grouped by role:
 | **Export** | `anulm/hf/export_hf.py`, `anulm/hf/modeling_anulm.py`, `anulm/hf/configuration_anulm.py` (a Hugging Face `transformers` wrapper) |
 | **Evaluation** | `eval_*.py`, `anulm/data/make_golden.py`, `anulm/data/make_bench.py`, `anulm/multimodal/omni_eval.py`, `tools_contamination.py`, `tools/eval_noise.py` |
 | **Tests** | `tests/test_model.py`: 66 named tests, each run through a `@test` decorator; there is no pytest dependency |
-| **Reference reading** | `sarvam/*_annotated.py`, annotated walkthroughs of Sarvam's released modelling code |
 | **Records** | `docs/RESULTS.md` (experiment log, §1–§39+), `docs/ARCHITECTURE.md`, model cards, `logs/` |
 | **Course (existing book)** | `course/`: *Build Your Own LLM, from Scratch to Omni*, with 15 chapters, labs, checks and stub code |
 
@@ -220,4 +219,4 @@ features of this code.
   `REPOSITORY_SOURCE_MAP.md` §§4–5.
 
 **Not yet inspected:** `experiments/` (about 40 scripts), `eval_*.py`,
-`app*.py` beyond their headers, `web/`, `space/` and `sarvam/`.
+`app*.py` beyond their headers, `web/` and `space/`.
