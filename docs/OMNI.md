@@ -134,8 +134,8 @@ change them there.
 | 2026-11-05 a | 3,125 steps, `--max-ratio chat=1.049`, 3.9 h | step 2,500 | 3.298 | 69.7 | intents |
 | 2026-11-05 b | as a, intents 15% (from Hindi speech and captions), 4.3 h | step 2,500 | 3.309 | 85.0 | chat, by 0.009 |
 | run b, 5% blend | `experiments/blend_weights.py --alpha 0.05` | - | 3.299 | 85.7 | none, on the exported copy too: chat 3.2985, English WER 8.3%, FLEURS 41.5%, Hindi mean 42.2% |
-| 2026-11-06, run 1 | as b, chat on `chat_train_v6.jsonl` (+13,163 human-written pairs, `experiments/make_chat_v6.py`), ~7 h | running | training curve 3.306 at step 2,500 (run b 3.376) | - | gates measured after training |
-| 2026-11-06, run 2 | run 1 + `--data v2` (LibriSpeech 360 h, VizWiz answerable, 60k more captions, MLQA Hindi; `experiments/make_omni_v2_data.py`) | queued after run 1 | - | - | - |
+| 2026-11-06, run 1 | as b, chat on `chat_train_v6.jsonl` (+13,163 human-written pairs, `experiments/make_chat_v6.py`), 7.2 h | step 3,125 | 3.2555 (exported) | 85.0 | none; **published** as toonist/AnuLM-Omni-400M, 2026-11-07 |
+| 2026-11-06, run 2 | run 1 + `--data v2` (LibriSpeech 360 h, VizWiz answerable, 60k more captions, MLQA Hindi; `experiments/make_omni_v2_data.py`), 7.1 h | step 3,125 | 3.2538 (exported) | 86.3 | none, but worse than run 1 on TextVQA (10.3 vs 12.6), captions (3.185 vs 2.999), SQuAD (34.8 vs 37.8), English WER (8.3 vs 7.9): twice the data in the same steps |
 
 - **Chat rises in the first 625 steps** (3.27 -> 3.37 on the training curve)
   and is then nearly flat, whatever the shares: the other tasks move the

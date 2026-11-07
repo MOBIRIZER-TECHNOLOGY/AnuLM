@@ -467,6 +467,11 @@ def make_optimizer(model: AnuLM, args):
                                       weight_decay=args.weight_decay, fused=fused)
         print(f"optimizer: {desc}")
         return OptimizerSet(opts)
+    if args.optimizer == "adamw-lowmem":
+        from anulm.training.adamw_lowmem import AdamWLowMem
+        opt = AdamWLowMem(groups, lr=args.lr, betas=(0.9, 0.95), eps=1e-8)
+        print(f"optimizer: AdamW, bf16 moments, {sum(p.numel() for p in decay+no_decay)/1e6:.1f}M params")
+        return OptimizerSet(opt)
     adamw = torch.optim.AdamW(groups, lr=args.lr, betas=(0.9, 0.95), eps=1e-8,
                               **({"fused": True} if fused else {}))
     print(f"optimizer: AdamW{' (fused)' if fused else ''}, "
@@ -607,10 +612,12 @@ def main():
                    help="on --resume, ramp the lr from 0 back to the schedule over "
                         "this many steps -- for extending a finished run with a "
                         "larger --steps, where the cosine would otherwise jump")
-    p.add_argument("--optimizer", choices=["adamw", "muon"], default="adamw",
+    p.add_argument("--optimizer", choices=["adamw", "muon", "adamw-lowmem"], default="adamw",
                    help="muon = Muon on 2D hidden weights + AdamW on the rest; "
                         "one momentum buffer instead of two moments, so 12 vs 16 "
-                        "bytes/param, which is what makes 443M fit 8 GB")
+                        "bytes/param, which is what makes 443M fit 8 GB. "
+                        "adamw-lowmem = AdamW with bf16 moments, also 12 bytes/param, "
+                        "without Muon's 2.6x step cost (anulm/training/adamw_lowmem.py)")
     p.add_argument("--muon-lr", type=float, default=0.02,
                    help="not comparable to --lr; Muon updates are orthogonalised")
     p.add_argument("--grad-ckpt", action="store_true",

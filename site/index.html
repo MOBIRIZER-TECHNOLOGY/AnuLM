@@ -60,7 +60,7 @@
   <div class="wrap">
     <div class="hero-grid">
       <div>
-        <p class="pill"><span class="dot">7 / 7 gates pass</span> Release candidate, measured 5 November 2026</p>
+        <p class="pill"><span class="dot">7 / 7 gates pass</span> Released on Hugging Face, measured 6 November 2026</p>
         <h1 id="hero-title">One small model. <span class="grad">Five skills.</span> English and Hindi.</h1>
         <p class="lede">AnuLM-Omni-400M is a single open model that transcribes speech, describes photos,
           answers from Wikipedia, routes messages to an intent and chats. It was pretrained from scratch on one
@@ -139,7 +139,7 @@
           <h3 id="c-listen">Listens</h3>
         </div>
         <p class="sub">Speech to text in English and Hindi, including Hindi mixed with English.</p>
-        <p class="metric"><b>8.3%</b> English word error rate · <b>42.2%</b> Hindi, mean of three test sets</p>
+        <p class="metric"><b>7.9%</b> English word error rate · <b>41.9%</b> Hindi, mean of three test sets</p>
         <div class="sample">
           <audio controls preload="none" src="assets/librispeech-english.wav" aria-label="English speech sample, 5.5 seconds">
             <a href="assets/librispeech-english.wav">Download the English clip (WAV)</a>
@@ -159,7 +159,7 @@
           <h3 id="c-listen-hi">Listens, in Hindi</h3>
         </div>
         <p class="sub">Read and conversational Hindi, scored on three test sets.</p>
-        <p class="metric"><b>32.1%</b> Kathbath · <b>41.5%</b> FLEURS · <b>52.9%</b> MUCS</p>
+        <p class="metric"><b>31.1%</b> Kathbath · <b>41.6%</b> FLEURS · <b>53.0%</b> MUCS</p>
         <div class="sample">
           <audio controls preload="none" src="assets/kathbath-hindi.wav" aria-label="Hindi speech sample, 6.7 seconds">
             <a href="assets/kathbath-hindi.wav">Download the Hindi clip (WAV)</a>
@@ -179,7 +179,7 @@
           <h3 id="c-look">Looks</h3>
         </div>
         <p class="sub">Describes a photo, or answers a question about the text in it.</p>
-        <p class="metric"><b>11.4%</b> TextVQA accuracy <span class="tag weak">its weakest skill</span></p>
+        <p class="metric"><b>12.6%</b> TextVQA accuracy <span class="tag weak">its weakest skill</span></p>
         <div class="sample">
           <figure>
             <img src="assets/docci-ducks.jpg" width="640" height="480" loading="lazy" alt="Two white ducks with yellow beaks swimming in dark, glossy water beside a low layered rock wall, seen from above.">
@@ -199,7 +199,7 @@
           <h3 id="c-read">Reads</h3>
         </div>
         <p class="sub">Finds Wikipedia passages (Simple English and Hindi), answers from them and names the article.</p>
-        <p class="metric"><b>36.4</b> SQuAD F1 · <b>12.9</b> MLQA Hindi F1</p>
+        <p class="metric"><b>37.8</b> SQuAD F1 · <b>11.9</b> MLQA Hindi F1</p>
         <div class="sample">
           <dl class="io">
             <dt>Asked</dt><dd>What is the largest planet in the Solar System?</dd>
@@ -219,7 +219,7 @@
         </div>
         <p class="sub">Sorts a message into one of 77 banking intents or a Hindi assistant command, with a
           confidence. Below a threshold it hands the case to a person.</p>
-        <p class="metric"><b>85.7%</b> BANKING77 · <b>79.7%</b> MASSIVE Hindi</p>
+        <p class="metric"><b>85.0%</b> BANKING77 · <b>80.3%</b> MASSIVE Hindi</p>
         <div class="sample">
           <dl class="io">
             <dt>Message</dt><dd>How do I get refunded?</dd>
@@ -238,7 +238,7 @@
           <h3 id="c-chat">Chats</h3>
         </div>
         <p class="sub">Answers in English or Hindi in its own words. Fluent and on topic; for facts, use Reads.</p>
-        <p class="metric"><b>3.2985</b> held-out chat loss (gate ≤ 3.30)</p>
+        <p class="metric"><b>3.2555</b> held-out chat loss (gate ≤ 3.30)</p>
         <div class="sample">
           <dl class="io">
             <dt>Asked</dt><dd>Explain photosynthesis in two sentences.</dd>
@@ -276,7 +276,8 @@
 
     <p class="fineprint">Sample outputs come from a CPU run of the demo's 117-sample library on 4 November 2026
       (<code>examples/samples/results.md</code>). Headline numbers are the release candidate's, measured on the
-      exported model on 5 November 2026.</p>
+      published weights (<a href="https://huggingface.co/toonist/AnuLM-Omni-400M">toonist/AnuLM-Omni-400M</a>),
+      measured on 6 November 2026.</p>
   </div>
 </section>
 
@@ -293,43 +294,43 @@
     <div class="gates">
       <div class="gate">
         <p class="label">English speech <span class="tag ok">pass</span></p>
-        <p class="value">8.3<small>% WER</small></p>
+        <p class="value">7.9<small>% WER</small></p>
         <p class="meta">LibriSpeech, 100 held-out clips. Gate ≤ 9.0. Lower is better.</p>
       </div>
       <div class="gate">
         <p class="label">Hindi speech, mean <span class="tag ok">pass</span></p>
-        <p class="value">42.2<small>% WER</small></p>
+        <p class="value">41.9<small>% WER</small></p>
         <p class="meta">Mean of FLEURS, Kathbath, MUCS. Gate ≤ 50.9.</p>
       </div>
       <div class="gate">
         <p class="label">Hindi speech, FLEURS <span class="tag ok">pass</span></p>
-        <p class="value">41.5<small>% WER</small></p>
+        <p class="value">41.6<small>% WER</small></p>
         <p class="meta">FLEURS Hindi test. Gate ≤ 43.0.</p>
       </div>
       <div class="gate">
         <p class="label">Reading, English <span class="tag ok">pass</span></p>
-        <p class="value">36.4<small> F1</small></p>
+        <p class="value">37.8<small> F1</small></p>
         <p class="meta">SQuAD. Gate ≥ 30.0. Higher is better.</p>
       </div>
       <div class="gate">
         <p class="label">Banking intents <span class="tag ok">pass</span></p>
-        <p class="value">85.7<small>%</small></p>
+        <p class="value">85.0<small>%</small></p>
         <p class="meta">BANKING77 accuracy, 77 intents. Gate ≥ 80.0.</p>
       </div>
       <div class="gate">
         <p class="label">Image questions <span class="tag ok">pass</span></p>
-        <p class="value">11.4<small>%</small></p>
+        <p class="value">12.6<small>%</small></p>
         <p class="meta">TextVQA accuracy. Gate ≥ 10.0.</p>
       </div>
       <div class="gate">
         <p class="label">Chat <span class="tag ok">pass</span></p>
-        <p class="value">3.2985</p>
+        <p class="value">3.2555</p>
         <p class="meta">Held-out answer loss. Gate ≤ 3.30. Lower is better.</p>
       </div>
       <div class="gate">
         <p class="label">Also measured</p>
-        <p class="meta" style="margin-top:8px">Kathbath WER <b>32.1%</b> · MUCS WER <b>52.9%</b> · MASSIVE Hindi
-          accuracy <b>79.7%</b> · MLQA Hindi F1 <b>12.9</b>. No gate on these.</p>
+        <p class="meta" style="margin-top:8px">Kathbath WER <b>31.1%</b> · MUCS WER <b>53.0%</b> · MASSIVE Hindi
+          accuracy <b>80.3%</b> · MLQA Hindi F1 <b>11.9</b>. No gate on these.</p>
       </div>
     </div>
 
@@ -340,17 +341,17 @@
           <tr><th scope="col">Skill and measure</th><th scope="col">AnuLM-Omni-400M</th><th scope="col">Release gate</th><th scope="col">Status</th></tr>
         </thead>
         <tbody>
-          <tr><th scope="row">English speech, WER (LibriSpeech, 100 clips)</th><td class="num" data-label="Score">8.3%</td><td class="num" data-label="Gate">≤ 9.0%</td><td data-label="Status"><span class="tag ok">pass</span></td></tr>
-          <tr><th scope="row">Hindi speech, WER, mean of three sets</th><td class="num" data-label="Score">42.2%</td><td class="num" data-label="Gate">≤ 50.9%</td><td data-label="Status"><span class="tag ok">pass</span></td></tr>
-          <tr class="sub"><th scope="row">Hindi: FLEURS</th><td class="num" data-label="Score">41.5%</td><td class="num" data-label="Gate">≤ 43.0%</td><td data-label="Status"><span class="tag ok">pass</span></td></tr>
-          <tr class="sub"><th scope="row">Hindi: Kathbath</th><td class="num" data-label="Score">32.1%</td><td data-label="Gate">none</td><td data-label="Status">measured</td></tr>
-          <tr class="sub"><th scope="row">Hindi: MUCS (mixed with English)</th><td class="num" data-label="Score">52.9%</td><td data-label="Gate">none</td><td data-label="Status">measured</td></tr>
-          <tr><th scope="row">Reading, English, SQuAD F1</th><td class="num" data-label="Score">36.4</td><td class="num" data-label="Gate">≥ 30.0</td><td data-label="Status"><span class="tag ok">pass</span></td></tr>
-          <tr><th scope="row">Reading, Hindi, MLQA F1</th><td class="num" data-label="Score">12.9</td><td data-label="Gate">none</td><td data-label="Status"><span class="tag weak">weak</span></td></tr>
-          <tr><th scope="row">Banking intents, BANKING77 accuracy</th><td class="num" data-label="Score">85.7%</td><td class="num" data-label="Gate">≥ 80.0%</td><td data-label="Status"><span class="tag ok">pass</span></td></tr>
-          <tr><th scope="row">Hindi commands, MASSIVE hi-IN accuracy</th><td class="num" data-label="Score">79.7%</td><td data-label="Gate">none</td><td data-label="Status">measured</td></tr>
-          <tr><th scope="row">Image questions, TextVQA accuracy</th><td class="num" data-label="Score">11.4%</td><td class="num" data-label="Gate">≥ 10.0%</td><td data-label="Status"><span class="tag ok">pass</span> <span class="tag weak">weak</span></td></tr>
-          <tr><th scope="row">Chat, held-out answer loss</th><td class="num" data-label="Score">3.2985</td><td class="num" data-label="Gate">≤ 3.30</td><td data-label="Status"><span class="tag ok">pass</span></td></tr>
+          <tr><th scope="row">English speech, WER (LibriSpeech, 100 clips)</th><td class="num" data-label="Score">7.9%</td><td class="num" data-label="Gate">≤ 9.0%</td><td data-label="Status"><span class="tag ok">pass</span></td></tr>
+          <tr><th scope="row">Hindi speech, WER, mean of three sets</th><td class="num" data-label="Score">41.9%</td><td class="num" data-label="Gate">≤ 50.9%</td><td data-label="Status"><span class="tag ok">pass</span></td></tr>
+          <tr class="sub"><th scope="row">Hindi: FLEURS</th><td class="num" data-label="Score">41.6%</td><td class="num" data-label="Gate">≤ 43.0%</td><td data-label="Status"><span class="tag ok">pass</span></td></tr>
+          <tr class="sub"><th scope="row">Hindi: Kathbath</th><td class="num" data-label="Score">31.1%</td><td data-label="Gate">none</td><td data-label="Status">measured</td></tr>
+          <tr class="sub"><th scope="row">Hindi: MUCS (mixed with English)</th><td class="num" data-label="Score">53.0%</td><td data-label="Gate">none</td><td data-label="Status">measured</td></tr>
+          <tr><th scope="row">Reading, English, SQuAD F1</th><td class="num" data-label="Score">37.8</td><td class="num" data-label="Gate">≥ 30.0</td><td data-label="Status"><span class="tag ok">pass</span></td></tr>
+          <tr><th scope="row">Reading, Hindi, MLQA F1</th><td class="num" data-label="Score">11.9</td><td data-label="Gate">none</td><td data-label="Status"><span class="tag weak">weak</span></td></tr>
+          <tr><th scope="row">Banking intents, BANKING77 accuracy</th><td class="num" data-label="Score">85.0%</td><td class="num" data-label="Gate">≥ 80.0%</td><td data-label="Status"><span class="tag ok">pass</span></td></tr>
+          <tr><th scope="row">Hindi commands, MASSIVE hi-IN accuracy</th><td class="num" data-label="Score">80.3%</td><td data-label="Gate">none</td><td data-label="Status">measured</td></tr>
+          <tr><th scope="row">Image questions, TextVQA accuracy</th><td class="num" data-label="Score">12.6%</td><td class="num" data-label="Gate">≥ 10.0%</td><td data-label="Status"><span class="tag ok">pass</span> <span class="tag weak">weak</span></td></tr>
+          <tr><th scope="row">Chat, held-out answer loss</th><td class="num" data-label="Score">3.2555</td><td class="num" data-label="Gate">≤ 3.30</td><td data-label="Status"><span class="tag ok">pass</span></td></tr>
         </tbody>
       </table>
     </div>
@@ -626,12 +627,12 @@ python -m anulm app_omni --device cpu</code></pre>
       </article>
       <article class="card limit">
         <h3>Hindi reading</h3>
-        <p>Answering from Hindi passages is weak: MLQA Hindi F1 12.9. Hindi speech mixed with English is the
-          hardest speech test: 52.9% WER on MUCS.</p>
+        <p>Answering from Hindi passages is weak: MLQA Hindi F1 11.9. Hindi speech mixed with English is the
+          hardest speech test: 53.0% WER on MUCS.</p>
       </article>
       <article class="card limit">
         <h3>Questions about photos</h3>
-        <p>Image answers are often wrong: 11.4% on TextVQA. Captions read well but miss details, such as counting
+        <p>Image answers are often wrong: 12.6% on TextVQA. Captions read well but miss details, such as counting
           one duck where there are two.</p>
       </article>
       <article class="card limit">
@@ -757,7 +758,7 @@ python -m anulm app_omni</code></pre>
         <caption id="models-cap" class="visually-hidden">Released and upcoming AnuLM models</caption>
         <thead><tr><th scope="col">Model</th><th scope="col">What it is</th><th scope="col">Licence</th></tr></thead>
         <tbody>
-          <tr><th scope="row">AnuLM-Omni-400M <span class="soon">not yet published</span></th><td data-label="What">this model: one set of weights for every skill above</td><td data-label="Licence">CC BY-SA 4.0</td></tr>
+          <tr><th scope="row"><a href="https://huggingface.co/toonist/AnuLM-Omni-400M">AnuLM-Omni-400M</a></th><td data-label="What">this model: one set of weights for every skill above</td><td data-label="Licence">CC BY-SA 4.0</td></tr>
           <tr><th scope="row"><a href="https://huggingface.co/toonist/AnuLM-Base-v2-400M">AnuLM-Base-v2-400M</a></th><td data-label="What">the base Omni starts from: Hindi, English, Python, 11.3B tokens</td><td data-label="Licence">CC BY-SA 4.0</td></tr>
           <tr><th scope="row"><a href="https://huggingface.co/toonist/AnuLM-Base-400M">AnuLM-Base-400M</a></th><td data-label="What">the first three-language base</td><td data-label="Licence">CC BY-SA 4.0</td></tr>
           <tr><th scope="row"><a href="https://huggingface.co/toonist/AnuLM-Base-2K-400M">AnuLM-Base-2K-400M</a></th><td data-label="What">the same base at 2,048 tokens of context</td><td data-label="Licence">CC BY-SA 4.0</td></tr>

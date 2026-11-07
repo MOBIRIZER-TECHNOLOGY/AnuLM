@@ -153,6 +153,15 @@ licences and dedupe are in `data/next/MANIFEST.md` (built 2026-11-04).
 | MLQA `hi.hi` dev and unused translate-train hi | https://huggingface.co/datasets/facebook/mlqa | CC BY-SA 3.0 | 506 + 52,160; eval and held-out questions removed | `data/rc_train_v2.jsonl` |
 | oasst2 later turns, Aya English | as above | Apache 2.0 | 13,163 (from run 1, `make_chat_v6.py`) | `data/chat_train_v6.jsonl` |
 
+### The clean corpus for the from-scratch 1B base (2026-11-06)
+
+`data/v3` (`experiments/build_v3.py`): base v2's English and Hindi tokens unchanged, and
+base v2's Python replaced. See `docs/PLAN_1B.md`.
+
+| Dataset | Source | Licence | Rows | Into |
+|---|---|---|---|---|
+| github-code-clean, Python | https://huggingface.co/datasets/codeparrot/github-code-clean | per file, from the repository: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, CC0-1.0, Unlicense only (GPL, AGPL, LGPL, MPL, EPL, Artistic dropped) | 528,850 files, 0.77B tokens; StarCoder-style filters, MBPP/HumanEval 13-gram overlap removed | `data/v3` (`experiments/build_code_clean.py`; repo, path and licence kept per file) |
+
 ## Evaluation sets (never trained on)
 
 | set | link | licence | fetched by | used by |

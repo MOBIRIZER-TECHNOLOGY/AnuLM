@@ -98,6 +98,12 @@ TASKS = [
     ("caption", "image", "data/omni/caption_train.jsonl", 0.13, 8),   # no gate
     ("vqa", "image", "data/omni/vqa_train.jsonl", 0.12, 8),
 ]
+# --data v2 (run 2, 2026-11-06): the same shares on more data, from data/next/
+# (experiments/make_omni_v2_data.py; terms in docs/DATASETS.md): LibriSpeech
+# train-clean-360, VizWiz answerable questions, 60k more Localized Narratives
+# photos, MLQA Hindi reading.
+DATA_V2 = {"read": "data/rc_train_v2.jsonl", "asr_en": "data/speech_ls460",
+           "caption": "data/omni/caption_train_v2.jsonl", "vqa": "data/omni/vqa_train_v2.jsonl"}
 HELD = {"chat": "data/chat_heldout.jsonl", "read": "data/rc_heldout.jsonl"}
 
 # Release gates: the joint model may cost a little on each task against the
@@ -462,7 +468,10 @@ def main() -> None:
     ap.add_argument("--steps", type=int, default=STEPS)
     ap.add_argument("--retrain", action="store_true",
                     help="if the recipe changed after training finished, archive that model and train again")
+    ap.add_argument("--data", choices=("v1", "v2"), default="v1", help="v2: add the data/next sets (DATA_V2)")
     a = ap.parse_args()
+    if a.data == "v2":
+        TASKS[:] = [(n, k, DATA_V2.get(n, p), w, b) for n, k, p, w, b in TASKS]
     LOGS.mkdir(parents=True, exist_ok=True)
     os.chdir(ROOT)
     log(f"=== OMNI ONE (pid {os.getpid()}) ===")

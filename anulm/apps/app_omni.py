@@ -910,7 +910,7 @@ def build(models: Models) -> gr.Blocks:
                 gr.Markdown("*Look it up: the one model reads the Wikipedia passages the retriever finds "
                             "and writes the answer"
                             + (f" (SQuAD F1 {num(res, 'read_squad_en')})" if res else "")
-                            + ". Just talk: its own words, learned from 23k human-written instructions"
+                            + ". Just talk: its own words, learned from 36k human-written instructions"
                             + (f"; held-out answer loss {num(res, 'chat_heldout_loss')}, against "
                                f"{num(start, 'chat_heldout_loss')} for the chat model it started from "
                                f"(lower is better)" if res and start else "")
@@ -918,7 +918,7 @@ def build(models: Models) -> gr.Blocks:
             else:
                 gr.Markdown("*Look it up: our reader points at the answer inside Wikipedia passages "
                             "(answers facts it was never told). Just talk: the chat model, tuned on "
-                            "23k human-written instructions; fluent and on topic, but its facts from "
+                            "36k human-written instructions; fluent and on topic, but its facts from "
                             "memory are unreliable.*")
 
         with gr.Tab("🧭 Decide"):

@@ -60,6 +60,10 @@ CHECKPOINTS may be used for, which is a separate question from the code.
                              CC BY-SA and ChatGPT-derived
                              data (see below)
   glaive-code-assistant      Apache 2.0                     ckpt_coder_sft
+  github-code-clean          per file: MIT, Apache-2.0,     ckpt_base_1b (from scratch,
+  (codeparrot), Python       BSD-2/3, ISC, CC0, Unlicense   docs/PLAN_1B.md); repo,
+                             only; copyleft dropped         path and licence of every
+                                                            file in data/code_clean
   databricks-dolly-15k       CC BY-SA 3.0  share-alike      ckpt_chat_v3, Omni
   oasst2 (OpenAssistant)     Apache 2.0                     ckpt_chat_v3, Omni
   aya_dataset, Hindi rows    Apache 2.0                     ckpt_chat_v3, Omni
