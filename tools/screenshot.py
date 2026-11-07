@@ -3,9 +3,8 @@
     python -m anulm app --port 7860 &
     python -m tools.screenshot docs/media/demo-coder.png
 
-Why this exists rather than "take a screenshot": the image in
-`docs/history/ANNOUNCEMENT.md` shows a real model answering a real prompt, and it has
-to stay true when the page changes. This drives the page the way a visitor
+Why this exists rather than "take a screenshot": a demo image should show a real
+model answering a real prompt, and it has to stay true when the page changes. This drives the page the way a visitor
 does -- picks a checkpoint, presses Load, types, presses Generate, waits for
 output -- and only then captures it. If the interface breaks, this fails
 loudly instead of producing a pretty picture of a broken page.

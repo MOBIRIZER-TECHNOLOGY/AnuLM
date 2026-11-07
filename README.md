@@ -157,7 +157,7 @@ CPU wheel silently reports cuda unavailable.
 | [docs/SAMPLES.md](docs/SAMPLES.md) | What the released models actually produced on 4,131 held-out prompts, selected by rule rather than by eye, with the aggregate numbers beside them (§30). |
 | [experiments/README.md](experiments/README.md) | One script per results section from §9 on, and how to resume the long ones. |
 | [demo_colab.ipynb](examples/demo_colab.ipynb), [app.py](anulm/apps/app.py), [space/](space/) | The hosted demo: three cells in Colab that download a checkpoint and launch `app.py` with a public link, and the Space files for the day Gradio Spaces are free to host again. |
-| [docs/history/](docs/history/) | Historical and working notes, kept for provenance: [TASKS.md](docs/history/TASKS.md), the machine's run log and recovery procedure for the finished coder and translation runs (its live-status block is rewritten by `tools/update_tasks.py`); [CODER_PLAN.md](docs/history/CODER_PLAN.md) and [TRANSLATE_PLAN.md](docs/history/TRANSLATE_PLAN.md), the two finished demo plans; [ANNOUNCEMENT.md](docs/history/ANNOUNCEMENT.md), the launch post drafts with the source of every number. |
+| [docs/history/](docs/history/) | Historical and working notes, kept for provenance: [TASKS.md](docs/history/TASKS.md), the machine's run log and recovery procedure for the finished coder and translation runs (its live-status block is rewritten by `tools/update_tasks.py`); [CODER_PLAN.md](docs/history/CODER_PLAN.md) and [TRANSLATE_PLAN.md](docs/history/TRANSLATE_PLAN.md), the two finished demo plans. |
 
 |                     | total   | active/token | experts hold | layers | attention |
 | ------------------- | ------- | ------------ | ------------ | ------ | --------- |
