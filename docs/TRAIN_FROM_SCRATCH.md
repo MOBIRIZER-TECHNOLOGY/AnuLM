@@ -279,7 +279,7 @@ so the report shows "-" and counts the reading gate as failed. They were
 measured afterwards (`logs/omni_one/eval_reading.json`) and added to
 `results.json`. This is why B1 tells you to run `omni_data check` first.
 
-**The chat gate failed, and the model was not published.** The chat model it
+**On that run the chat gate failed, and the model was not published.** (The run of 2026-11-06, with 13,163 more human-written chat pairs, passed all seven gates and is the published model; `docs/OMNI.md`, "Runs so far".) The chat model it
 started from scored 3.146 on the same measure. Why it got worse: the Omni run
 re-reads `data/chat_train.jsonl`, the same 22,873 examples the starting chat
 model had already been tuned on for two epochs. Over 12,500 steps, chat got
@@ -288,8 +288,8 @@ memorised it, and the loss on held-out chat rose steadily while every other
 task improved: in `6_train.log`, chat held-out goes from 3.27 at step 0 to
 3.58 at step 12,500. The share of chat steps and the learning rate are the
 two levers already tried (comments above `LR` and `TASKS` in
-`omni_one.py`). This is an open problem, not a bug in your setup. If your
-run fails the same gate, you reproduced it.
+`omni_one.py`). What fixed it was new data, not new levers: the current
+recipe trains chat on `data/chat_train_v6.jsonl` (`experiments/make_chat_v6.py`).
 
 Read the five caption samples at the end of `REPORT.md` as well. Numbers do
 not tell you whether the model describes the right animal.

@@ -52,7 +52,12 @@ class Omni:
             from .speech_encoder import ContinuousSpeech
             from .speech_vocab import vocab_of
             from anulm.inference.voice import OwnASR
-            enc = WhisperEncoder(self.meta.get("whisper", "small"), self.device)
+            # ANULM_WHISPER_DEVICE=cpu keeps the frozen encoder on the CPU while the
+            # decoder uses the GPU: ctranslate2 needs a real GPU when it loads, which a
+            # Hugging Face ZeroGPU Space has only inside a @spaces.GPU call.
+            import os
+            enc = WhisperEncoder(self.meta.get("whisper", "small"),
+                                 os.environ.get("ANULM_WHISPER_DEVICE") or self.device)
             sm = ContinuousSpeech(self.model, vocab_of(self.meta), enc.dim, self.meta.get("stack", 4)).to(self.device)
             sm.proj.load_state_dict(self.proj)
             sm.eval()

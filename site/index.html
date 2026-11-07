@@ -30,10 +30,9 @@
         <li><a href="#capabilities">Capabilities</a></li>
         <li><a href="#results">Results</a></li>
         <li><a href="#how">How it works</a></li>
-        <li><a href="#data">Data</a></li>
         <li><a href="#train">Train it</a></li>
-        <li><a href="#limits">Limits</a></li>
         <li><a href="#start">Get started</a></li>
+        <li><a href="#work">Work with us</a></li>
         <li><a href="#faq">FAQ</a></li>
       </ul>
     </nav>
@@ -771,6 +770,123 @@ python -m anulm app_omni</code></pre>
   </div>
 </section>
 
+<!-- ================= WORK WITH US ================= -->
+<section class="alt" id="work" aria-labelledby="work-title">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Work with us</p>
+      <h2 id="work-title">Learn with it, build on it, research with us.</h2>
+      <p>AnuLM is open, so you can do all of this yourself. If you would rather do it with the people who trained it,
+        tell us what you need.</p>
+    </div>
+    <div class="route-grid lanes">
+      <article class="card route" aria-labelledby="w-edu">
+        <p class="eyebrow">Colleges and students</p>
+        <h3 id="w-edu">Teach and learn how an LLM is built</h3>
+        <ul>
+          <li>Hands-on workshops and faculty programmes, from a first model on a laptop to training on one GPU</li>
+          <li>The course (20 chapters, each with a lab) and the reference book, free to use in your classes</li>
+          <li>Guidance for student projects and final-year theses built on AnuLM</li>
+        </ul>
+        <p class="fee">Fees: on request <small>workshops are priced per batch</small></p>
+        <div class="links"><a class="btn small primary" href="#enquire" data-topic="workshop">Ask about a workshop</a></div>
+      </article>
+      <article class="card route feature" aria-labelledby="w-biz">
+        <p class="eyebrow">Companies</p>
+        <h3 id="w-biz">A small model that runs on your hardware</h3>
+        <ul>
+          <li>Fine-tuning on your own data: support intents, Hindi and English documents, speech in your domain</li>
+          <li>Deployment on your servers or a single GPU, with the evaluation gates this page reports</li>
+          <li>Training for your team, so you can keep the model up to date yourselves</li>
+        </ul>
+        <p class="fee">Quoted after a short scoping call <small>no charge for the call</small></p>
+        <div class="links"><a class="btn small primary" href="#enquire" data-topic="fine-tuning">Start a conversation</a></div>
+      </article>
+      <article class="card route" aria-labelledby="w-res">
+        <p class="eyebrow">Researchers</p>
+        <h3 id="w-res">Collaborate on open models for Indian languages</h3>
+        <ul>
+          <li>The 1B model now training from scratch on commercially clean data, and what to build on it</li>
+          <li>Evaluations, Hindi and Indic datasets, speech, and small-model training methods</li>
+          <li>Every run's logs and scripts are open, so results can be checked and extended</li>
+        </ul>
+        <p class="fee">Open collaboration <small>co-authored write-ups welcome</small></p>
+        <div class="links"><a class="btn small primary" href="#enquire" data-topic="research">Propose a collaboration</a></div>
+      </article>
+    </div>
+
+    <div class="enquire-grid" id="enquire">
+      <form class="card enquiry" id="enquiry-form" novalidate
+            data-endpoint="" data-access-key="" data-email=""
+            aria-labelledby="enq-title" aria-describedby="enq-note">
+        <h3 id="enq-title">Send an enquiry</h3>
+        <p class="sub" id="enq-note">We use these details only to reply to you. Read the
+          <a href="privacy.html">privacy notice</a> (English and हिन्दी) before you send.</p>
+        <div class="field-row">
+          <label>Your name <input name="name" autocomplete="name" required maxlength="120"></label>
+          <label>Email <input name="email" type="email" autocomplete="email" required maxlength="200"></label>
+        </div>
+        <div class="field-row">
+          <label>I am
+            <select name="role" required>
+              <option value="">Choose one</option>
+              <option>Student</option>
+              <option>Faculty or college</option>
+              <option>Company</option>
+              <option>Researcher</option>
+              <option>Other</option>
+            </select>
+          </label>
+          <label>I'm interested in
+            <select name="topic" required>
+              <option value="">Choose one</option>
+              <option value="workshop">A workshop or faculty programme</option>
+              <option value="fine-tuning">Fine-tuning on our data</option>
+              <option value="deployment">Deploying it on our hardware</option>
+              <option value="research">A research collaboration</option>
+              <option value="other">Something else</option>
+            </select>
+          </label>
+        </div>
+        <label><span>Organisation <span class="opt">(optional)</span></span> <input name="organisation" autocomplete="organization" maxlength="200"></label>
+        <label>Message <textarea name="message" rows="5" required maxlength="4000"
+          placeholder="What would you like to do with AnuLM? Dates, team size or data you have in mind help."></textarea></label>
+        <label class="hp" aria-hidden="true">Leave this empty <input name="website" tabindex="-1" autocomplete="off"></label>
+        <label class="check"><input type="checkbox" name="adult" required><span>I am 18 or older. <span class="opt">Under 18? Ask
+          a teacher or parent to write to us for you.</span></span></label>
+        <label class="check"><input type="checkbox" name="consent" required><span>I agree that AnuLM may use the details
+          above to reply to this enquiry, as the <a href="privacy.html">privacy notice</a> describes. I can withdraw
+          this at any time.</span></label>
+        <div class="form-actions">
+          <button class="btn primary" type="submit">Send enquiry</button>
+          <p class="form-status" role="status" aria-live="polite"></p>
+        </div>
+      </form>
+      <aside class="card licence" aria-labelledby="lic-title">
+        <h3 id="lic-title">The licence, in plain words</h3>
+        <p class="sub">Free for commercial use. Weights CC BY-SA 4.0, code MIT.</p>
+        <table>
+          <caption class="visually-hidden">What the CC BY-SA 4.0 licence asks of you, by use</caption>
+          <thead><tr><th scope="col">If you…</th><th scope="col">What it asks</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">use it inside your organisation, or fine-tune it for yourself</th><td>Nothing.</td></tr>
+            <tr><th scope="row">build a product that calls it through an API</th><td>No weights are shared, so share-alike most likely does not apply. This is not settled law; credit AnuLM anyway.</td></tr>
+            <tr><th scope="row">publish the weights, or a fine-tuned version</th><td>Credit AnuLM, say what you changed, and release them under CC BY-SA 4.0.</td></tr>
+            <tr><th scope="row">ship the weights inside an app or device</th><td>That shares the weights: the same as publishing them.</td></tr>
+          </tbody>
+        </table>
+        <p class="fineprint">This is a summary, not legal advice; the
+          <a href="https://creativecommons.org/licenses/by-sa/4.0/legalcode">licence text</a> decides. The licence grants
+          no trademark rights. Some demo parts (the Piper voices) have their own terms; the
+          <a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/restructure/NOTICE">NOTICE</a> file lists them.</p>
+        <p class="fineprint">Prefer to talk in the open? Ask on
+          <a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/issues">GitHub</a> or the
+          model's <a href="https://huggingface.co/toonist/AnuLM-Omni-400M/discussions">Hugging Face community tab</a>.</p>
+      </aside>
+    </div>
+  </div>
+</section>
+
 <!-- ================= FAQ ================= -->
 <section id="faq" aria-labelledby="faq-title">
   <div class="wrap">
@@ -783,20 +899,22 @@ python -m anulm app_omni</code></pre>
         <summary>Can I use it in a commercial product?</summary>
         <div><p>Yes. The weights are CC BY-SA 4.0: you may use them commercially and modify them, with attribution.
           If you distribute the weights or a modified version, you must use CC BY-SA 4.0 too. Serving the model
-          behind an API distributes no weights. The code is MIT.</p>
+          behind an API shares no weights, so share-alike most likely does not apply, but that is not settled law.
+          The code is MIT. <a href="#lic-title">The licence, in plain words</a> has the four common cases.</p>
           <p>The demo's Piper voices have their own, non-commercial terms. A commercial deployment of the demo needs
           other voices.</p></div>
       </details>
       <details>
         <summary>Where can I download the Omni weights?</summary>
-        <div><p>Not yet. AnuLM-Omni-400M is a release candidate and is not on Hugging Face. You can train the same
-          model yourself with route B, in about 6 hours of GPU from the released base. The earlier AnuLM models
-          are already on <a href="https://huggingface.co/toonist">Hugging Face</a>.</p></div>
+        <div><p>On Hugging Face: <a href="https://huggingface.co/toonist/AnuLM-Omni-400M">toonist/AnuLM-Omni-400M</a>,
+          with its model card. You can also train the same model yourself with route B, in about 6 hours of GPU
+          from the released base.</p></div>
       </details>
       <details>
         <summary>Is there an online demo?</summary>
-        <div><p>Not yet. The demo is a Gradio app you run locally with <code>python -m anulm app_omni</code>, at
-          <code>http://127.0.0.1:7863</code>. It runs on a 16 GB GPU, or on a CPU with <code>--device cpu</code>.</p></div>
+        <div><p>A hosted demo on Hugging Face Spaces is being prepared. Until it is live, run the same Gradio app
+          locally with <code>python -m anulm app_omni</code>, at <code>http://127.0.0.1:7863</code>. It downloads the
+          model on first use and runs on a 16 GB GPU, or on a CPU with <code>--device cpu</code>.</p></div>
       </details>
       <details>
         <summary>Why is it one model instead of five?</summary>
@@ -834,6 +952,7 @@ python -m anulm app_omni</code></pre>
     <div class="cta">
       <a class="btn primary" href="#start">Get started</a>
       <a class="btn secondary" href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM">View on GitHub</a>
+      <a class="btn secondary" href="#enquire">Work with us</a>
     </div>
   </div>
 </section>
@@ -872,6 +991,8 @@ python -m anulm app_omni</code></pre>
           <li><a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/tree/restructure/course">The course</a></li>
           <li><a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/tree/restructure/book">The book</a></li>
           <li><a href="https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/blob/restructure/examples/samples/ATTRIBUTION.md">Sample credits</a></li>
+          <li><a href="#enquire">Contact us</a></li>
+          <li><a href="privacy.html">Privacy notice</a></li>
         </ul>
       </nav>
     </div>

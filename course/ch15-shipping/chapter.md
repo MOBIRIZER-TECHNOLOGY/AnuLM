@@ -135,8 +135,9 @@ gates and your report:
 Four of seven gates failed: chat (5.32 against a limit of 3.30), English
 speech (12.2% WER against 9.0%), Hindi speech on FLEURS (48.8% against 43.0%)
 and reading (F1 24.6 against 30.0). Its own score had improved by 41%. It
-was not published. The fix (Chapter 14) is set up in `omni_one.py` and waits
-for its run.
+was not published. After the fixes in Chapter 14 (more steps per update, a
+shorter run with gate-aware checkpoint choice, and new human-written chat data),
+the run of 2026-11-06 passed all seven gates and was published.
 
 ## Code tour: the same pieces in the repository
 

@@ -670,7 +670,10 @@ def footer_html() -> str:
             "</code>. A small model: check what matters, especially facts from memory and names.</div>")
 
 
-def build(models: Models) -> gr.Blocks:
+def build(models: Models, gpu=None) -> gr.Blocks:
+    """The page. `gpu` wraps every handler that runs a model (on a Hugging Face
+    ZeroGPU Space, `spaces.GPU(duration=...)`); by default it is the identity."""
+    gpu = gpu or (lambda f: f)
     res = omni_results() if USE_OMNI else {}
     with gr.Blocks(title="AnuLM-Omni-400M · live demo") as demo:
         if USE_OMNI:
@@ -724,6 +727,7 @@ def build(models: Models) -> gr.Blocks:
                     listen_meta = gr.Markdown()
                     listen_ref.render()
 
+            @gpu
             def do_listen(a, lg, speak):
                 if a is None:
                     return "", "", None, "*record or upload a clip first*"
@@ -801,6 +805,7 @@ def build(models: Models) -> gr.Blocks:
                     look_ref = gr.Textbox(label="reference (library samples)", lines=4,
                                           interactive=False, visible=bool(look_lib))
 
+            @gpu
             def do_look(image, q, sq):
                 if image is None:
                     return q, "", None, "*drop an image in first*"
@@ -888,6 +893,7 @@ def build(models: Models) -> gr.Blocks:
                     chat_meta = gr.Markdown()
                     chat_ref.render()
 
+            @gpu
             def do_chat(q, mode):
                 if not q or not q.strip():
                     return "", ""
@@ -989,6 +995,7 @@ def build(models: Models) -> gr.Blocks:
                                             visible=bool(decide_lib))
                     typed = gr.JSON(label="typed output")
 
+            @gpu
             def do_decide(m, t, which, tk=TASK_BANK):
                 if not m or not m.strip():
                     return None, "", None

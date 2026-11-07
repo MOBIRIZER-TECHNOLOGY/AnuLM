@@ -72,9 +72,19 @@ def load_split(name: str, task: str = "banking77") -> list[tuple[str, str]]:
     return [(r["text"], r["category"]) for r in csv.DictReader(open(DATA / f"{name}.csv", encoding="utf-8"))]
 
 
+PACKAGED_LABELS = Path(__file__).with_name("labels")
+
+
 def labels(task: str = "banking77") -> list[str]:
     """The task's label names: BANKING77's categories.json in its own order;
-    for MASSIVE and india-banking, the sorted labels seen in train."""
+    for MASSIVE and india-banking, the sorted labels seen in train.
+
+    The lists for the tasks AnuLM-Omni was trained on ship in anulm/tasks/labels/,
+    so a fresh clone or a Space can classify without the datasets on disk;
+    tests check they equal what the data gives."""
+    packaged = PACKAGED_LABELS / f"{task}.json"
+    if packaged.exists():
+        return json.loads(packaged.read_text(encoding="utf-8"))
     if task.startswith("massive-") or task == "india-banking":
         return sorted({l for _, l in load_split("train", task)})
     return json.load(open(DATA / "categories.json"))

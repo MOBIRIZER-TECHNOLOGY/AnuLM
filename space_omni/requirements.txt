@@ -1,0 +1,10 @@
+# AnuLM-Omni-400M Space. gradio comes from the Space's sdk_version (README.md).
+torch>=2.4
+numpy
+safetensors>=0.4
+huggingface_hub>=0.30
+tokenizers
+faster-whisper>=1.1        # Whisper-small encoder (frozen), via ctranslate2
+timm>=1.0                  # SigLIP image encoder (frozen)
+piper-tts>=1.2             # the spoken answers (CPU)
+soundfile

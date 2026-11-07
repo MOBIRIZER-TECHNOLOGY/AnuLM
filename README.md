@@ -26,7 +26,7 @@ card per checkpoint beside it; `CITATION.cff` says how to cite the project.
 | three-language base | [toonist/AnuLM-Base-400M](https://huggingface.co/toonist/AnuLM-Base-400M) | CC BY-SA 4.0 |
 | the same base at 2,048 tokens | [toonist/AnuLM-Base-2K-400M](https://huggingface.co/toonist/AnuLM-Base-2K-400M) | CC BY-SA 4.0 |
 | base v2: Hindi, English, Python, 11.3B tokens | [toonist/AnuLM-Base-v2-400M](https://huggingface.co/toonist/AnuLM-Base-v2-400M) | CC BY-SA 4.0 |
-| **one model**: chat, reading, intents, English + Hindi speech, images | toonist/AnuLM-Omni-400M (training; published when its release gates pass) | CC BY-SA 4.0 |
+| **one model**: chat, reading, intents, English + Hindi speech, images | [toonist/AnuLM-Omni-400M](https://huggingface.co/toonist/AnuLM-Omni-400M) (published 2026-11-07; all 7 release gates pass) | CC BY-SA 4.0 |
 
 The one model holds the decoder and two small projectors; the speech and
 image encoders it reads through (Whisper-small, SigLIP) are frozen and come
@@ -153,6 +153,7 @@ CPU wheel silently reports cuda unavailable.
 | [docs/VERIFICATION.md](docs/VERIFICATION.md) | Does this code work? The test and smoke commands to run, the results they gave on the development machine, what has not been checked, and the known open issues. |
 | [docs/SPEECH.md](docs/SPEECH.md) | How AnuLM learns to listen and talk: the Whisper-and-Piper cascade baseline against speech tokens in the model's own vocabulary, what is built, what is measured, and what is still only a plan. |
 | [TODO.md](docs/TODO.md), [CONTRIBUTING.md](CONTRIBUTING.md) | Open work, ordered by usefulness and labelled by whether it needs a GPU, and how to contribute a measured change. |
+| [docs/LAUNCH.md](docs/LAUNCH.md) | The public page and the hosted demo: what is built and tested, and the steps left before launch (form service, privacy notice, domain, the Space). |
 | [docs/PUBLISHING.md](docs/PUBLISHING.md) | How this is released: licences per artefact, weight export to safetensors, Hugging Face upload, Zenodo DOI, the Space. |
 | [docs/SAMPLES.md](docs/SAMPLES.md) | What the released models actually produced on 4,131 held-out prompts, selected by rule rather than by eye, with the aggregate numbers beside them (§30). |
 | [experiments/README.md](experiments/README.md) | One script per results section from §9 on, and how to resume the long ones. |

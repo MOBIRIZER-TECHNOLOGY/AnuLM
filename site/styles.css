@@ -414,3 +414,39 @@ figure { margin: 0; }
 @media (min-width: 760px) { .miss-strip { grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); } }
 .miss-strip img { width: 100%; border-radius: 10px; border: 1px solid var(--border); }
 .miss-strip h3 { font-size: 1.3rem; }
+
+/* ---------- Work with us ---------- */
+.lanes { margin-bottom: 28px; }
+.route .fee { font-weight: 700; margin: 0 0 14px; }
+.route .fee small { display: block; font-weight: 500; color: var(--muted); font-size: .88rem; }
+.enquire-grid { display: grid; gap: 18px; grid-template-columns: 1fr; scroll-margin-top: calc(var(--nav-h) + 16px); }
+@media (min-width: 980px) { .enquire-grid { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); } }
+.enquiry { gap: 14px; }
+.enquiry h3, .licence h3 { font-size: 1.28rem; margin: 0; }
+.enquiry .sub, .licence .sub { margin: 0; }
+.enquiry label { display: grid; gap: 6px; font-weight: 600; font-size: .95rem; min-width: 0; }
+.field-row { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .field-row { grid-template-columns: 1fr 1fr; } }
+.enquiry input:not([type="checkbox"]), .enquiry select, .enquiry textarea {
+  width: 100%; min-width: 0; font: inherit; font-weight: 400; color: var(--text); background: var(--bg);
+  border: 1px solid var(--border-strong); border-radius: 9px; padding: 10px 12px; min-height: 44px;
+}
+.enquiry textarea { resize: vertical; min-height: 120px; }
+.enquiry input:focus-visible, .enquiry select:focus-visible, .enquiry textarea:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent);
+}
+.enquiry [aria-invalid="true"] { border-color: var(--warn); }
+.enquiry .check { display: flex; gap: 10px; align-items: flex-start; font-weight: 500; }
+.enquiry .check input { width: 20px; height: 20px; margin-top: 2px; flex: none; accent-color: var(--accent); }
+.enquiry .opt { color: var(--muted); font-weight: 400; }
+.enquiry .hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.form-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+.form-status { margin: 0; color: var(--muted); font-size: .95rem; }
+.form-status.ok { color: var(--ok); }
+.form-status.err { color: var(--warn); }
+.licence table { margin: 4px 0 0; font-size: .92rem; }
+.licence th[scope="row"] { font-weight: 600; width: 45%; }
+.licence th, .licence td { padding: 10px 10px 10px 0; }
+.licence .fineprint { margin-top: 10px; font-size: .86rem; }
+
+.nav-links a { white-space: nowrap; }

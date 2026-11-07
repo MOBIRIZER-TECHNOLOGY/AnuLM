@@ -90,8 +90,8 @@ Found while documenting and reviewing; none is caused by the restructure.
 - `make_rc.window` centres on an answer's start, so answers longer than about
   60 words can be cut.
 - `AnuLMDecide.batch` (LangChain helper) ignores `return_exceptions`.
-- The Omni demo's default model, `toonist/AnuLM-Omni-400M`, is not published,
-  so a fresh clone's Omni demo has no model until one is trained or published.
+- Fixed 2026-11-07: the Omni demo's default model, `toonist/AnuLM-Omni-400M`,
+  is published, so a fresh clone's Omni demo downloads it on first use.
 - A local SigLIP folder path is saved into checkpoints as `tower`, so such a
   checkpoint's image tab only works on a machine with the same folder.
 

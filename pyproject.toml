@@ -40,6 +40,9 @@ py-modules = ["model"]
 [tool.setuptools.packages.find]
 include = ["anulm*"]
 
+[tool.setuptools.package-data]
+anulm = ["tasks/labels/*.json"]
+
 # Lint configuration only: the code is not run through a formatter (it keeps
 # column-aligned inline comments), and these rules catch real bugs, not style.
 [tool.ruff]
