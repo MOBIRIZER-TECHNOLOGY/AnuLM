@@ -40,7 +40,7 @@ python -m anulm train --preset 350m --device cuda --moe-impl grouped --data data
 
 ## 22.2  From a preset and `--cfg` to a model
 
-> **In the repo** · `anulm/training/train.py` · `PRESETS` · lines 30–32 · @WORKTREE
+> **In the repo** · `anulm/training/train.py` · `PRESETS` · lines 30–32 · @c4a39f8
 
 ```python
 # `--preset` names -> AnuLMConfig builders (anulm/model.py).
@@ -48,7 +48,7 @@ PRESETS = {"tiny-gqa": AnuLMConfig.tiny_gqa, "tiny-mla": AnuLMConfig.tiny_mla,
            "350m": AnuLMConfig.base_350m, "1b": AnuLMConfig.base_1b}
 ```
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 723–741 · @WORKTREE
+> **In the repo** · `anulm/training/train.py` · `main` · lines 723–741 · @c4a39f8
 
 ```python
     builder = PRESETS[args.preset]
@@ -514,7 +514,7 @@ no reason to record the graph and keep activations for it.
 | [R52] | `torch.compile`, the API the probe calls | CHECKED |
 
 Repository evidence, all at @b42998d:
-- `anulm/training/train.py`: `main` 536–924 (646, 712–732 (723–741 @WORKTREE), 736, 747, 749–772, 849–873, 869,
+- `anulm/training/train.py`: `main` 536–924 (646, 712–732 (723–741 @c4a39f8), 736, 747, 749–772, 849–873, 869,
   874–880, 882–889, 891–908), `lr_at` 375–400, `OptimizerSet.set_lr_scale` 416–420.
 - `anulm/model.py`: `from __future__ import annotations` 23,
   `AnuLM.update_expert_biases` 1071–1101.

@@ -124,7 +124,7 @@ repository code**), checked against `generate`'s real calls. The last row is
         return [dict() for _ in self.layers]
 ```
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 480–487 · @WORKTREE
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 480–487 · @c4a39f8
 
 ```python
         if cache is not None:

@@ -29,7 +29,7 @@ Prerequisites: the KV cache (Chapter 27), precision (Chapter 23), serving
         return [dict() for _ in self.layers]
 ```
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 480–486 · @WORKTREE
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 480–486 · @c4a39f8
 
 ```python
         if cache is not None:

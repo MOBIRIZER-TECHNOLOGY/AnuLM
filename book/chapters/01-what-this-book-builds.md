@@ -352,7 +352,7 @@ command name to a module of the package.
 
 From a fresh clone, `quickstart.py --train` trains and samples a model:
 
-> **In the repo** · `anulm/quickstart.py` · `train` · lines 185–192 · @WORKTREE
+> **In the repo** · `anulm/quickstart.py` · `train` · lines 185–192 · @c4a39f8
 
 ```python
     rc = run([sys.executable, "-u", "-m", "anulm", "train", "--preset", "tiny-gqa", "--steps", "200",
@@ -370,7 +370,7 @@ line 226, instead downloads a released checkpoint, the coder model, and
 serves it.) The `tiny-gqa`
 preset is a method on `AnuLMConfig`:
 
-> **In the repo** · `anulm/model.py` · `AnuLMConfig.tiny_gqa` · lines 154–167 · @WORKTREE
+> **In the repo** · `anulm/model.py` · `AnuLMConfig.tiny_gqa` · lines 154–167 · @c4a39f8
 
 ```python
     @staticmethod
@@ -539,7 +539,7 @@ used only for the claim in its register row:
 
 Repository evidence, all at @b42998d:
 - `anulm/model.py`: banner lines 36, 222, 257, 422, 498, 582, 794;
-  `AnuLMConfig.tiny_gqa` 154–167 (@WORKTREE); `Block` 797–824 (Figure 1.3's sublayers;
+  `AnuLMConfig.tiny_gqa` 154–167 (@c4a39f8); `Block` 797–824 (Figure 1.3's sublayers;
   layer 0 dense, line 811); `AnuLM.__init__` 827–843;
   `AnuLM.forward` 915–918; `AnuLM.generate` 1115–1180 (loop 1144–1173;
   the `temperature <= 0` greedy branch 1161–1162).

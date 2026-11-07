@@ -39,7 +39,7 @@ each learns its own pattern. The configuration fixes the sizes:
 ```
 
 The released model's preset sets `head_dim=64` explicitly (`base_350m`, line
-188 @WORKTREE), so the default branch is not its path, though it gives the same 64 =
+188 @c4a39f8), so the default branch is not its path, though it gives the same 64 =
 1,024 / 16. The check makes the query heads split evenly into groups;
 `check` raises `ValueError` (lines 129–131), so a bad `--cfg` or a downloaded
 `config.json` is refused even under `python -O`.

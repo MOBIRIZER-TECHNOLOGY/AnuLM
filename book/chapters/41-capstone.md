@@ -78,7 +78,7 @@ field of it; a misspelt field is a usage error.
 
 > **Details.** How `train.py` builds the configuration:
 >
-> **In the repo** · `anulm/training/train.py` · `main` · lines 723–740 · @WORKTREE
+> **In the repo** · `anulm/training/train.py` · `main` · lines 723–740 · @c4a39f8
 >
 > ```python
 >     builder = PRESETS[args.preset]
@@ -143,7 +143,7 @@ def first_loss() -> None:
     val, sem = T.evaluate(model, val_data, args)
 ```
 
-The keyword arguments are those of lines 735–739 (@WORKTREE) for this command. The sampler
+The keyword arguments are those of lines 735–739 (@c4a39f8) for this command. The sampler
 has its own random generator, so it leaves the weights' seed untouched, and its
 first draw is the batch `anulm/training/train.py` trains on at step 0.
 
@@ -876,7 +876,7 @@ Repository evidence, all at @b42998d:
   726–731, the step 855–878, evaluation and saves 891–908), `load_bytes` 62–98,
   `WindowSampler` 104–160, `lr_at` 375–400, `evaluate` 477–533; defaults:
   `--steps` 2000 (line 548), `--warmup` 100 (554), `--device` (575–576).
-- `anulm/training/train.py` at @WORKTREE: `PRESETS` 30–32; in `main`, the
+- `anulm/training/train.py` at @c4a39f8: `PRESETS` 30–32; in `main`, the
   preset builder 723–732 and the keyword arguments 735–740.
 - `.github/workflows/tests.yml` line 132: the CI's 50-step run.
 - `anulm/model.py`: `AnuLM.generate` 1115–1180 (greedy and sampling 1161–1169),

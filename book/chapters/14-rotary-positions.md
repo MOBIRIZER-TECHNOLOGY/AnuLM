@@ -260,7 +260,7 @@ def rotate_half(x):
     return torch.cat((-x2, x1), dim=-1)
 ```
 
-> **In the repo** · `anulm/model.py` · `apply_rope` · lines 363–372 · @WORKTREE
+> **In the repo** · `anulm/model.py` · `apply_rope` · lines 363–372 · @c4a39f8
 
 ```python
 def apply_rope(q, k, cos, sin):
@@ -472,7 +472,7 @@ used only for the claim in its register row:
 | [S03] | ALiBi: linear biases on attention scores | CHECKED |
 
 Repository evidence, all at @b42998d:
-- `anulm/model.py`: `Rotary` 278–343, `rotate_half` 346–350, `apply_rope` 353–362 (363–372 @WORKTREE),
+- `anulm/model.py`: `Rotary` 278–343, `rotate_half` 346–350, `apply_rope` 353–362 (363–372 @c4a39f8),
   `MoE` 756 and 784 (bf16 casts), `AnuLM.__init__` 837–839, `AnuLM.forward` 899.
 - `tests/test_model.py`: tests at lines 101, 120 and 733.
 - `docs/RESULTS.md` §3; `book/measurements/part_iv_a_shift.json`.

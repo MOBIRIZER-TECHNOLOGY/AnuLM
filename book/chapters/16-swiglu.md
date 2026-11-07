@@ -166,7 +166,7 @@ upward: close to 0 for very negative g, about g itself for large g (SiLU(4) =
 These are I<sub>e</sub>, an expert's width; I, layer 0's; and the number of
 dense layers from the bottom. The released model's preset sets I:
 
-> **In the repo** · `anulm/model.py` · `AnuLMConfig.base_350m` · lines 187–196 · @WORKTREE
+> **In the repo** · `anulm/model.py` · `AnuLMConfig.base_350m` · lines 187–196 · @c4a39f8
 
 ```python
         cfg = dict(
@@ -221,7 +221,7 @@ Two readings (*verified*):
   does not say that this is how it was chosen.
 
 > **Details.** The smaller presets set I to 2·D (`tiny_gqa`, line 163) and
-> 4·D (`tiny_mla`, line 223), both @WORKTREE (`docs/RESULTS.md`, "The two
+> 4·D (`tiny_mla`, line 223), both @c4a39f8 (`docs/RESULTS.md`, "The two
 > presets").
 
 `IN THE REPO`
@@ -424,7 +424,7 @@ used only for the claim in its register row:
 
 Repository evidence, at @b42998d unless marked:
 - `anulm/model.py`: `AnuLMConfig` 77–79, `SwiGLU` 242–253, `MoE.__init__` 688–694,
-  `Block.__init__` 809–811, `AnuLM.__init__` 860–863; at @WORKTREE, `tiny_gqa`
+  `Block.__init__` 809–811, `AnuLM.__init__` 860–863; at @c4a39f8, `tiny_gqa`
   line 163, `base_350m` 187–196, `tiny_mla` line 223.
 - `tests/test_model.py`: `rmsnorm_and_swiglu_match_their_formulas` 252,
   `all_parameters_receive_gradients` 415,

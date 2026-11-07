@@ -227,7 +227,7 @@ Shapes for `tiny_mla`.
 
 ## 19.4  What the cache holds
 
-> **In the repo** · `anulm/model.py` · `MLAttention.forward` · lines 565–573 · @WORKTREE
+> **In the repo** · `anulm/model.py` · `MLAttention.forward` · lines 565–573 · @c4a39f8
 
 ```python
         if cache is not None:
@@ -468,7 +468,7 @@ used only for the claim in its register row:
 
 Repository evidence, all at @b42998d:
 - `anulm/model.py`: `AnuLMConfig.__post_init__` 150–156; `MLAttention.__init__`
-  516–533, `MLAttention.forward` 539–553, 564–578 (and 565–573 @WORKTREE); `AnuLM.__init__`
+  516–533, `MLAttention.forward` 539–553, 564–578 (and 565–573 @c4a39f8); `AnuLM.__init__`
   line 837.
 - `tests/test_model.py`: `mla_shares_one_rope_key_across_heads` 529–541;
   `incremental_forward_matches_full_forward`, `cache_holds_what_it_should`,

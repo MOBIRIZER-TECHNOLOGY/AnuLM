@@ -284,7 +284,7 @@ position (Chapter 12). Reading one way gives three things: S graded
 predictions per window of S tokens (Chapter 3); generation that is just
 reading one more token; and a past that never changes, so it can be cached:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 480–486 · @WORKTREE
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 480–486 · @c4a39f8
 
 ```python
         if cache is not None:

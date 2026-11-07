@@ -292,7 +292,7 @@ PyTorch for the causal mask whenever no mask is passed and S > 1.
 
 The layer that calls it sets up its projections and scale once:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 440–459 · @WORKTREE
+> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 440–459 · @c4a39f8
 
 ```python
     def __init__(self, cfg: AnuLMConfig, rotary: Rotary):
@@ -329,7 +329,7 @@ The layer that calls it sets up its projections and scale once:
 
 The forward pass first makes the queries, keys and values for every head:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 461–486 · @WORKTREE
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 461–486 · @c4a39f8
 
 ```python
     def forward(self, x, cos, sin, cache: Optional[dict] = None, start: int = 0,
@@ -526,7 +526,7 @@ the gains.
 
 > **Details.** QK-norm was proposed with ℓ2 normalisation and a single learned
 > scale [R14]. AnuLM uses RMSNorm with a gain per dimension, before the
-> rotation; the comment at line 475 (@WORKTREE) says "before RoPE".
+> rotation; the comment at line 475 (@c4a39f8) says "before RoPE".
 
 `IN THE REPO`
 

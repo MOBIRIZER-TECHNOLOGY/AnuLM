@@ -460,9 +460,9 @@ come back as exactly the stored ids (*measured*,
 `code-examples/ch09_measure_fertility.py`, seed 0).
 
 > **Details.** `save` writes `{"type", "version", "merges"}` as JSON, and
-> `load` accepts only the type id `anulm-bpe` (lines 220–239 @WORKTREE; test
+> `load` accepts only the type id `anulm-bpe` (lines 220–239 @c4a39f8; test
 > `bpe_files_load_and_foreign_ones_are_refused`). Any other type raises
-> `ValueError` naming the file (lines 236–238 @WORKTREE), not an assert, so
+> `ValueError` naming the file (lines 236–238 @c4a39f8), not an assert, so
 > `python -O` cannot remove the check.
 > `cmd_encode` (lines 297–345) encodes a corpus with a pool of worker
 > processes, about 4 million characters of whole documents per batch (around
@@ -475,7 +475,7 @@ come back as exactly the stored ids (*measured*,
 
 `bpe.py stats` reports compression and fertility:
 
-> **In the repo** · `anulm/bpe.py` · `_stats` · lines 344–352 · @WORKTREE
+> **In the repo** · `anulm/bpe.py` · `_stats` · lines 344–352 · @c4a39f8
 
 ```python
 def _stats(tok, text):
@@ -602,10 +602,10 @@ Repository evidence, all at @b42998d:
 - `anulm/bpe.py`: `CHUNK_RE` 39, `MAX_TRAIN_CHUNK_BYTES` 46–48, `BPE.__init__`
   64–83, `BPE.train` 87–162, `_encode_chunk` 166–189, `encode`,
   `encode_documents`, `decode`, `decode_complete` 191–217, `complete_utf8` 51–59, `save`/`load` 221–244, `cmd_encode`
-  297–345, `_stats` 348–356 (344–352 @WORKTREE).
+  297–345, `_stats` 348–356 (344–352 @c4a39f8).
 - `tests/test_model.py`: `bpe_documents_get_eos_and_the_vocab_is_exact` 970–985,
   `hf_tokenizer_conversion_is_exact` 1517–1540,
-  `bpe_files_load_and_foreign_ones_are_refused` 1544 (@WORKTREE).
+  `bpe_files_load_and_foreign_ones_are_refused` 1544 (@c4a39f8).
 - `anulm/hf/hf_tokenizer.py`: `build`, `PROBES`; `experiments/build_v2.py`
   docstring.
 - `data/multi32k.json`, the tokenizer, committed at the pin; `docs/RESULTS.md`

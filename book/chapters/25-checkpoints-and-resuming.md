@@ -394,7 +394,7 @@ colleague's disk can run any code on your machine the moment it is loaded.
 numbers and strings, and any class you allow-list by name. Every load now goes
 through one function:
 
-> **In the repo** · `anulm/model.py` · `safe_load` · lines 1231–1261 · @WORKTREE
+> **In the repo** · `anulm/model.py` · `safe_load` · lines 1231–1261 · @c4a39f8
 
 ```python
 def safe_load(path, map_location="cpu", trust_pickle: Optional[bool] = None, **kwargs):
@@ -614,7 +614,7 @@ Repository evidence, all at @b42998d:
   857–876 (one step), 891–905 (saves).
 - `anulm/model.py`: `TRUST_PICKLE_ENV` 1219,
   `UnsafeCheckpointError` 1222–1225, `safe_load` 1228–1258, `_HUB_ID` 1261,
-  `load_checkpoint` 1280–1342; `safe_load` 1231–1261 @WORKTREE.
+  `load_checkpoint` 1280–1342; `safe_load` 1231–1261 @c4a39f8.
 - `tests/test_quality_loading.py`: `SafeLoad` 54–141.
 - `tests/test_model.py`: `checkpoint_roundtrip_is_exact` 460–477,
   `window_sampler_resumes_exactly` 956–966, `expert_bias_is_not_trainable`

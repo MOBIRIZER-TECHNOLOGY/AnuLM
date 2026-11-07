@@ -65,7 +65,7 @@ sparse, dense and grouped paths. *illustrative*; the index tensors printed by
 
 ## 18.2  The sparse path: one GEMM per expert
 
-> **In the repo** · `anulm/model.py` · `MoE._route_sparse` · lines 719–737 · @WORKTREE
+> **In the repo** · `anulm/model.py` · `MoE._route_sparse` · lines 719–737 · @c4a39f8
 
 ```python
     def _route_sparse(self, x_flat, topk_idx, topk_w):
