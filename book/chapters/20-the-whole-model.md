@@ -2,7 +2,7 @@
 title: "20 · The whole model, traced end to end"
 part: "IV · Inside the transformer"
 accent: gold
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 20  The whole model, traced end to end
@@ -63,7 +63,7 @@ beside the released model's:
 | shared expert | an expert every token uses | 1 | 0 |
 | sliding window | attention limited to the last 256 tokens (Chapters 12, 29) | none | layers 0–9 |
 
-*verified*: `tiny()` is `tests/test_model.py` lines 44–49 at @b42998d; the released
+*verified*: `tiny()` is `tests/test_model.py` lines 44–49 at @2e80b3e; the released
 column is the configuration stored in `ckpt_base_v2.pt`. The last two rows
 change no shape below.
 
@@ -81,7 +81,7 @@ Layers 0–9 attend within a 256-token window. Drawn by `tools/make_figures.py`.
 x<sup>(ℓ)</sup> is the residual stream entering layer ℓ, a (B, S, D) tensor
 that each layer adds to:
 
-| Step | Equation | Code @b42998d | Shape out |
+| Step | Equation | Code @2e80b3e | Shape out |
 |---|---|---|---|
 | embed | x<sup>(0)</sup><sub>b,s</sub> = W<sub>emb</sub>[id<sub>b,s</sub>] | `anulm/model.py` 896 | (B, S, D) |
 | attention half | h = x<sup>(ℓ)</sup> + Attn(RMSNorm(x<sup>(ℓ)</sup>)) | `anulm/model.py` 820 | (B, S, D) |
@@ -104,7 +104,7 @@ that each layer adds to:
 
 ## 20.4  In: ids to vectors
 
-The model's constructor, `AnuLM.__init__` (lines 833–863; quoted in 10.2 and
+The model's constructor, `AnuLM.__init__` (lines 843–873; quoted in 10.2 and
 10.3), builds everything this chapter traces:
 
 | Lines | What they build |
@@ -118,7 +118,7 @@ The model's constructor, `AnuLM.__init__` (lines 833–863; quoted in 10.2 and
 
 `AnuLM.forward` takes `idx`, a (B, S) tensor of ids:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 891–899 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 901–909 · @2e80b3e
 
 ```python
         if embeds is not None:
@@ -135,7 +135,7 @@ The model's constructor, `AnuLM.__init__` (lines 833–863; quoted in 10.2 and
 Text takes the `else` branch: each id selects a row, (B, S) → (B, S, D). A call
 past `block_size` raises `ValueError`; an `assert` would vanish under
 `python -O`. The `if` branch is for audio and images, which arrive as vectors (Chapter 35). The rotary tables are built once
-and only sliced per call (`Rotary._grow` and `Rotary.forward`, lines 324–343,
+and only sliced per call (`Rotary._grow` and `Rotary.forward`, lines 334–353,
 quoted in 14.5).
 
 Line 329 returns early when the cached tables are long enough for this device
@@ -154,7 +154,7 @@ layer 0 input x                    (2, 5, 32)  (B, S, D)
 
 ## 20.5  The layers, and the residual stream
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 900–911 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 910–921 · @2e80b3e
 
 ```python
         aux_total = None
@@ -174,7 +174,7 @@ The first branch, activation checkpointing, recomputes activations in the
 backward pass instead of storing them (Chapter 23); both compute the same
 thing.
 
-Each block is `Block.forward` (lines 816–824, quoted in 15.3). Each half
+Each block is `Block.forward` (lines 826–834, quoted in 15.3). Each half
 normalises a copy of `x`, transforms it and **adds** the result:
 the residual stream, (B, S, D) from first layer to last. Normalising first is
 pre-norm (Chapter 15); GPT-2 moved layer normalisation to each sub-block's input [R04],
@@ -184,7 +184,7 @@ block returns the same shape.
 
 ### Inside the attention half
 
-`GQAttention.forward` (lines 451–494) is quoted in 11.6 and 13.3–13.4; in order:
+`GQAttention.forward` (lines 461–504) is quoted in 11.6 and 13.3–13.4; in order:
 
 | Lines | What happens | `tiny()` | Released |
 |---|---|---|---|
@@ -192,7 +192,7 @@ block returns the same shape.
 | 465–468 | per-head QK-norm (Chapter 11, 11.7), then rotation, so attention depends on relative position [R06] | | |
 | 470–477 | append to the KV cache, which holds the H<sub>kv</sub> heads (Chapter 27); T is then cached + new | | |
 | 477–482 | build the mask (Chapter 11, 11.6) and the dropout rate | | |
-| 488–492 | grouped-query attention: query heads share a key/value head [R12]; with `NATIVE_GQA` off (line 387) each is copied to its group | 2 per group | 4 per group |
+| 488–492 | grouped-query attention: query heads share a key/value head [R12]; with `NATIVE_GQA` off (line 397) each is copied to its group | 2 per group | 4 per group |
 | 493–494 | heads back side by side (`contiguous` makes the copy `view` needs), then `dense` | H·D<sub>h</sub> = 32 | 1,024 |
 
 ```
@@ -210,12 +210,12 @@ both models is a coincidence the code does not need.
 ### The second half: dense in layer 0, experts after
 
 Layer 0's feed-forward half, and every expert, is a SwiGLU, a gated
-feed-forward network [R11] (`SwiGLU`, lines 242–253, quoted in 16.3).
+feed-forward network [R11] (`SwiGLU`, lines 252–263, quoted in 16.3).
 Three bias-free matrices, so 3·D·I numbers. The gate's SiLU scales the up
 projection element-wise before `down_proj` returns to width D (Chapter 16).
 From layer 1 on, the half is a mixture of experts:
 
-> **In the repo** · `anulm/model.py` · `MoE.forward` · lines 696–707 · @b42998d
+> **In the repo** · `anulm/model.py` · `MoE.forward` · lines 706–717 · @2e80b3e
 
 ```python
     def forward(self, x):                                     # (B, S, D)
@@ -233,9 +233,9 @@ From layer 1 on, the half is a mixture of experts:
 ```
 
 The router ignores which sequence a token came from, so the batch flattens to
-N = B·S rows. `Router.forward` (lines 611–622, quoted in 17.4) runs the gate
+N = B·S rows. `Router.forward` (lines 621–632, quoted in 17.4) runs the gate
 in fp32 with autocast off, because 16-bit rounding would flip discrete
-choices (Chapter 23, 23.3, measures how many). `Router._gate` (lines 624–672,
+choices (Chapter 23, 23.3, measures how many). `Router._gate` (lines 634–682,
 quoted in 17.5) makes the choice:
 
 | Step | Code | Note |
@@ -271,7 +271,7 @@ and a router z-loss with weight 10⁻³ (`router_z_alpha`); see Chapter 18.
 
 ## 20.6  Out: the loss, or one row of logits
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 912–928 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 922–938 · @2e80b3e
 
 ```python
         x = self.norm(x)
@@ -297,11 +297,11 @@ and a router z-loss with weight 10⁻³ (`router_z_alpha`); see Chapter 18.
 |---|---|---|
 | 915–918 | without targets, only the last position is projected: (B, 1, V), skipping B·(S − 1) rows of a V-wide multiply; with a KV cache each decode step already has S = 1, so the saving is on the prompt's first pass | 27 |
 | 919–921 | with chunked loss in training (`--ce-chunk`), the head and loss run a few thousand positions at a time and the logits are `None` | 23 |
-| 922 | `_head` makes the logits. `lm_head` is its own matrix, not tied to the embedding table (lines 841–843 tie only when `tie_word_embeddings` is set, and line 117 defaults it to `False`), so the arithmetic counts 2·V·D | 10 |
+| 922 | `_head` makes the logits. `lm_head` is its own matrix, not tied to the embedding table (lines 851–853 tie only when `tie_word_embeddings` is set, and line 112 defaults it to `False`), so the arithmetic counts 2·V·D | 10 |
 | 923–925 | cross-entropy in fp32; targets of −1 are not graded, which is how fine-tuning grades only answers | 30 |
 
 The model does not shift the targets; the caller does, in `make_batch`
-(`anulm/training/train.py` lines 237–250, quoted in 21.4).
+(`anulm/training/train.py` lines 240–253, quoted in 21.4).
 Each row is cut one token longer than the context; `x` drops the last token,
 `y` the first, so position s of `y` is the token after position s of `x`.
 
@@ -330,7 +330,7 @@ differently (400 windows of 1,024 tokens, bf16).
 
 ## 20.7  One step further: from logits to a token
 
-`generate`'s sampling lines (`AnuLM.generate`, lines 1152–1169) are quoted and
+`generate`'s sampling lines (`AnuLM.generate`, lines 1162–1179) are quoted and
 taken apart in 28.1; in short:
 
 | Line | Effect |
@@ -380,7 +380,7 @@ and a SwiGLU holds 3·D·I. The trace script sums eight terms:
 Each token uses A = 2 of 8 routed experts in each of the two MoE layers, so
 2 × 6 × 1,536 = 18,432 sit idle and `num_params()` reports **29,456** active.
 
-> **In the repo** · `anulm/model.py` · `AnuLM.num_params` · lines 1104–1113 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.num_params` · lines 1114–1123 · @2e80b3e
 
 ```python
     def num_params(self) -> tuple[int, int]:
@@ -451,7 +451,7 @@ each storage choice; the 256-token window does not shrink them.
 
 ## 20.10  The proof, and how to see it yourself
 
-> **In the repo** · `tests/test_model.py` · `param_count_matches_analysis` · line 507 · @b42998d
+> **In the repo** · `tests/test_model.py` · `param_count_matches_analysis` · line 507 · @2e80b3e
 
 It builds two more presets, `tiny_gqa` and `tiny_mla`, small models with
 grouped-query and latent attention, and requires 17,440,384 parameters (6,602,368 active)
@@ -508,7 +508,7 @@ python book/code-examples/trace_forward.py
 4. (B, V) logits would break `generate`'s three-dimensional `logits[:, -1, :]`.
 5. 47,888 − 3,072 = 44,816 total; 29,456 − 3,072 = 26,384 active.
 
-*verified*: each answer recomputed with `anulm/model.py` at @b42998d.
+*verified*: each answer recomputed with `anulm/model.py` at @2e80b3e.
 
 ---
 
@@ -549,15 +549,15 @@ used only for the claim in its register row:
 | [R18] | the balancing bias is used only for selection | CHECKED |
 | [R20] | sigmoid affinity scores in the router | CHECKED |
 
-Repository evidence, all at @b42998d:
+Repository evidence, all at @2e80b3e:
 - `anulm/model.py`:
-  - `RMSNorm` 225–239, `SwiGLU` 242–253, `Rotary._grow` / `forward` 324–343,
-    `NATIVE_GQA` 387;
-  - `GQAttention.forward` 451–494, `Router.forward` 611–622,
-    `Router._gate` 624–672, `MoE.forward` 696–707, `Block.forward` 816–824;
-  - `AnuLM.__init__` 833–863, `AnuLM.forward` 877–928,
-    `AnuLM.num_params` 1104–1113, `AnuLM.generate` 1115–1180.
-- `anulm/training/train.py`: `make_batch` 237–250.
+  - `RMSNorm` 235–249, `SwiGLU` 252–263, `Rotary._grow` / `forward` 334–353,
+    `NATIVE_GQA` 397;
+  - `GQAttention.forward` 461–504, `Router.forward` 621–632,
+    `Router._gate` 634–682, `MoE.forward` 706–717, `Block.forward` 826–834;
+  - `AnuLM.__init__` 843–873, `AnuLM.forward` 887–938,
+    `AnuLM.num_params` 1114–1123, `AnuLM.generate` 1125–1190.
+- `anulm/training/train.py`: `make_batch` 240–253.
 - `tests/test_model.py`:
   - `tiny` 44–49;
   - `all_parameters_receive_gradients` 415, `initial_loss_is_ln_vocab` 428,

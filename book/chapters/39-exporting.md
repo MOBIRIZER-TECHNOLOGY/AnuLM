@@ -2,7 +2,7 @@
 title: "39 · Exporting to the ecosystem"
 part: "IX · To production"
 accent: teal
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 39  Exporting to the ecosystem
@@ -32,10 +32,10 @@ on the Hugging Face Hub. Its local copy:
 ```
 5. release\AnuLM-Base-v2-400M (local copy; release/ is git-ignored)
            2,301  config.json
-           3,124  configuration_anulm.py  differs from anulm/hf/configuration_anulm.py @b42998d
-          61,044  model.py  differs from anulm/model.py @b42998d
+           3,124  configuration_anulm.py  differs from anulm/hf/configuration_anulm.py @2e80b3e
+          61,044  model.py  differs from anulm/model.py @2e80b3e
      796,522,272  model.safetensors
-          12,275  modeling_anulm.py  differs from anulm/hf/modeling_anulm.py @b42998d
+          12,275  modeling_anulm.py  differs from anulm/hf/modeling_anulm.py @2e80b3e
            6,946  README.md
        1,533,692  tokenizer.json
          413,097  tokenizer.multi32k.json
@@ -56,13 +56,13 @@ then the raw numbers (39.2 reads one): no pickle, so reading it runs no code.
 ![Figure 39.1 · From a training checkpoint to two loaders](../figures/fig39-1-export.svg)
 
 *Figure 39.1 · From a training checkpoint to two loaders.* *verified*: from
-`anulm/hf/export_hf.py` at @b42998d and the folder listing above.
+`anulm/hf/export_hf.py` at @2e80b3e and the folder listing above.
 
 `IN THE REPO` · `MEASURED`
 
 ## 39.2  Weights: big tensors in 16 bits, small ones in 32
 
-> **In the repo** · `anulm/hf/export_hf.py` · `to_bf16` · lines 52–61 · @b42998d
+> **In the repo** · `anulm/hf/export_hf.py` · `to_bf16` · lines 52–61 · @2e80b3e
 
 ```python
 def to_bf16(sd: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
@@ -82,7 +82,7 @@ bfloat16, anything smaller stays float32. Big matrices dominate the bytes;
 small tensors cost nothing to keep exact. It is the default, not the only
 choice:
 
-> **In the repo** · `anulm/hf/export_hf.py` · `main` · lines 271–276 · @b42998d
+> **In the repo** · `anulm/hf/export_hf.py` · `main` · lines 271–276 · @2e80b3e
 
 ```python
     n_params, sd, flat_groups = 0, None, {}
@@ -197,7 +197,7 @@ logarithmic axis. *measured*: `book/measurements/part_viii_ix_export.json`.
 
 ## 39.3  The configuration, and the code that travels with it
 
-> **In the repo** · `anulm/hf/export_hf.py` · `main` · lines 313–362 · @b42998d
+> **In the repo** · `anulm/hf/export_hf.py` · `main` · lines 313–362 · @2e80b3e
 
 ```python
     if cfg is not None:
@@ -252,7 +252,7 @@ Three choices:
 
 `load_checkpoint` accepts a `.pt`, a folder or a Hub id:
 
-> **In the repo** · `anulm/model.py` · `load_checkpoint` · lines 1296–1319 · @b42998d
+> **In the repo** · `anulm/model.py` · `load_checkpoint` · lines 1299–1322 · @2e80b3e
 
 ```python
     p = _P(path)
@@ -281,7 +281,7 @@ Three choices:
             ck[k] = meta[k]
 ```
 
-A string shaped `owner/name` (`_HUB_ID`, line 1261) that is not a local path
+A string shaped `owner/name` (`_HUB_ID`, line 1264) that is not a local path
 is downloaded first, and the loader prints that it is trying the Hub, so a
 mistyped local path is not a silent download. A file goes to `safe_load`, the
 weights-only unpickler of Chapter 25: a `.pt` from elsewhere cannot run code
@@ -306,7 +306,7 @@ exporter refuses to write a folder its own loader would refuse.
 > `extras.base_model` (the backbone of an adapter-only folder). Each must stay
 > inside the folder:
 >
-> **In the repo** · `anulm/model.py` · `_inside` · lines 1264–1277 · @b42998d
+> **In the repo** · `anulm/model.py` · `_inside` · lines 1267–1280 · @2e80b3e
 >
 > ```python
 > def _inside(root, value: str, what: str) -> str:
@@ -330,7 +330,7 @@ exporter refuses to write a folder its own loader would refuse.
 > its own folders pass. `base_model` is checked harder, because the loader
 > fetches it:
 >
-> **In the repo** · `anulm/model.py` · `load_checkpoint` · lines 1328–1340 · @b42998d
+> **In the repo** · `anulm/model.py` · `load_checkpoint` · lines 1331–1343 · @2e80b3e
 >
 > ```python
 >     if "model" not in ck and base and extras.get("base_model"):
@@ -355,7 +355,7 @@ exporter refuses to write a folder its own loader would refuse.
 > not `owner/name`, is a usage error (`p.error`), so an export cannot produce a
 > folder its own loader would refuse:
 >
-> **In the repo** · `anulm/hf/export_hf.py` · `main` · lines 254–259 · @b42998d
+> **In the repo** · `anulm/hf/export_hf.py` · `main` · lines 254–259 · @2e80b3e
 >
 > ```python
 >     if args.adapter_of:
@@ -377,7 +377,7 @@ Every export reads itself back through this loader before it reports success.
 The last step of `main` (lines 378–379) calls `check_parity` unless
 `--skip-parity` is given:
 
-> **In the repo** · `anulm/hf/export_hf.py` · `check_parity` · lines 115–140 · @b42998d
+> **In the repo** · `anulm/hf/export_hf.py` · `check_parity` · lines 115–140 · @2e80b3e
 
 ```python
 def check_parity(out: Path, weights: dict | None, groups: dict, tok_src: Path | None, tok_file: str | None) -> None:
@@ -432,7 +432,7 @@ tokenizer clause is absent).
 
 ## 39.5  The `transformers` wrapper reuses the real modules
 
-> **In the repo** · `anulm/hf/modeling_anulm.py` · `AnuLMForCausalLM.__init__` · lines 155–167 · @b42998d
+> **In the repo** · `anulm/hf/modeling_anulm.py` · `AnuLMForCausalLM.__init__` · lines 155–167 · @2e80b3e
 
 ```python
     def __init__(self, config: AnuLMConfig):
@@ -455,7 +455,7 @@ dataclass. The wrapper builds a native `AnuLM` and adopts its modules under the
 same attribute names, so the parameter names match the file and no key is
 remapped. Only the outer loop is new:
 
-> **In the repo** · `anulm/hf/modeling_anulm.py` · `AnuLMForCausalLM.forward` · lines 220–255 · @b42998d
+> **In the repo** · `anulm/hf/modeling_anulm.py` · `AnuLMForCausalLM.forward` · lines 220–255 · @2e80b3e
 
 ```python
         if inputs_embeds is not None:
@@ -532,7 +532,7 @@ holds the same, cached and uncached.
 
 ## 39.6  What the wrapper does not do
 
-> **In the repo** · `anulm/hf/modeling_anulm.py` · `AnuLMForCausalLM._reorder_cache` · lines 284–291 · @b42998d
+> **In the repo** · `anulm/hf/modeling_anulm.py` · `AnuLMForCausalLM._reorder_cache` · lines 284–291 · @2e80b3e
 
 ```python
     @staticmethod
@@ -552,7 +552,7 @@ holds the same, cached and uncached.
   repository's own code (Chapter 36), not `AutoModelForCausalLM`.
 - **16-bit loading warns**, in `from_pretrained`:
 
-> **In the repo** · `anulm/hf/modeling_anulm.py` · `AnuLMPreTrainedModel.from_pretrained` · lines 111–134 · @b42998d
+> **In the repo** · `anulm/hf/modeling_anulm.py` · `AnuLMPreTrainedModel.from_pretrained` · lines 111–134 · @2e80b3e
 
 ```python
     @classmethod
@@ -639,7 +639,7 @@ and grades each position against the token two ahead.
 ## References
 
 This chapter cites no external research. Its evidence is the repository at
-@b42998d, the local release folder and the measurements:
+@2e80b3e, the local release folder and the measurements:
 - `anulm/hf/export_hf.py`: `to_bf16` 52–61, `PARITY_TEXTS` 112, `check_parity`
   115–140, `tensor_groups` 143–147, `main` 211–383 (`--weights-dtype` 231–233,
   `--base-model` checks 254–259, weights 271–293, config 313–357, code copy

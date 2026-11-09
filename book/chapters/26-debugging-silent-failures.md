@@ -2,7 +2,7 @@
 title: "26 · Debugging: when the loss goes down and the model is still wrong"
 part: "V · Training"
 accent: teal
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 26  Debugging: when the loss goes down and the model is still wrong
@@ -27,7 +27,7 @@ story is told from a code comment, a test docstring or a section of
 
 `tests/test_model.py` opens with its reason for existing:
 
-> **In the repo** · `tests/test_model.py` · `test_model` · lines 1–15 · @b42998d
+> **In the repo** · `tests/test_model.py` · `test_model` · lines 1–15 · @2e80b3e
 
 ```python
 """
@@ -75,11 +75,11 @@ def train_curve(steps=200):
     return out
 ```
 
-`leaky_sdpa` has `_sdpa`'s signature (`anulm/model.py` line 414) but passes neither
+`leaky_sdpa` has `_sdpa`'s signature (`anulm/model.py` line 424) but passes neither
 the mask nor `is_causal`, so every position attends to every other. The
 training loop feeds (16, 32) inputs and the same ids shifted by one as targets.
 The patch works only because `GQAttention` calls `_sdpa` while `NATIVE_GQA` is
-off (lines 483–492); with it on, the native branch bypasses `_sdpa` and the
+off (lines 493–502); with it on, the native branch bypasses `_sdpa` and the
 mutant would silently test nothing, so the script asserts it is off.
 This leak is hypothetical: the module docstring names it, and no recorded run
 had it.
@@ -112,7 +112,7 @@ than the loss. The suite uses three kinds.
 **Invariance.** Change something the output must not depend on, and require
 that it did not move. Causality is the first test in the file:
 
-> **In the repo** · `tests/test_model.py` · `causal_mask_does_not_leak_future` · lines 56–74 · @b42998d
+> **In the repo** · `tests/test_model.py` · `causal_mask_does_not_leak_future` · lines 56–74 · @2e80b3e
 
 ```python
 @test
@@ -145,7 +145,7 @@ token outside the window.
 
 **Equivalence.** Two implementations of the same maths must agree:
 
-> **In the repo** · `tests/test_model.py` · `dense_and_sparse_moe_agree` · lines 570–584 · @b42998d
+> **In the repo** · `tests/test_model.py` · `dense_and_sparse_moe_agree` · lines 570–584 · @2e80b3e
 
 ```python
 @test
@@ -169,13 +169,13 @@ Two models with the same weights (`load_state_dict`) differ only in how the
 experts are dispatched (Chapter 18), and their (2, 16, 64) logits must agree to
 10⁻⁵. Most of the suite has this shape: cached against uncached decoding
 (`cached_generation_matches_uncached`, line 701), chunked against full loss
-(`chunked_loss_matches_the_full_loss_and_its_gradients`, line 1713), compiled
+(`chunked_loss_matches_the_full_loss_and_its_gradients`, line 1711), compiled
 against eager, accumulated against one large batch.
 
 **Conservation.** Count what must be preserved. The interleaved split must lose
 no tokens and hold out both sources:
 
-> **In the repo** · `tests/test_model.py` · `interleaved_split_samples_the_whole_corpus` · lines 1943–1956 · @b42998d
+> **In the repo** · `tests/test_model.py` · `interleaved_split_samples_the_whole_corpus` · lines 1941–1954 · @2e80b3e
 
 ```python
 @test
@@ -200,7 +200,7 @@ the last line documents that the old tail split was all B. Other conservation
 tests count each training window once per epoch
 (`window_sampler_covers_every_window_once_per_epoch`, line 931) and each answer
 token labelled exactly once (`qa_packing_masks_prompts_and_keeps_examples_whole`,
-line 1676).
+line 1674).
 
 `IN THE REPO`
 
@@ -308,7 +308,7 @@ expert ids. On random weights the mutant changes 4.2% of sets (26.3).
 The suite now has its own version, added in commit 52d26f0 after mutation
 testing ran the gate in bf16 and no test failed (`docs/VERIFICATION.md`):
 
-> **In the repo** · `tests/test_model.py` · `router_choices_survive_autocast` · lines 314–327 · @b42998d
+> **In the repo** · `tests/test_model.py` · `router_choices_survive_autocast` · lines 314–327 · @2e80b3e
 
 ```python
     torch.manual_seed(0)
@@ -339,7 +339,7 @@ so it can only promise the same choices for the same input.
 The merge-tree option (Chapter 10) composes the embedding tables from a sparse
 matrix, and in evaluation mode caches the result:
 
-> **In the repo** · `anulm/model.py` · `AnuLM._table` · lines 966–984 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM._table` · lines 976–994 · @2e80b3e
 
 ```python
     def _table(self, side: str):
@@ -372,7 +372,7 @@ evaluation after the first therefore scored the current network with step
 loss fell to 4.43, which looked like the recipe diverging (§32). The fix ties
 the cache to the mode instead:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.train` · lines 986–990 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.train` · lines 996–1000 · @2e80b3e
 
 ```python
     def train(self, mode: bool = True):
@@ -384,7 +384,7 @@ the cache to the mode instead:
 24), so the cache cannot outlive a training step. The test reproduces the
 update the counter cannot see:
 
-> **In the repo** · `tests/test_model.py` · `merge_tree_eval_cache_sees_optimizer_updates` · lines 1861–1871 · @b42998d
+> **In the repo** · `tests/test_model.py` · `merge_tree_eval_cache_sees_optimizer_updates` · lines 1859–1869 · @2e80b3e
 
 ```python
         x = torch.randint(0, 259, (2, 8))
@@ -408,7 +408,7 @@ differ. The mutant `train` that keeps the cache fails it (26.3).
 
 ## 26.6  Case: the split that held out one language
 
-> **In the repo** · `anulm/training/train.py` · `interleaved_split` · lines 202–216 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `interleaved_split` · lines 205–219 · @2e80b3e
 
 ```python
 def interleaved_split(data: torch.Tensor, chunk: int = 262144, every: int = 10):
@@ -438,7 +438,7 @@ curves stay comparable (Chapter 21); the test in 26.2 fails on the tail split.
 YaRN extends context in two parts: a change to the rotary frequencies and a
 softmax temperature (Chapter 29). The GQA path once applied only the first:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 446–449 · @b42998d
+> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 456–459 · @2e80b3e
 
 ```python
         # YaRN's temperature term lives here, not in the rotary tables --
@@ -452,7 +452,7 @@ softmax temperature (Chapter 29). The GQA path once applied only the first:
 says the missing half "was caught by reading, not by any test, which is why
 this covers both" attention types:
 
-> **In the repo** · `tests/test_model.py` · `yarn_temperature_reaches_attention` · lines 160–164 · @b42998d
+> **In the repo** · `tests/test_model.py` · `yarn_temperature_reaches_attention` · lines 160–164 · @2e80b3e
 
 ```python
     gqa = tiny(attn="gqa", yarn=True, yarn_factor=40.0, head_dim=8)
@@ -489,7 +489,7 @@ batch); no test checks how a move between evaluations is read.
 | exports dropped projectors, LoRA weights and labels, and still loaded as a plain language model (Part VII+) | test docstring | `an_export_keeps_what_makes_a_checkpoint_more_than_a_language_model` (line 1342) |
 | five evaluation scripts crashed on exported folders | §27; test docstring | `an_exported_folder_loads_everywhere_a_pt_does` (line 1057) |
 | a generated `random.py` could shadow the standard library for every later problem (Part VII+) | `anulm/eval/eval_code.py` docstring; test | `eval_code_sandbox_contains_generated_code` (line 1390) |
-| the golden-set builder's check passed by luck on a small vocabulary | test comment ("It did, once.") | `golden_items_are_well_formed_and_the_scorer_runs` (line 1630), on 400 words |
+| the golden-set builder's check passed by luck on a small vocabulary | test comment ("It did, once.") | `golden_items_are_well_formed_and_the_scorer_runs` (line 1628), on 400 words |
 | a project rename changed the tokenizer format id, which every older tokenizer (four on the Hub) still carries | test docstring | `bpe_files_load_and_foreign_ones_are_refused` (line 1544) |
 | a documented hazard, not a recorded incident: `is_causal` aligns top-left, wrong for a multi-token step against a cache | `_attn_mask` docstring | `incremental_forward_matches_full_forward` (line 658) |
 | a checkpoint killed mid-write; a restart loop for three hours | §25 | `atomic_save` and the fallback (Chapter 25); no test |
@@ -511,7 +511,7 @@ checks belong.
 The suite needs no framework: a decorator collects each test, and `main` runs
 them all:
 
-> **In the repo** · `tests/test_model.py` · `main` · lines 2434–2455 · @b42998d
+> **In the repo** · `tests/test_model.py` · `main` · lines 2432–2453 · @2e80b3e
 
 ```python
 def main():
@@ -562,7 +562,7 @@ need `gradio`, `safetensors`, `transformers` or `tokenizers`, all printed
 PASS without checking anything; on a machine missing a package, "76 passed"
 overstated what had been tested. A skip now says what it is:
 
-> **In the repo** · `tests/test_model.py` · `grouped_moe_matches_sparse_under_bf16` · lines 827–832 · @b42998d
+> **In the repo** · `tests/test_model.py` · `grouped_moe_matches_sparse_under_bf16` · lines 827–832 · @2e80b3e
 
 ```python
 def grouped_moe_matches_sparse_under_bf16():
@@ -581,7 +581,7 @@ grandchild it started left no marker file; if the grandchild never started,
 there was no marker either, and the check passed. The program now writes a
 second file once `Popen` returns, and the test requires it first:
 
-> **In the repo** · `tests/test_model.py` · `eval_code_sandbox_contains_generated_code` · lines 1435–1438 · @b42998d
+> **In the repo** · `tests/test_model.py` · `eval_code_sandbox_contains_generated_code` · lines 1435–1438 · @2e80b3e
 
 ```python
         assert os.path.exists(os.path.join(outside, "spawned.txt")), \
@@ -655,7 +655,7 @@ decides the output.
 This chapter cites no external sources. Quality claims are measured here or in
 `docs/RESULTS.md` §9, §25, §27, §28 and §32.
 
-Repository evidence, all at @b42998d:
+Repository evidence, all at @2e80b3e:
 - `tests/test_model.py`: module docstring 1–15; `test` 34–38;
   `grouped_moe_matches_sparse_under_bf16` 826–844 (the skip 831–832);
   `eval_code_sandbox_contains_generated_code` 1389–1446 (the `spawned.txt` check 1435–1436);
@@ -664,9 +664,9 @@ Repository evidence, all at @b42998d:
   `merge_tree_eval_cache_sees_optimizer_updates` 1848–1871;
   `interleaved_split_samples_the_whole_corpus` 1943–1956; `main` 2434–2455;
   and the tests named in 26.2 and 26.9.
-- `anulm/model.py`: `_sdpa` 414–418; `GQAttention.__init__` 446–449;
-  `Router.forward` 611–622; `AnuLM._table` 966–984; `AnuLM.train` 986–990.
-- `anulm/training/train.py`: `interleaved_split` 202–216; `warn_if_spilling` 219–234.
+- `anulm/model.py`: `_sdpa` 424–428; `GQAttention.__init__` 456–459;
+  `Router.forward` 621–632; `AnuLM._table` 976–994; `AnuLM.train` 996–1000.
+- `anulm/training/train.py`: `interleaved_split` 205–219; `warn_if_spilling` 222–237.
 - `anulm/eval/eval_code.py` (docstring); `anulm/data/make_bench.py`; `anulm/data/mix_corpus.py`.
 - Chapter 23's canonical router-flip measurement: `book/measurements/part_v_a_memory.json`.
 - Measurements: `book/measurements/part_v_b_router_bf16.json` from

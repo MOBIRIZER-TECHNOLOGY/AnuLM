@@ -26,7 +26,7 @@ from anulm.model import AnuLM          # noqa: E402  the repository's anulm/mode
 from tests.test_model import tiny      # noqa: E402  the test suite's small configuration
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-PIN = "b42998d"
+PIN = "2e80b3e"
 
 
 def four_steps(model: AnuLM, ids: torch.Tensor, n: int, show: bool = False) -> torch.Tensor:
@@ -72,7 +72,7 @@ ROLES = [  # (role, test on the path at the pin); the first match wins
     ("package entry", lambda f: f in ("anulm/__init__.py", "anulm/__main__.py", "model.py")),
     ("tools", lambda f: f.startswith("tools/")),
 ]
-FOLDERS = ("course", "experiments", "examples", "book")
+FOLDERS = ("course", "experiments", "examples", "book", "space_omni")
 
 
 def at_pin(path: str) -> list[str]:
@@ -126,5 +126,5 @@ if __name__ == "__main__":
     excerpt = ["logits = logits / temperature",
                "probs = F.softmax(logits, dim=-1)",
                "nxt = torch.multinomial(probs, num_samples=1)          # (B, 1)"]
-    print(f"\ncitation anulm/model.py 1164-1169 holds: {citation_holds('anulm/model.py', 1164, 1169, excerpt)}")
+    print(f"\ncitation anulm/model.py 1174-1179 holds: {citation_holds('anulm/model.py', 1174, 1179, excerpt)}")
     print(f"citation anulm/model.py 1064-1069 holds: {citation_holds('anulm/model.py', 1064, 1069, excerpt)}")

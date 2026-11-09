@@ -2,14 +2,14 @@
 title: "Appendix F · Reproducing every number"
 part: "Appendices"
 accent: slate
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # Appendix F  Reproducing every number
 
 Every number in this book carries one of four labels (`STYLE.md` §7):
 
-- ***verified***: checked against the repository at @b42998d, or recomputed by
+- ***verified***: checked against the repository at @2e80b3e, or recomputed by
   a book script;
 - ***measured***: from a run recorded in `docs/RESULTS.md` or `logs/`, or from
   a book script run on the released checkpoint, whose output is saved in
@@ -114,9 +114,9 @@ three things.
 **It checks four appendix tables against their sources:**
 
 ```
-Appendix C: 80 rows against 80 tests at @b42998d: ok
+Appendix C: 82 rows against 82 tests at @2e80b3e: ok
 Appendix B.1: 42 configuration rows recomputed: ok
-Appendix E: 80 rows against 80 register entries: ok
+Appendix E: 79 rows against 79 register entries: ok
 Appendix A: 47 distinct concrete shapes, 0 not in ch41_shapes.py's output
 ```
 
@@ -141,7 +141,7 @@ the list names a file that does not exist. A new example runs unless someone add
 
 It exits with status 1 if an appendix check fails or an example run fails.
 
-*verified*: the four lines above are the script's output at @b42998d, rerun
+*verified*: the four lines above are the script's output at @2e80b3e, rerun
 on a CPU with `ckpt_base_v2.pt` present (the B.1 line needs it). The run
 printed `0 problems`.
 
@@ -184,7 +184,7 @@ page that quotes a measurement points here and names only what differs.
 **The one exception to fp32.** The checkpoint's configuration sets
 `moe_impl="grouped"`, and that path runs the experts in bf16 even with
 autocast off: it casts the stacked expert weights to bf16 (`anulm/model.py`
-line 756) and the expert-sorted token vectors (line 784) before its grouped
+line 766) and the expert-sorted token vectors (line 794) before its grouped
 matrix multiplies. Everything else, the router included, stays in fp32. A
 measurement that needs the experts in fp32 as well sets `moe_impl="sparse"`,
 which picks the same experts and differs only by rounding.
@@ -193,8 +193,8 @@ which picks the same experts and differs only by rounding.
 `measure_part_i_ii.py`, `measure_attention.py`, `ch12_measure_masks.py`,
 `ch13_measure_groups.py`, `ch14_measure_shift.py`, `ch15_measure_stream.py` and
 `ch16_measure_trained.py`, and the `precision`, `windows`, `seed` and `device`
-fields of their files in `book/measurements/`; lines 756 and 784 read at
-@b42998d.
+fields of their files in `book/measurements/`; lines 766 and 794 read at
+@2e80b3e.
 
 What differs, by measurement, as each page says:
 

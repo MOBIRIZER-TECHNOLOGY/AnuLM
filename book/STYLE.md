@@ -108,7 +108,7 @@ through every part. This book does the same with its own objects:
 
 Every implementation claim carries a reference in one fixed form:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 451–494 · @b42998d
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 461–504 · @2e80b3e
 
 - The path is relative to the repository root.
 - The symbol is written `Class.method` or `function`.

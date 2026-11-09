@@ -114,20 +114,20 @@ flowchart TD
 
 | Stage | Where | Shape |
 |---|---|---|
-| Corpus → ids | `anulm/training/train.py` `load_bytes` lines 62–98 (byte mode, EOS 257 at `DOC_SEP`); `.bin` from `bpe.py cmd_encode` lines 395–449; memmap `load_memmap` lines 163–173 | 1-D id tensor |
-| Window choice | `WindowSampler` lines 104–160 | `ix` (B,) start offsets |
-| Batch | `make_batch` lines 237–250 | `x`, `y`: (B, S) int64; `y[t] = x[t+1]` |
-| Embedding | `AnuLM.forward` line 896, `_table` lines 966–984 | (B, S, D) |
-| Positions | `Rotary.forward` lines 339–343; `_build_inv_freq` 304–322 | cos, sin (S, Dh) |
-| Block | `Block.forward` lines 816–824: `x + attn(norm(x))`, then `x + mlp(norm(x))` | (B, S, D) |
-| Attention | `GQAttention.forward` lines 451–494 | q (B,H,S,Dh); k,v (B,Hkv,S,Dh) → (B,S,D) |
-| Mask | `_attn_mask` lines 365–381; `_sdpa` lines 414–418 (`is_causal`) | (S, T) bool or None |
-| FFN | `SwiGLU.forward` line 253 / `MoE.forward` lines 696–707 | (B, S, D) |
-| Router | `Router._gate` lines 624–672 | topk_idx (N,k), weights (N,k) |
-| Head + loss | `AnuLM.forward` lines 912–928 | logits (B,S,V); scalar loss |
-| Optimiser | `make_optimizer` lines 447–474 (decay on 2-D weights only); `anulm/muon.py` | — |
-| LR | `lr_at` lines 375–400 (warmup → cosine, or WSD) | — |
-| Step | `main` loop lines 850–908 | — |
+| Corpus → ids | `anulm/training/train.py` `load_bytes` lines 65–101 (byte mode, EOS 257 at `DOC_SEP`); `.bin` from `bpe.py cmd_encode` lines 398–452; memmap `load_memmap` lines 166–176 | 1-D id tensor |
+| Window choice | `WindowSampler` lines 107–163 | `ix` (B,) start offsets |
+| Batch | `make_batch` lines 240–253 | `x`, `y`: (B, S) int64; `y[t] = x[t+1]` |
+| Embedding | `AnuLM.forward` line 906, `_table` lines 976–994 | (B, S, D) |
+| Positions | `Rotary.forward` lines 349–353; `_build_inv_freq` 304–322 | cos, sin (S, Dh) |
+| Block | `Block.forward` lines 826–834: `x + attn(norm(x))`, then `x + mlp(norm(x))` | (B, S, D) |
+| Attention | `GQAttention.forward` lines 461–504 | q (B,H,S,Dh); k,v (B,Hkv,S,Dh) → (B,S,D) |
+| Mask | `_attn_mask` lines 375–391; `_sdpa` lines 424–428 (`is_causal`) | (S, T) bool or None |
+| FFN | `SwiGLU.forward` line 263 / `MoE.forward` lines 706–717 | (B, S, D) |
+| Router | `Router._gate` lines 634–682 | topk_idx (N,k), weights (N,k) |
+| Head + loss | `AnuLM.forward` lines 922–938 | logits (B,S,V); scalar loss |
+| Optimiser | `make_optimizer` lines 450–482 (decay on 2-D weights only); `anulm/muon.py` | — |
+| LR | `lr_at` lines 378–403 (warmup → cosine, or WSD) | — |
+| Step | `main` loop lines 859–917 | — |
 
 ## 4. Execution path: prompt in, text out (inference)
 
@@ -142,15 +142,15 @@ flowchart LR
   S1 --> O["BPE.decode / bytes.decode"]
 ```
 
-- **KV cache.** It is a list of dicts, one per layer (`new_cache`, line 873).
+- **KV cache.** It is a list of dicts, one per layer (`new_cache`, line 883).
   GQA stores `k` and `v` for the **Hkv** heads, before they are repeated
-  across query groups (lines 470–476). MLA stores the latent `c` and the
-  shared rope key `k_pe` (lines 555–563). The cache grows with `torch.cat`,
+  across query groups (lines 480–486). MLA stores the latent `c` and the
+  shared rope key `k_pe` (lines 565–573). The cache grows with `torch.cat`,
   and there is no paging.
 - **Position continuity.** `Rotary.forward(start=...)` gives absolute
   positions. When the cache is non-empty and a step adds several tokens,
   `_attn_mask` builds the mask explicitly, because SDPA's `is_causal`
-  aligns top-left (lines 365–381).
+  aligns top-left (lines 375–391).
 - **Context overflow.** When the context is full, `generate` rebuilds the
   cache from the last `block_size` tokens on every step (lines 1148–1151),
   so cached and uncached decoding agree token for token. The test
@@ -160,7 +160,7 @@ flowchart LR
   `anulm/inference/api.py` line 219 accepts `top_p` for OpenAI compatibility and ignores it.
   There is no beam search; `anulm/hf/modeling_anulm.py` lines 285–290 raise on it.
 - **Inputs that are not tokens.** `forward(embeds=...)` bypasses the
-  embedding table (lines 891–894), and `decode_from_embeds` (lines 1016–1062)
+  embedding table (lines 901–904), and `decode_from_embeds` (lines 1026–1072)
   decodes greedily after an audio or image prefix.
 
 ---
@@ -169,21 +169,21 @@ flowchart LR
 
 | Feature | Where |
 |---|---|
-| Three interchangeable MoE dispatch paths: sparse, dense, grouped-GEMM | `MoE._route_sparse` / `_route_dense` / `_route_grouped`, lines 709–790 |
-| Router computed in fp32, with autocast off | `Router.forward` lines 611–622 |
-| Aux-loss-free balancing, sequence balance loss, router z-loss | `Router._gate` lines 647–670; `AnuLM.update_expert_biases` lines 1071–1101 |
-| Gradient checkpointing | `AnuLM.forward` lines 902–907 |
-| Chunked cross-entropy, so the full logit tensor never exists | `enable_chunked_loss`, `_chunked_loss`, lines 930–956 |
-| Merge-tree reparameterisation of the token tables | `merge_tree_matrix` lines 390–411; `_compose`, `_table`, `bake_merge_tree` |
-| Scaled init of the residual output projections | `AnuLM.__init__` lines 860–863 |
-| bf16 autocast, fused AdamW, `torch.compile` probe | `anulm/training/train.py` lines 645–650, 463, 750–770 |
-| Gradient accumulation | `anulm/training/train.py` lines 857–873 |
-| Atomic checkpoints, resume with optimizer and sampler state | `atomic_save` lines 32–46; resume lines 788–840 |
-| Eval noise accounting (standard error) and strided eval windows | `evaluate` lines 477–533; `strided_windows` 351–372 |
-| Interleaved validation split | `interleaved_split` lines 202–216 |
+| Three interchangeable MoE dispatch paths: sparse, dense, grouped-GEMM | `MoE._route_sparse` / `_route_dense` / `_route_grouped`, lines 719–800 |
+| Router computed in fp32, with autocast off | `Router.forward` lines 621–632 |
+| Aux-loss-free balancing, sequence balance loss, router z-loss | `Router._gate` lines 657–680; `AnuLM.update_expert_biases` lines 1081–1111 |
+| Gradient checkpointing | `AnuLM.forward` lines 912–917 |
+| Chunked cross-entropy, so the full logit tensor never exists | `enable_chunked_loss`, `_chunked_loss`, lines 940–966 |
+| Merge-tree reparameterisation of the token tables | `merge_tree_matrix` lines 400–421; `_compose`, `_table`, `bake_merge_tree` |
+| Scaled init of the residual output projections | `AnuLM.__init__` lines 870–873 |
+| bf16 autocast, fused AdamW, `torch.compile` probe | `anulm/training/train.py` lines 656–661, 466, 759–779 |
+| Gradient accumulation | `anulm/training/train.py` lines 866–882 |
+| Atomic checkpoints, resume with optimizer and sampler state | `atomic_save` lines 35–49; resume lines 797–849 |
+| Eval noise accounting (standard error) and strided eval windows | `evaluate` lines 485–541; `strided_windows` 351–372 |
+| Interleaved validation split | `interleaved_split` lines 205–219 |
 | Muon optimiser (Newton–Schulz) | `anulm/muon.py` |
 | Bigram-teacher KL warm start | `anulm/bigram_teacher.py` |
-| A memory guard for large models | `fit_memory` lines 1345–1364 |
+| A memory guard for large models | `fit_memory` lines 1348–1367 |
 
 ## 6. Not implemented in this repository
 
@@ -200,7 +200,7 @@ features of this code.
 | Beam search, speculative decoding, multi-token prediction | Absent. |
 | PagedAttention or a paged KV cache, continuous batching | **Absent.** The cache is a per-layer `torch.cat`. `anulm/inference/api.py` serialises requests behind one GPU lock. |
 | Quantised inference (INT8/INT4/FP8) | **Absent** for AnuLM. The export stores bf16 weights, and the only int8 anywhere is ctranslate2's Whisper on CPU. A QLoRA-style `quantize` path exists only in the course stub `course/build/post.py`. |
-| Distributed training (DDP, FSDP, tensor or pipeline parallel) | **Absent.** Single-GPU by design (`anulm/model.py` line 19). |
+| Distributed training (DDP, FSDP, tensor or pipeline parallel) | **Absent.** Single-GPU by design (`anulm/model.py` line 14). |
 | fp16 with `GradScaler` | Absent. Only bf16 autocast. |
 | DPO, RLHF or GRPO in the core code | Absent from the repo root. DPO appears in the course stubs (`course/build/post.py`) and RL in `course/build/further.py`. |
 | Dropout | The field exists, defaults to 0.0 and is wired into SDPA. It is effectively off. |

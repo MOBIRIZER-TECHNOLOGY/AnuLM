@@ -104,9 +104,9 @@ def fig_01_repo_map():
     rows = [(r, sum(n for _, n in groups.get(r, []))) for r, _ in ROLES]
     total_files = sum(len(v) for v in groups.values())
     # The numbers Chapter 1.5 prints; a changed count must change the chapter too.
-    assert total_files == 93 and dict(rows)["the model"] == 1364, (total_files, rows)
+    assert total_files == 104 and dict(rows)["the model"] == 1367, (total_files, rows)
     total = sum(v for _, v in rows)
-    assert total == 25254 and round(100 * 1364 / total) == 5, total
+    assert total == 27114 and round(100 * 1367 / total) == 5, total
     w, h = 760, 40 * len(rows) + 110
     b = []
     _title(b, "The repository at the pin, by role",

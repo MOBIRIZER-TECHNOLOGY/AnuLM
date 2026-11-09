@@ -2,7 +2,7 @@
 title: "2 · From counts to transformers"
 part: "I · Foundations"
 accent: slate
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 2  From counts to transformers
@@ -46,7 +46,7 @@ ladder in 2.3 scores it too.
 
 > **Details.** How `bigram_teacher.py` builds its table:
 >
-> > **In the repo** · `anulm/bigram_teacher.py` · `build_bigram_teacher` · lines 42–51 · @b42998d
+> > **In the repo** · `anulm/bigram_teacher.py` · `build_bigram_teacher` · lines 42–51 · @2e80b3e
 >
 > ```python
 >     V = vocab_size
@@ -82,7 +82,7 @@ learned continuous vectors for words from large corpora [R03]. AnuLM begins
 with a table of vectors and ends with a matrix (Chapter 10 quotes the whole
 constructor):
 
-> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 836–841 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 846–851 · @2e80b3e
 
 ```python
         self.embed_tokens = nn.Embedding(cfg.vocab_size, cfg.hidden_size)
@@ -95,7 +95,7 @@ constructor):
 With `n_layer = 0` the block list is empty, and the forward pass's loop does
 nothing:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 900–912 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 910–922 · @2e80b3e
 
 ```python
         aux_total = None
@@ -269,7 +269,7 @@ A **decoder** writes one
 token at a time, each position seeing only earlier ones. GPT-2 was a decoder
 only, trained as a language model on web text [R04]. AnuLM is a decoder too:
 
-> **In the repo** · `anulm/model.py` · `_sdpa` · lines 414–418 · @b42998d
+> **In the repo** · `anulm/model.py` · `_sdpa` · lines 424–428 · @2e80b3e
 
 ```python
 def _sdpa(q, k, v, mask, S, scale, dropout_p):
@@ -284,7 +284,7 @@ position (Chapter 12). Reading one way gives three things: S graded
 predictions per window of S tokens (Chapter 3); generation that is just
 reading one more token; and a past that never changes, so it can be cached:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 480–486 · @c4a39f8
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 480–486 · @2e80b3e
 
 ```python
         if cache is not None:
@@ -324,13 +324,13 @@ worse zero-shot: within noise, so making AnuLM bidirectional did not help
 there (`docs/RESULTS.md` §36).
 
 > **Details.** The mask is `bidir_mask`, (B, 1, 1, S), which
-> `GQAttention.forward` uses instead of the causal mask (line 481).
+> `GQAttention.forward` uses instead of the causal mask (line 491).
 > `bidir_hidden` (`anulm/bidirectional.py` lines 40–53) has no cache and no
 > head: it returns the normalised vectors, (B, S, D). The adaptation that
 > follows is masked next-token prediction (MNTP): hide 20% of the tokens and
 > predict each one from the position before it:
 >
-> > **In the repo** · `anulm/bidirectional.py` · `adapt` · lines 82–93 · @b42998d
+> > **In the repo** · `anulm/bidirectional.py` · `adapt` · lines 82–93 · @2e80b3e
 >
 > ```python
 >         masked = torch.rand(x.shape, device=x.device) < a.mask_frac
@@ -405,14 +405,14 @@ used only for the claim in its register row:
 | [S15] | LSTM: gate units keeping error flow constant over long time lags | CHECKED |
 
 
-Repository evidence, all at @b42998d:
-- `anulm/model.py`: `_sdpa` 414–418; `GQAttention.forward` 470–476, 481;
-  `AnuLM.__init__` 836–841; `AnuLM.forward` 900–912.
+Repository evidence, all at @2e80b3e:
+- `anulm/model.py`: `_sdpa` 424–428; `GQAttention.forward` 480–486, 491;
+  `AnuLM.__init__` 846–851; `AnuLM.forward` 910–922.
 - `anulm/bigram_teacher.py`: `build_bigram_teacher` 34–62 (counts 42–51),
   `teacher_kl` 65–70.
 - `anulm/bidirectional.py`: `bidir_hidden` 40–53; `adapt` 56–105 (MNTP 82–93).
 - `docs/RESULTS.md` §32 (the teacher) and §36 (bidirectional for Decide).
-- `anulm/training/train.py`: `make_batch` 237–250, `make_optimizer` 447–474.
+- `anulm/training/train.py`: `make_batch` 240–253, `make_optimizer` 450–482.
 - `course/ch01-smallest-model/results.json`: the lab book's recorded bigram
   (2.4931) and tiny transformer (1.7505).
 - Measurements: `book/measurements/part_i_ii_ladder.json`.

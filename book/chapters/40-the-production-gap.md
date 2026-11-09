@@ -2,7 +2,7 @@
 title: "40 · The production gap"
 part: "IX · To production"
 accent: teal
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 40  The production gap
@@ -21,7 +21,7 @@ Prerequisites: the KV cache (Chapter 27), precision (Chapter 23), serving
 
 ## 40.1  What the repository has: one sequence, one growing cache
 
-> **In the repo** · `anulm/model.py` · `AnuLM.new_cache` · lines 873–875 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.new_cache` · lines 883–885 · @2e80b3e
 
 ```python
     def new_cache(self) -> list[dict]:
@@ -29,7 +29,7 @@ Prerequisites: the KV cache (Chapter 27), precision (Chapter 23), serving
         return [dict() for _ in self.layers]
 ```
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 480–486 · @c4a39f8
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 480–486 · @2e80b3e
 
 ```python
         if cache is not None:
@@ -45,7 +45,7 @@ Prerequisites: the KV cache (Chapter 27), precision (Chapter 23), serving
 step, in every layer. When the context is full, `generate` throws the cache
 away and rebuilds it from the last `block_size` tokens:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1144–1151 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1154–1161 · @2e80b3e
 
 ```python
         for _ in range(max_new_tokens):
@@ -92,7 +92,7 @@ units of the same bytes. The copying's effect on speed is *not measured here*.
 
 Every request then runs alone, under the API's single lock:
 
-> **In the repo** · `anulm/inference/api.py` · `Generation.run` · lines 441–448 · @b42998d
+> **In the repo** · `anulm/inference/api.py` · `Generation.run` · lines 441–448 · @2e80b3e
 
 ```python
         with GPU:
@@ -142,7 +142,7 @@ Concurrency is *not measured here*; in the code, the lock caps it at one.
 ![Figure 40.1 · The repository against a serving stack](../figures/fig40-1-gap.svg)
 
 *Figure 40.1 · The repository against a serving stack.* Dashed boxes are
-`EXTENSION`s. *verified*: from `anulm/model.py`, `anulm/inference/serve.py` and `anulm/inference/api.py` at @b42998d.
+`EXTENSION`s. *verified*: from `anulm/model.py`, `anulm/inference/serve.py` and `anulm/inference/api.py` at @2e80b3e.
 
 `NOT IN THE REPO` · `EXTENSION`
 
@@ -174,7 +174,7 @@ The serving engine picks the grouped expert path on CUDA (Chapter 38), and that
 path keeps a second, bf16 copy of every expert's matrices beside the fp32
 weights:
 
-> **In the repo** · `anulm/model.py` · `MoE._stacked_weights` · lines 752–759 · @b42998d
+> **In the repo** · `anulm/model.py` · `MoE._stacked_weights` · lines 762–769 · @2e80b3e
 
 ```python
         key = sum(p._version for e in self.experts for p in e.parameters())
@@ -210,7 +210,7 @@ approximate second-order information [R60]. The quality cost is *not measured
 here*, apart from one trap: plain bf16 rounding of the router biases, which
 Chapter 39 (39.2) measures. The only quantised component here is borrowed:
 
-> **In the repo** · `anulm/multimodal/audio_codec.py` · `WhisperEncoder.__init__` · lines 231–235 · @b42998d
+> **In the repo** · `anulm/multimodal/audio_codec.py` · `WhisperEncoder.__init__` · lines 231–235 · @2e80b3e
 
 ```python
         if compute_type is None:
@@ -265,7 +265,7 @@ The counts are (1 − α⁵)/(1 − α), printed by
 
 ## 40.5  Attention kernels
 
-> **In the repo** · `anulm/model.py` · `_sdpa` · lines 414–418 · @b42998d
+> **In the repo** · `anulm/model.py` · `_sdpa` · lines 424–428 · @2e80b3e
 
 ```python
 def _sdpa(q, k, v, mask, S, scale, dropout_p):
@@ -299,7 +299,7 @@ repository neither chooses nor writes one.
 
 `anulm/training/train.py` builds one optimiser for one device:
 
-> **In the repo** · `anulm/training/train.py` · `make_optimizer` · lines 463–471 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `make_optimizer` · lines 466–479 · @2e80b3e
 
 ```python
     fused = args.device.startswith("cuda") and "fused" in torch.optim.AdamW.__init__.__code__.co_varnames
@@ -365,7 +365,7 @@ in full in Chapter 38, 38.7:
 
 The Gradio app shares one decoder between chat, decisions, hearing and
 reading; `app_omni.Models` takes one re-entrant lock around loading and every
-call on it (`anulm/apps/app_omni.py` line 181), so two visitors cannot
+call on it (`anulm/apps/app_omni.py` line 194), so two visitors cannot
 interleave on one module or load the model twice.
 
 What is still missing:
@@ -379,14 +379,13 @@ What is still missing:
 - **Metrics and content filters.** The log holds errors only.
 - **Separating instructions from data:**
 
-> **In the repo** · `anulm/multimodal/omni.py` · `Reader.ask` · lines 106–110 · @b42998d
+> **In the repo** · `anulm/multimodal/omni.py` · `Reader.read` · lines 106–109 · @2e80b3e
 
 ```python
         body = "\n\n".join(f"[{i + 1}] {' '.join(h['text'].split()[:120])}" for i, h in enumerate(hits))
         q = f"{body}\n\n{'प्रश्न' if hi else 'Question'}: {question.strip()}"
         prompt = PROMPTS["rc-hi" if hi else "rc-en"].format(q=q)
-        out = self.om.engine.generate(prompt, 40, 0.0, 1, 0, mode="continue")
-        return {"answer": out["completion"].strip(), "sources": [h["title"] for h in hits],
+        return self.om.engine.generate(prompt, 40, 0.0, 1, 0, mode="continue")["completion"].strip()
 ```
 
 Retrieved passages enter the prompt with the same standing as the question,
@@ -463,17 +462,17 @@ used only for the claim in its register row:
 | [S10] | speculative sampling: several tokens per target-model call | CHECKED |
 | [S13] | PyTorch DDP: bucketing gradients, overlapping communication | CHECKED |
 
-Repository evidence, all at @b42998d:
-- `anulm/model.py`: `_sdpa` 414–418, `GQAttention.forward` 470–476,
-  `AnuLM.new_cache` 873–875.
-- `anulm/training/train.py`: `make_optimizer` 447–474.
+Repository evidence, all at @2e80b3e:
+- `anulm/model.py`: `_sdpa` 424–428, `GQAttention.forward` 480–486,
+  `AnuLM.new_cache` 883–885.
+- `anulm/training/train.py`: `make_optimizer` 450–482.
 - `anulm/multimodal/audio_codec.py`: `WhisperEncoder.__init__` 224–236.
 - `anulm/inference/api.py`: `check_key` 173–180, `exposure_warning` 183–188,
   limits 195–200, `GPU` 296, `log_error` 305–312, `_any_error` 319–323,
   `Generation.run` 425–456, the warning printed in `main` 817–819.
 - `anulm/inference/serve.py`: `MAX_BODY_BYTES` 47, checked 212–213.
-- `anulm/apps/app_omni.py`: `Models.__init__`'s shared lock 173–181.
-- `anulm/multimodal/omni.py`: `Reader.ask` 97–111.
+- `anulm/apps/app_omni.py`: `Models.__init__`'s shared lock 186–194.
+- `anulm/multimodal/omni.py`: `Reader.ask` 111–134.
 - Book example and measurements: `book/code-examples/ch40_gap_arithmetic.py`,
   `book/measurements/part_viii_ix_gap.json`; Chapter 39's
   `book/measurements/part_viii_ix_export.json`.

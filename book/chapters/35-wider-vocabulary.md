@@ -2,7 +2,7 @@
 title: "35 · A wider vocabulary and inputs that are not tokens"
 part: "VIII · Beyond text"
 accent: plum
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 35  A wider vocabulary and inputs that are not tokens
@@ -39,7 +39,7 @@ of audio positions after projection.
 `anulm/multimodal/speech_vocab.py` appends the new ids after the old ones, so every id the
 checkpoint knew keeps its number:
 
-> **In the repo** · `anulm/multimodal/speech_vocab.py` · `SpeechVocab` · lines 60–85 · @b42998d
+> **In the repo** · `anulm/multimodal/speech_vocab.py` · `SpeechVocab` · lines 60–85 · @2e80b3e
 
 ```python
 CONTROL = ["<|speech|>", "<|/speech|>", "<|text|>", "<|image|>", "<|/image|>"]
@@ -78,7 +78,7 @@ time resolution [R45]. Here the second level has two codes and the third has
 four for every code of the first. `flatten` interleaves one coarse frame's
 seven codes, and gives each of the seven slots its own block of 4,096 ids:
 
-> **In the repo** · `anulm/multimodal/audio_codec.py` · `flatten` · lines 125–143 · @b42998d
+> **In the repo** · `anulm/multimodal/audio_codec.py` · `flatten` · lines 125–143 · @2e80b3e
 
 ```python
 def flatten(codes: list) -> np.ndarray:
@@ -118,7 +118,7 @@ vocabulary ids of 35.1.
 A checkpoint's embedding table is (V<sub>text</sub>, D) and its output head
 (V<sub>text</sub>, D). Both need new rows:
 
-> **In the repo** · `anulm/multimodal/speech_vocab.py` · `_grow` · lines 108–114 · @b42998d
+> **In the repo** · `anulm/multimodal/speech_vocab.py` · `_grow` · lines 108–114 · @2e80b3e
 
 ```python
 def _grow(weight: torch.Tensor, n_new: int, gen: torch.Generator) -> torch.Tensor:
@@ -135,7 +135,7 @@ the whole table. Each new row is the average row plus noise a tenth as wide as
 that spread. `torch.cat` appends the n<sub>new</sub> rows below the old ones,
 which stay as they were. `grow_checkpoint` applies this to both tables:
 
-> **In the repo** · `anulm/multimodal/speech_vocab.py` · `grow_checkpoint` · lines 140–156 · @b42998d
+> **In the repo** · `anulm/multimodal/speech_vocab.py` · `grow_checkpoint` · lines 140–156 · @2e80b3e
 
 ```python
     gen = torch.Generator().manual_seed(seed)
@@ -228,7 +228,7 @@ effect on training speed is *not measured here*.
 A frozen encoder produces vectors, not ids, so there is nothing to look up.
 `AnuLM.forward` accepts them directly:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 887–896 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 897–906 · @2e80b3e
 
 ```python
         # `embeds` bypasses the embedding table: (B, S, D) straight in. Audio
@@ -244,7 +244,7 @@ A frozen encoder produces vectors, not ids, so there is nothing to look up.
 ```
 
 With `embeds` the shapes come from the tensor itself and the lookup is skipped;
-everything after line 896 is unchanged. So a caller can build any mix of
+everything after line 906 is unchanged. So a caller can build any mix of
 vectors: control tokens and text through `embed_tokens`, audio through a
 projector, concatenated along the sequence. The book example checks that
 nothing else differs:
@@ -255,7 +255,7 @@ nothing else differs:
 
 The speech path builds its sequence like this:
 
-> **In the repo** · `anulm/multimodal/speech_encoder.py` · `ContinuousSpeech.build` · lines 105–134 · @b42998d
+> **In the repo** · `anulm/multimodal/speech_encoder.py` · `ContinuousSpeech.build` · lines 105–134 · @2e80b3e
 
 ```python
     def build(self, states: torch.Tensor, text_ids: list[int], answer_ids: list[int],
@@ -334,7 +334,7 @@ has nothing to predict.
 A grown model has 61,445 output rows, and only the first 32,768 are text. When
 the job is a text reply, the rest must never be sampled:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1152–1156 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1162–1166 · @2e80b3e
 
 ```python
             logits = logits[:, -1, :].float()
@@ -348,7 +348,7 @@ the job is a text reply, the rest must never be sampled:
 the model; `getattr` with a default makes it optional. The serving engine sets
 it from the checkpoint's `speech_text_vocab`:
 
-> **In the repo** · `anulm/inference/serve.py` · `Engine.__init__` · lines 66–68 · @b42998d
+> **In the repo** · `anulm/inference/serve.py` · `Engine.__init__` · lines 66–68 · @2e80b3e
 
 ```python
         self.model = AnuLM(cfg).to(device).eval()
@@ -387,7 +387,7 @@ text. Only the mask guarantees that no audio id reaches the detokenizer.
 `generate` takes ids. A transcript or caption starts from vectors, so
 `decode_from_embeds` prefills the vector prompt once and then feeds back ids:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.decode_from_embeds` · lines 1033–1057 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.decode_from_embeds` · lines 1043–1067 · @2e80b3e
 
 ```python
         dev = prefix.device
@@ -413,7 +413,7 @@ cache with T positions. Each later step sends one id at absolute position
 `pos` (Chapter 27). Decoding is greedy; the elided lines apply Chapter 28's
 repetition penalty and n-gram block. `stop` decides when to end:
 
-> **In the repo** · `anulm/multimodal/speech_encoder.py` · `transcribe` · lines 383–404 · @b42998d
+> **In the repo** · `anulm/multimodal/speech_encoder.py` · `transcribe` · lines 383–404 · @2e80b3e
 
 ```python
     texts = []
@@ -452,7 +452,7 @@ EOS, or any id from the end of the text block up, ends a chunk's transcript:
 this function's version of 35.5's mask. The chunk transcripts are joined with
 spaces. The chunks are decoded independently, so a word cut at a chunk
 boundary is not repaired. The test
-`cached_embeds_decoding_matches_prefix_replay` (`tests/test_model.py` line 1742)
+`cached_embeds_decoding_matches_prefix_replay` (`tests/test_model.py` line 1740)
 holds the cached path to the uncached one, which re-runs the whole prefix for
 every token, for GQA and MLA, with and without the n-gram block and penalty.
 
@@ -509,16 +509,16 @@ used only for the claim in its register row:
 |---|---|---|
 | [R45] | SNAC: a codec whose quantisers work at different time resolutions | CHECKED |
 
-Repository evidence, all at @b42998d:
+Repository evidence, all at @2e80b3e:
 - `anulm/multimodal/speech_vocab.py`: `CONTROL` 60–61, `SpeechVocab` 69–105, `_grow` 108–114,
   `grow_checkpoint` 117–159.
 - `anulm/multimodal/audio_codec.py`: `AUDIO_VOCAB` 55, `audio_chunks` 104–118, `flatten` 125–143,
   `unflatten` 146–174.
-- `anulm/model.py`: `AnuLM.forward` 877–928, `AnuLM.decode_from_embeds` 1015–1062,
-  `AnuLM.generate` 1115–1180.
+- `anulm/model.py`: `AnuLM.forward` 887–938, `AnuLM.decode_from_embeds` 1025–1072,
+  `AnuLM.generate` 1125–1190.
 - `anulm/multimodal/speech_encoder.py`: `ContinuousSpeech.build` 105–134, the trainer's call
   287, `transcribe` 360–404.
 - `anulm/inference/serve.py`: `Engine.__init__` 58–112.
-- `tests/test_model.py`: `cached_embeds_decoding_matches_prefix_replay` 1742.
+- `tests/test_model.py`: `cached_embeds_decoding_matches_prefix_replay` 1740.
 - Book example and measurement: `book/code-examples/ch35_wider_vocab.py`,
   `book/measurements/part_viii_ix_grow.json`.

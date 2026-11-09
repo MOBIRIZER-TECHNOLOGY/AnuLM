@@ -2,7 +2,7 @@
 title: "41 · Capstone: train it, open it, change it"
 part: "X · Capstone"
 accent: teal
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 41  Capstone: train it, open it, change it
@@ -48,7 +48,7 @@ python -m anulm train --preset tiny-gqa --steps 1000 --device cpu --out ckpt_cap
 With no `--data`, `anulm/training/train.py` reads `data/input.txt`, downloading
 tinyshakespeare (1.1 MB) the first time. Pass `--steps 1000`, because the
 default is 2,000 although `docs/TUTORIAL.md` says 1,000. Pass `--device cpu`,
-because the default is `cuda` whenever a GPU is visible (lines 575–576), and
+because the default is `cuda` whenever a GPU is visible (lines 584–585), and
 then `anulm/training/train.py` runs under bf16 autocast. A GPU run should land within 41.2's
 tolerance, but the book's numbers come from the CPU.
 
@@ -60,10 +60,10 @@ python -m anulm train --preset tiny-gqa --steps 50 --eval-every 25 --device cpu 
 ```
 
 These are exactly the first 50 steps of the 1,000-step run. The warmup lasts
-100 steps (`--warmup`, line 554), and inside it the learning rate does not
+100 steps (`--warmup`, line 563), and inside it the learning rate does not
 depend on `--steps`:
 
-> **In the repo** · `anulm/training/train.py` · `lr_at` · lines 375–381 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `lr_at` · lines 378–384 · @2e80b3e
 
 ```python
 def lr_at(step: int, args, start_step: int = 0) -> float:
@@ -78,7 +78,7 @@ field of it; a misspelt field is a usage error.
 
 > **Details.** How `train.py` builds the configuration:
 >
-> **In the repo** · `anulm/training/train.py` · `main` · lines 723–740 · @c4a39f8
+> **In the repo** · `anulm/training/train.py` · `main` · lines 723–740 · @2e80b3e
 >
 > ```python
 >     builder = PRESETS[args.preset]
@@ -143,7 +143,7 @@ def first_loss() -> None:
     val, sem = T.evaluate(model, val_data, args)
 ```
 
-The keyword arguments are those of lines 735–739 (@c4a39f8) for this command. The sampler
+The keyword arguments are those of lines 735–739 for this command. The sampler
 has its own random generator, so it leaves the weights' seed untouched, and its
 first draw is the batch `anulm/training/train.py` trains on at step 0.
 
@@ -160,7 +160,7 @@ prints Exercise 1's answer. Your run's first log line should read
 `step     0 | loss 5.6203`. Both losses sit near ln 259; the validation loss is
 0.0521 above it, inside the 0.1 that `initial_loss_is_ln_vocab` allows:
 
-> **In the repo** · `tests/test_model.py` · `initial_loss_is_ln_vocab` · lines 428–446 · @b42998d
+> **In the repo** · `tests/test_model.py` · `initial_loss_is_ln_vocab` · lines 428–446 · @2e80b3e
 
 ```python
 def initial_loss_is_ln_vocab():
@@ -190,7 +190,7 @@ some bad scales do not move the loss.
 Each step of the loop runs one batch forward and backward, then updates the
 weights:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 855–878 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `main` · lines 864–887 · @2e80b3e
 
 ```python
         opt.zero_grad(set_to_none=True)
@@ -229,7 +229,7 @@ weights:
 
 Every 250 steps, and at the last step, the loop evaluates and saves:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 891–908 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `main` · lines 900–917 · @2e80b3e
 
 ```python
         if (step + 1) % args.eval_every == 0 or step == end - 1:
@@ -258,7 +258,7 @@ to bits per byte; for byte data `bytes_per_token` is 1.0.
 
 The repository's `README.md` records this run from an older `anulm/training/train.py`. That
 version printed fewer columns and drew its windows with replacement; the
-`WindowSampler` (lines 104–160) now draws different batches, so your step
+`WindowSampler` (lines 107–163) now draws different batches, so your step
 losses will not match these, starting with step 0 (5.6203, not 5.5869). The
 shape of the curve and the end point are what carry over:
 
@@ -371,7 +371,7 @@ the full output for three models.
 
 `generate` turns logits into a token here:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1161–1169 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1171–1179 · @2e80b3e
 
 ```python
             if temperature <= 0:
@@ -390,7 +390,7 @@ random draw. Any other temperature divides the logits, and the rest of the
 `else` branch samples. `top_k` keeps a fixed number of tokens. Nucleus sampling, top-p, keeps a fixed
 share of the probability, however many tokens that takes [R31]. Chapter 28
 filters the logits before the softmax. This version works on the
-probabilities after line 1168, so that renormalising is a step of its own, one
+probabilities after line 1178, so that renormalising is a step of its own, one
 you can get wrong and must test. From `code-examples/ch41_top_p.py` (**Book
 example, not repository code**):
 
@@ -599,7 +599,7 @@ only the plumbing, since `top_p` returns at its first line; at p = 1 − 10⁻�
 filter runs in full and must change nothing; at p = 1e-9 it must be greedy,
 the repository's own pattern:
 
-> **In the repo** · `tests/test_model.py` · `generation_is_deterministic_at_top_k_1` · lines 495–503 · @b42998d
+> **In the repo** · `tests/test_model.py` · `generation_is_deterministic_at_top_k_1` · lines 495–503 · @2e80b3e
 
 ```python
 def generation_is_deterministic_at_top_k_1():
@@ -624,7 +624,7 @@ functions in `tests/test_model.py`.
 `tests/test_model.py` needs no framework: `@test` appends each function to a list,
 and `main` runs it:
 
-> **In the repo** · `tests/test_model.py` · `main` · lines 2434–2455 · @b42998d
+> **In the repo** · `tests/test_model.py` · `main` · lines 2432–2453 · @2e80b3e
 
 ```python
 def main():
@@ -653,7 +653,7 @@ def main():
 
 A failure is caught, printed and counted, and the run goes on. A test that
 cannot run raises `unittest.SkipTest`, prints SKIP and is counted apart
-(Chapter 26, 26.10). The return value is the exit status (line 2480), so CI
+(Chapter 26, 26.10). The return value is the exit status (line 2520), so CI
 stops on any failure. At the previous pin, @fdbb09a:
 
 ```
@@ -668,7 +668,7 @@ stops on any failure. At the previous pin, @fdbb09a:
 `CUDA_VISIBLE_DEVICES=-1` (Python 3.14.7, torch 2.11.0, CPU);
 `book/measurements/part_x_tests.json`. Commit 52d26f0 then added four tests
 (Chapter 26, 26.10), so at this pin the last line reads `80 passed, 0 failed,
-80 total`; `README.md` (line 115) gives that count, 80, and "under a minute"
+80 total`; `README.md` (line 107) gives that count, 80, and "under a minute"
 (*verified*: the count; the run's time at this pin is *not measured here*). A test that needs an optional package
 (`gradio`, `safetensors`, `transformers`, `tokenizers`, the API's or apps'
 dependencies) or `F.grouped_mm` raises `unittest.SkipTest` without it, and the
@@ -851,14 +851,14 @@ toy.
   renormalises; it slots in after the softmax in `generate`.
 - A test earns trust when a known-wrong version fails it: here the off-by-one
   filter fails all three tests, and the missing renormalisation fails one.
-- The suite holds 80 tests (its 76 at @fdbb09a ran in 46 s on a CPU); the
+- The suite holds 82 tests (its 76 at @fdbb09a ran in 46 s on a CPU); the
   released model needs 501 tokens to reach 0.9 of the mass at the median
   position, so no fixed top-k fits.
 
 > **In one breath.** Train the 17M preset and watch its loss fall from ln 259;
 > trace one prediction through every module with hooks; add top-p in one line
 > after the softmax and prove it with tests that two planted bugs fail; then
-> run all 80 tests and compare your model with the released 400M.
+> run all 82 tests and compare your model with the released 400M.
 
 ## References
 
@@ -871,23 +871,23 @@ used only for the claim in its register row:
 | [R40] | DPO: a preference loss against a reference policy, without a reward model | CHECKED |
 | [R46] | PagedAttention: the KV cache in blocks of a fixed number of tokens | CHECKED |
 
-Repository evidence, all at @b42998d:
-- `anulm/training/train.py`: `main` 536–924 (preset builder 712–723, keyword arguments
-  726–731, the step 855–878, evaluation and saves 891–908), `load_bytes` 62–98,
-  `WindowSampler` 104–160, `lr_at` 375–400, `evaluate` 477–533; defaults:
-  `--steps` 2000 (line 548), `--warmup` 100 (554), `--device` (575–576).
-- `anulm/training/train.py` at @c4a39f8: `PRESETS` 30–32; in `main`, the
+Repository evidence, all at @2e80b3e:
+- `anulm/training/train.py`: `main` 544–933 (preset builder 723–732, keyword arguments
+  735–740, the step 864–887, evaluation and saves 900–917), `load_bytes` 65–101,
+  `WindowSampler` 107–163, `lr_at` 378–403, `evaluate` 485–541; defaults:
+  `--steps` 2000 (line 557), `--warmup` 100 (563), `--device` (584–585).
+- `anulm/training/train.py` at @2e80b3e: `PRESETS` 30–32; in `main`, the
   preset builder 723–732 and the keyword arguments 735–740.
 - `.github/workflows/tests.yml` line 132: the CI's 50-step run.
-- `anulm/model.py`: `AnuLM.generate` 1115–1180 (greedy and sampling 1161–1169),
-  `AnuLM.num_params` 1104–1113.
+- `anulm/model.py`: `AnuLM.generate` 1125–1190 (greedy and sampling 1171–1179),
+  `AnuLM.num_params` 1114–1123.
 - `tests/test_model.py`: `initial_loss_is_ln_vocab` 428,
   `generation_is_deterministic_at_top_k_1` 495, `param_count_matches_analysis`
   507, `gradient_accumulation_equals_large_batch` 545,
   `incremental_forward_matches_full_forward` 658,
-  `cached_generation_matches_uncached` 701, `main` 2434–2455; skips raise
+  `cached_generation_matches_uncached` 701, `main` 2432–2453; skips raise
   `unittest.SkipTest` at 832, 853, 871, 997, 1034, 1073, 1299, 1303, 1351,
-  1464, 1523, 2152 and 2203; `sys.exit(main())` 2480; 80 tests.
+  1464, 1523, 2150 and 2201; `sys.exit(main())` 2520; 82 tests.
 - `tests/test_quality_layout.py`, `tests/test_quality_loading.py`,
   `tests/test_quality_serving.py`: 63 `unittest` tests (18, 19 and 26).
 - `anulm/hf/export_hf.py`: `--weights-dtype` 231–233; `to_bf16` 52–61; the

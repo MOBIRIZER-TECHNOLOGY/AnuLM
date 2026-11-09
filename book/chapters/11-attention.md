@@ -2,7 +2,7 @@
 title: "11 · Attention from first principles"
 part: "IV · Inside the transformer"
 accent: gold
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 11  Attention from first principles
@@ -275,7 +275,7 @@ width behaves alike. 11.8 measures the trained model.
 
 `anulm/model.py` runs attention in one function:
 
-> **In the repo** · `anulm/model.py` · `_sdpa` · lines 414–418 · @b42998d
+> **In the repo** · `anulm/model.py` · `_sdpa` · lines 424–428 · @2e80b3e
 
 ```python
 def _sdpa(q, k, v, mask, S, scale, dropout_p):
@@ -292,7 +292,7 @@ PyTorch for the causal mask whenever no mask is passed and S > 1.
 
 The layer that calls it sets up its projections and scale once:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 440–459 · @c4a39f8
+> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 440–459 · @2e80b3e
 
 ```python
     def __init__(self, cfg: AnuLMConfig, rotary: Rotary):
@@ -323,13 +323,13 @@ The layer that calls it sets up its projections and scale once:
 - **Lines 453–455.** One RMSNorm for queries and one for keys (11.7).
 - **Line 459.** The scale is 1/√64 = 0.125, times a temperature that YaRN adds
   when the context is stretched (Chapter 29). Without YaRN, `attn_mscale` is
-  1.0 (line 308), so the released scale is exactly 0.125. MLA and the band
+  1.0 (line 318), so the released scale is exactly 0.125. MLA and the band
   blend in the comment belong to Chapters 19 and 29; the test that pins the
   YaRN temperature is in the Details at the end of this section.
 
 The forward pass first makes the queries, keys and values for every head:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 461–486 · @c4a39f8
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 461–486 · @2e80b3e
 
 ```python
     def forward(self, x, cos, sin, cache: Optional[dict] = None, start: int = 0,
@@ -362,7 +362,7 @@ Lines 468–473 are x **W** for all three roles at once, then a cut into
 475–478 normalise (11.7) and rotate (Chapter 14). Lines 480–486 append to the
 KV cache (Chapter 27). Then comes the attention call:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 477–494 · @b42998d
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 487–504 · @2e80b3e
 
 ```python
         T = k.shape[2]
@@ -391,7 +391,7 @@ KV cache (Chapter 27). Then comes the attention call:
 - **Line 482.** PyTorch applies whatever dropout it is given, in training or
   not [R50], so the layer passes 0.0 outside training. The released model has
   `dropout = 0.0`.
-- **Lines 483–492.** With `NATIVE_GQA` off, the default (line 387), each
+- **Lines 483–492.** With `NATIVE_GQA` off, the default (line 397), each
   key/value head is copied to its four query heads and `_sdpa` runs
   (Chapter 13, 13.4, quotes the other branch). The
   (B, H, …) dimensions are the `...` of `attention()`: all sixteen heads in one
@@ -402,8 +402,8 @@ KV cache (Chapter 27). Then comes the attention call:
 > **Details.** Who masks, case by case, and the two tests behind this
 > section's window and scale.
 >
-> Three cases follow from `_attn_mask`'s early return (line 374) and `_sdpa`'s
-> `is_causal` (line 416):
+> Three cases follow from `_attn_mask`'s early return (line 384) and `_sdpa`'s
+> `is_causal` (line 426):
 >
 > | Call | `_attn_mask` returns | `is_causal` | Who masks |
 > |---|---|---|---|
@@ -419,9 +419,9 @@ KV cache (Chapter 27). Then comes the attention call:
 > something.
 >
 > The repository passes the scale explicitly because YaRN changes it, and the
-> comment at lines 446–448 says what goes wrong otherwise. It did go wrong:
+> comment at lines 456–458 says what goes wrong otherwise. It did go wrong:
 >
-> > **In the repo** · `tests/test_model.py` · `yarn_temperature_reaches_attention` · lines 144–164 · @b42998d
+> > **In the repo** · `tests/test_model.py` · `yarn_temperature_reaches_attention` · lines 144–164 · @2e80b3e
 >
 > ```python
 > def yarn_temperature_reaches_attention():
@@ -456,11 +456,11 @@ KV cache (Chapter 27). Then comes the attention call:
 
 11.5 assumed components of variance about 1. AnuLM enforces it: each query
 head and each key head passes through an RMSNorm before the scores
-(`GQAttention.forward` lines 465–467; Chapter 15). There is one norm for
+(`GQAttention.forward` lines 475–477; Chapter 15). There is one norm for
 queries and one for keys, and each has a 64-wide gain γ shared by all heads of
 its kind.
 
-> **In the repo** · `anulm/model.py` · `RMSNorm` · lines 225–239 · @b42998d
+> **In the repo** · `anulm/model.py` · `RMSNorm` · lines 235–249 · @2e80b3e
 
 ```python
 class RMSNorm(nn.Module):
@@ -479,7 +479,7 @@ class RMSNorm(nn.Module):
 ```
 
 Line 238 makes the mean squared component 1, so the length is √64 = 8 (less a
-hair for ε); line 231 starts γ at ones. RoPE then rotates without changing
+hair for ε); line 241 starts γ at ones. RoPE then rotates without changing
 length (`rope_preserves_norms`, `tests/test_model.py` line 120).
 
 Since |q·k| ≤ ‖q‖ ‖k‖ (the Cauchy–Schwarz inequality), a scaled score is at
@@ -526,7 +526,7 @@ the gains.
 
 > **Details.** QK-norm was proposed with ℓ2 normalisation and a single learned
 > scale [R14]. AnuLM uses RMSNorm with a gain per dimension, before the
-> rotation; the comment at line 475 (@c4a39f8) says "before RoPE".
+> rotation; the comment at line 475 says "before RoPE".
 
 `IN THE REPO`
 
@@ -664,7 +664,7 @@ the formula.
 | scale dropped | attention sharpens with width (11.5) | assert `scale` against `head_dim ** -0.5` times the temperature, as `yarn_temperature_reaches_attention` does |
 | scale applied twice | scores divided by 64 at width 64: nearly uniform attention | the same assertion |
 | softmax over queries | weights still look plausible | every row of weights sums to 1 over the keys |
-| dropout at evaluation | PyTorch applies any `dropout_p` it is given [R50] | pass 0.0 outside training (line 482); two evaluation passes must match |
+| dropout at evaluation | PyTorch applies any `dropout_p` it is given [R50] | pass 0.0 outside training (line 492); two evaluation passes must match |
 | boolean mask inverted | PyTorch's `True` means *may attend*; `nn.MultiheadAttention`'s padding mask means the opposite [R50] | `incremental_forward_matches_full_forward` (`tests/test_model.py` line 658), `sliding_window_limits_reach` (line 750, shown in 12.6) and `sliding_window_agrees_with_cache` fail with `_attn_mask`'s output inverted |
 | comparing kernels exactly | sums in different orders differ in the last bits | compare with a tolerance suited to the dtype |
 
@@ -738,11 +738,11 @@ used only for the claim in its register row:
 | [R29] | FlashAttention: exact attention computed in tiles to cut memory traffic | CHECKED |
 | [R50] | PyTorch's `scaled_dot_product_attention`: reference formula, default scale, mask meaning, dropout, the kernels its documentation lists | CHECKED |
 
-Repository evidence, all at @b42998d:
+Repository evidence, all at @2e80b3e:
 - `anulm/model.py`:
-  - `RMSNorm` 225–239, `Rotary.__init__` line 298;
-  - `_attn_mask` 365–381, `NATIVE_GQA` 387, `_sdpa` 414–418;
-  - `GQAttention.__init__` 430–449, `GQAttention.forward` 451–494.
+  - `RMSNorm` 235–249, `Rotary.__init__` line 308;
+  - `_attn_mask` 375–391, `NATIVE_GQA` 397, `_sdpa` 424–428;
+  - `GQAttention.__init__` 440–459, `GQAttention.forward` 461–504.
 - `tests/test_model.py`:
   - `causal_mask_does_not_leak_future` 57, `rope_preserves_norms` 120;
   - `yarn_temperature_reaches_attention` 144–164;

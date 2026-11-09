@@ -2,7 +2,7 @@
 title: "Appendix E · Bibliography"
 part: "Appendices"
 accent: slate
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # Appendix E  Bibliography
@@ -71,7 +71,6 @@ of the first version. An arXiv identifier `arXiv:NNNN.NNNNN` resolves at
 | R46 | Kwon | 2023 | Efficient Memory Management for Large Language Model Serving with PagedAttention | arXiv:2309.06180 | CHECKED |
 | R47 | Leviathan | 2022 | Fast Inference from Transformers via Speculative Decoding | arXiv:2211.17192 | CHECKED |
 | R48 | Rajbhandari | 2019 | ZeRO: Memory Optimizations Toward Training Trillion Parameter Models | arXiv:1910.02054 | CHECKED |
-| R49 | — | — | withdrawn 2026-11-07; no chapter cites it | — | REJECTED |
 | R50 | PyTorch | 2026 | torch.nn.functional.scaled_dot_product_attention | PyTorch 2.11 documentation | CHECKED |
 | R51 | PyTorch | 2026 | Automatic Mixed Precision package - torch.amp | PyTorch 2.11 documentation | CHECKED |
 | R52 | PyTorch | 2026 | torch.compile | PyTorch 2.11 documentation | CHECKED |
@@ -86,6 +85,8 @@ of the first version. An arXiv identifier `arXiv:NNNN.NNNNN` resolves at
 | R61 | Shoeybi | 2019 | Megatron-LM: Training Multi-Billion Parameter Language Models Using Model Parallelism | arXiv:1909.08053 | CHECKED |
 | R62 | Huang | 2018 | GPipe: Efficient Training of Giant Neural Networks using Pipeline Parallelism | arXiv:1811.06965 | CHECKED |
 | R63 | Greshake | 2023 | Not what you've signed up for: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection | arXiv:2302.12173 | CHECKED |
+
+R49 is not reused: it was an entry for a released model's configuration files, withdrawn on 2026-11-07 when the last chapter citing it was rewritten (`RESEARCH_REFERENCES.md`, REJECTED).
 
 AnuLM's architecture was first studied against openly released
 mixture-of-experts models; the book credits each idea it uses to the paper

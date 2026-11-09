@@ -2,7 +2,7 @@
 title: "30 · Instruction tuning"
 part: "VII · After pre-training"
 accent: plum
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 30  Instruction tuning
@@ -50,7 +50,7 @@ only the packed row length. Quoted code keeps its own names, such as
 
 Every pair is wrapped in one template per language. They live in `anulm/data/make_qa.py`:
 
-> **In the repo** · `anulm/data/make_qa.py` · `PROMPTS` · lines 51–62 · @b42998d
+> **In the repo** · `anulm/data/make_qa.py` · `PROMPTS` · lines 51–62 · @2e80b3e
 
 ```python
 PROMPT = "प्रश्न: {q}\nउत्तर:"          # the answer follows a single space, then EOS
@@ -71,7 +71,7 @@ A pair's `lang` field picks the key. A tuned checkpoint stores the
 dictionary as `qa_templates` (`anulm/training/finetune.py` line 386), so `anulm/inference/serve.py` asks the
 way training did.
 
-> **In the repo** · `anulm/training/finetune.py` · `_pair_ids` · lines 55–60 · @b42998d
+> **In the repo** · `anulm/training/finetune.py` · `_pair_ids` · lines 55–60 · @2e80b3e
 
 ```python
 def _pair_ids(tok: BPE, it: dict) -> tuple[list[int], list[int]]:
@@ -96,7 +96,7 @@ Two details carry the whole format:
 
 Pairs are short and rows are long, so `pack` lays pairs end to end:
 
-> **In the repo** · `anulm/training/finetune.py` · `pack` · lines 91–118 · @b42998d
+> **In the repo** · `anulm/training/finetune.py` · `pack` · lines 91–118 · @2e80b3e
 
 ```python
 def pack(pairs, block_size: int, eos: int) -> tuple[torch.Tensor, torch.Tensor]:
@@ -139,7 +139,7 @@ In order:
 
 The mask works because `AnuLM.forward` already ignores −1:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 922–928 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 932–938 · @2e80b3e
 
 ```python
         logits = self._head(x)
@@ -258,7 +258,7 @@ shape. Three things to read in it:
 
 Everything after the data is the pre-training machinery:
 
-> **In the repo** · `anulm/training/finetune.py` · `main` · lines 360–375 · @b42998d
+> **In the repo** · `anulm/training/finetune.py` · `main` · lines 360–375 · @2e80b3e
 
 ```python
     for step in range(start_step, end):
@@ -286,7 +286,7 @@ matters when the weights are frozen.
 
 The held-out score is a token-weighted mean:
 
-> **In the repo** · `anulm/training/finetune.py` · `evaluate` · lines 207–219 · @b42998d
+> **In the repo** · `anulm/training/finetune.py` · `evaluate` · lines 207–219 · @2e80b3e
 
 ```python
 @torch.no_grad()
@@ -364,7 +364,7 @@ row, which the code at the pin does.
 
 Two questions count as the same when they share a key:
 
-> **In the repo** · `anulm/data/make_qa.py` · `question_key` · lines 66–72 · @b42998d
+> **In the repo** · `anulm/data/make_qa.py` · `question_key` · lines 66–72 · @2e80b3e
 
 ```python
 def question_key(question: str) -> str:
@@ -377,7 +377,7 @@ NFKC folds Unicode look-alikes into one form, `casefold` removes case, and
 `split` then `join` collapses every run of whitespace to one space. The split
 works on these keys:
 
-> **In the repo** · `anulm/data/make_chat.py` · `split_chat_rows` · lines 119–145 · @b42998d
+> **In the repo** · `anulm/data/make_chat.py` · `split_chat_rows` · lines 119–145 · @2e80b3e
 
 ```python
 def split_chat_rows(rows: list[dict], held_groups: int = 300, seed: int = 0) -> tuple[list[dict], list[dict]]:
@@ -422,7 +422,7 @@ every row whose question key is also in training: 4 of 300 on the chat files.
 > questions and holds 300 of them out, so the repeated one is held out with 15
 > of the 20 seeds. The guard in `finetune`:
 >
-> **In the repo** · `anulm/training/finetune.py` · `main` · lines 307–320 · @b42998d
+> **In the repo** · `anulm/training/finetune.py` · `main` · lines 307–320 · @2e80b3e
 >
 > ```python
 >         # A held-out loss over questions the model trained on is optimistic, and
@@ -451,7 +451,7 @@ every row whose question key is also in training: 4 of 300 on the chat files.
 > **What the leak touched.** The held-out loss does two jobs. `finetune` keeps
 > the checkpoint with the best one (30.4), and the chat model's release gate is
 > one: `experiments/omni_one.py` passes the joint model only if
-> `chat_heldout_loss` is at most 3.30 (line 100), set against chat v3's 3.146.
+> `chat_heldout_loss` is at most 3.30 (line 119), set against chat v3's 3.146.
 > Both numbers come from `omni_eval.chat_loss` (`anulm/multimodal/omni_eval.py`
 > lines 115–131), which scores every row of `data/chat_heldout.jsonl` (lines
 > 192–195), the 4 shared prompts included; it drops nothing at the pin.
@@ -495,9 +495,9 @@ fell from 4.9% to 3.0%.
 - **A split by row, not by question**: 30.5. Every copy of a question must
   sit on one side; check with the question key, not the exact string.
 
-The proof is `qa_packing_masks_prompts_and_keeps_examples_whole` (line 1676):
+The proof is `qa_packing_masks_prompts_and_keeps_examples_whole` (line 1674):
 
-> **In the repo** · `tests/test_model.py` · `qa_packing_masks_prompts_and_keeps_examples_whole` · lines 1690–1709 · @b42998d
+> **In the repo** · `tests/test_model.py` · `qa_packing_masks_prompts_and_keeps_examples_whole` · lines 1688–1707 · @2e80b3e
 
 ```python
     for it, (p, a) in zip(items, pairs):
@@ -544,7 +544,7 @@ in order, so nothing is split or reordered; each graded stretch ending on EOS
 3. Batches hold different numbers of graded tokens; averaging batch means
    would weight a token in a sparse batch more.
 
-*verified*: answers 1 and 2 follow from `pack` at @b42998d; run them through
+*verified*: answers 1 and 2 follow from `pack` at @2e80b3e; run them through
 `finetune.pack` to see.
 
 > **Build it.** The lab book's Chapter 9 (`course/ch09-sft`) has you write
@@ -582,15 +582,15 @@ used only for the claim in its register row:
 |---|---|---|
 | [R39] | SFT as the first stage, before a reward model and PPO | CHECKED |
 
-Repository evidence, all at @b42998d:
+Repository evidence, all at @2e80b3e:
 - `anulm/data/make_qa.py`: `PROMPTS` 51–62, `question_key` 66–72.
 - `anulm/training/finetune.py`: `_pair_ids` 55–60, `pack` 91–118, `evaluate` 207–219,
   `main` 222–423 (the held-out guard 307–320, the step 360–375, `qa_templates` 386).
 - `anulm/data/make_chat.py`: `split_chat_rows` 119–145, `main` 148–184 (the call 176).
 - `anulm/multimodal/omni_eval.py`: `chat_loss` 115–131, its call 192–195;
-  `experiments/omni_one.py`: `GATES` 92–104 (`chat_heldout_loss` 100).
+  `experiments/omni_one.py`: `GATES` 111–123 (`chat_heldout_loss` 119).
 - The old split: copied in `book/code-examples/ch30_measure_chat_split.py`.
-- `anulm/model.py`: `AnuLM.forward` 922–928 (`ignore_index=-1`; the regulariser 926–927).
-- `tests/test_model.py`: `qa_packing_masks_prompts_and_keeps_examples_whole` 1676.
+- `anulm/model.py`: `AnuLM.forward` 932–938 (`ignore_index=-1`; the regulariser 936–937).
+- `tests/test_model.py`: `qa_packing_masks_prompts_and_keeps_examples_whole` 1674.
 - `docs/RESULTS.md` §20, §23, §25.
 - Measurements: `book/measurements/part_vii_chat_split.json`.

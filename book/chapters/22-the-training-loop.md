@@ -2,12 +2,12 @@
 title: "22 · The training loop, line by line"
 part: "V · Training"
 accent: teal
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 22  The training loop, line by line
 
-`anulm/training/train.py`'s `main()` (lines 536–924) produced the released
+`anulm/training/train.py`'s `main()` (lines 544–933) produced the released
 model. This chapter reads it in order: how a command line becomes a model, how one optimiser step
 is built from M micro-batches, and what is logged, evaluated and saved.
 
@@ -19,10 +19,10 @@ repository code**).
 ![Figure 22.1 · The training loop](../figures/fig22-1-loop.svg)
 
 *Figure 22.1 · The training loop.* Setup runs once per invocation; the loop runs
-once per optimiser step. Line numbers are at @b42998d.
+once per optimiser step. Line numbers are at @2e80b3e.
 
 The released run finished under this command (`experiments/v2_train.sh` lines
-24–28 and 32 at @b42998d, `$PRESET` expanded). It did not start under it: it
+24–28 and 32 at @2e80b3e, `$PRESET` expanded). It did not start under it: it
 was planned with `--steps 2750000 --decay-frac 0.2` (the script at commit
 a380a15), and shortened at step 1,590,000 by commit 5c1127c after a week lost
 to a shutdown (22.8):
@@ -40,7 +40,7 @@ python -m anulm train --preset 350m --device cuda --moe-impl grouped --data data
 
 ## 22.2  From a preset and `--cfg` to a model
 
-> **In the repo** · `anulm/training/train.py` · `PRESETS` · lines 30–32 · @c4a39f8
+> **In the repo** · `anulm/training/train.py` · `PRESETS` · lines 30–32 · @2e80b3e
 
 ```python
 # `--preset` names -> AnuLMConfig builders (anulm/model.py).
@@ -48,7 +48,7 @@ PRESETS = {"tiny-gqa": AnuLMConfig.tiny_gqa, "tiny-mla": AnuLMConfig.tiny_mla,
            "350m": AnuLMConfig.base_350m, "1b": AnuLMConfig.base_1b}
 ```
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 723–741 · @c4a39f8
+> **In the repo** · `anulm/training/train.py` · `main` · lines 723–741 · @2e80b3e
 
 ```python
     builder = PRESETS[args.preset]
@@ -85,7 +85,7 @@ PRESETS = {"tiny-gqa": AnuLMConfig.tiny_gqa, "tiny-mla": AnuLMConfig.tiny_mla,
 > missing `=`. `p.error` prints the usage line and the message and exits with
 > status 2, as argparse does for any bad flag; an `assert` would vanish under
 > `python -O`. `anulm/model.py` starts with `from __future__ import annotations`
-> (line 23), so each dataclass field's type is a string such as `"int"` or
+> (line 19), so each dataclass field's type is a string such as `"int"` or
 > `"Optional[int]"`. Stripping `Optional[` and `]` leaves the name to look up. A
 > boolean is true for `1`, `true` or `yes`, anything else false; `none` gives
 > `None`.
@@ -124,7 +124,7 @@ same parameter line with `device=cuda dtype=torch.bfloat16`, and
 
 ## 22.3  The compile probe, and two names for one model
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 749–772 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `main` · lines 758–781 · @2e80b3e
 
 ```python
     raw_model = model
@@ -149,7 +149,7 @@ same parameter line with `device=cuda dtype=torch.bfloat16`, and
 ```
 
 `torch.compile` [R52] wraps the model and compiles at the first call. The
-elided comment (lines 757–759) says its default backend generates C++ and needs
+elided comment (lines 766–768) says its default backend generates C++ and needs
 a host compiler, which it discovers only then. That is Inductor's CPU code; on
 CUDA it generates Triton kernels, and this machine's PyTorch has no Triton
 (`import triton` fails). Either way the failure comes at the first real
@@ -166,7 +166,7 @@ released run did not compile (Chapter 23).
 
 ## 22.4  One step: M micro-batches
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 849–873 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `main` · lines 858–882 · @2e80b3e
 
 ```python
     end = min(args.steps, args.stop_at) if args.stop_at else args.steps
@@ -224,7 +224,7 @@ too large.
 
 ## 22.5  Clip, step, and the out-of-band update
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 874–880 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `main` · lines 883–889 · @2e80b3e
 
 ```python
         if args.grad_clip > 0:
@@ -248,7 +248,7 @@ The book example writes this step out with the repository's own pieces:
 
 ```python
 def step(model, opt, batches, args, step_no, divide=True):
-    """anulm/training/train.py lines 852–878 for one step, without the teacher, logging or eval."""
+    """anulm/training/train.py lines 861–887 for one step, without the teacher, logging or eval."""
     lr = T.lr_at(step_no, args)
     opt.set_lr_scale(lr / args.lr)
     opt.zero_grad(set_to_none=True)
@@ -281,7 +281,7 @@ after clip + one AdamW step the weights differ by at most 1.6e-07 (the step itse
 *verified*: printed by `ch22_one_step.py`. The missing division doubles the
 gradient, yet the weights barely move apart. Clipping caps the norm, and
 AdamW divides each gradient by its own running size (Chapter 7). So this
-bug cannot be found by comparing weights, nor in the log: line 869 averages
+bug cannot be found by comparing weights, nor in the log: line 878 averages
 `lm_loss` into `loss_acc` separately, so the printed loss is unchanged. What
 changes is the gradient's scale: what a clipping threshold means, any logged
 gradient norm, and every update of an optimiser that is not scale-invariant,
@@ -291,7 +291,7 @@ such as plain SGD. Compare gradients, as the test does.
 
 ## 22.6  The log line
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 882–889 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `main` · lines 891–898 · @2e80b3e
 
 ```python
         if step % args.log_every == 0 or step == args.steps - 1:
@@ -325,10 +325,10 @@ validation curve.
 ## 22.7  Evaluate, save, and bits per byte
 
 Every `--eval-every` steps, and at the last step of an invocation, the loop
-evaluates, saves, and prints one line. The save block, `main` lines 891–905, is
+evaluates, saves, and prints one line. The save block, `main` lines 900–914, is
 quoted and taken apart in 25.1; the line it prints is:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 906–908 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `main` · lines 915–917 · @2e80b3e
 
 ```python
             bpb = val / math.log(2) / args.bytes_per_token
@@ -343,9 +343,9 @@ In order:
 - **Two files.** A new best writes the weights to `--out`, the file to sample
   from. `<out>.last` is written every time, with the optimiser state and the
   sampler position (Chapter 25). `--resume` reads it back with `safe_load`,
-  a weights-only load (lines 796–797). A truncated file falls back to `--out`
+  a weights-only load (lines 805–806). A truncated file falls back to `--out`
   without the optimiser state; a file the weights-only loader refuses raises
-  `UnsafeCheckpointError` instead (lines 798–802), because dropping the
+  `UnsafeCheckpointError` instead (lines 807–811), because dropping the
   optimiser state silently would hide a decision the user has to make.
 - **Bits per byte.** Dividing nats per token by ln 2 gives bits per token, and
   by bytes per token gives bits per byte, a number that compares across
@@ -360,7 +360,7 @@ In order:
 
 The schedule is `lr_at`'s warmup-stable-decay branch:
 
-> **In the repo** · `anulm/training/train.py` · `lr_at` · lines 375–391 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `lr_at` · lines 378–394 · @2e80b3e
 
 ```python
 def lr_at(step: int, args, start_step: int = 0) -> float:
@@ -461,7 +461,7 @@ Three things to read off it:
 
 `gradient_accumulation_equals_large_batch` (line 545) runs `tiny()` on 8
 sequences at once and as two halves with `(l / 2).backward()`, and requires
-the gradients to agree within 2·10⁻⁵. It passes at @b42998d.
+the gradients to agree within 2·10⁻⁵. It passes at @2e80b3e.
 
 Two mistakes the loss will not show: reading progress from the train loss,
 whose standard deviation over the last 20 log lines was 0.271; and
@@ -513,11 +513,11 @@ no reason to record the graph and keep activations for it.
 | [R23] | the warmup-stable-decay schedule | CHECKED |
 | [R52] | `torch.compile`, the API the probe calls | CHECKED |
 
-Repository evidence, all at @b42998d:
-- `anulm/training/train.py`: `main` 536–924 (646, 712–732 (723–741 @c4a39f8), 736, 747, 749–772, 849–873, 869,
-  874–880, 882–889, 891–908), `lr_at` 375–400, `OptimizerSet.set_lr_scale` 416–420.
-- `anulm/model.py`: `from __future__ import annotations` 23,
-  `AnuLM.update_expert_biases` 1071–1101.
+Repository evidence, all at @2e80b3e:
+- `anulm/training/train.py`: `main` 544–933 (657, 723–741, 745, 756, 758–781, 858–882, 878,
+  883–889, 891–898, 900–917), `lr_at` 378–403, `OptimizerSet.set_lr_scale` 419–423.
+- `anulm/model.py`: `from __future__ import annotations` 19,
+  `AnuLM.update_expert_biases` 1081–1111.
 - `tests/test_model.py`: `gradient_accumulation_equals_large_batch` 545.
 - `experiments/v2_train.sh` 24–28, 32; its earlier version at a380a15 (`--steps
   2750000 --decay-frac 0.2`) and the shortening commit 5c1127c.

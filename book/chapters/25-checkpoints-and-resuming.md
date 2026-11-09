@@ -2,7 +2,7 @@
 title: "25 · Checkpoints, resuming and failure"
 part: "V · Training"
 accent: teal
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 25  Checkpoints, resuming and failure
@@ -25,7 +25,7 @@ Prerequisites: Chapters 22 and 24. A bare "§n" is a section of `docs/RESULTS.md
 
 At every evaluation `anulm/training/train.py` writes up to two checkpoints:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 891–905 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `main` · lines 900–914 · @2e80b3e
 
 ```python
         if (step + 1) % args.eval_every == 0 or step == end - 1:
@@ -59,7 +59,7 @@ The released run's pair, read memory-mapped:
 
 *Figure 25.1 · What a resume point holds.* *measured*:
 `book/code-examples/ch25_measure_resume_point.py` (with `--save`, it writes
-`book/measurements/part_v_b_resume_point.json`; not rerun at @b42998d: needs
+`book/measurements/part_v_b_resume_point.json`; not rerun at @2e80b3e: needs
 `ckpt_base_v2.pt` and its `.last`, so the numbers are from the earlier run,
 whose files have not changed). Sizes are decimal GB, as in the code's
 comments; 1.59 GB is 1.48 GiB.
@@ -82,7 +82,7 @@ evaluation, so both files should hold the same weights. Equal `step` and
 
 ## 25.2  A write that a kill cannot destroy
 
-> **In the repo** · `anulm/training/train.py` · `atomic_save` · lines 32–46 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `atomic_save` · lines 35–49 · @2e80b3e
 
 ```python
 def atomic_save(obj, path) -> None:
@@ -169,10 +169,10 @@ To continue exactly, a resume point needs everything that decides the next
 step: weights and buffers, both AdamW moments, the step (it sets the learning
 rate), the data order, kept by `WindowSampler` (Chapter 21), and any other
 random state. `anulm/training/train.py` saves all but the last: the global RNG is reseeded at
-line 645 and not saved, so dropout above 0 or `--sample-with-replacement`
-(line 859) would not resume exactly. The sampler's state:
+line 656 and not saved, so dropout above 0 or `--sample-with-replacement`
+(line 868) would not resume exactly. The sampler's state:
 
-> **In the repo** · `anulm/training/train.py` · `WindowSampler.state` · lines 152–160 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `WindowSampler.state` · lines 155–163 · @2e80b3e
 
 ```python
     def state(self) -> dict:
@@ -186,7 +186,7 @@ line 645 and not saved, so dropout above 0 or `--sample-with-replacement`
 `order` is this epoch's shuffled starts, shape (W,) for W windows per epoch;
 `pos` counts those used; `g`'s state makes the *next* epoch's shuffle match too:
 
-> **In the repo** · `tests/test_model.py` · `window_sampler_resumes_exactly` · lines 956–966 · @b42998d
+> **In the repo** · `tests/test_model.py` · `window_sampler_resumes_exactly` · lines 956–966 · @2e80b3e
 
 ```python
 def window_sampler_resumes_exactly():
@@ -212,7 +212,7 @@ cross an epoch boundary, where `g` matters. `checkpoint_roundtrip_is_exact`
 
 With `--resume`, `main` reads the resume point before the first step:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 788–840 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `main` · lines 797–849 · @2e80b3e
 
 ```python
     start_step, best_val = 0, float("inf")
@@ -280,7 +280,7 @@ With `--resume`, `main` reads the resume point before the first step:
 `--stop-at` ends an invocation early, after an evaluation and a resume point;
 the next invocation passes `--resume`:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 849–850 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `main` · lines 858–859 · @2e80b3e
 
 ```python
     end = min(args.steps, args.stop_at) if args.stop_at else args.steps
@@ -346,7 +346,7 @@ the same run (`--save` writes `book/measurements/part_v_b_resume_curves.json`).
 Read C carefully. Its best-val file was written at step 29, at the same
 evaluation as `.last`, so C starts step 30 with A's exact weights. Its logged
 2.1005 against A's 1.7326 is a different *batch*: the restarted sampler serves
-step 0's windows again (the loss is computed before the update, lines 857–876).
+step 0's windows again (the loss is computed before the update, lines 866–885).
 The fresh moments first act on step 31. The means over steps 30–59 also
 compare different batches; only the final val loss, 1.2905 against 1.2510, is
 read on the same windows. That is the "visible dent" the fallback's comment
@@ -359,7 +359,7 @@ promises, and still better than starting over.
 Resuming a cosine run with a larger `--steps` lands mid-cosine, at a much
 higher rate; `--rewarmup N` ramps back to it:
 
-> **In the repo** · `anulm/training/train.py` · `lr_at` · lines 394–399 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `lr_at` · lines 397–402 · @2e80b3e
 
 ```python
     # Extending a finished run (--resume with a larger --steps) lands mid-cosine,
@@ -373,7 +373,7 @@ higher rate; `--rewarmup N` ramps back to it:
 For N steps after `start_step` the rate is scaled by (step − `start_step` +
 1)/N. It applies to the cosine schedule only: `lr_at` returns earlier, before
 these lines, during the initial warmup and on every step of `--schedule wsd`
-(lines 380–391). A WSD run needs none in its flat phase.
+(lines 383–394). A WSD run needs none in its flat phase.
 
 > **Details.** The coder run's owner was a Windows scheduled task, firing
 > every 30 minutes and resuming from `.last` if no trainer was alive. Sharing
@@ -394,7 +394,7 @@ colleague's disk can run any code on your machine the moment it is loaded.
 numbers and strings, and any class you allow-list by name. Every load now goes
 through one function:
 
-> **In the repo** · `anulm/model.py` · `safe_load` · lines 1231–1261 · @c4a39f8
+> **In the repo** · `anulm/model.py` · `safe_load` · lines 1231–1261 · @2e80b3e
 
 ```python
 def safe_load(path, map_location="cpu", trust_pickle: Optional[bool] = None, **kwargs):
@@ -466,7 +466,7 @@ tensor) and the configuration are all inside the allow-list.
 The repository's own test of the refusal uses a class whose `__setstate__`,
 called during a full unpickle, sets a flag:
 
-> **In the repo** · `tests/test_quality_loading.py` · `SafeLoad.test_arbitrary_object_is_refused_with_the_escape_named` · lines 109–122 · @b42998d
+> **In the repo** · `tests/test_quality_loading.py` · `SafeLoad.test_arbitrary_object_is_refused_with_the_escape_named` · lines 109–122 · @2e80b3e
 
 ```python
     def test_arbitrary_object_is_refused_with_the_escape_named(self):
@@ -498,7 +498,7 @@ and that the escapes load the refused file (line 124).
 Scripts that only *read* a checkpoint call `load_checkpoint`, which accepts a
 `.pt`, a folder written by `anulm/hf/export_hf.py`, or a Hub id:
 
-> **In the repo** · `anulm/model.py` · `load_checkpoint` · lines 1280–1316 · @b42998d
+> **In the repo** · `anulm/model.py` · `load_checkpoint` · lines 1283–1319 · @2e80b3e
 
 ```python
 def load_checkpoint(path, map_location="cpu", base: bool = True) -> dict:
@@ -523,7 +523,7 @@ state, so it can be sampled from or fine-tuned, not resumed. Chapter 39 covers
 the folder format.
 
 > **Details.** The other two paths. A path that does not exist and matches
-> `_HUB_ID` (`owner/name`, line 1261) goes to the Hub, and says so first, so a
+> `_HUB_ID` (`owner/name`, line 1264) goes to the Hub, and says so first, so a
 > mistyped local name is not a silent download or a puzzling network error. In
 > a folder, the elided lines start `ck = {}`, rebuild the configuration from
 > `config.json` keeping only known fields (an unknown one is dropped
@@ -608,13 +608,13 @@ behaviour by part 3 of `ch25_resume.py`.
 This chapter cites no external sources. Quality claims are measured here or in
 `docs/RESULTS.md` §8, §25 and §27.
 
-Repository evidence, all at @b42998d:
-- `anulm/training/train.py`: `atomic_save` 32–46, `WindowSampler.state` and `load_state`
-  152–160, `lr_at` 375–400, `main` 788–840 (resume), 849–850 (`--stop-at`),
-  857–876 (one step), 891–905 (saves).
-- `anulm/model.py`: `TRUST_PICKLE_ENV` 1219,
-  `UnsafeCheckpointError` 1222–1225, `safe_load` 1228–1258, `_HUB_ID` 1261,
-  `load_checkpoint` 1280–1342; `safe_load` 1231–1261 @c4a39f8.
+Repository evidence, all at @2e80b3e:
+- `anulm/training/train.py`: `atomic_save` 35–49, `WindowSampler.state` and `load_state`
+  155–163, `lr_at` 378–403, `main` 797–849 (resume), 858–859 (`--stop-at`),
+  866–885 (one step), 900–914 (saves).
+- `anulm/model.py`: `TRUST_PICKLE_ENV` 1222,
+  `UnsafeCheckpointError` 1225–1228, `safe_load` 1231–1261, `_HUB_ID` 1264,
+  `load_checkpoint` 1283–1345; `safe_load` 1231–1261.
 - `tests/test_quality_loading.py`: `SafeLoad` 54–141.
 - `tests/test_model.py`: `checkpoint_roundtrip_is_exact` 460–477,
   `window_sampler_resumes_exactly` 956–966, `expert_bias_is_not_trainable`

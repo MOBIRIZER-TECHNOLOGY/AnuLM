@@ -2,7 +2,7 @@
 title: "17 · Mixture of experts I: the router"
 part: "IV · Inside the transformer"
 accent: gold
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 17  Mixture of experts I: the router
@@ -11,7 +11,7 @@ Chapter 16 found that layer 0 carries each token mostly in a few of its 2,816
 channels, different ones for different tokens. A mixture of experts makes that
 explicit: from layer 1 on, the feed-forward half is E = 24 small SwiGLUs, the
 experts, and a router picks A = 4 of them per token. This chapter reads the
-router, `anulm/model.py` lines 585–672; Chapter 18 covers what happens after the
+router, `anulm/model.py` lines 595–682; Chapter 18 covers what happens after the
 choice.
 
 **New words.**
@@ -88,7 +88,7 @@ choose, unbiased scores weight. *illustrative*; printed by
 
 ## 17.3  The module: weights and buffers
 
-> **In the repo** · `anulm/model.py` · `Router.__init__` · lines 594–609 · @b42998d
+> **In the repo** · `anulm/model.py` · `Router.__init__` · lines 604–619 · @2e80b3e
 
 ```python
     def __init__(self, cfg: AnuLMConfig):
@@ -130,7 +130,7 @@ The router's input has RMS 1 (Chapter 15), so logits start with spread
 
 ## 17.4  Why the gate runs in fp32 with autocast off
 
-> **In the repo** · `anulm/model.py` · `Router.forward` · lines 611–622 · @b42998d
+> **In the repo** · `anulm/model.py` · `Router.forward` · lines 621–632 · @2e80b3e
 
 ```python
     def forward(self, x_flat, seq_len: Optional[int] = None):   # (N, D)
@@ -179,7 +179,7 @@ is the book's reference for the figure.
 
 ## 17.5  Scores, choice and weights
 
-> **In the repo** · `anulm/model.py` · `Router._gate` · lines 624–645 · @b42998d
+> **In the repo** · `anulm/model.py` · `Router._gate` · lines 634–655 · @2e80b3e
 
 ```python
     def _gate(self, x_flat, seq_len: Optional[int]):
@@ -206,7 +206,7 @@ is the book's reference for the figure.
 
 The test that pins "the bias picks, it never weights":
 
-> **In the repo** · `tests/test_model.py` · `router_weights_come_from_unbiased_scores` · lines 233–248 · @b42998d
+> **In the repo** · `tests/test_model.py` · `router_weights_come_from_unbiased_scores` · lines 233–248 · @2e80b3e
 
 ```python
 def router_weights_come_from_unbiased_scores():
@@ -255,7 +255,7 @@ starts and how far a step moves the output.
 With `n_group > 1`, each group of E/G experts is worth its best two scores, and
 only the best `topk_group` groups may supply the A experts:
 
-> **In the repo** · `anulm/model.py` · `Router._gate` · lines 629–638 · @b42998d
+> **In the repo** · `anulm/model.py` · `Router._gate` · lines 639–648 · @2e80b3e
 
 ```python
         if self.n_group > 1:
@@ -303,7 +303,7 @@ expert 0 is masked with its group. *illustrative*; the scores of
 
 The test checks the limit and the sum of 2.5 on 64 random tokens:
 
-> **In the repo** · `tests/test_model.py` · `router_respects_group_limits` · lines 218–229 · @b42998d
+> **In the repo** · `tests/test_model.py` · `router_respects_group_limits` · lines 218–229 · @2e80b3e
 
 ```python
 def router_respects_group_limits():
@@ -323,7 +323,7 @@ def router_respects_group_limits():
 The configuration refuses an A the groups cannot supply, which `topk` would
 otherwise fill with −∞ experts:
 
-> **In the repo** · `anulm/model.py` · `AnuLMConfig.__post_init__` · lines 144–148 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLMConfig.__post_init__` · lines 139–143 · @2e80b3e
 
 ```python
         per_group = self.num_experts // self.n_group
@@ -333,10 +333,10 @@ otherwise fill with −∞ experts:
         check(self.topk_group <= self.n_group,
 ```
 
-`check` (lines 129–131) raises `ValueError`, a real exception rather than an
+`check` (lines 124–126) raises `ValueError`, a real exception rather than an
 assert, so `python -O` cannot remove it; `config_rejects_unreachable_topk`
 (`tests/test_model.py` line 520) expects that `ValueError`. The released model
-has `n_group = 1`, so lines 629–638 never run in it; `tiny_mla` keeps 2 of 4
+has `n_group = 1`, so lines 639–648 never run in it; `tiny_mla` keeps 2 of 4
 groups per token. DeepSeek-V3 limits each token's routing to a few machines,
 the idea that group-limited top-k borrows [R20].
 
@@ -473,9 +473,9 @@ used only for the claim in its register row:
 | [S06] | GShard: top-2 gating in every other layer | CHECKED |
 | [S07] | fine-grained and shared experts | CHECKED |
 
-Repository evidence, all at @b42998d:
-- `anulm/model.py`: `AnuLMConfig.__post_init__` 144–148; `Router.__init__` 594–609,
-  `Router.forward` 611–622, `Router._gate` 624–645 (groups 629–638).
+Repository evidence, all at @2e80b3e:
+- `anulm/model.py`: `AnuLMConfig.__post_init__` 139–143; `Router.__init__` 604–619,
+  `Router.forward` 621–632, `Router._gate` 634–655 (groups 639–648).
 - `tests/test_model.py`: `router_respects_group_limits` 218–229,
   `router_weights_come_from_unbiased_scores` 233–248,
   `config_rejects_unreachable_topk` 520.

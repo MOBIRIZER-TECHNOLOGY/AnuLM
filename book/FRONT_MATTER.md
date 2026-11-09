@@ -33,7 +33,7 @@ published ideas: grouped-query and latent attention, sigmoid routing with
 bias-only balancing, SwiGLU, RMSNorm, QK-norm and YaRN.
 You will be able to:
 
-- read `anulm/model.py`, the 1,364 lines that define it, and say what each
+- read `anulm/model.py`, the 1,367 lines that define it, and say what each
   part does and why it is there;
 - trace one forward pass with the shape of every tensor, and recompute its
   parameter count by hand;
@@ -70,10 +70,10 @@ released model; *cited* means it comes from a checked paper; *illustrative*
 means it was made up for teaching. A strip like this one opens every excerpt
 of repository code:
 
-> **In the repo** · `anulm/model.py` · `_sdpa` · lines 414–418 · @b42998d
+> **In the repo** · `anulm/model.py` · `_sdpa` · lines 424–428 · @2e80b3e
 
 It names the file, the function, the lines and the commit they are read at, so
-you can open the same lines yourself (`git show b42998d:anulm/model.py`).
+you can open the same lines yourself (`git show 2e80b3e:anulm/model.py`).
 Boxes marked **Details** hold what a first reading can skip; boxes marked
 **Build it** point to the lab book chapter that builds the same piece. Chapter
 1.7 lists every label and badge, and Appendix F says how to reproduce every
@@ -93,9 +93,9 @@ number.
 
 Every code citation names a file, a symbol, line numbers and a commit:
 
-> **In the repo** · `anulm/model.py` · `_sdpa` · lines 414–418 · @b42998d
+> **In the repo** · `anulm/model.py` · `_sdpa` · lines 424–428 · @2e80b3e
 
-The line numbers are checked against commit `b42998d` by the book's own tools.
+The line numbers are checked against commit `2e80b3e` by the book's own tools.
 That commit is on the repository's
 [`port-bundle-fixes`](https://github.com/MOBIRIZER-TECHNOLOGY/AnuLM/tree/port-bundle-fixes) branch on GitHub, which holds the code in the
 `anulm/` package. The default branch, `main`

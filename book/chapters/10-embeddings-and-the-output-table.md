@@ -2,7 +2,7 @@
 title: "10 · Embeddings and the output table"
 part: "III · From text to vectors"
 accent: coral
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 10  Embeddings and the output table
@@ -55,7 +55,7 @@ which costs D numbers per token instead of V × D multiplies.
 
 ## 10.2  Two tables, built untied
 
-> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 827–843 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 837–853 · @2e80b3e
 
 ```python
 class AnuLM(nn.Module):
@@ -78,9 +78,9 @@ class AnuLM(nn.Module):
 - **`lm_head`:** an `nn.Linear(D, V)` without bias. Its weight is stored
   (out, in), so it is also (V, D), and `lm_head(h)` computes h **W**ᵀ: one
   score, a *logit*, per id.
-- **Tying:** with `tie_word_embeddings`, line 843 makes the head's weight *the
+- **Tying:** with `tie_word_embeddings`, line 853 makes the head's weight *the
   same tensor* as the embedding. Tying the input and output embeddings is
-  recommended by [S17]. The default is `False` (line 113 @c4a39f8, "untied
+  recommended by [S17]. The default is `False` (line 113, "untied
   input and output tables"), and so is the released model (*verified*).
 
 ```
@@ -98,7 +98,7 @@ error of plain AdamW (*measured*). Tying alone was not run at 400M.
 
 ## 10.3  Initialisation and the first loss
 
-Both tables start from N(0, 0.02²) (`initializer_range`, line 118):
+Both tables start from N(0, 0.02²) (`initializer_range`, line 113):
 `_init_weights` draws the head as an `nn.Linear` and the embedding by its own
 branch (Chapter 3, 3.4, quotes it with the rest of the initialisation, whose
 residual rescaling does not touch the tables). For the head this sets the
@@ -163,13 +163,13 @@ initial spread: at `initializer_range` 0.05 the released head would start
 
 `AnuLM.forward` never touches `embed_tokens` directly:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · line 896 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · line 906 · @2e80b3e
 
 ```python
             x = F.embedding(idx, self._table("in"))               # (B, S, D)
 ```
 
-> **In the repo** · `anulm/model.py` · `AnuLM._table` · lines 966–970 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM._table` · lines 976–980 · @2e80b3e
 
 ```python
     def _table(self, side: str):
@@ -179,7 +179,7 @@ initial spread: at `initializer_range` 0.05 the released head would start
             return W
 ```
 
-> **In the repo** · `anulm/model.py` · `AnuLM._head` · lines 992–995 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM._head` · lines 1002–1005 · @2e80b3e
 
 ```python
     def _head(self, h):
@@ -221,9 +221,9 @@ size. *measured* on `ckpt_base_v2.pt`.
 - **Rare input rows shrink.** An input row gets a gradient only when its id is
   in the batch (10.1), but AdamW's decoupled weight decay (Chapter 7, 7.2)
   shrinks every 2-D parameter at every step, embeddings included
-  (`make_optimizer`, `anulm/training/train.py` lines 447–474). The run's launch scripts
+  (`make_optimizer`, `anulm/training/train.py` lines 450–482). The run's launch scripts
   (`_v2_run.cmd`, `experiments/v2_train.sh`) pass no `--weight-decay`, so the
-  default 0.1 applied (line 555), and `ckpt_base_v2.pt.last` stores it: 0.1 on
+  default 0.1 applied (line 564), and `ckpt_base_v2.pt.last` stores it: 0.1 on
   1,432 tensors, 0.0 on 81, fused. Decay alone over the run's schedule would
   multiply a row by 10⁻⁴⁶ (1 − lr × 0.1 per step on `lr_at`'s schedule; the
   Details below), so even the 0.013 rows got occasional
@@ -284,10 +284,10 @@ merge of two older ones, so its row could start from theirs. With
   E[t] = W[t] + (E[a] + E[b]) / 2   for merge t = (a, b),
 
 recursively, with E = W for the bytes. Unrolled, E = **P** **W** for a fixed
-sparse (V, V) matrix **P** (`merge_tree_matrix`, line 390). In training the
+sparse (V, V) matrix **P** (`merge_tree_matrix`, line 400). In training the
 product is recomputed every call, so gradients reach every ancestor row
 through **P**; in evaluation it is computed once and cached; for serving,
-`bake_merge_tree` (lines 997–1013) writes the composition back into a plain table.
+`bake_merge_tree` (lines 1007–1023) writes the composition back into a plain table.
 
 Quality, from §32: in the 88M proxy at 25M tokens, the merge tree lowered
 held-out loss by 0.187 on the input side and 0.194 on the output side; on top
@@ -296,7 +296,7 @@ and at 400M the full recipe's early lead did not hold (*measured*).
 
 > **Details.** How **P** is built, cached and baked.
 >
-> > **In the repo** · `anulm/model.py` · `merge_tree_matrix` · lines 390–411 · @b42998d
+> > **In the repo** · `anulm/model.py` · `merge_tree_matrix` · lines 400–421 · @2e80b3e
 >
 > ```python
 > def merge_tree_matrix(merges, vocab_size: int) -> torch.Tensor:
@@ -324,7 +324,7 @@ and at 400M the full recipe's early lead did not hold (*measured*).
 > ```
 >
 > `coef[t]` is row *t* of **P** as {column: weight}. A byte is itself
-> (line 397); a merge is 1 on its own row plus half of each parent's row
+> (line 407); a merge is 1 on its own row plus half of each parent's row
 > (398–403), so ancestors weigh ½, ¼, …, and a self-pair adds its parent twice.
 > EOS and extra ids are their own row (404–405). The docstring's "~0.4 GFLOP"
 > counts multiply-adds: 393,657 × 1,024 = 0.40 G, which is 0.81 GFLOP per
@@ -340,7 +340,7 @@ and at 400M the full recipe's early lead did not hold (*measured*).
 >
 > The test asserts the same rows:
 >
-> > **In the repo** · `tests/test_model.py` · `merge_tree_composes_trains_and_bakes_losslessly` · lines 1819–1826 · @b42998d
+> > **In the repo** · `tests/test_model.py` · `merge_tree_composes_trains_and_bakes_losslessly` · lines 1817–1824 · @2e80b3e
 >
 > ```python
 >     merges = [[97, 98], [256, 99], [257, 257], [100, 101]]      # ab, abc, abcabc, de
@@ -356,7 +356,7 @@ and at 400M the full recipe's early lead did not hold (*measured*).
 > The product runs in fp32 with autocast off, since the sparse multiply has no
 > bf16 path here:
 >
-> > **In the repo** · `anulm/model.py` · `AnuLM._compose` · lines 959–964 · @b42998d
+> > **In the repo** · `anulm/model.py` · `AnuLM._compose` · lines 969–974 · @2e80b3e
 >
 > ```python
 >     def _compose(self, W):
@@ -369,7 +369,7 @@ and at 400M the full recipe's early lead did not hold (*measured*).
 >
 > `_table` composes in training and caches in evaluation:
 >
-> > **In the repo** · `anulm/model.py` · `AnuLM._table` · lines 971–990 · @b42998d
+> > **In the repo** · `anulm/model.py` · `AnuLM._table` · lines 981–1000 · @2e80b3e
 >
 > ```python
 >         if self.training:
@@ -397,13 +397,13 @@ and at 400M the full recipe's early lead did not hold (*measured*).
 > comment records a real bug (§32): a cache keyed on the version counter, which
 > the fused (single-kernel, CUDA) AdamW step does not bump, served stale tables to every later
 > evaluation. Now `train()` drops the cache, and
-> `merge_tree_eval_cache_sees_optimizer_updates` (`tests/test_model.py` line 1849)
+> `merge_tree_eval_cache_sees_optimizer_updates` (`tests/test_model.py` line 1847)
 > fakes an update with `.data.add_`, which leaves the counter alone too
 > (*verified*: `W._version moves by 0`).
 >
 > For serving, the composition is written back:
 >
-> > **In the repo** · `anulm/model.py` · `AnuLM.bake_merge_tree` · lines 997–1013 · @b42998d
+> > **In the repo** · `anulm/model.py` · `AnuLM.bake_merge_tree` · lines 1007–1023 · @2e80b3e
 >
 > ```python
 >     @torch.no_grad()
@@ -500,17 +500,17 @@ used only for the claim in its register row:
 The merge tree is this repository's own idea, measured only in
 `docs/RESULTS.md` §32.
 
-Repository evidence, all at @b42998d:
+Repository evidence, all at @2e80b3e:
 - `anulm/model.py`:
-  - `AnuLMConfig` lines 117–118 and 119–124;
-  - `merge_tree_matrix` 390–411;
-  - `AnuLM.__init__` 827–863, `_init_weights` 865–871;
-  - `AnuLM.forward` 896; `_compose` 959–964, `_table` 966–984,
-    `train` 986–990, `_head` 992–995, `bake_merge_tree` 997–1013.
-- `anulm/training/train.py`: `make_optimizer` 447–474, `--weight-decay` 555.
+  - `AnuLMConfig` lines 112–113 and 114–119;
+  - `merge_tree_matrix` 400–421;
+  - `AnuLM.__init__` 837–873, `_init_weights` 875–881;
+  - `AnuLM.forward` 906; `_compose` 969–974, `_table` 976–994,
+    `train` 996–1000, `_head` 1002–1005, `bake_merge_tree` 1007–1023.
+- `anulm/training/train.py`: `make_optimizer` 450–482, `--weight-decay` 555.
 - `tests/test_model.py`: `tied_embeddings_share_one_table` 287, `initial_loss_is_ln_vocab` 428–456,
-  `merge_tree_composes_trains_and_bakes_losslessly` 1813,
-  `merge_tree_eval_cache_sees_optimizer_updates` 1849.
+  `merge_tree_composes_trains_and_bakes_losslessly` 1811,
+  `merge_tree_eval_cache_sees_optimizer_updates` 1847.
 - `experiments/v2_train.sh` (the run's flags); `docs/MODEL_CARD_BASE_V2.md`
   (AdamW schedule); `docs/RESULTS.md` §32.
 

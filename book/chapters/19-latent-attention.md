@@ -2,7 +2,7 @@
 title: "19 · Latent attention (MLA)"
 part: "IV · Inside the transformer"
 accent: gold
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 19  Latent attention (MLA)
@@ -62,7 +62,7 @@ force every prefix key to be recomputed [R19].
 buys no cache saving over rotating after expansion; it even caches
 D<sub>r</sub> extra numbers per token.
 
-> **Details.** The code comment at lines 550–551 says the position-free latent
+> **Details.** The code comment at lines 560–561 says the position-free latent
 > "is exactly what lets the latent be cached"; as above, the latent could be
 > cached either way. What the separate slice protects is absorption.
 
@@ -70,7 +70,7 @@ D<sub>r</sub> extra numbers per token.
 
 ## 19.2  The projections
 
-> **In the repo** · `anulm/model.py` · `MLAttention.__init__` · lines 516–533 · @b42998d
+> **In the repo** · `anulm/model.py` · `MLAttention.__init__` · lines 526–543 · @2e80b3e
 
 ```python
         self.q_proj = nn.Linear(cfg.hidden_size, cfg.n_head * self.q_head_dim, bias=False)
@@ -108,7 +108,7 @@ D<sub>r</sub> extra numbers per token.
 
 The configuration ties the sizes together:
 
-> **In the repo** · `anulm/model.py` · `AnuLMConfig.__post_init__` · lines 150–156 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLMConfig.__post_init__` · lines 145–151 · @2e80b3e
 
 ```python
         if self.attn == "gqa":
@@ -122,13 +122,13 @@ The configuration ties the sizes together:
 
 For MLA, `head_dim` is the query and key width, D<sub>n</sub> + D<sub>r</sub>;
 and `AnuLM.__init__` builds the rotary tables only D<sub>r</sub> wide
-(`rope_dim = cfg.qk_rope_head_dim if cfg.attn == "mla"`, line 837).
+(`rope_dim = cfg.qk_rope_head_dim if cfg.attn == "mla"`, line 847).
 
 `IN THE REPO`
 
 ## 19.3  The forward pass, step by step
 
-> **In the repo** · `anulm/model.py` · `MLAttention.forward` · lines 539–553 · @b42998d
+> **In the repo** · `anulm/model.py` · `MLAttention.forward` · lines 549–563 · @2e80b3e
 
 ```python
         B, S, _ = x.shape
@@ -155,7 +155,7 @@ and `AnuLM.__init__` builds the rotary tables only D<sub>r</sub> wide
 - **`apply_rope`** rotates only `q_pe` and `k_pe`; the latent is normalised and
   never rotated.
 
-> **In the repo** · `anulm/model.py` · `MLAttention.forward` · lines 564–578 · @b42998d
+> **In the repo** · `anulm/model.py` · `MLAttention.forward` · lines 574–588 · @2e80b3e
 
 ```python
         T = compressed.shape[1]
@@ -227,7 +227,7 @@ Shapes for `tiny_mla`.
 
 ## 19.4  What the cache holds
 
-> **In the repo** · `anulm/model.py` · `MLAttention.forward` · lines 565–573 · @c4a39f8
+> **In the repo** · `anulm/model.py` · `MLAttention.forward` · lines 565–573 · @2e80b3e
 
 ```python
         if cache is not None:
@@ -266,7 +266,7 @@ cached step vs uncached forward, last position: 1.8e-07
 
 The test that pins the shared rotary key:
 
-> **In the repo** · `tests/test_model.py` · `mla_shares_one_rope_key_across_heads` · lines 529–541 · @b42998d
+> **In the repo** · `tests/test_model.py` · `mla_shares_one_rope_key_across_heads` · lines 529–541 · @2e80b3e
 
 ```python
 def mla_shares_one_rope_key_across_heads():
@@ -412,7 +412,7 @@ mutant with a rotated latent: positions 0-7 vs 100-107 differ by 1.202 (output s
 > ```
 
 - **Sizing the rotary tables to `head_dim`.** For MLA they must be D<sub>r</sub>
-  wide (line 837). *Catch it:* the shapes fail loudly in `apply_rope`.
+  wide (line 847). *Catch it:* the shapes fail loudly in `apply_rope`.
 - **Caching expanded keys.** It works and saves nothing. *Catch it:*
   `cache_holds_what_it_should` checks what each attention type stores.
 
@@ -466,10 +466,10 @@ used only for the claim in its register row:
 |---|---|---|
 | [R19] | multi-head latent attention; the decoupled RoPE strategy with a shared rope key; low-rank query compression; its sizes (latent 512, rotary key 64) and a cache equal to GQA with 2.25 groups; absorbing the key and value up-projections at inference, and why RoPE blocks that | CHECKED |
 
-Repository evidence, all at @b42998d:
-- `anulm/model.py`: `AnuLMConfig.__post_init__` 150–156; `MLAttention.__init__`
-  516–533, `MLAttention.forward` 539–553, 564–578 (and 565–573 @c4a39f8); `AnuLM.__init__`
-  line 837.
+Repository evidence, all at @2e80b3e:
+- `anulm/model.py`: `AnuLMConfig.__post_init__` 145–151; `MLAttention.__init__`
+  526–543, `MLAttention.forward` 549–563, 565–588; `AnuLM.__init__`
+  line 847.
 - `tests/test_model.py`: `mla_shares_one_rope_key_across_heads` 529–541;
   `incremental_forward_matches_full_forward`, `cache_holds_what_it_should`,
   `dense_and_sparse_moe_agree` (all run with MLA).

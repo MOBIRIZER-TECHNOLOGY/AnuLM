@@ -2,7 +2,7 @@
 title: "9 · Byte-level BPE from scratch"
 part: "III · From text to vectors"
 accent: coral
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 9  Byte-level BPE from scratch
@@ -55,7 +55,7 @@ the counts are printed by `book/code-examples/ch09_bpe_from_scratch.py`.
 The *pre-tokeniser* cuts text into chunks before any merging, and merges never
 cross a chunk boundary. It is one regular expression:
 
-> **In the repo** · `anulm/bpe.py` · `CHUNK_RE` · line 39 · @b42998d
+> **In the repo** · `anulm/bpe.py` · `CHUNK_RE` · line 39 · @2e80b3e
 
 ```python
 CHUNK_RE = re.compile(r"\s*\S+|\s+")
@@ -67,7 +67,7 @@ the chunks join back into the text. A leading space stays with its word, as
 do newlines and indentation, so `' dog'` and `'dog'` are different tokens and
 `'\n    return'` is one token of `multi32k` (9.6). Training skips long chunks:
 
-> **In the repo** · `anulm/bpe.py` · `MAX_TRAIN_CHUNK_BYTES` · lines 46–48 · @b42998d
+> **In the repo** · `anulm/bpe.py` · `MAX_TRAIN_CHUNK_BYTES` · lines 46–48 · @2e80b3e
 
 ```python
 MAX_TRAIN_CHUNK_BYTES = 48        # ignore absurd chunks (URLs, minified junk)
@@ -81,7 +81,7 @@ MAX_TRAIN_CHUNK_BYTES = 48        # ignore absurd chunks (URLs, minified junk)
 
 A tokenizer is fully described by its ordered list of merges:
 
-> **In the repo** · `anulm/bpe.py` · `BPE.__init__` · lines 64–83 · @b42998d
+> **In the repo** · `anulm/bpe.py` · `BPE.__init__` · lines 64–83 · @2e80b3e
 
 ```python
 class BPE:
@@ -155,7 +155,7 @@ walks every pair of every chunk.
 `BPE.train` keeps the counts up to date instead of recounting. First, the
 chunks and the two indexes:
 
-> **In the repo** · `anulm/bpe.py` · `BPE.train` · lines 87–111 · @b42998d
+> **In the repo** · `anulm/bpe.py` · `BPE.train` · lines 87–111 · @2e80b3e
 
 ```python
     @classmethod
@@ -187,7 +187,7 @@ chunks and the two indexes:
 
 Then the loop, which takes the best pair from a heap:
 
-> **In the repo** · `anulm/bpe.py` · `BPE.train` · lines 113–126 · @b42998d
+> **In the repo** · `anulm/bpe.py` · `BPE.train` · lines 113–126 · @2e80b3e
 
 ```python
         heap = [(-c, p) for p, c in pair_counts.items()]
@@ -217,7 +217,7 @@ Then the loop, which takes the best pair from a heap:
 
 Then the update:
 
-> **In the repo** · `anulm/bpe.py` · `BPE.train` · lines 128–162 · @b42998d
+> **In the repo** · `anulm/bpe.py` · `BPE.train` · lines 128–162 · @2e80b3e
 
 ```python
             touched: set[tuple[int, int]] = set()
@@ -275,7 +275,7 @@ hold the pair, not with the corpus, and the merges equal 9.4's:
 Encoding replays training's merges on new text, chunk by chunk, always
 applying the earliest-learned merge present:
 
-> **In the repo** · `anulm/bpe.py` · `BPE._encode_chunk` · lines 166–189 · @b42998d
+> **In the repo** · `anulm/bpe.py` · `BPE._encode_chunk` · lines 166–189 · @2e80b3e
 
 ```python
     def _encode_chunk(self, chunk: bytes) -> list[int]:
@@ -339,7 +339,7 @@ The text is the first 20,000 characters of `README.md` at the pin. The naive
 version makes 32,511 passes per chunk for `multi32k`; `_encode_chunk` makes
 two per merge applied (find the minimum, then rewrite). Around it:
 
-> **In the repo** · `anulm/bpe.py` · `BPE.encode` · lines 191–217 · @b42998d
+> **In the repo** · `anulm/bpe.py` · `BPE.encode` · lines 191–217 · @2e80b3e
 
 ```python
     def encode(self, text: str) -> list[int]:
@@ -399,7 +399,7 @@ On the released tokenizer:
 
 Two tests pin the tokenizer. The first checks the vocabulary size and EOS:
 
-> **In the repo** · `tests/test_model.py` · `bpe_documents_get_eos_and_the_vocab_is_exact` · lines 970–985 · @b42998d
+> **In the repo** · `tests/test_model.py` · `bpe_documents_get_eos_and_the_vocab_is_exact` · lines 970–985 · @2e80b3e
 
 ```python
 def bpe_documents_get_eos_and_the_vocab_is_exact():
@@ -426,7 +426,7 @@ written in Rust; when that library is not installed the test raises
 `unittest.SkipTest`, and the runner prints SKIP and counts it as skipped,
 not passed (lines 1520–1523):
 
-> **In the repo** · `tests/test_model.py` · `hf_tokenizer_conversion_is_exact` · lines 1530–1540 · @b42998d
+> **In the repo** · `tests/test_model.py` · `hf_tokenizer_conversion_is_exact` · lines 1530–1540 · @2e80b3e
 
 ```python
     tok = BPE.train(FALLBACK * 8, 400, verbose=False)
@@ -460,11 +460,11 @@ come back as exactly the stored ids (*measured*,
 `code-examples/ch09_measure_fertility.py`, seed 0).
 
 > **Details.** `save` writes `{"type", "version", "merges"}` as JSON, and
-> `load` accepts only the type id `anulm-bpe` (lines 220–239 @c4a39f8; test
+> `load` accepts only the type id `anulm-bpe` (lines 220–239; test
 > `bpe_files_load_and_foreign_ones_are_refused`). Any other type raises
-> `ValueError` naming the file (lines 236–238 @c4a39f8), not an assert, so
+> `ValueError` naming the file (lines 236–238), not an assert, so
 > `python -O` cannot remove the check.
-> `cmd_encode` (lines 297–345) encodes a corpus with a pool of worker
+> `cmd_encode` (lines 293–341) encodes a corpus with a pool of worker
 > processes, about 4 million characters of whole documents per batch (around
 > 10 MB of Hindi), into an `int16` array, two
 > bytes a token; it asserts V ≤ 32,768 so every id fits.
@@ -475,7 +475,7 @@ come back as exactly the stored ids (*measured*,
 
 `bpe.py stats` reports compression and fertility:
 
-> **In the repo** · `anulm/bpe.py` · `_stats` · lines 344–352 · @c4a39f8
+> **In the repo** · `anulm/bpe.py` · `_stats` · lines 344–352 · @2e80b3e
 
 ```python
 def _stats(tok, text):
@@ -598,14 +598,14 @@ used only for the claim in its register row:
 | [R04] | byte-level BPE with a base vocabulary of 256 | CHECKED |
 | [R05] | byte pair encoding adapted to segment words into subword units | CHECKED |
 
-Repository evidence, all at @b42998d:
+Repository evidence, all at @2e80b3e:
 - `anulm/bpe.py`: `CHUNK_RE` 39, `MAX_TRAIN_CHUNK_BYTES` 46–48, `BPE.__init__`
   64–83, `BPE.train` 87–162, `_encode_chunk` 166–189, `encode`,
-  `encode_documents`, `decode`, `decode_complete` 191–217, `complete_utf8` 51–59, `save`/`load` 221–244, `cmd_encode`
-  297–345, `_stats` 348–356 (344–352 @c4a39f8).
+  `encode_documents`, `decode`, `decode_complete` 191–217, `complete_utf8` 51–59, `save`/`load` 225–240, `cmd_encode`
+  293–341, `_stats` 344–352.
 - `tests/test_model.py`: `bpe_documents_get_eos_and_the_vocab_is_exact` 970–985,
   `hf_tokenizer_conversion_is_exact` 1517–1540,
-  `bpe_files_load_and_foreign_ones_are_refused` 1544 (@c4a39f8).
+  `bpe_files_load_and_foreign_ones_are_refused` 1544.
 - `anulm/hf/hf_tokenizer.py`: `build`, `PROBES`; `experiments/build_v2.py`
   docstring.
 - `data/multi32k.json`, the tokenizer, committed at the pin; `docs/RESULTS.md`

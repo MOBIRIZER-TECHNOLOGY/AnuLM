@@ -2,7 +2,7 @@
 title: "14 · Word order: rotary position embeddings"
 part: "IV · Inside the transformer"
 accent: gold
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 14  Word order: rotary position embeddings
@@ -113,7 +113,7 @@ stays 3, and the length is preserved.
 
 A real head has D<sub>h</sub> = 64: 32 pairs, each with its own frequency.
 
-> **In the repo** · `anulm/model.py` · `Rotary._build_inv_freq` · lines 304–309 · @b42998d
+> **In the repo** · `anulm/model.py` · `Rotary._build_inv_freq` · lines 314–319 · @2e80b3e
 
 ```python
     @staticmethod
@@ -155,11 +155,11 @@ presets differ in more than θ.
 
 ## 14.5  The tables, built once and cached
 
-One `Rotary` serves every layer: `AnuLM.__init__` builds it (lines 837–839)
-and `AnuLM.forward` asks it once per call (line 899). It keeps the
+One `Rotary` serves every layer: `AnuLM.__init__` builds it (lines 847–849)
+and `AnuLM.forward` asks it once per call (line 909). It keeps the
 frequencies and its cos/sin tables, and `_grow` fills the tables:
 
-> **In the repo** · `anulm/model.py` · `Rotary._grow` · lines 324–337 · @b42998d
+> **In the repo** · `anulm/model.py` · `Rotary._grow` · lines 334–347 · @2e80b3e
 
 ```python
     def _grow(self, seq_len: int, device, dtype):
@@ -180,7 +180,7 @@ frequencies and its cos/sin tables, and `_grow` fills the tables:
 - **The elided lines** return early unless a longer sequence, another device
   or another dtype arrives, and record what was built.
 
-> **In the repo** · `anulm/model.py` · `Rotary.forward` · lines 339–343 · @b42998d
+> **In the repo** · `anulm/model.py` · `Rotary.forward` · lines 349–353 · @2e80b3e
 
 ```python
     def forward(self, seq_len: int, device, dtype, start: int = 0):
@@ -194,10 +194,10 @@ The slice gives absolute positions `start` … `start + S − 1`, so a cached
 step rotates its new key by its true position (Chapter 13).
 
 > **Details.** How the tables are stored, and the checks that they never go
-> stale. `Rotary` keeps the frequencies, and its tables (lines 301–302), as
+> stale. `Rotary` keeps the frequencies, and its tables (lines 311–312), as
 > buffers that are not saved with the model:
 >
-> > **In the repo** · `anulm/model.py` · `Rotary.__init__` · lines 282–287 · @b42998d
+> > **In the repo** · `anulm/model.py` · `Rotary.__init__` · lines 292–297 · @2e80b3e
 >
 > ```python
 >     def __init__(self, cfg: AnuLMConfig, dim: int):
@@ -210,9 +210,9 @@ step rotates its new key by its true position (Chapter 13).
 >
 > A buffer moves with `.to(device)` but, with `persistent=False`, is left out of
 > the state dict, so a checkpoint never carries stale tables. The tables are
-> keyed on device and dtype as well as length (`_grow`, lines 325–329):
+> keyed on device and dtype as well as length (`_grow`, lines 335–339):
 >
-> > **In the repo** · `anulm/model.py` · `Rotary._grow` · lines 324–337 · @b42998d
+> > **In the repo** · `anulm/model.py` · `Rotary._grow` · lines 334–347 · @2e80b3e
 >
 > ```python
 >         # Keyed on device and dtype as well as length: a model moved with .to()
@@ -233,7 +233,7 @@ step rotates its new key by its true position (Chapter 13).
 >
 > *verified*: a slice, a rebuild for the dtype, a growth. A test pins both:
 >
-> > **In the repo** · `tests/test_model.py` · `rotary_cache_tracks_dtype_and_positions` · lines 733–742 · @b42998d
+> > **In the repo** · `tests/test_model.py` · `rotary_cache_tracks_dtype_and_positions` · lines 733–742 · @2e80b3e
 >
 > ```python
 > def rotary_cache_tracks_dtype_and_positions():
@@ -252,7 +252,7 @@ step rotates its new key by its true position (Chapter 13).
 
 ## 14.6  The rotation: split halves
 
-> **In the repo** · `anulm/model.py` · `rotate_half` · lines 346–350 · @b42998d
+> **In the repo** · `anulm/model.py` · `rotate_half` · lines 356–360 · @2e80b3e
 
 ```python
 def rotate_half(x):
@@ -260,7 +260,7 @@ def rotate_half(x):
     return torch.cat((-x2, x1), dim=-1)
 ```
 
-> **In the repo** · `anulm/model.py` · `apply_rope` · lines 363–372 · @c4a39f8
+> **In the repo** · `anulm/model.py` · `apply_rope` · lines 363–372 · @2e80b3e
 
 ```python
 def apply_rope(q, k, cos, sin):
@@ -315,7 +315,7 @@ the same angle.
 
 Two tests guard the rotation:
 
-> **In the repo** · `tests/test_model.py` · `rope_is_relative` · lines 101–116 · @b42998d
+> **In the repo** · `tests/test_model.py` · `rope_is_relative` · lines 101–116 · @2e80b3e
 
 ```python
 def rope_is_relative():
@@ -339,7 +339,7 @@ def rope_is_relative():
 It puts one query and one key at every position; q·k must depend only on the
 gap. The other requires lengths to be preserved:
 
-> **In the repo** · `tests/test_model.py` · `rope_preserves_norms` · lines 120–127 · @b42998d
+> **In the repo** · `tests/test_model.py` · `rope_preserves_norms` · lines 120–127 · @2e80b3e
 
 ```python
 def rope_preserves_norms():
@@ -363,7 +363,7 @@ of 24 small networks for each token (Chapters 17–18), a discrete choice.
 `ch14_measure_shift.py` shifts the positions of 16 held-out windows of 512
 tokens (`data/v2/val.u16`, seed 0) through `ckpt_base_v2.pt` with the experts
 on two paths: the released `grouped` path, which computes them in bf16
-(`anulm/model.py` lines 756 and 784), and the `sparse` path, fp32 throughout. It also records
+(`anulm/model.py` lines 766 and 794), and the `sparse` path, fp32 throughout. It also records
 each token's chosen experts in every MoE layer, and repeats offset 0 as a
 control. *measured*, `book/measurements/part_iv_a_shift.json`; the loss stays
 between 3.1749 and 3.1760:
@@ -471,9 +471,9 @@ used only for the claim in its register row:
 | [S01] | BERT sums token, segment and position embeddings | CHECKED |
 | [S03] | ALiBi: linear biases on attention scores | CHECKED |
 
-Repository evidence, all at @b42998d:
-- `anulm/model.py`: `Rotary` 278–343, `rotate_half` 346–350, `apply_rope` 353–362 (363–372 @c4a39f8),
-  `MoE` 756 and 784 (bf16 casts), `AnuLM.__init__` 837–839, `AnuLM.forward` 899.
+Repository evidence, all at @2e80b3e:
+- `anulm/model.py`: `Rotary` 288–353, `rotate_half` 356–360, `apply_rope` 363–372,
+  `MoE` 766 and 794 (bf16 casts), `AnuLM.__init__` 847–849, `AnuLM.forward` 909.
 - `tests/test_model.py`: tests at lines 101, 120 and 733.
 - `docs/RESULTS.md` §3; `book/measurements/part_iv_a_shift.json`.
 

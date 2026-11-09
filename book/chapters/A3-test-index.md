@@ -2,14 +2,14 @@
 title: "Appendix C · Test index"
 part: "Appendices"
 accent: slate
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # Appendix C  Test index
 
-`tests/test_model.py` holds 80 tests at @b42998d. They need no test framework:
+`tests/test_model.py` holds 82 tests at @2e80b3e. They need no test framework:
 `@test` (line 34) appends each function to the list `TESTS`, and `main`
-(line 2434) runs them in file order, printing PASS, SKIP or FAIL and a count.
+(line 2432) runs them in file order, printing PASS, SKIP or FAIL and a count.
 The class `ModelTests` at the end of the file wraps each one as a `unittest`
 method, so `python -m unittest tests.test_model` and pytest run the same 80.
 Most build `tiny()` (line 44) with a few fields changed. On the book's machine,
@@ -96,20 +96,20 @@ summary line counts it as skipped, not passed.
 | `transformers_wrapper_matches_the_native_model` | 1450 | the `transformers` wrapper gives the native logits and greedy tokens, and survives a save and reload; *optional* (`transformers`) | 39 |
 | `hf_tokenizer_conversion_is_exact` | 1517 | the converted `tokenizer.json` encodes every probe exactly as `anulm/bpe.py` does; *optional* (`tokenizers`) | 9, 39 |
 | `bpe_files_load_and_foreign_ones_are_refused` | 1544 | tokenizer files load under the old and new format ids, refuse foreign ones, and every committed tokenizer loads | 9 |
-| `byte_loader_inserts_eos_at_document_boundaries` | 1595 | `load_bytes` puts one EOS per document, normalises CRLF, and stays uint8 without separators | 8 |
-| `prose_filter_drops_lists_and_keeps_prose` | 1617 | the prose filter keeps prose lines and the title and drops list-shaped articles | 21 |
-| `golden_items_are_well_formed_and_the_scorer_runs` | 1630 | golden-set items satisfy their contract and the scorer runs on a byte checkpoint | 24 |
-| `qa_packing_masks_prompts_and_keeps_examples_whole` | 1676 | SFT packing labels exactly the answer tokens, never splits an example, and drops one longer than the block | 30 |
-| `chunked_loss_matches_the_full_loss_and_its_gradients` | 1713 | chunked cross-entropy gives the same loss and gradients, with ignored targets and a short last chunk | 23 |
-| `cached_embeds_decoding_matches_prefix_replay` | 1742 | `decode_from_embeds` with the cache emits what re-running the prefix emits (both) | 35 |
-| `native_gqa_matches_repeat_interleave` | 1767 | `NATIVE_GQA` and `repeat_interleave` agree on full, cached and windowed paths, with 1, 2 and 3 key/value heads, so a wrong head pairing fails | 13 |
-| `wsd_schedule_is_flat_then_decays_to_min_lr` | 1800 | over 100 steps: warmup to the peak by step 9, flat over steps 10–79, strictly falling over 80–99, and `min_lr` at step 100 | 7 |
-| `merge_tree_composes_trains_and_bakes_losslessly` | 1813 | merge-tree rows compose as defined, gradients reach ancestors, and baking changes no output | 10 |
-| `merge_tree_eval_cache_sees_optimizer_updates` | 1849 | the eval-mode table cache never outlives a weight update | 10, 26 |
-| `decide_scores_each_option_at_its_last_token_and_calibrates` | 1875 | each option is read at its last token; ECE is 0 when calibrated; temperature never changes the argmax | 32 |
-| `batched_muon_matches_per_matrix_muon` | 1902 | batched Newton–Schulz gives the same steps as per-matrix Muon, to 10⁻⁶ | 7 |
-| `memmap_batches_match_in_memory_batches` | 1922 | a memory-mapped corpus yields the same (x, y) batches as a tensor | 21 |
-| `interleaved_split_samples_the_whole_corpus` | 1944 | the interleaved split holds out both sources; the tail split holds out only the last | 21 |
+| `byte_loader_inserts_eos_at_document_boundaries` | 1593 | `load_bytes` puts one EOS per document, normalises CRLF, and stays uint8 without separators | 8 |
+| `prose_filter_drops_lists_and_keeps_prose` | 1615 | the prose filter keeps prose lines and the title and drops list-shaped articles | 21 |
+| `golden_items_are_well_formed_and_the_scorer_runs` | 1628 | golden-set items satisfy their contract and the scorer runs on a byte checkpoint | 24 |
+| `qa_packing_masks_prompts_and_keeps_examples_whole` | 1674 | SFT packing labels exactly the answer tokens, never splits an example, and drops one longer than the block | 30 |
+| `chunked_loss_matches_the_full_loss_and_its_gradients` | 1711 | chunked cross-entropy gives the same loss and gradients, with ignored targets and a short last chunk | 23 |
+| `cached_embeds_decoding_matches_prefix_replay` | 1740 | `decode_from_embeds` with the cache emits what re-running the prefix emits (both) | 35 |
+| `native_gqa_matches_repeat_interleave` | 1765 | `NATIVE_GQA` and `repeat_interleave` agree on full, cached and windowed paths, with 1, 2 and 3 key/value heads, so a wrong head pairing fails | 13 |
+| `wsd_schedule_is_flat_then_decays_to_min_lr` | 1798 | over 100 steps: warmup to the peak by step 9, flat over steps 10–79, strictly falling over 80–99, and `min_lr` at step 100 | 7 |
+| `merge_tree_composes_trains_and_bakes_losslessly` | 1811 | merge-tree rows compose as defined, gradients reach ancestors, and baking changes no output | 10 |
+| `merge_tree_eval_cache_sees_optimizer_updates` | 1847 | the eval-mode table cache never outlives a weight update | 10, 26 |
+| `decide_scores_each_option_at_its_last_token_and_calibrates` | 1873 | each option is read at its last token; ECE is 0 when calibrated; temperature never changes the argmax | 32 |
+| `batched_muon_matches_per_matrix_muon` | 1900 | batched Newton–Schulz gives the same steps as per-matrix Muon, to 10⁻⁶ | 7 |
+| `memmap_batches_match_in_memory_batches` | 1920 | a memory-mapped corpus yields the same (x, y) batches as a tensor | 21 |
+| `interleaved_split_samples_the_whole_corpus` | 1942 | the interleaved split holds out both sources; the tail split holds out only the last | 21 |
 
 ## C.4  Speech, images, serving and the pipeline
 
@@ -118,16 +118,18 @@ multimodal stack or to a cache that could go stale without an error.
 
 | Test | Line | What it checks | Ch |
 |---|---|---|---|
-| `whisper_audio_chunks_cover_long_recordings` | 1964 | `audio_chunks` splits two 30 s windows plus 17 samples into three chunks, each at most 30 s and equal to within one sample, that rejoin exactly; a clip that fits stays one chunk | 35 |
-| `continuous_asr_decodes_long_chunks_in_order` | 1981 | `transcribe` encodes a 65 s clip as three equal chunks of about 21.7 s and joins their texts in order; a short clip is one chunk, cut at its first newline | 35 |
-| `image_feature_cache_reuses_invalidates_and_recovers` | 2045 | `build_cache` reuses the feature cache without re-encoding, and rebuilds it after an edited image, a missing sidecar, short bytes or leftover `.tmp` files | 36 |
-| `sft_packed_cache_invalidates_same_count_content_edits` | 2108 | `load_packed` reuses its cache for unchanged data, and re-encodes when an answer changes but the row count does not | 30 |
-| `omni_api_availability_and_missing_reader_fallback` | 2146 | one Omni checkpoint lists the chat, answer, vision and ASR models; with no reader, `answer_question` falls back to labelled memory, or returns no answer when the fallback is off; *optional* (the API's dependencies) | 37, 38 |
-| `legacy_half_keeps_routers_fp32_and_projectors_runnable` | 2195 | `Models._half` keeps router weights and biases fp32, with every bias still distinct, makes a projector's weight and bias bf16, and leaves the module on the CPU; *optional* (the app's dependencies) | 23, 37 |
-| `downloader_restarts_when_server_ignores_range` | 2222 | a resumed download answered with a full 200 response replaces the stale `.part` bytes instead of appending to them | 37 |
-| `training_fingerprint_preserves_resume_and_invalidates_downstream` | 2274 | after a finished training a changed Omni recipe stops the pipeline and keeps everything; with `--retrain` it archives the old checkpoint, resume point, curve and reports and clears the training and evaluation stages; an unchanged recipe keeps everything | 25, 37 |
-| `experiment_scripts_resolve_root_to_the_repository` | 2343 | every `experiments/*.py` that sets `ROOT` from its own path lands on the repository root, and at least five do | 37 |
-| `from_scratch_pipeline_runs_and_skips_completed_stages` | 2389 | `anulm.training.train_from_scratch` runs tokenizer, encoding, pretraining, vocabulary growth and Omni training on a tiny corpus, and a second run skips all five as verified | 22, 37 |
+| `whisper_audio_chunks_cover_long_recordings` | 1962 | `audio_chunks` splits two 30 s windows plus 17 samples into three chunks, each at most 30 s and equal to within one sample, that rejoin exactly; a clip that fits stays one chunk | 35 |
+| `continuous_asr_decodes_long_chunks_in_order` | 1979 | `transcribe` encodes a 65 s clip as three equal chunks of about 21.7 s and joins their texts in order; a short clip is one chunk, cut at its first newline | 35 |
+| `image_feature_cache_reuses_invalidates_and_recovers` | 2043 | `build_cache` reuses the feature cache without re-encoding, and rebuilds it after an edited image, a missing sidecar, short bytes or leftover `.tmp` files | 36 |
+| `sft_packed_cache_invalidates_same_count_content_edits` | 2106 | `load_packed` reuses its cache for unchanged data, and re-encodes when an answer changes but the row count does not | 30 |
+| `omni_api_availability_and_missing_reader_fallback` | 2144 | one Omni checkpoint lists the chat, answer, vision and ASR models; with no reader, `answer_question` falls back to labelled memory, or returns no answer when the fallback is off; *optional* (the API's dependencies) | 37, 38 |
+| `legacy_half_keeps_routers_fp32_and_projectors_runnable` | 2193 | `Models._half` keeps router weights and biases fp32, with every bias still distinct, makes a projector's weight and bias bf16, and leaves the module on the CPU; *optional* (the app's dependencies) | 23, 37 |
+| `downloader_restarts_when_server_ignores_range` | 2220 | a resumed download answered with a full 200 response replaces the stale `.part` bytes instead of appending to them | 37 |
+| `training_fingerprint_preserves_resume_and_invalidates_downstream` | 2272 | after a finished training a changed Omni recipe stops the pipeline and keeps everything; with `--retrain` it archives the old checkpoint, resume point, curve and reports and clears the training and evaluation stages; an unchanged recipe keeps everything | 25, 37 |
+| `experiment_scripts_resolve_root_to_the_repository` | 2341 | every `experiments/*.py` that sets `ROOT` from its own path lands on the repository root, and at least five do | 37 |
+| `from_scratch_pipeline_runs_and_skips_completed_stages` | 2387 | `anulm.training.train_from_scratch` runs tokenizer, encoding, pretraining, vocabulary growth and Omni training on a tiny corpus, and a second run skips all five as verified | 22, 37 |
+| `gradient_checkpointing_takes_effect_and_changes_no_gradient` | 2457 | `enable_gradient_checkpointing()` really routes every block through `torch.utils.checkpoint` (patched and counted; a flag set and never read would still train, just out of memory), and recomputing changes neither the loss nor any gradient | 23 |
+| `the_1b_preset_is_the_shape_the_1b_run_trains` | 2485 | `base_1b` equals `base_350m` with the 1B run's `--cfg` overrides, so either command line resumes the same checkpoint; built on the meta device it has 1,008M total and 284M active parameters | 20, 22 |
 
 ## C.5  What the suite does not catch
 
@@ -149,7 +151,7 @@ and the router-bias check in `lora_starts_as_the_base_model_and_merges_back_exac
 never ran. C.1 and C.3 describe the tests as they now stand; Chapters 12, 13,
 15 and 31 tell each story.
 
-*verified*: names, lines and order against `tests/test_model.py` at @b42998d by
+*verified*: names, lines and order against `tests/test_model.py` at @2e80b3e by
 `book/code-examples/ch41_audit.py` (Appendix F). The "what it checks" column
 was written from each test's assertions, not its docstring.
 
@@ -170,5 +172,5 @@ python -m unittest discover -s tests -p "test_quality_*.py" -t .
 | `tests/test_quality_layout.py` | 18 | every `python -m anulm` command has a `main`, tools carry no machine paths, archived experiments still find the repository, `.gitignore`, versions agree, docs cite moved files at their new paths | — |
 
 *measured*: "Ran 63 tests in 4.725s", OK, at @fdbb09a on a CPU; the three
-files are unchanged at @b42998d. *verified*: counts per file from each file's
+files are unchanged at @2e80b3e. *verified*: counts per file from each file's
 `def test_` methods.

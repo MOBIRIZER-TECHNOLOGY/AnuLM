@@ -2,7 +2,7 @@
 title: "37 · One model, many tasks"
 part: "VIII · Beyond text"
 accent: plum
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 37  One model, many tasks
@@ -30,7 +30,7 @@ Speech and image batches come from `speech_encoder.batches` and
 `vision_encoder.batches` (Chapter 36). Text needs its own builder, because a
 text row has no projector but must arrive in the same form:
 
-> **In the repo** · `anulm/multimodal/omni_train.py` · `text_batches` · lines 104–174 · @b42998d
+> **In the repo** · `anulm/multimodal/omni_train.py` · `text_batches` · lines 112–192 · @2e80b3e
 
 ```python
 def pad(built, device):
@@ -42,24 +42,34 @@ def pad(built, device):
         tb[k, : t.shape[0]] = t
     return eb, tb
 # ...
-def text_batches(rows, model, device, batch_size, shuffle=True, seed=0):
+def text_batches(rows, model, device, batch_size, shuffle=True, seed=0, with_ids=False):
+    """(embeds, targets) per batch; with_ids adds the padded token ids (0 in
+    padding), which a distillation teacher embeds with its own table."""
     order = np.arange(len(rows))
     if shuffle:
         np.random.default_rng(seed).shuffle(order)
     emb = model.embed_tokens
     for i in range(0, len(order), batch_size):
-        built = []
+        built, all_ids = [], []
         for j in order[i: i + batch_size]:
             p, a = rows[j]["p"], rows[j]["a"]
             ids = torch.tensor(p + a, device=device)
             t = torch.full((len(ids),), -1, dtype=torch.long, device=device)
             t[len(p) - 1: len(p) - 1 + len(a)] = ids[len(p):]
             built.append((emb(ids), t))
-        yield pad(built, device)
+            all_ids.append(ids)
+        eb, tb = pad(built, device)
+        if not with_ids:
+            yield eb, tb
+            continue
+        ib = torch.zeros(tb.shape, dtype=torch.long, device=device)
+        for k, ids in enumerate(all_ids):
+            ib[k, : len(ids)] = ids
+        yield eb, tb, ib
 ```
 
 Each row is a prompt `p` and an answer `a`, tokenised with the chat template
-(`load_rows`, lines 85–96). The ids go through `embed_tokens`, (len, D), and
+(`load_rows`, lines 93–109). The ids go through `embed_tokens`, (len, D), and
 the targets are −1 except one position before each answer token (Chapter 35).
 `pad` right-pads to the longest example, zeros and −1; causal attention keeps
 padding from touching earlier positions. Unlike `anulm/training/finetune.py`, nothing is
@@ -80,7 +90,7 @@ The book example checks that this path is the plain id path in disguise:
 
 A task is one command-line string, `name=kind:path[:weight[:batch]]`:
 
-> **In the repo** · `anulm/multimodal/omni_train.py` · `Task.__init__` · lines 69–82 · @b42998d
+> **In the repo** · `anulm/multimodal/omni_train.py` · `Task.__init__` · lines 77–90 · @2e80b3e
 
 ```python
     def __init__(self, spec: str):
@@ -99,8 +109,8 @@ A task is one command-line string, `name=kind:path[:weight[:batch]]`:
         self._it = None
 ```
 
-The kind is `text`, `asr` or `image` (line 64). A missing batch size falls back
-to `DEFAULT_BATCH`, 8 for text and images and 4 for speech (line 65).
+The kind is `text`, `asr` or `image` (line 72). A missing batch size falls back
+to `DEFAULT_BATCH`, 8 for text and images and 4 for speech (line 73).
 
 > **Details.** The drive-letter repair matters on Windows, where `C:\data`
 > would otherwise split into a path `C` and a weight `\data`:
@@ -112,7 +122,7 @@ to `DEFAULT_BATCH`, 8 for text and images and 4 for speech (line 65).
 
 `Omni.__init__` then loads each task and splits off its held-out set:
 
-> **In the repo** · `anulm/multimodal/omni_train.py` · `Omni.__init__` · lines 216–235 · @b42998d
+> **In the repo** · `anulm/multimodal/omni_train.py` · `Omni.__init__` · lines 338–357 · @2e80b3e
 
 ```python
         self.caches = {}
@@ -139,15 +149,15 @@ to `DEFAULT_BATCH`, 8 for text and images and 4 for speech (line 65).
 
 In order:
 
-1. **Load.** `load_rows` (lines 85–101) drops text rows longer than the
+1. **Load.** `load_rows` (lines 93–109) drops text rows longer than the
    context, and passes speech rows through Chapter 36's `whisper_window_rows`,
    so no training clip is longer than Whisper's 30-second window.
 2. **Held-out set.** With `--held`, a separate file is loaded and every row
    whose input also appears in training is dropped (`disjoint_held`, below).
    Without it, `split_rows` holds out the first 2% of distinct inputs.
-3. **Check.** `check_split` (lines 139–144) refuses an empty side, or an input
+3. **Check.** `check_split` (lines 147–152) refuses an empty side, or an input
    on both sides.
-4. **Context.** `_validate_context` (lines 265–296) builds, at startup, every
+4. **Context.** `_validate_context` (lines 387–418) builds, at startup, every
    speech or image example that could exceed `block_size`, so an over-long
    one raises now instead of hours into the run (Chapter 35's `build`).
 5. **Cache and weight.** Image tasks get Chapter 36's feature cache, over the
@@ -156,7 +166,7 @@ In order:
 
 Both splits work on *input groups*, not rows:
 
-> **In the repo** · `anulm/multimodal/omni_train.py` · `split_rows` · lines 123–136 · @b42998d
+> **In the repo** · `anulm/multimodal/omni_train.py` · `split_rows` · lines 131–144 · @2e80b3e
 
 ```python
 def split_rows(rows, kind, held_fraction=0.02):
@@ -171,14 +181,14 @@ def split_rows(rows, kind, held_fraction=0.02):
     return training, held
 ```
 
-`_row_group` (lines 114–120) is an image's resolved path, a recording's
+`_row_group` (lines 122–128) is an image's resolved path, a recording's
 resolved path, or a text row's prompt ids. `dict.fromkeys` keeps the groups
 unique in first-seen order; the first 2% of them, at least one and never all,
 are held out, with every row that belongs to them. Five captions of one image
 therefore land on the same side. An explicit held-out file gets the same
 treatment from the other direction:
 
-> **In the repo** · `anulm/multimodal/omni_train.py` · `disjoint_held` · lines 148–159 · @b42998d
+> **In the repo** · `anulm/multimodal/omni_train.py` · `disjoint_held` · lines 156–167 · @2e80b3e
 
 ```python
 def disjoint_held(training, held, kind, name):
@@ -201,7 +211,7 @@ than refusing to train.
 > such results must be rebaselined.
 
 The release recipe sets every weight explicitly, in `experiments/omni_one.py`
-(lines 77–87). Weights are normalised by their sum, so they are shares of the
+(lines 85–100). Weights are normalised by their sum, so they are shares of the
 draws:
 
 | task | kind | weight now | October run | batch |
@@ -214,7 +224,7 @@ draws:
 | caption | image | 0.17 | 0.17 | 8 |
 | vqa | image | 0.12 | 0.12 | 8 |
 
-*verified*: "now" from `experiments/omni_one.py` at @b42998d; "October run"
+*verified*: "now" from `experiments/omni_one.py` at @2e80b3e; "October run"
 printed by `ch37_task_mix.py` from the recipe that run used. The October weights
 sum to 1.00. Today's sum to 1.18, so chat gets 0.25 / 1.18 = 21.2% of the
 draws and asr_hi 27.1% (arithmetic).
@@ -230,7 +240,7 @@ draws and asr_hi 27.1% (arithmetic).
 
 ## 37.3  One step: several draws, one update
 
-> **In the repo** · `anulm/multimodal/omni_train.py` · `train` · lines 423–452 · @b42998d
+> **In the repo** · `anulm/multimodal/omni_train.py` · `train` · lines 555–591 · @2e80b3e
 
 ```python
     w = np.array([t.weight for t in om.tasks], dtype=float)
@@ -251,14 +261,21 @@ draws and asr_hi 27.1% (arithmetic).
         # several batches (any tasks) into one step so each step averages more.
         for _ in range(args.accum):
             t = om.tasks[rng.choice(len(om.tasks), p=w)]
-            eb, tb = om.next_batch(t)
+            batch = om.next_batch(t)
+            eb, tb = batch[0], batch[1]
             with autocast:
-                _, loss = model(None, tb, embeds=eb)
+                logits, loss = model(None, tb, embeds=eb)
+                if t.name in om.distill:
+                    with torch.no_grad():
+                        t_logits = answer_logits(om.teacher, om.teacher.embed_tokens(batch[2]), tb)
+                    loss, ce, kl = distill_loss(logits, t_logits, tb, loss, args.distill_alpha)
+                    run_loss.setdefault(t.name + "_kl", []).append(kl.item())
             if not torch.isfinite(loss):
                 raise ValueError(f"{t.name}: non-finite training loss at step {step}.")
             (loss / args.accum).backward()
             seen[t.name] += 1
-            run_loss[t.name].append(loss.item())
+            # logged as cross-entropy for every task, so a distilled run reads like any other
+            run_loss[t.name].append(ce.item() if t.name in om.distill else loss.item())
         torch.nn.utils.clip_grad_norm_(params, 1.0)
         opt.step()
         opt.zero_grad(set_to_none=True)
@@ -271,7 +288,7 @@ In order:
 2. **Schedule.** Linear warmup, then a cosine down to 10%, applied as one factor
    to every parameter group (Chapter 7). It counts optimiser steps.
 3. **Micro-batches.** `--accum` times: draw a task with probability w, take its
-   next batch (`next_batch`, lines 309–320, restarts a task's iterator with a
+   next batch (`next_batch`, lines 432–443, restarts a task's iterator with a
    new shuffle when it runs out, and raises if a fresh one yields nothing),
    run it with `embeds=` under bf16 autocast, and refuse a non-finite loss.
    Each draw is independent, so one step can hold several tasks.
@@ -285,10 +302,10 @@ The comment states the reason. AdamW moves each weight by about the learning
 rate whatever the batch held, so with one batch per step a 30-token intent
 batch moves the shared decoder as far as a full chat batch. Summing batches
 makes each step an average over several. `--accum` defaults to 1, and `main`
-refuses 0 (lines 507 and 519–520).
+refuses 0 (lines 650 and 669–670).
 
 The optimiser has the backbone in one group and each projector in another,
-at `--lr` (default 5e-5) and `--proj-lr` (1e-3) (lines 372–376, 496–497), as
+at `--lr` (default 5e-5) and `--proj-lr` (1e-3) (lines 498–502, 639–640), as
 in Chapter 36.
 
 Two seeds make a run repeatable: one for the fresh projectors' weights, one
@@ -298,7 +315,7 @@ task mix stops with the names of the settings that changed.
 
 > **Details.** Seeding, and the resume check:
 >
-> **In the repo** · `anulm/multimodal/omni_train.py` · `train` · lines 365–404 · @b42998d
+> **In the repo** · `anulm/multimodal/omni_train.py` · `train` · lines 491–535 · @2e80b3e
 >
 > ```python
 >     # Fresh projectors (vision always, audio without --audio-proj-from) are
@@ -325,26 +342,29 @@ task mix stops with the names of the settings that changed.
 > resume file is read with `safe_load` (Chapter 25), weights only, so loading it
 > cannot run code hidden in the file. `recipe` comes from `recipe_of`:
 >
-> **In the repo** · `anulm/multimodal/omni_train.py` · `recipe_of` · lines 353–359 · @b42998d
+> **In the repo** · `anulm/multimodal/omni_train.py` · `recipe_of` · lines 476–485 · @2e80b3e
 >
 > ```python
 > def recipe_of(args, tasks) -> dict:
 >     # ...
 >     return {"accum": args.accum, "proj_scale": args.proj_scale, "lr": args.lr, "proj_lr": args.proj_lr,
 >             "steps": args.steps, "warmup": args.warmup,
->             "tasks": [[t.name, float(t.weight), int(t.batch)] for t in tasks]}
+>             "tasks": [[t.name, float(t.weight), int(t.batch)] for t in tasks],
+>             **({"distill": sorted(args.distill), "distill_alpha": args.distill_alpha}
+>                if getattr(args, "distill", None) else {}),
+>             **({"max_ratio": sorted(args.max_ratio)} if getattr(args, "max_ratio", None) else {})}
 > ```
 >
-> It is stored in `<out>.last` at every evaluation (lines 476–478); a `.last`
+> It is stored in `<out>.last` at every evaluation (lines 617–621); a `.last`
 > written before recipes were recorded gets a warning. Otherwise the run reloads the model,
 > both projectors, the optimiser and the step-0 losses, and continues at the
-> next step with a new shuffle per task (lines 404–414).
+> next step with a new shuffle per task (lines 535–546).
 
-> **Details.** `--stop-after N` (line 508) ends the run at step N while keeping
+> **Details.** `--stop-after N` (line 651) ends the run at step N while keeping
 > `--steps`' learning-rate schedule, and writes no resume file: a short probe
-> that follows the first N steps of a full run exactly (lines 473–474). It
+> that follows the first N steps of a full run exactly (lines 615–616). It
 > also evaluates at step N, even when N is off the `--eval-every` grid (line
-> 460, in 37.4's excerpt), so the probe's last score is the step it asked for.
+> 599, in 37.4's excerpt), so the probe's last score is the step it asked for.
 
 `IN THE REPO`
 
@@ -354,23 +374,29 @@ The trainer keeps the best checkpoint, so it needs one number. Each task's
 held-out loss is divided by its value before training, and the ratios are
 averaged:
 
-> **In the repo** · `anulm/multimodal/omni_train.py` · `train` · lines 460–467 · @b42998d
+> **In the repo** · `anulm/multimodal/omni_train.py` · `train` · lines 599–609 · @2e80b3e
 
 ```python
         if step % args.eval_every == 0 or step == args.steps or step == args.stop_after:
             losses = evaluate()
             score = float(np.mean([losses[k] / first[k] for k in losses]))
             flag = ""
-            if score < best:
-                best = score
+            ok = within_limits(losses, first, limits)
+            if better_checkpoint(score, ok, best, best_ok):
+                best, best_ok = score, ok
                 atomic_save(om.state(step, score, losses), args.out)
-                flag = "  <- saved"
+                flag = "  <- saved" + ("" if ok else " (outside --max-ratio: kept until one within it)")
+            elif not ok:
+                flag = "  (outside --max-ratio)"
 ```
 
-`first` holds the held-out losses at step 0 (line 416), which must all be
-finite and positive (lines 417–418). Dividing by them puts every task on the
+`first` holds the held-out losses at step 0 (line 548), which must all be
+finite and positive (lines 549–550). Dividing by them puts every task on the
 same footing: a caption loss of 5.5 and a speech loss of 6.6 both start at
-1.0. Lower is better, and a checkpoint is saved whenever the mean improves.
+1.0. Lower is better. A checkpoint is saved when `better_checkpoint` says so:
+the mean improved, and, since the November runs added `--max-ratio` (37.7),
+every named task is still within its limit (`within_limits`); a checkpoint
+outside the limits is kept only until one within them appears.
 
 The October run's recipe: 100,000 steps of one batch
 each, `--lr` 5e-5, chat at 0.07, evaluated every 10,000 steps. The book
@@ -429,7 +455,7 @@ Six tasks improved, the new skills enormously: intent classification went to
 mean of seven ratios cannot show that: six large gains outweigh one large loss.
 
 The run started from `ckpt_chat_mm.pt`: the chat model `ckpt_chat_v3.pt` grown
-by `anulm/multimodal/speech_vocab.py` (`experiments/omni_one.py` line 467;
+by `anulm/multimodal/speech_vocab.py` (`experiments/omni_one.py` line 489;
 `logs/omni_one/3_grow.log`). So step 0 is already the grown model, and its
 chat loss already includes the full-softmax cost of growing, about 0.065 nats
 on base v2's text (Chapter 35).
@@ -447,7 +473,7 @@ per task, and their mean, in the October run. *measured*:
 What the trainer saves is the backbone plus the small parts that differ per
 input:
 
-> **In the repo** · `anulm/multimodal/omni_train.py` · `Omni.state` · lines 336–350 · @b42998d
+> **In the repo** · `anulm/multimodal/omni_train.py` · `Omni.state` · lines 459–473 · @2e80b3e
 
 ```python
     def state(self, step, score, losses) -> dict:
@@ -472,7 +498,7 @@ names (`whisper`, `tower`), because they are frozen and downloaded on use.
 `val_loss` holds the score, not a loss. `anulm/multimodal/omni.py` then builds every skill on
 one loaded copy:
 
-> **In the repo** · `anulm/multimodal/omni.py` · `Omni.ear` · lines 47–57 · @b42998d
+> **In the repo** · `anulm/multimodal/omni.py` · `Omni.ear` · lines 47–62 · @2e80b3e
 
 ```python
     def ear(self):
@@ -480,7 +506,8 @@ one loaded copy:
         if self._ear is None:
             from .audio_codec import WhisperEncoder
             # ...
-            enc = WhisperEncoder(self.meta.get("whisper", "small"), self.device)
+            enc = WhisperEncoder(self.meta.get("whisper", "small"),
+                                 os.environ.get("ANULM_WHISPER_DEVICE") or self.device)
             sm = ContinuousSpeech(self.model, vocab_of(self.meta), enc.dim, self.meta.get("stack", 4)).to(self.device)
             sm.proj.load_state_dict(self.proj)
 ```
@@ -498,7 +525,7 @@ The pipeline that runs this training, `experiments/omni_one.py`, does not trust
 the score with the release. Each task gets a gate: how much it may lose against
 the separate model it would replace.
 
-> **In the repo** · `experiments/omni_one.py` · `gates` · lines 384–392 · @b42998d
+> **In the repo** · `experiments/omni_one.py` · `gates` · lines 403–411 · @2e80b3e
 
 ```python
 def gates(res) -> dict:
@@ -514,7 +541,7 @@ def gates(res) -> dict:
 
 A missing measurement fails its gate (`v is not None and ...`). Hindi speech
 is gated on the mean of three test sets, because each set alone pulled a
-different way (comment, lines 94–97). The rule and the thresholds are the same
+different way (comment, lines 113–116). The rule and the thresholds are the same
 for the October run. Applied by the book example to the October run's
 evaluation results:
 
@@ -535,19 +562,19 @@ pipeline's evaluation step; copied into
 `book/measurements/part_viii_ix_omni_log.json`. Four gates failed, so the
 model was not published. For comparison, the separate English speech model
 scored 7.1% WER on the same 100-clip measure (`docs/RESULTS.md` §39).
-`docs/RESULTS.md` at @b42998d records no result for the joint model.
+`docs/RESULTS.md` at @2e80b3e records no result for the joint model.
 
 Two different chat numbers appear in this chapter. The trainer's held-out loss
 (5.391 at step 100,000, 37.4) comes from `Omni.held_loss`:
 
-> **In the repo** · `anulm/multimodal/omni_train.py` · `Omni.held_loss` · lines 322–334 · @b42998d
+> **In the repo** · `anulm/multimodal/omni_train.py` · `Omni.held_loss` · lines 445–457 · @2e80b3e
 
 ```python
     @torch.no_grad()
     def held_loss(self, t: Task, autocast) -> float:
         self.model.eval()
         tot = n = 0.0
-        for eb, tb in self.batches(t, t.held[: self.args.eval_n], 1, shuffle=False):
+        for eb, tb, *_ in self.batches(t, t.held[: self.args.eval_n], 1, shuffle=False):
             with autocast:
                 _, loss = self.model(None, tb, embeds=eb)
             k = int((tb != -1).sum())
@@ -564,7 +591,7 @@ tokens, or a non-finite total, now raises; the October code returned
 `tot / max(n, 1)`, which would have reported 0 for an empty set. The gate's
 5.3181 comes from a separate scorer:
 
-> **In the repo** · `anulm/multimodal/omni_eval.py` · `chat_loss` · lines 115–131 · @b42998d
+> **In the repo** · `anulm/multimodal/omni_eval.py` · `chat_loss` · lines 115–131 · @2e80b3e
 
 ```python
 def chat_loss(m, tok, path, device):
@@ -588,7 +615,7 @@ def chat_loss(m, tok, path, device):
 
 It feeds ids, one example at a time, and takes its own log-softmax over the
 whole held-out file. Its threshold, 3.3, was set from `ckpt_chat_v3.pt`'s
-3.146 under that same scorer (comment, `omni_one.py` line 100), measured before
+3.146 under that same scorer (comment, `omni_one.py` line 119), measured before
 the vocabulary was grown. The two scorers measure the same held-out file in
 different ways, and the trainer's version now drops prompts seen in training (37.2), so
 compare each only with its own kind.
@@ -598,9 +625,9 @@ compare each only with its own kind.
 ## 37.7  The recipe after October
 
 Short probes after the October run pointed to the cause in 37.3: one batch per
-optimiser step. The release recipe now reads:
+optimiser step. The release recipe, as it stands at the pinned commit, reads:
 
-> **In the repo** · `experiments/omni_one.py` · `ACCUM` · lines 65–87 · @b42998d
+> **In the repo** · `experiments/omni_one.py` · `ACCUM` · lines 65–100 · @2e80b3e
 
 ```python
 # Each optimizer step sums ACCUM batches. One batch per step (the first run,
@@ -608,7 +635,15 @@ optimiser step. The release recipe now reads:
 # decoder a full AdamW step: chat held-out went 3.27 -> 5.39. Summing 8 kept
 # every task better at equal batches (logs/ab_projscale, 2026-10-30).
 ACCUM = 8
-STEPS = 12_500                  # x ACCUM = the first run's 100,000 batches
+# The 2026-11-03 run took 12,500 steps (100,000 batches, 24.2 h) and passed
+# every gate but chat: chat held-out rose from the first eval (3.27 -> 3.41 by
+# step 2,500, 3.58 at 12,500) while the other tasks pulled the shared decoder.
+# Distilling chat from its starting model did not slow that (probe at step 625:
+# 3.358 vs 3.351, experiments/probe_distill.py). So: a quarter of the steps,
+# with the learning rate fully decayed by the end, and never keep a
+# checkpoint whose chat loss is more than MAX_RATIO times its first eval.
+STEPS = 3_125                   # x ACCUM = 25,000 batches, about 6 hours
+MAX_RATIO = "chat=1.049"        # 3.30 (the chat gate) / 3.146 (the chat model)
 # 3,000-batch probes, chat held-out loss on the gate's metric (start 3.335):
 # 15% chat at 5e-5 3.50, 25% at 5e-5 3.457, 15% at 2.5e-5 3.43. Both levers
 # are used together here (not probed as a pair).
@@ -618,22 +653,36 @@ LR = 2.5e-5
 TASKS = [
     # 0.07 let the other tasks pull chat off course even with --accum; 0.25 with
     # half the learning rate (LR below) kept it closest to where it started.
-    ("chat", "text", "data/chat_train.jsonl", 0.25, 8),
+    # chat_train_v6 = the chat model's 23,022 pairs + 13,163 human-written English
+    # pairs (oasst2 later turns, Aya English; experiments/make_chat_v6.py): run b
+    # read the old pairs twice over and its chat loss still rose to 3.309.
+    ("chat", "text", "data/chat_train_v6.jsonl", 0.25, 8),
     ("read", "text", "data/rc_train.jsonl", 0.14, 4),
-    ("intent", "text", "data/omni/intent_train.jsonl", 0.06, 8),
+    # 0.06 (5%) reached BANKING77 87.7% in 12,500 steps but only 69.7% in
+    # 3,125 (2026-11-05); batches are ~30 answer tokens, so 15% costs little time.
+    ("intent", "text", "data/omni/intent_train.jsonl", 0.18, 8),
     ("asr_en", "asr", "data/speech_ls100", 0.12, 4),
-    ("asr_hi", "asr", "data/omni/hindi_train", 0.32, 4),
-    ("caption", "image", "data/omni/caption_train.jsonl", 0.17, 8),
+    ("asr_hi", "asr", "data/omni/hindi_train", 0.26, 4),
+    ("caption", "image", "data/omni/caption_train.jsonl", 0.13, 8),   # no gate
     ("vqa", "image", "data/omni/vqa_train.jsonl", 0.12, 8),
 ]
 ```
 
-Three levers moved, and the comments record why:
+Against the October run, four things moved, and the comments record why:
 
-1. **Accumulation.** Eight batches per step, for 12,500 steps: the same
-   100,000 batches as the October run, in an eighth of the updates.
+1. **Accumulation.** Eight batches per optimiser step (`ACCUM`).
 2. **Learning rate.** 2.5e-5, half the trainer's default.
-3. **Chat's weight.** 0.25 instead of 0.07.
+3. **Chat's weight, and its data.** 0.25 instead of 0.07, read from
+   `chat_train_v6.jsonl`: the chat model's pairs plus 13,163 human-written
+   English pairs it had never seen ("The next run", below).
+4. **Fewer steps, and a gate inside the trainer.** 3,125 steps, 25,000
+   batches, with `--max-ratio chat=1.049` so that no kept checkpoint trades
+   chat away (37.4), and intents at 0.18 of the steps.
+
+The first two were in place for the 3 November run described next; the last
+two came out of it. That run used this file at @b42998d: 12,500 steps, the
+same 100,000 batches as the October run in an eighth of the updates, intents at
+0.06, `chat_train.jsonl`, and no `--max-ratio`.
 
 The probe numbers in the comments are the recipe's own record, on chat's
 held-out loss by the gate's scorer, from 3,000-batch probes; they were not
@@ -641,13 +690,13 @@ rerun for this book. The comment says plainly that the learning rate and the
 chat weight were never probed together. The pipeline turns these constants
 into the training command:
 
-> **In the repo** · `experiments/omni_one.py` · `main` · lines 471–480 · @b42998d
+> **In the repo** · `experiments/omni_one.py` · `main` · lines 493–502 · @2e80b3e
 
 ```python
         args = ["-m", "anulm.multimodal.omni_train", "--ckpt", "ckpt_chat_mm.pt", "--out", OUT, "--steps", str(a.steps),
                 "--accum", str(ACCUM), "--warmup", str(max(1, 500 // ACCUM)), "--lr", str(LR),
                 "--eval-every", "625", "--eval-n", "200", "--log-every", "125", "--resume",
-                "--grad-ckpt"]     # unattended: an out-of-memory at 3 a.m. would stop the night
+                "--grad-ckpt", "--max-ratio", MAX_RATIO]     # unattended: an out-of-memory at 3 a.m. would stop the night
         if (ROOT / "ckpt_asr_en_v3.pt").exists():      # LibriSpeech-only projector; a clone starts fresh
             args += ["--audio-proj-from", "ckpt_asr_en_v3.pt"]
         for name, kind, path, w, b in TASKS:
@@ -658,13 +707,13 @@ into the training command:
 
 The warmup is divided by `ACCUM` too, 500 // 8 = 62 steps, so it still spans
 about 500 batches; an evaluation every 625 steps is every 5,000 batches. Chat
-and reading keep their own held-out files (`HELD`, line 88), now filtered by
+and reading keep their own held-out files (`HELD`, line 107), now filtered by
 `disjoint_held`. `--seed` is not passed, so it is 0. Before training,
-`prepare_training` (lines 222–247) hashes the code, this command and the data,
+`prepare_training` (lines 241–266) hashes the code, this command and the data,
 and an unchanged interrupted run keeps its resume file. A change before training
 has finished archives the previous outputs and reruns training and every step
 after it. A change after training has finished stops the pipeline instead
-(lines 234–237): the hash covers shared files such as `anulm/model.py`, so an
+(lines 253–256): the hash covers shared files such as `anulm/model.py`, so an
 unrelated edit would otherwise throw away a day of GPU work. Only `--retrain`
 archives a finished model and trains again.
 
@@ -722,7 +771,7 @@ failed, so the pipeline did not publish the model.
 Why did chat still drift? The run read `data/chat_train.jsonl` 21,132 times in
 batches of 8: 169,056 examples from 22,873 rows, 7.39 passes. The chat model it
 started from had already been tuned on that same file for two epochs
-(`docs/TRAIN_FROM_SCRATCH.md` line 491). Nothing in the file was new, so more
+(`docs/TRAIN_FROM_SCRATCH.md` line 494). Nothing in the file was new, so more
 passes could only fit it more closely. At the end the chat loss on training
 batches was about 2.0, on held-out rows 3.58. Image questions show the same gap
 after 2.4 passes: about 1.9 on training batches, 3.60 held out, and their
@@ -851,20 +900,20 @@ chat's training loss can fall while its held-out loss rises.
 This chapter cites no external research. Its evidence is the repository, the
 October and November runs' logs and `docs/RESULTS.md`.
 
-Repository evidence, all at @b42998d:
-- `anulm/multimodal/omni_train.py`: `KINDS`, `DEFAULT_BATCH` 64–65, `Task` 68–82, `load_rows`
-  85–101, `pad` 104–111, `_row_group` 114–120, `split_rows` 123–136,
-  `check_split` 139–144, `disjoint_held` 148–159, `text_batches` 161–174,
-  `Omni.__init__` 181–235, `Omni._validate_context` 265–296,
-  `Omni.next_batch` 309–320, `Omni.held_loss` 322–334, `Omni.state` 336–350,
-  `recipe_of` 353–359, `train` 362–481, `main` 484–521.
-- `anulm/multimodal/omni.py`: `Omni` 33–86.
-- `experiments/omni_one.py`: `ACCUM`, `STEPS`, `LR` 65–74, `TASKS` 77–87, `HELD` 88,
-  `GATES` 92–104, `prepare_training` 222–247 (the `--retrain` refusal 234–237; the flag 450), `gates` 384–392, the training
-  command 471–480.
+Repository evidence, all at @2e80b3e:
+- `anulm/multimodal/omni_train.py`: `KINDS`, `DEFAULT_BATCH` 72–73, `Task` 76–90, `load_rows`
+  93–109, `pad` 112–119, `_row_group` 122–128, `split_rows` 131–144,
+  `check_split` 147–152, `disjoint_held` 156–167, `text_batches` 169–192,
+  `Omni.__init__` 293–357, `Omni._validate_context` 387–418,
+  `Omni.next_batch` 432–443, `Omni.held_loss` 445–457, `Omni.state` 459–473,
+  `recipe_of` 476–485, `train` 488–624, `main` 627–671.
+- `anulm/multimodal/omni.py`: `Omni` 33–91.
+- `experiments/omni_one.py`: `ACCUM`, `STEPS`, `LR` 65–82, `TASKS` 85–100, `HELD` 107,
+  `GATES` 111–123, `prepare_training` 241–266 (the `--retrain` refusal 253–256; the flag 469), `gates` 403–411, the training
+  command 493–502.
 - `anulm/multimodal/omni_eval.py`: `chat_loss` 115–131, the reading files
   skipped when missing 178–182.
-- `docs/RESULTS.md` §39, §40; `docs/TRAIN_FROM_SCRATCH.md` line 491 (chat v3's
+- `docs/RESULTS.md` §39, §40; `docs/TRAIN_FROM_SCRATCH.md` line 494 (chat v3's
   two epochs on `data/chat_train.jsonl`).
 - The October run: its `logs/omni_one/6_train.log` and `results.json`
   (outside the repository's history; numbers copied into

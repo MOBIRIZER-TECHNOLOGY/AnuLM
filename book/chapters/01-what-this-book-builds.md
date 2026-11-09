@@ -2,7 +2,7 @@
 title: "1 · What this book builds"
 part: "I · Foundations"
 accent: slate
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 1  What this book builds
@@ -127,10 +127,10 @@ less. *verified*: shapes printed by `ch01_four_steps.py` on `tiny()`.
 
 ## 1.2  The same loop in `generate`
 
-The repository's loop is a method on the model, `generate` (line 1116). With
+The repository's loop is a method on the model, `generate` (line 1126). With
 its optional features elided:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1144–1173 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1154–1183 · @2e80b3e
 
 ```python
         for _ in range(max_new_tokens):
@@ -175,7 +175,7 @@ grown for them, apply an optional repetition penalty, apply an optional
 the end-of-sequence id (Chapter 28). Reading costs little at the output,
 because without targets the forward pass projects only the last position:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 915–918 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 925–928 · @2e80b3e
 
 ```python
         if targets is None:
@@ -193,7 +193,7 @@ axis, so the logits are (B, 1, V).
 
 `anulm/inference/sample.py` runs `generate` on a checkpoint from the command line:
 
-> **In the repo** · `anulm/inference/sample.py` · `main` · lines 69–77 · @b42998d
+> **In the repo** · `anulm/inference/sample.py` · `main` · lines 69–77 · @2e80b3e
 
 ```python
     else:
@@ -265,7 +265,7 @@ Read it from the top:
   32,768 logits; softmax and a pick give the next token.
 
 Chapter 20 traces the same path with every shape and writes it as six
-equations (20.3). In the file, the architecture is 1,364 lines in banner
+equations (20.3). In the file, the architecture is 1,367 lines in banner
 sections:
 
 | Banner | Starts at | What it holds | In one line | Chapters |
@@ -282,7 +282,7 @@ sections:
 
 The model class builds everything in its first twelve lines:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 827–843 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 837–853 · @2e80b3e
 
 ```python
 class AnuLM(nn.Module):
@@ -314,26 +314,25 @@ Grouped by role, as `ch01_four_steps.py` counts them at the pin:
 
 | Role | Files | Lines | Examples | Part |
 |---|---|---|---|---|
-| the model | 1 | 1,364 | `anulm/model.py` | I–IV |
-| tests | 8 | 4,793 | `tests/test_model.py`, `tests/test_training_pipeline.py`, `tests/test_quality_loading.py` | every chapter |
-| training and tokenizer | 7 | 2,864 | `anulm/training/train.py`, `anulm/training/finetune.py`, `anulm/bpe.py`, `anulm/muon.py` | III, V, VII |
+| the model | 1 | 1,367 | `anulm/model.py` | I–IV |
+| tests | 14 | 5,543 | `tests/test_model.py`, `tests/test_training_pipeline.py`, `tests/test_quality_loading.py` | every chapter |
+| training and tokenizer | 9 | 3,124 | `anulm/training/train.py`, `anulm/training/finetune.py`, `anulm/bpe.py`, `anulm/muon.py` | III, V, VII |
 | data | 17 | 2,270 | `anulm/data/fetch_web.py`, `anulm/data/make_chat.py`, `anulm/data/mix_corpus.py` | V, VII |
 | evaluation | 8 | 1,355 | `anulm/eval/eval_golden.py`, `anulm/eval/eval_code.py` | V |
-| post-training | 5 | 1,506 | `anulm/lora.py`, `anulm/tasks/decide.py`, `anulm/bidirectional.py` | VII |
-| speech and vision | 11 | 3,911 | `anulm/multimodal/vision_encoder.py`, `anulm/multimodal/speech_encoder.py`, `anulm/multimodal/omni_train.py` | VIII |
-| serving and apps | 17 | 4,518 | `anulm/inference/sample.py`, `anulm/inference/serve.py`, `anulm/inference/api.py`, `anulm/inference/rag.py`, `anulm/quickstart.py` | VI, VII, IX |
+| post-training | 5 | 1,516 | `anulm/lora.py`, `anulm/tasks/decide.py`, `anulm/bidirectional.py` | VII |
+| speech and vision | 11 | 4,084 | `anulm/multimodal/vision_encoder.py`, `anulm/multimodal/speech_encoder.py`, `anulm/multimodal/omni_train.py` | VIII |
+| serving and apps | 17 | 4,985 | `anulm/inference/sample.py`, `anulm/inference/serve.py`, `anulm/inference/api.py`, `anulm/inference/rag.py`, `anulm/quickstart.py` | VI, VII, IX |
 | export | 7 | 1,260 | `anulm/hf/export_hf.py`, `anulm/hf/modeling_anulm.py` | IX |
-| package entry | 3 | 107 | `anulm/__main__.py`, the root `anulm/model.py` | |
-| tools | 9 | 1,306 | `tools/sweep.py`, `tools/update_tasks.py` | |
+| package entry | 3 | 108 | `anulm/__main__.py`, the root `anulm/model.py` | |
+| tools | 12 | 1,502 | `tools/sweep.py`, `tools/update_tasks.py` | |
 | `course/` | 87 | 13,589 | the lab book's code: stubs, solutions, checks | Build it boxes |
-| `experiments/` | 18 | 3,699 | run scripts, among them the released runs' | V, VII |
+| `experiments/` | 26 | 4,950 | run scripts, among them the released runs' | V, VII |
 | `examples/` | 3 | 683 | API usage examples | IX |
-| `book/` | 84 | 17,145 | this book's examples and figure tools | every chapter |
+| `book/` | 85 | 17,341 | this book's examples and figure tools | every chapter |
+| `space_omni/` | 1 | 48 | the demo as a Hugging Face Space (Chapter 38) | 38 |
 
-*verified*: 285 Python files, 93 of them in `anulm/`, `tests/`, `tools/` and
+*verified*: 306 Python files, 104 of them in `anulm/`, `tests/`, `tools/` and
 the root, counted by `ch01_four_steps.py` with `git ls-tree` at the pin. The
-count leaves out one folder of third-party reference code that the pin held
-and the repository has since removed. The
 roles are the book's grouping, by package folder; Appendix F.7 shows the code
 that counts them.
 
@@ -348,11 +347,11 @@ command name to a module of the package.
 ![Figure 1.2 · The repository by role](../figures/fig01-2-repo-map.svg)
 
 *Figure 1.2 · The repository by role.* Lines of Python per role in `anulm/`,
-`tests/`, `tools/` and the root; the model is 5% of them (1,364 of 25,254). *verified*: drawn from the same count.
+`tests/`, `tools/` and the root; the model is 5% of them (1,367 of 27,114). *verified*: drawn from the same count.
 
 From a fresh clone, `quickstart.py --train` trains and samples a model:
 
-> **In the repo** · `anulm/quickstart.py` · `train` · lines 185–192 · @c4a39f8
+> **In the repo** · `anulm/quickstart.py` · `train` · lines 185–192 · @2e80b3e
 
 ```python
     rc = run([sys.executable, "-u", "-m", "anulm", "train", "--preset", "tiny-gqa", "--steps", "200",
@@ -370,7 +369,7 @@ line 226, instead downloads a released checkpoint, the coder model, and
 serves it.) The `tiny-gqa`
 preset is a method on `AnuLMConfig`:
 
-> **In the repo** · `anulm/model.py` · `AnuLMConfig.tiny_gqa` · lines 154–167 · @c4a39f8
+> **In the repo** · `anulm/model.py` · `AnuLMConfig.tiny_gqa` · lines 154–167 · @2e80b3e
 
 ```python
     @staticmethod
@@ -492,7 +491,7 @@ listed at the end of each chapter and in full in Appendix E.
 2. (3, 32,768): B = 3 rows of V scores.
 3. `self.layers = nn.ModuleList([... for i in range(cfg.n_layer)])`.
 
-*verified*: against `anulm/model.py` at @b42998d.
+*verified*: against `anulm/model.py` at @2e80b3e.
 
 > **Build it.** The lab book's Chapter 1 (`course/ch01-smallest-model`) trains
 > a 0.9M-parameter model in about two minutes and samples it with this loop.
@@ -510,7 +509,7 @@ listed at the end of each chapter and in full in Appendix E.
   `generate` token for token, with and without the cache.
 - The released 400M model, run through `anulm/inference/sample.py`, writes fluent text whose
   facts it does not check: it is a base model.
-- The architecture is `anulm/model.py`, 1,364 lines: an embedding, 20 layers
+- The architecture is `anulm/model.py`, 1,367 lines: an embedding, 20 layers
   that each add attention and a mixture of experts to a residual stream, a final
   norm and an output head (Figure 1.3). The rest of the repository trains,
   tests, serves and adapts it.
@@ -537,16 +536,16 @@ used only for the claim in its register row:
 | [R14] | QK-norm | CHECKED |
 | [R07] | YaRN, the context extension | CHECKED |
 
-Repository evidence, all at @b42998d:
-- `anulm/model.py`: banner lines 36, 222, 257, 422, 498, 582, 794;
-  `AnuLMConfig.tiny_gqa` 154–167 (@c4a39f8); `Block` 797–824 (Figure 1.3's sublayers;
-  layer 0 dense, line 811); `AnuLM.__init__` 827–843;
-  `AnuLM.forward` 915–918; `AnuLM.generate` 1115–1180 (loop 1144–1173;
-  the `temperature <= 0` greedy branch 1161–1162).
+Repository evidence, all at @2e80b3e:
+- `anulm/model.py`: banner lines 32, 232, 267, 432, 508, 592, 804;
+  `AnuLMConfig.tiny_gqa` 154–167; `Block` 807–834 (Figure 1.3's sublayers;
+  layer 0 dense, line 821); `AnuLM.__init__` 837–853;
+  `AnuLM.forward` 925–928; `AnuLM.generate` 1125–1190 (loop 1154–1183;
+  the `temperature <= 0` greedy branch 1171–1172).
 - `tests/test_model.py`: `tiny` 44–49; `generation_is_deterministic_at_top_k_1` 495.
 - `anulm/inference/sample.py`: `main` 26–93 (defaults 34–35, generation 69–77).
 - `anulm/quickstart.py`: `train` 173–198 (lines 185–192); `--demo` 226.
-- `docs/MODEL_CARD_BASE_V2.md`: the released model; `README.md` line 29: its
+- `docs/MODEL_CARD_BASE_V2.md`: the released model; `README.md` line 28: its
   Hugging Face name.
 - `anulm/__main__.py`: the command table; `anulm/model.py` (root): the 9-line alias.
 - The file list and line counts: `git ls-tree` and `git show` at the pin, via

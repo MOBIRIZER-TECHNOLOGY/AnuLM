@@ -1,6 +1,6 @@
 # Research audit
 
-Written 2026-11-03 by `book/tools/research_audit.py` from `RESEARCH_REFERENCES.md` and `book/chapters/`.
+Written 2026-11-09 by `book/tools/research_audit.py` from `RESEARCH_REFERENCES.md` and `book/chapters/`.
 
 **Research-complete: yes.** References verified: yes. Claim review (`technical-review/claims-review.md`): 41 of 41 written chapters reviewed; 41 of 41 planned chapters written.
 
@@ -10,9 +10,9 @@ Written 2026-11-03 by `book/tools/research_audit.py` from `RESEARCH_REFERENCES.m
 |---|---|
 | total | 80 |
 | cited | 0 |
-| checked | 80 |
+| checked | 79 |
 | corrected | 0 |
-| rejected | 0 |
+| rejected | 1 |
 
 Inventory entries (R): 63; supplementary (S): 17.
 

@@ -2,7 +2,7 @@
 title: "18 · Mixture of experts II: dispatch and balance"
 part: "IV · Inside the transformer"
 accent: gold
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 18  Mixture of experts II: dispatch and balance
@@ -65,7 +65,7 @@ sparse, dense and grouped paths. *illustrative*; the index tensors printed by
 
 ## 18.2  The sparse path: one GEMM per expert
 
-> **In the repo** · `anulm/model.py` · `MoE._route_sparse` · lines 719–737 · @c4a39f8
+> **In the repo** · `anulm/model.py` · `MoE._route_sparse` · lines 719–737 · @2e80b3e
 
 ```python
     def _route_sparse(self, x_flat, topk_idx, topk_w):
@@ -122,7 +122,7 @@ The count depends on the PyTorch version; the test `sparse_moe_breaks_the_graph_
 
 ## 18.3  The dense and grouped paths
 
-> **In the repo** · `anulm/model.py` · `MoE._route_dense` · lines 729–738 · @b42998d
+> **In the repo** · `anulm/model.py` · `MoE._route_dense` · lines 739–748 · @2e80b3e
 
 ```python
     def _route_dense(self, x_flat, topk_idx, topk_w):
@@ -141,7 +141,7 @@ The count depends on the PyTorch version; the test `sparse_moe_breaks_the_graph_
 elsewhere. Every expert runs on all N tokens and is multiplied by its column:
 static shapes, at E/A = 6 times the expert work in the released model.
 
-> **In the repo** · `anulm/model.py` · `MoE._route_grouped` · lines 775–790 · @b42998d
+> **In the repo** · `anulm/model.py` · `MoE._route_grouped` · lines 785–800 · @2e80b3e
 
 ```python
         N, D = x_flat.shape
@@ -172,7 +172,7 @@ static shapes, at E/A = 6 times the expert work in the released model.
 
 The stacked weights come from one helper:
 
-> **In the repo** · `anulm/model.py` · `MoE._stacked_weights` · lines 750–759 · @b42998d
+> **In the repo** · `anulm/model.py` · `MoE._stacked_weights` · lines 760–769 · @2e80b3e
 
 ```python
         # Keyed on the parameters' in-place version counters, so a
@@ -214,7 +214,7 @@ So do the tests: `moe_matches_naive_per_token_loop` (`tests/test_model.py`
 line 180), `dense_and_sparse_moe_agree` (line 571), and the grouped test, which
 is skipped on a PyTorch without `F.grouped_mm`:
 
-> **In the repo** · `tests/test_model.py` · `grouped_moe_matches_sparse_under_bf16` · lines 827–844 · @b42998d
+> **In the repo** · `tests/test_model.py` · `grouped_moe_matches_sparse_under_bf16` · lines 827–844 · @2e80b3e
 
 ```python
 def grouped_moe_matches_sparse_under_bf16():
@@ -265,7 +265,7 @@ bf16's. Grouped was the fastest of the three in every run.
 > between runs, and `docs/RESULTS.md` §4 found sparse faster than dense, 574
 > against 1,350 ms a step, for the small `tiny_gqa` in eager mode. The grouped
 > timing is in evaluation mode, where `_stacked_weights` reuses its cached
-> copy (lines 753–754); in training it restacks the weights every step.
+> copy (lines 763–764); in training it restacks the weights every step.
 
 `IN THE REPO` · `IMPLEMENTATION-DEPENDENT` (the timings)
 
@@ -273,7 +273,7 @@ bf16's. Grouped was the fastest of the three in every run.
 
 During training the router counts each expert's slots:
 
-> **In the repo** · `anulm/model.py` · `Router._gate` · lines 647–652 · @b42998d
+> **In the repo** · `anulm/model.py` · `Router._gate` · lines 657–662 · @2e80b3e
 
 ```python
         aux = None
@@ -286,7 +286,7 @@ During training the router counts each expert's slots:
 
 After every optimiser step, `anulm/training/train.py` hands the counts to the biases:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 876–878 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `main` · lines 885–887 · @2e80b3e
 
 ```python
         opt.step()
@@ -294,7 +294,7 @@ After every optimiser step, `anulm/training/train.py` hands the counts to the bi
         imbalance = raw_model.update_expert_biases()
 ```
 
-> **In the repo** · `anulm/model.py` · `AnuLM.update_expert_biases` · lines 1081–1101 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.update_expert_biases` · lines 1091–1111 · @2e80b3e
 
 ```python
         ratios = []
@@ -409,7 +409,7 @@ of bf16 biases, about 0.003 nats, and why the export keeps them in fp32.
 
 ## 18.7  Two regularisers, and reading imbalance
 
-> **In the repo** · `anulm/model.py` · `Router._gate` · lines 653–670 · @b42998d
+> **In the repo** · `anulm/model.py` · `Router._gate` · lines 663–680 · @2e80b3e
 
 ```python
             if self.seq_balance_alpha > 0 or self.router_z_alpha > 0:
@@ -458,7 +458,7 @@ z-loss by hand 2.553796, Router aux 2.553796
 The repository's test pins the balance term against the formula, using
 all-zero router weights so that every P<sub>i</sub> is exactly 1/E:
 
-> **In the repo** · `tests/test_model.py` · `seq_balance_loss_matches_the_formula` · lines 907–923 · @b42998d
+> **In the repo** · `tests/test_model.py` · `seq_balance_loss_matches_the_formula` · lines 907–923 · @2e80b3e
 
 ```python
 def seq_balance_loss_matches_the_formula():
@@ -565,11 +565,11 @@ used only for the claim in its register row:
 | [R20] | the sequence-wise balance loss | CHECKED |
 | [R53] | `F.grouped_mm`, the grouped GEMM `_route_grouped` calls | CHECKED |
 
-Repository evidence, all at @b42998d:
-- `anulm/model.py`: `Router._gate` 647–652, 653–670; `MoE._route_sparse` 709–727,
-  `_route_dense` 729–738, `_stacked_weights` 750–759, `_route_grouped`
-  775–790; `AnuLM.update_expert_biases` 1071–1101.
-- `anulm/training/train.py`: `main` 876–878.
+Repository evidence, all at @2e80b3e:
+- `anulm/model.py`: `Router._gate` 657–662, 663–680; `MoE._route_sparse` 719–737,
+  `_route_dense` 739–748, `_stacked_weights` 760–769, `_route_grouped`
+  785–800; `AnuLM.update_expert_biases` 1081–1111.
+- `anulm/training/train.py`: `main` 885–887.
 - `tests/test_model.py`: `moe_matches_naive_per_token_loop` 180,
   `bias_update_recovers_from_collapse` 361, `expert_bias_is_not_trainable` 400,
   `dense_and_sparse_moe_agree` 571, `sparse_moe_breaks_the_graph_as_documented`

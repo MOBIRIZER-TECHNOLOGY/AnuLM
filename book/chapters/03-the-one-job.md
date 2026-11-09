@@ -2,7 +2,7 @@
 title: "3 · The one job: a probability for every next token"
 part: "I · Foundations"
 accent: slate
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 3  The one job: a probability for every next token
@@ -19,7 +19,7 @@ and converts it to bits per byte. Numbers come from
 
 The batch makes the next tokens by shifting:
 
-> **In the repo** · `anulm/training/train.py` · `make_batch` · lines 237–247 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `make_batch` · lines 240–250 · @2e80b3e
 
 ```python
 def make_batch(data: torch.Tensor, ix: torch.Tensor, block_size: int, device: str):
@@ -44,7 +44,7 @@ probabilities p (Chapter 5). If the true next token is t, the model's
 **surprise** is −log p[t]: 0 when it was certain and right, large when it gave
 t little probability. The **loss** is the mean surprise over graded positions:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 922–928 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 932–938 · @2e80b3e
 
 ```python
         logits = self._head(x)
@@ -172,7 +172,7 @@ Most of the loss is in the tail: a fifth of the tokens carry over half of it.
 A model that gives every id probability 1/V has surprise ln V on every token.
 An untrained AnuLM is close to that because its weights start small:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 859–863 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.__init__` · lines 869–873 · @2e80b3e
 
 ```python
         self.apply(self._init_weights)
@@ -182,7 +182,7 @@ An untrained AnuLM is close to that because its weights start small:
                 nn.init.normal_(p, mean=0.0, std=cfg.initializer_range / math.sqrt(2 * cfg.n_layer))
 ```
 
-> **In the repo** · `anulm/model.py` · `AnuLM._init_weights` · lines 865–871 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM._init_weights` · lines 875–881 · @2e80b3e
 
 ```python
     def _init_weights(self, m):
@@ -256,7 +256,7 @@ the figure reruns `initial_loss`.
 
 The test suite pins this:
 
-> **In the repo** · `tests/test_model.py` · `initial_loss_is_ln_vocab` · lines 428–456 · @b42998d
+> **In the repo** · `tests/test_model.py` · `initial_loss_is_ln_vocab` · lines 428–456 · @2e80b3e
 
 ```python
 def initial_loss_is_ln_vocab():
@@ -297,7 +297,7 @@ write into the residual stream (shown above; Chapter 15, 15.5).
 > **Details.** `anulm/model.py` runs the same check on its two presets when
 > executed directly:
 >
-> > **In the repo** · `anulm/model.py` · `__main__` · lines 1196–1205 · @b42998d
+> > **In the repo** · `anulm/model.py` · `__main__` · lines 1206–1215 · @2e80b3e
 >
 > ```python
 >         x = torch.randint(0, cfg.vocab_size, (2, 64))
@@ -329,7 +329,7 @@ Loss per token cannot compare models with different tokenizers: a token of
 the 32,768-id vocabulary covers 6.4 bytes of this corpus on average, a byte
 token covers one. Dividing by the bytes each token covers removes that:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 906–908 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `main` · lines 915–917 · @2e80b3e
 
 ```python
             bpb = val / math.log(2) / args.bytes_per_token
@@ -344,7 +344,7 @@ corpus's metadata. For the released model's corpus that `meta.json` says
 
 > **Details.** Where `main` reads the figure:
 >
-> > **In the repo** · `anulm/training/train.py` · `main` · lines 656–671 · @b42998d
+> > **In the repo** · `anulm/training/train.py` · `main` · lines 667–682 · @2e80b3e
 >
 > ```python
 >     tokenizer_path, vocab_size, args.bytes_per_token = None, 259, 1.0
@@ -370,7 +370,7 @@ The example repeats the conversion:
 
 ```python
 def bits_per_byte(nats_per_token: float, bytes_per_token: float) -> float:
-    return nats_per_token / math.log(2) / bytes_per_token         # anulm/training/train.py line 906
+    return nats_per_token / math.log(2) / bytes_per_token         # anulm/training/train.py line 915
 ```
 
 ```python
@@ -449,11 +449,11 @@ English 4.4, so a sample with its own mix has its own figure (Chapter 24).
 
 This chapter cites no research references.
 
-Repository evidence, all at @b42998d:
-- `anulm/model.py`: `AnuLM.__init__` 859–863, `AnuLM._init_weights` 865–871,
-  `AnuLM.forward` 922–928, `__main__` 1183–1208.
-- `anulm/training/train.py`: `make_batch` 237–250; `main` 656–671 (bytes per token) and
-  906–908 (bits per byte).
+Repository evidence, all at @2e80b3e:
+- `anulm/model.py`: `AnuLM.__init__` 869–873, `AnuLM._init_weights` 875–881,
+  `AnuLM.forward` 932–938, `__main__` 1193–1218.
+- `anulm/training/train.py`: `make_batch` 240–253; `main` 667–682 (bytes per token) and
+  915–917 (bits per byte).
 - `tests/test_model.py`: `tiny` 44–49, `initial_loss_is_ln_vocab` 428–456.
 - `docs/MODEL_CARD_BASE_V2.md` lines 32–33: final validation loss 3.3523 and
   0.756 bits per byte; `docs/RESULTS.md` §39.

@@ -2,7 +2,7 @@
 title: "28 · Choosing the next token"
 part: "VI · Generation"
 accent: teal
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 28  Choosing the next token
@@ -16,7 +16,7 @@ the repository does not have, closes it as a tested patch.
 
 ## 28.1  The order of operations
 
-> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1152–1169 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1162–1179 · @2e80b3e
 
 ```python
             logits = logits[:, -1, :].float()
@@ -58,7 +58,7 @@ In order, on a (B, V) tensor:
 the sampling branch divides, filters, normalises and draws; at T ≤ 0 an argmax
 replaces all four. Top-p, dashed, is not in the repository. *verified*: the
 script that draws it asserts this order against `generate`'s source at
-@b42998d and reads the line range from it.
+@2e80b3e and reads the line range from it.
 
 The book's script watches these lines run: a model that returns fixed logits,
 the repository's `generate`, and a spy on what `torch.multinomial` is given,
@@ -87,7 +87,7 @@ checked against the steps above.
 >     or, if it made no draw (temperature <= 0), the one-hot of the id it chose."""
 >     seen, orig = [], torch.multinomial
 >
->     def spy(p, num_samples):                         # generate calls this, line 1169
+>     def spy(p, num_samples):                         # generate calls this, line 1179
 >         seen.append(p.clone())
 >         return orig(p, num_samples)
 >
@@ -96,13 +96,13 @@ checked against the steps above.
 >         out = cls(z).generate(torch.tensor([prompt]), 1, **kw)
 >     finally:
 >         torch.multinomial = orig
->     if not seen:                                     # the argmax branch, lines 1161–1162
+>     if not seen:                                     # the argmax branch, lines 1171–1172
 >         return torch.nn.functional.one_hot(out[0, -1], z.numel()).float()
 >     return seen[0][0]
 >
 >
 > def book_probs(z, seen_ids, temperature=1.0, top_k=None, penalty=1.0):
->     """generate's lines 1157–1168, one row at a time, as Chapter 28 states them."""
+>     """generate's lines 1167–1178, one row at a time, as Chapter 28 states them."""
 >     z = z.clone().float()
 >     for i in set(seen_ids) if penalty != 1.0 else ():
 >         z[i] = z[i] / penalty if z[i] > 0 else z[i] * penalty   # generate's sign rule
@@ -216,7 +216,7 @@ time; temperature 0.8 with penalty 1.3, 12.4%. The serving defaults
 Speech and images decode through `decode_from_embeds`, which is greedy and
 blocks repeated n-grams:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.decode_from_embeds` · lines 1037–1054 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.decode_from_embeds` · lines 1047–1064 · @2e80b3e
 
 ```python
         for _ in range(max_tokens):
@@ -254,7 +254,7 @@ no_repeat_ngram = 3: [0, 0, 0, 1, 0, 0, 2, 0]
 
 *verified*: `ch28_sampling.py`. `generate` stops on one id for a whole batch:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1170–1179 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1180–1189 · @2e80b3e
 
 ```python
             if eos_id is not None:
@@ -282,7 +282,7 @@ probabilities reach p, then renormalises [R31]; the set grows where the model
 is unsure, which a fixed k cannot do. `anulm/inference/api.py` accepts the argument and drops
 it:
 
-> **In the repo** · `anulm/inference/api.py` · `ChatRequest` · lines 218–221 · @b42998d
+> **In the repo** · `anulm/inference/api.py` · `ChatRequest` · lines 218–221 · @2e80b3e
 
 ```python
     temperature: Optional[float] = Field(None, ge=0, le=2, description="Default 0.3. 0 = greedy.")
@@ -483,9 +483,9 @@ used only for the claim in its register row:
 | [R30] | penalised sampling: discounting the scores of tokens already generated | CHECKED |
 | [R31] | nucleus (top-p) sampling | CHECKED |
 
-Repository evidence, all at @b42998d:
-- `anulm/model.py`: `AnuLM.decode_from_embeds` 1015–1062 (excerpt 1037–1054),
-  `AnuLM.generate` 1152–1179.
+Repository evidence, all at @2e80b3e:
+- `anulm/model.py`: `AnuLM.decode_from_embeds` 1025–1072 (excerpt 1047–1064),
+  `AnuLM.generate` 1162–1189.
 - `anulm/inference/api.py`: `ChatRequest` 218–221, `Generation` 389 and 446–448, chat defaults
   611–613, completion defaults 649–650.
 - `anulm/inference/serve.py`: the `generate` call 158–160 (no clamp), HTTP defaults 224–229. `anulm/inference/sample.py`: 34–35.

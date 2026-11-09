@@ -2,7 +2,7 @@
 title: "Appendix B · The 400M arithmetic"
 part: "Appendices"
 accent: slate
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # Appendix B  The 400M arithmetic
@@ -31,8 +31,8 @@ compare with a tool that reports GiB.
 
 ## B.1  The configuration
 
-`AnuLMConfig` (`anulm/model.py` lines 39–218) is a dataclass of 42 fields. The table
-gives each field's line and declared default at @b42998d, the two presets this
+`AnuLMConfig` (`anulm/model.py` lines 35–228) is a dataclass of 42 fields. The table
+gives each field's line and declared default at @2e80b3e, the two presets this
 book uses, and the value stored in `ckpt_base_v2.pt`. "=" means the same as
 the default.
 
@@ -82,7 +82,7 @@ the default.
 | `merge_tree` | 124 | `''` | = | = | = | merge-tree tables (Chapter 10) |
 
 *verified*: printed by `ch41_arithmetic.py --config`; the released column is the
-`cfg` object pickled in `ckpt_base_v2.pt`. `__post_init__` (lines 126–156) also
+`cfg` object pickled in `ckpt_base_v2.pt`. `__post_init__` (lines 121–151) also
 sets `head_dim` for MLA to `qk_nope_head_dim + qk_rope_head_dim` and refuses an
 unreachable top-k with a `ValueError` (not an `assert`, which `python -O`
 would strip).

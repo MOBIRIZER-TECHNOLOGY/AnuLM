@@ -2,7 +2,7 @@
 title: "6 · Gradients and backpropagation"
 part: "II · Just enough mathematics"
 accent: slate
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 6  Gradients and backpropagation
@@ -81,7 +81,7 @@ gradient of the loss with respect to its output and asking it for the gradient
 with respect to its inputs and weights. Here is one operation chain from
 `anulm/model.py`, the feed-forward network of layer 0 and of every expert:
 
-> **In the repo** · `anulm/model.py` · `SwiGLU` · lines 242–253 · @b42998d
+> **In the repo** · `anulm/model.py` · `SwiGLU` · lines 252–263 · @2e80b3e
 
 ```python
 class SwiGLU(nn.Module):
@@ -165,7 +165,7 @@ gradients reaching x add. *verified*: shapes from `ch06_backprop.py`.
 
 Every block adds its sublayers' outputs to its input rather than replacing it:
 
-> **In the repo** · `anulm/model.py` · `Block.forward` · lines 820–824 · @b42998d
+> **In the repo** · `anulm/model.py` · `Block.forward` · lines 830–834 · @2e80b3e
 
 ```python
         x = x + self.attn(self.input_layernorm(x), cos, sin,
@@ -194,7 +194,7 @@ PyTorch records each operation on tensors that require gradients, and
 **adds** each result into the parameter's `.grad`, rather than overwriting it.
 `anulm/training/train.py` relies on that:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 855–873 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `main` · lines 864–882 · @2e80b3e
 
 ```python
         opt.zero_grad(set_to_none=True)
@@ -234,13 +234,13 @@ Line by line:
 
 After the loop the optimiser reads `.grad` and updates the weights
 (Chapter 7). Code that only evaluates turns the recording off:
-`AnuLM.generate` (line 1116) and `evaluate` (line 478) are decorated with
+`AnuLM.generate` (line 1126) and `evaluate` (line 486) are decorated with
 `@torch.no_grad()`, and `AnuLM.forward` keeps the router's regulariser for the
-log with `aux_total.detach()` (line 913), a copy cut out of the record.
+log with `aux_total.detach()` (line 923), a copy cut out of the record.
 
 The equivalence of accumulation and a large batch is a test:
 
-> **In the repo** · `tests/test_model.py` · `gradient_accumulation_equals_large_batch` · lines 545–563 · @b42998d
+> **In the repo** · `tests/test_model.py` · `gradient_accumulation_equals_large_batch` · lines 545–563 · @2e80b3e
 
 ```python
 def gradient_accumulation_equals_large_batch():
@@ -311,7 +311,7 @@ loop would fail on it. Real training uses AdamW instead of this plain rule
 A model can train with some weights cut off from the loss: the others make up
 for them, and the loss still falls. This test finds such weights:
 
-> **In the repo** · `tests/test_model.py` · `all_parameters_receive_gradients` · lines 415–424 · @b42998d
+> **In the repo** · `tests/test_model.py` · `all_parameters_receive_gradients` · lines 415–424 · @2e80b3e
 
 ```python
 def all_parameters_receive_gradients():
@@ -336,7 +336,7 @@ Gradients also give evidence of causality: a zero gradient is necessary for
 independence, though not by itself proof of it. If position 5's output depended on position
 6's input, the gradient between them would be nonzero:
 
-> **In the repo** · `tests/test_model.py` · `causality_holds_under_gradients_too` · lines 78–93 · @b42998d
+> **In the repo** · `tests/test_model.py` · `causality_holds_under_gradients_too` · lines 78–93 · @2e80b3e
 
 ```python
 def causality_holds_under_gradients_too():
@@ -400,7 +400,7 @@ logits with respect to each input embedding, on `tiny()` at initialisation.
    otherwise the gradient would flow on into the embedding table and not be
    stored per position.
 
-*verified*: by the shapes in `ch06_backprop.py` and `anulm/training/train.py` at @b42998d.
+*verified*: by the shapes in `ch06_backprop.py` and `anulm/training/train.py` at @2e80b3e.
 
 > **Build it.** The lab book's Chapter 8 (`course/ch08-pretrain`, §8.4)
 > builds the training step with gradient accumulation.
@@ -435,10 +435,10 @@ logits with respect to each input embedding, on `tiny()` at initialisation.
 
 This chapter cites no research references.
 
-Repository evidence, all at @b42998d:
-- `anulm/model.py`: `SwiGLU` 242–253; `Block.forward` 820–824;
-  `AnuLM.forward` 913; `AnuLM.generate` 1115–1116 (`@torch.no_grad()`).
-- `anulm/training/train.py`: `evaluate` 477–478 (`@torch.no_grad()`); `main` 855–873.
+Repository evidence, all at @2e80b3e:
+- `anulm/model.py`: `SwiGLU` 252–263; `Block.forward` 830–834;
+  `AnuLM.forward` 923; `AnuLM.generate` 1125–1126 (`@torch.no_grad()`).
+- `anulm/training/train.py`: `evaluate` 485–486 (`@torch.no_grad()`); `main` 864–882.
 - `tests/test_model.py`: `causality_holds_under_gradients_too` 78–93;
   `all_parameters_receive_gradients` 415–424;
   `gradient_accumulation_equals_large_batch` 545–563.

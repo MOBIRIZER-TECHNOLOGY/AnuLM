@@ -2,7 +2,7 @@
 title: "27 · Autoregressive decoding and the KV cache"
 part: "VI · Generation"
 accent: teal
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 27  Autoregressive decoding and the KV cache
@@ -36,7 +36,7 @@ The symbols are Part IV's (Chapter 20, 20.1), with T = `start` + S: the
 
 ## 27.1  The loop, and its cost without a cache
 
-> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1140–1151 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1150–1161 · @2e80b3e
 
 ```python
         B = idx.shape[0]
@@ -61,10 +61,10 @@ The symbols are Part IV's (Chapter 20, 20.1), with T = `start` + S: the
   cache from the last `bs` tokens; then run only `pending` and advance `start`.
 
 Lines 1152–1160 take the last position's logits and edit them, and the
-elided lines 1164–1167 apply temperature and `top_k` (Chapter 28); the end of
+elided lines 1174–1177 apply temperature and `top_k` (Chapter 28); the end of
 the loop body picks a token and sets up the next step:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1161–1173 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1171–1183 · @2e80b3e
 
 ```python
             if temperature <= 0:
@@ -88,7 +88,7 @@ script counts both with the loop's rule:
 
 ```python
 def positions_processed(prompt, new, bs, cached):
-    """Token positions run, summed over generate's calls (its lines 1144–1151)."""
+    """Token positions run, summed over generate's calls (its lines 1154–1161)."""
     total, length, start = 0, prompt, None
     for _ in range(new):
         if not cached:
@@ -116,7 +116,7 @@ repository code**), checked against `generate`'s real calls. The last row is
 
 ## 27.2  What the cache holds, and why queries are not in it
 
-> **In the repo** · `anulm/model.py` · `AnuLM.new_cache` · lines 873–875 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.new_cache` · lines 883–885 · @2e80b3e
 
 ```python
     def new_cache(self) -> list[dict]:
@@ -124,7 +124,7 @@ repository code**), checked against `generate`'s real calls. The last row is
         return [dict() for _ in self.layers]
 ```
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 480–487 · @c4a39f8
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 480–487 · @2e80b3e
 
 ```python
         if cache is not None:
@@ -182,7 +182,7 @@ last position, cached vs full forward: max |difference| 4.5e-08
 The **prefill** has S = prompt length and `start` = 0; each **decode step** has
 S = 1 and `start` = tokens cached. The rotation needs `start`:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 897–899 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 907–909 · @2e80b3e
 
 ```python
         if start + S > self.cfg.block_size:      # an error, not an assert: python -O strips those
@@ -190,7 +190,7 @@ S = 1 and `start` = tokens cached. The rotation needs `start`:
         cos, sin = self.rotary(S, x.device, x.dtype, start=start)
 ```
 
-> **In the repo** · `anulm/model.py` · `Rotary.forward` · lines 339–343 · @b42998d
+> **In the repo** · `anulm/model.py` · `Rotary.forward` · lines 349–353 · @2e80b3e
 
 ```python
     def forward(self, seq_len: int, device, dtype, start: int = 0):
@@ -216,7 +216,7 @@ A decode step's single query may see every cached key, and a prefill's queries
 and keys line up, so neither needs an explicit mask. A chunk of several tokens
 against a non-empty cache does:
 
-> **In the repo** · `anulm/model.py` · `_attn_mask` · lines 365–381 · @b42998d
+> **In the repo** · `anulm/model.py` · `_attn_mask` · lines 375–391 · @2e80b3e
 
 ```python
 def _attn_mask(S: int, T: int, start: int, window: Optional[int], device):
@@ -231,7 +231,7 @@ def _attn_mask(S: int, T: int, start: int, window: Optional[int], device):
     return mask
 ```
 
-> **In the repo** · `anulm/model.py` · `_sdpa` · lines 414–418 · @b42998d
+> **In the repo** · `anulm/model.py` · `_sdpa` · lines 424–428 · @2e80b3e
 
 ```python
 def _sdpa(q, k, v, mask, S, scale, dropout_p):
@@ -460,7 +460,7 @@ mostly idle and the time goes to launching each layer's kernels.
 
 ## 27.7  The proof
 
-> **In the repo** · `tests/test_model.py` · `incremental_forward_matches_full_forward` · lines 658–675 · @b42998d
+> **In the repo** · `tests/test_model.py` · `incremental_forward_matches_full_forward` · lines 658–675 · @2e80b3e
 
 ```python
 def incremental_forward_matches_full_forward():
@@ -551,12 +551,12 @@ used only for the claim in its register row:
 KV caching has no single originating paper (`RESEARCH_REFERENCES.md` §5); this
 chapter describes it from the code and tests only.
 
-Repository evidence, all at @b42998d:
+Repository evidence, all at @2e80b3e:
 - `anulm/model.py`:
-  - `Rotary.forward` 339–343, `_attn_mask` 365–381, `_sdpa` 414–418;
-  - `GQAttention.forward` 470–477, `MLAttention.forward` 555–564;
-  - `AnuLM.new_cache` 873–875, `AnuLM.forward` 897–899,
-    `AnuLM.generate` 1140–1173.
+  - `Rotary.forward` 349–353, `_attn_mask` 375–391, `_sdpa` 424–428;
+  - `GQAttention.forward` 480–487, `MLAttention.forward` 565–574;
+  - `AnuLM.new_cache` 883–885, `AnuLM.forward` 907–909,
+    `AnuLM.generate` 1150–1183.
 - `anulm/inference/api.py`: `Generation` 389, lines 398–399.
 - `tests/test_model.py`: `incremental_forward_matches_full_forward` 658,
   `cache_holds_what_it_should` 679, `cached_generation_matches_uncached` 701,

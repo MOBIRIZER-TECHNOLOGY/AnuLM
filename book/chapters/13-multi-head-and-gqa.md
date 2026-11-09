@@ -2,7 +2,7 @@
 title: "13 · Many heads, shared keys: multi-head and grouped-query attention"
 part: "IV · Inside the transformer"
 accent: gold
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 13  Many heads, shared keys: multi-head and grouped-query attention
@@ -28,7 +28,7 @@ A head is Chapter 11's attention on a D<sub>h</sub>-wide slice; H of them
 side by side cost about what one head of width H·D<sub>h</sub> would, and
 each learns its own pattern. The configuration fixes the sizes:
 
-> **In the repo** · `anulm/model.py` · `AnuLMConfig.__post_init__` · lines 150–154 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLMConfig.__post_init__` · lines 145–149 · @2e80b3e
 
 ```python
         if self.attn == "gqa":
@@ -39,16 +39,16 @@ each learns its own pattern. The configuration fixes the sizes:
 ```
 
 The released model's preset sets `head_dim=64` explicitly (`base_350m`, line
-188 @c4a39f8), so the default branch is not its path, though it gives the same 64 =
+188), so the default branch is not its path, though it gives the same 64 =
 1,024 / 16. The check makes the query heads split evenly into groups;
-`check` raises `ValueError` (lines 129–131), so a bad `--cfg` or a downloaded
+`check` raises `ValueError` (lines 124–126), so a bad `--cfg` or a downloaded
 `config.json` is refused even under `python -O`.
 
 `IN THE REPO`
 
 ## 13.2  One fused projection
 
-`GQAttention.__init__` (lines 430–449, quoted in 11.6) builds the layer's
+`GQAttention.__init__` (lines 440–459, quoted in 11.6) builds the layer's
 matrices:
 
 - **`n_rep`** is the group size, 16 / 4 = 4.
@@ -92,7 +92,7 @@ weight row: query heads first, then key heads, then value heads.
 
 ## 13.3  Reshape, normalise, rotate
 
-`GQAttention.forward` (lines 451–468, quoted in 11.6) first projects `x` once,
+`GQAttention.forward` (lines 461–478, quoted in 11.6) first projects `x` once,
 `view`s the result as H + 2H<sub>kv</sub> slots of D<sub>h</sub>, `split`s
 the slots into queries, keys and values, transposes heads before positions,
 normalises queries and keys, and rotates them. With `tiny()`'s B = 2, S = 5
@@ -136,7 +136,7 @@ then repeats the call under bf16 autocast, as the serving code runs:
 parameter (Chapter 15), which is why Chapter 20 counts 30 KiB per token as
 served, not 20. A test pins the layout; this is its GQA half:
 
-> **In the repo** · `tests/test_model.py` · `cache_holds_what_it_should` · lines 679–687 · @b42998d
+> **In the repo** · `tests/test_model.py` · `cache_holds_what_it_should` · lines 679–687 · @2e80b3e
 
 ```python
 def cache_holds_what_it_should():
@@ -153,7 +153,7 @@ def cache_holds_what_it_should():
 
 Only after caching are the shared heads copied for attention:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 483–494 · @b42998d
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 493–504 · @2e80b3e
 
 ```python
         if NATIVE_GQA and self.n_rep > 1:
@@ -192,13 +192,13 @@ with `repeat_interleave`, and it calls GQA an experimental feature [R50].
 After attention, `transpose` and `view` lay the H outputs side by side,
 (B, S, H·D<sub>h</sub>), for `dense`.
 
-The other branch is a switch, `NATIVE_GQA` (line 387), off by default:
+The other branch is a switch, `NATIVE_GQA` (line 397), off by default:
 `docs/RESULTS.md` §32 records it as written and tested but not yet measured on
 the GPU.
 
 > **Details.** The switch, and the test that keeps it honest.
 >
-> > **In the repo** · `anulm/model.py` · `NATIVE_GQA` · lines 384–387 · @b42998d
+> > **In the repo** · `anulm/model.py` · `NATIVE_GQA` · lines 394–397 · @2e80b3e
 >
 > ```python
 > # GQA through SDPA's own `enable_gqa` instead of repeat_interleave. Same
@@ -207,9 +207,9 @@ the GPU.
 > NATIVE_GQA = False
 > ```
 >
-> `train.py --native-gqa` turns it on (lines 637–643). Its test:
+> `train.py --native-gqa` turns it on (lines 648–654). Its test:
 >
-> > **In the repo** · `tests/test_model.py` · `native_gqa_matches_repeat_interleave` · lines 1767–1796 · @b42998d
+> > **In the repo** · `tests/test_model.py` · `native_gqa_matches_repeat_interleave` · lines 1765–1794 · @2e80b3e
 >
 > ```python
 > def native_gqa_matches_repeat_interleave():
@@ -283,7 +283,7 @@ seed 0), recomputes the weights beside `_sdpa`, and measures for every pair of
 heads the total-variation distance between their weight rows: half the summed
 absolute difference, 0 when identical, 1 when disjoint. It runs in fp32
 without autocast, except the experts, which the released configuration
-computes in bf16 (`anulm/model.py` lines 756 and 784).
+computes in bf16 (`anulm/model.py` lines 766 and 794).
 
 ![Figure 13.2 · Do heads that share keys attend alike?](../figures/fig13-2-group-tv.svg)
 
@@ -366,11 +366,11 @@ used only for the claim in its register row:
 | [R13] | multi-query attention: keys and values shared across all heads, for incremental decoding | CHECKED |
 | [R50] | the documented `enable_gqa` behaviour of SDPA (`repeat_interleave` of key and value heads; experimental) | CHECKED |
 
-Repository evidence, all at @b42998d:
-- `anulm/model.py`: `AnuLMConfig.__post_init__` 129–131 and 150–154, `NATIVE_GQA` 384–387,
-  `GQAttention.__init__` 430–445 and 449, `GQAttention.forward` 451–494.
-- `anulm/training/train.py`: `--native-gqa`, lines 637–643.
-- `tests/test_model.py`: `cache_holds_what_it_should` 679, `native_gqa_matches_repeat_interleave` 1767.
+Repository evidence, all at @2e80b3e:
+- `anulm/model.py`: `AnuLMConfig.__post_init__` 124–126 and 145–149, `NATIVE_GQA` 394–397,
+  `GQAttention.__init__` 440–455 and 459, `GQAttention.forward` 461–504.
+- `anulm/training/train.py`: `--native-gqa`, lines 648–654.
+- `tests/test_model.py`: `cache_holds_what_it_should` 679, `native_gqa_matches_repeat_interleave` 1765.
 - `docs/RESULTS.md` §32; `book/measurements/part_iv_a_groups.json`.
 
 Book examples: `code-examples/ch13_gqa.py`, `code-examples/ch13_measure_groups.py`.

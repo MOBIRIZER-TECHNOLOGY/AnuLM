@@ -45,7 +45,7 @@ HERE = Path(__file__).resolve().parent
 BOOK = HERE.parent
 ROOT = BOOK.parent
 CH = BOOK / "chapters"
-PIN = "b42998d"
+PIN = "2e80b3e"
 GPU = "needs ckpt_base_v2.pt and data/v2; measured on the GPU"
 
 # Examples --run does not run, with the reason. Everything else runs, from a temporary directory.

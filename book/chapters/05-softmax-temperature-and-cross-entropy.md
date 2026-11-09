@@ -2,7 +2,7 @@
 title: "5 · Softmax, temperature and cross-entropy"
 part: "II · Just enough mathematics"
 accent: slate
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 5  Softmax, temperature and cross-entropy
@@ -75,7 +75,7 @@ internally, which is why AnuLM never subtracts a maximum itself.
 Softmax makes entries compete; where AnuLM wants scores that do not, it uses a
 sigmoid:
 
-> **In the repo** · `anulm/model.py` · `Router._gate` · lines 624–626 · @b42998d
+> **In the repo** · `anulm/model.py` · `Router._gate` · lines 634–636 · @2e80b3e
 
 ```python
     def _gate(self, x_flat, seq_len: Optional[int]):
@@ -92,7 +92,7 @@ Each of the E experts gets its own score in (0, 1) (Chapter 17).
 AnuLM casts the output logits to 32-bit floats before every softmax over the
 vocabulary:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 923–925 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.forward` · lines 933–935 · @2e80b3e
 
 ```python
         loss = F.cross_entropy(
@@ -108,7 +108,7 @@ on random logits of the released vocabulary's width it moves the mean loss by
 in the Details below). Under autocast
 PyTorch runs `cross_entropy` in fp32 by itself, and training runs under
 autocast whenever the GPU supports bf16 (`anulm/training/train.py` `main`
-lines 645–650; Chapter 23, 23.2, quotes them and explains autocast).
+lines 656–661; Chapter 23, 23.2, quotes them and explains autocast).
 
 > **Details.** Where a bf16 cross-entropy loses accuracy. The example
 > separates the three places, on random logits of the released vocabulary's
@@ -155,9 +155,9 @@ lines 645–650; Chapter 23, 23.2, quotes them and explains autocast).
 > - **Under autocast** PyTorch runs `cross_entropy` in fp32 by itself, on CPU
 >   and, checked the same way, on CUDA; the error is back to 10⁻⁵.
 
-On a CPU everything stays fp32. So the `.float()` at line 924 is insurance:
+On a CPU everything stays fp32. So the `.float()` at line 934 is insurance:
 it matters in bf16 without autocast (bf16 weights, say). In `generate` the
-cast at line 1152 (5.3) also keeps the temperature division, the `top_k`
+cast at line 1162 (5.3) also keeps the temperature division, the `top_k`
 comparison and the repetition penalty in fp32.
 
 `IN THE REPO`
@@ -166,7 +166,7 @@ comparison and the repetition penalty in fp32.
 
 Sampling divides the logits by the temperature T before the softmax:
 
-> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1152–1169 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM.generate` · lines 1162–1179 · @2e80b3e
 
 ```python
             logits = logits[:, -1, :].float()
@@ -226,7 +226,7 @@ defaults to T = 0.8 and `top_k` 50 (lines 34–35).
 > **Details.** The serving API passes the request's temperature through
 > unclamped:
 >
-> > **In the repo** · `anulm/inference/api.py` · `Generation.run` · lines 446–448 · @b42998d
+> > **In the repo** · `anulm/inference/api.py` · `Generation.run` · lines 446–448 · @2e80b3e
 >
 > ```python
 >                 self.eng.model.generate(x, self.max_tokens, temperature=self.temperature,  # 0 = exact greedy
@@ -246,7 +246,7 @@ softmax turns into exactly 0:
 def top_k_cut(z: torch.Tensor, k: int) -> torch.Tensor:
     z = z.clone()
     v, _ = torch.topk(z, k)
-    z[z < v[..., [-1]]] = -float("inf")                 # generate's lines 1166–1167
+    z[z < v[..., [-1]]] = -float("inf")                 # generate's lines 1176–1177
     return F.softmax(z, -1)
 ```
 
@@ -260,7 +260,7 @@ logit is the most probable id.
 > **Details.** Like `generate`'s T ≤ 0 branch, the decoder for image and
 > audio prompts takes the argmax of the raw scores:
 >
-> > **In the repo** · `anulm/model.py` · `AnuLM.decode_from_embeds` · lines 1038–1049 · @b42998d
+> > **In the repo** · `anulm/model.py` · `AnuLM.decode_from_embeds` · lines 1048–1059 · @2e80b3e
 >
 > ```python
 >             scores = logits[0, -1].float()
@@ -401,7 +401,7 @@ the loss and receive exactly zero gradient, which is how fine-tuning keeps a
 prompt from being trained (Chapter 30). The denominator is the number of
 graded rows, not all rows; the chunked loss makes that explicit:
 
-> **In the repo** · `anulm/model.py` · `AnuLM._chunked_loss` · lines 944–956 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLM._chunked_loss` · lines 954–966 · @2e80b3e
 
 ```python
     def _chunked_loss(self, x, targets):
@@ -495,14 +495,14 @@ it against autograd.
 
 This chapter cites no research references.
 
-Repository evidence, all at @b42998d:
-- `anulm/model.py`: `Router._gate` 624–626; `AnuLM.forward` 923–925;
-  `AnuLM._chunked_loss` 944–953, `AnuLM._ce_sum` 955–956;
-  `AnuLM.decode_from_embeds` 1038–1049; `AnuLM.generate` 1152–1169.
+Repository evidence, all at @2e80b3e:
+- `anulm/model.py`: `Router._gate` 634–636; `AnuLM.forward` 933–935;
+  `AnuLM._chunked_loss` 954–963, `AnuLM._ce_sum` 965–966;
+  `AnuLM.decode_from_embeds` 1048–1059; `AnuLM.generate` 1162–1179.
 - `anulm/inference/api.py`: `Generation.run` 446–448; the request field's description,
   "0 = greedy", line 218.
 - `anulm/inference/sample.py`: defaults, lines 34–35.
-- `anulm/training/train.py`: `main` 645–650 (autocast).
+- `anulm/training/train.py`: `main` 656–661 (autocast).
 - Measurements: `book/measurements/part_i_ii_released.json`, written by
   `code-examples/measure_part_i_ii.py`.
 

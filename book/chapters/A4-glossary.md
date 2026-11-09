@@ -2,7 +2,7 @@
 title: "Appendix D · Glossary"
 part: "Appendices"
 accent: slate
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # Appendix D  Glossary

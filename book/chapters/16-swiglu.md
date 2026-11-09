@@ -2,7 +2,7 @@
 title: "16 · The feed-forward network: SwiGLU"
 part: "IV · Inside the transformer"
 accent: gold
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 16  The feed-forward network: SwiGLU
@@ -87,7 +87,7 @@ model.SwiGLU gives tensor([ 1.224, -0.238]) (matches)
 
 ## 16.3  In the code
 
-> **In the repo** · `anulm/model.py` · `SwiGLU` · lines 242–253 · @b42998d
+> **In the repo** · `anulm/model.py` · `SwiGLU` · lines 252–263 · @2e80b3e
 
 ```python
 class SwiGLU(nn.Module):
@@ -155,7 +155,7 @@ upward: close to 0 for very negative g, about g itself for large g (SiLU(4) =
 
 ## 16.4  Three matrices: 3·D·I parameters
 
-> **In the repo** · `anulm/model.py` · `AnuLMConfig` · lines 77–79 · @b42998d
+> **In the repo** · `anulm/model.py` · `AnuLMConfig` · lines 72–74 · @2e80b3e
 
 ```python
     moe_intermediate_size: int = 96
@@ -166,7 +166,7 @@ upward: close to 0 for very negative g, about g itself for large g (SiLU(4) =
 These are I<sub>e</sub>, an expert's width; I, layer 0's; and the number of
 dense layers from the bottom. The released model's preset sets I:
 
-> **In the repo** · `anulm/model.py` · `AnuLMConfig.base_350m` · lines 187–196 · @c4a39f8
+> **In the repo** · `anulm/model.py` · `AnuLMConfig.base_350m` · lines 187–196 · @2e80b3e
 
 ```python
         cfg = dict(
@@ -221,14 +221,14 @@ Two readings (*verified*):
   does not say that this is how it was chosen.
 
 > **Details.** The smaller presets set I to 2·D (`tiny_gqa`, line 163) and
-> 4·D (`tiny_mla`, line 223), both @c4a39f8 (`docs/RESULTS.md`, "The two
+> 4·D (`tiny_mla`, line 223), both @2e80b3e (`docs/RESULTS.md`, "The two
 > presets").
 
 `IN THE REPO`
 
 ## 16.5  Dense layer 0, and the experts that replace it
 
-> **In the repo** · `anulm/model.py` · `Block.__init__` · lines 809–811 · @b42998d
+> **In the repo** · `anulm/model.py` · `Block.__init__` · lines 819–821 · @2e80b3e
 
 ```python
         # Layer 0 dense, the rest MoE -- first_k_dense_replace = 1 in every preset.
@@ -240,7 +240,7 @@ Only layers below `first_k_dense_replace`, here layer 0, get a SwiGLU of width
 I. Every preset keeps the default of 1, and the repository gives no reason for
 the value beyond this comment. Every expert is a SwiGLU:
 
-> **In the repo** · `anulm/model.py` · `MoE.__init__` · lines 688–694 · @b42998d
+> **In the repo** · `anulm/model.py` · `MoE.__init__` · lines 698–704 · @2e80b3e
 
 ```python
         self.experts = nn.ModuleList(
@@ -257,7 +257,7 @@ uses, is one SwiGLU of width I<sub>e</sub> · `num_shared_experts`, so several
 are stored as one wider one; the released model has none.
 
 Every `down_proj`, dense or expert, starts small: the scaled initialisation
-quoted in 15.5 (`anulm/model.py` lines 860–863) draws it with standard
+quoted in 15.5 (`anulm/model.py` lines 870–873) draws it with standard
 deviation 0.02/√40 = 0.00316 against 0.02 for the other two, so each block
 first adds little to the stream; the example measures 0.00316.
 
@@ -422,9 +422,9 @@ used only for the claim in its register row:
 | [R11] | gated FFN variants, SwiGLU among them; the inner width shrunk by 2/3 to keep parameters and computation constant | CHECKED |
 | [S04] | the GELU activation | CHECKED |
 
-Repository evidence, at @b42998d unless marked:
-- `anulm/model.py`: `AnuLMConfig` 77–79, `SwiGLU` 242–253, `MoE.__init__` 688–694,
-  `Block.__init__` 809–811, `AnuLM.__init__` 860–863; at @c4a39f8, `tiny_gqa`
+Repository evidence, at @2e80b3e unless marked:
+- `anulm/model.py`: `AnuLMConfig` 72–74, `SwiGLU` 252–263, `MoE.__init__` 698–704,
+  `Block.__init__` 819–821, `AnuLM.__init__` 870–873; at @2e80b3e, `tiny_gqa`
   line 163, `base_350m` 187–196, `tiny_mla` line 223.
 - `tests/test_model.py`: `rmsnorm_and_swiglu_match_their_formulas` 252,
   `all_parameters_receive_gradients` 415,

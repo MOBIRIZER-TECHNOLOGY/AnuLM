@@ -2,7 +2,7 @@
 title: "4 · Tensors, shapes and the matrix multiply"
 part: "II · Just enough mathematics"
 accent: slate
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 4  Tensors, shapes and the matrix multiply
@@ -61,7 +61,7 @@ against the module.
 ## 4.1  Shapes are types
 
 A shape is the most useful type annotation a tensor has; AnuLM writes them as
-comments, as on `GQAttention.forward`'s lines 461–463 (4.3). The dangerous bugs are shapes that are right in
+comments, as on `GQAttention.forward`'s lines 471–473 (4.3). The dangerous bugs are shapes that are right in
 size but wrong in meaning: two axes swapped, a head read from the wrong slice.
 The running input is `x`, a (2, 5, 32) tensor: B = 2 sequences of S = 5
 positions, each a D = 32 vector.
@@ -72,7 +72,7 @@ positions, each a D = 32 vector.
 
 The attention layer's two matrices are built here:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 447–451 · @c4a39f8
+> **In the repo** · `anulm/model.py` · `GQAttention.__init__` · lines 447–451 · @2e80b3e
 
 ```python
         # One fused projection: (H + 2*Hkv) * Dh, split on the head axis.
@@ -109,7 +109,7 @@ output is one input row's dot product with one row of W.
 
 ## 4.3  `view`, `split` and `transpose`: cutting the width into heads
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 457–463 · @b42998d
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 467–473 · @2e80b3e
 
 ```python
         B, S, _ = x.shape
@@ -174,7 +174,7 @@ position, as `view` and `split` divide them. *verified*: slot boundaries from
 
 After attention, the heads are laid side by side again:
 
-> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 483–494 · @b42998d
+> **In the repo** · `anulm/model.py` · `GQAttention.forward` · lines 493–504 · @2e80b3e
 
 ```python
         # ...
@@ -211,7 +211,7 @@ contiguous().view -> (2, 5, 32); head 1 sits in columns 8..15
 
 *verified*: printed by `ch04_shapes.py`, on a contiguous copy of the
 attention output. `contiguous()` returns the tensor itself when it is already
-in order and copies otherwise, so line 493 is correct for either layout.
+in order and copies otherwise, so line 503 is correct for either layout.
 
 > **Details.** The copy is sometimes free. The same run prints the attention
 > output's strides first:
@@ -234,7 +234,7 @@ in order and copies otherwise, so line 493 is correct for either layout.
 Rotary position embeddings (Chapter 14) multiply every head of every sequence
 by the same per-position table (Chapter 14, 14.6, quotes the whole function):
 
-> **In the repo** · `anulm/model.py` · `apply_rope` · lines 353–362 · @b42998d
+> **In the repo** · `anulm/model.py` · `apply_rope` · lines 363–372 · @2e80b3e
 
 ```python
 def apply_rope(q, k, cos, sin):
@@ -252,7 +252,7 @@ match, without copying, so each of the B·H heads is multiplied by the same
 table. RMSNorm uses the rule the other way, keeping a reduced axis to divide
 by:
 
-> **In the repo** · `anulm/model.py` · `RMSNorm.forward` · lines 234–239 · @b42998d
+> **In the repo** · `anulm/model.py` · `RMSNorm.forward` · lines 244–249 · @2e80b3e
 
 ```python
     def forward(self, x):
@@ -293,7 +293,7 @@ RMSNorm: mean(-1, keepdim=True) (2, 5, 1); x * rsqrt(...) (2, 5, 32)
 
 First, the cache grows the key axis. With a KV cache (Chapter 27), new keys
 are joined to the stored ones along dimension 2, `torch.cat([cache["k"], k],
-dim=2)` (`GQAttention.forward` lines 470–477, quoted in 2.5), and then
+dim=2)` (`GQAttention.forward` lines 480–487, quoted in 2.5), and then
 `T = k.shape[2]`. `torch.cat` needs every axis but the joined one to match: (B, H<sub>kv</sub>,
 T<sub>old</sub>, D<sub>h</sub>) and (B, H<sub>kv</sub>, S, D<sub>h</sub>) give
 (B, H<sub>kv</sub>, T<sub>old</sub> + S, D<sub>h</sub>). That is why T, the
@@ -358,7 +358,7 @@ inner axes must match and disappear. *verified*: shapes from `ch04_shapes.py`.
 ## 4.8  Exercises
 
 1. What is the shape of `query_key_value.weight` in the released model?
-2. For the released model, what are the strides of `q` after line 461, for a
+2. For the released model, what are the strides of `q` after line 471, for a
    batch of S = 1,024 positions?
 3. Which key/value head does query head 13 of the released model use?
 
@@ -401,10 +401,10 @@ inner axes must match and disappear. *verified*: shapes from `ch04_shapes.py`.
 
 This chapter cites no research references.
 
-Repository evidence, all at @b42998d:
-- `anulm/model.py`: `RMSNorm.forward` 234–239; `rotate_half` 346–350;
-  `apply_rope` 353–362; `_sdpa` 414–418; `GQAttention.__init__` 437–441;
-  `GQAttention.forward` 457–463, 470–477 and 483–494.
+Repository evidence, all at @2e80b3e:
+- `anulm/model.py`: `RMSNorm.forward` 244–249; `rotate_half` 356–360;
+  `apply_rope` 363–372; `_sdpa` 424–428; `GQAttention.__init__` 447–451;
+  `GQAttention.forward` 467–473, 480–487 and 493–504.
 - `tests/test_model.py`: `tiny` 44–49.
 
 The book example is `code-examples/ch04_shapes.py`.

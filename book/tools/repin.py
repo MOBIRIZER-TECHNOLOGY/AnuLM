@@ -196,6 +196,9 @@ DASH = "–"
 NUM = r"\d+(?:[–-]\d+)?"
 EXCERPT = re.compile(r"(\*\*In the repo\*\* · `)([\w./-]+)(` · `)([^`]+(?:`, `[^`]+)*)(` · lines? )(\d+)(?:–(\d+))?( · @)(\w+)(\n\n```\w*\n)(.*?)(```)", re.S)
 LINE_REF = re.compile(r"`(\w+)` \((?:`([\w./-]+)` )?line (\d+)\)")
+# "lines 220–239 @c4a39f8", "(344–352 @c4a39f8)", "1544 (@c4a39f8)": a run of numbers
+# that names its own pin. Group 1 is the pin.
+OTHER_PIN = re.compile(r"(?:lines? )?\d+(?:–\d+)?(?:(?:, | and |, and | or )\d+(?:–\d+)?)*\)?,?\s*\(?@(\w+)\)?")
 TOKEN = re.compile(r"`([^`\n]+)`")
 LINES_WORD = re.compile(r"\b(lines?) ((?:" + NUM + r")(?:(?:, | and | or |, and )(?:" + NUM + r"))*)")
 SYMBOL = re.compile(r"^[A-Za-z_][\w]*(?:\.[A-Za-z_]\w*)?$")
@@ -248,6 +251,12 @@ class Rewriter:
         if not path:
             return m.group(0)
         a, b = int(m.group(6)), int(m.group(7)) if m.group(7) else None
+        if m.group(9) != self.p.old:
+            # Quoted at another commit (a re-quote after a cleanup): its numbers are
+            # not at `old`, so the old->new line map does not apply. Left alone.
+            self.r.add(where, path, f"{a}–{b}" if b else f"{a}", "", "other-pin",
+                       f"excerpt pinned to @{m.group(9)}, left alone")
+            return m.group(0)
         moved = self.move_range(path, a, b, where)
         if moved is None:
             self.r.add(where, path, f"{a}", "?", "EXCERPT", "header range unresolved: " + m.group(4))
@@ -456,6 +465,7 @@ class Rewriter:
         # 2. prose, line by line, carrying the current file.
         ctx: dict = {"file": None}
         out, evidence, prev = [], False, ""
+        hold = False            # inside a list item pinned elsewhere ("at @c4a39f8: ...")
         for i, line in enumerate(text.split("\n"), 1):
             where = f"{name}:{i}"
             if line == "\x01":
@@ -468,14 +478,39 @@ class Rewriter:
                     next((o for o, n in self.p.paths.items() if n == hdr.group(1)), hdr.group(1)))
                 out.append(line)
                 continue
+            if hold and line.strip() and line[0].isspace() and not line.lstrip().startswith("- "):
+                # The wrapped continuation of an item pinned to another commit.
+                self.r.add(where, ctx.get("file") or "?", "", "", "other-pin", line.strip()[:90])
+                out.append(line)
+                continue
+            hold = False
             if re.match(r"(Repository evidence|Repository sources|Code cited)", line):
                 evidence = True
             elif not line.strip():
                 evidence = False
             if evidence and re.match(r"- `", line):
                 ctx["file"] = None
-            line = self.line_refs(line, ctx.get("file"), where)
-            out.append(self.prose_line(line, ctx, where, evidence, doc_files, prev))
+            # Citations pinned to another commit stay as written: numbers right before
+            # "@pin" or "(@pin)", and everything after "at @pin:" / "at @pin," to the
+            # end of its list item. Their numbers are not at `old`.
+            head, tail = line, ""
+            m = re.search(r"\bat @(\w+)[:,]", line)
+            if m and m.group(1) != self.p.old:
+                head, tail, hold = line[:m.start()], line[m.start():], True
+                self.r.add(where, ctx.get("file") or "?", "", "", "other-pin", tail.strip()[:90])
+            kept: list[str] = []
+
+            def shield(mm):
+                if mm.group(1) == self.p.old:
+                    return mm.group(0)
+                kept.append(mm.group(0))
+                self.r.add(where, ctx.get("file") or "?", "", "", "other-pin", mm.group(0))
+                return "\x02" + "x" * len(kept) + "\x02"         # no digits: nothing can re-match it
+            head = OTHER_PIN.sub(shield, head)
+            head = self.line_refs(head, ctx.get("file"), where)
+            head = self.prose_line(head, ctx, where, evidence, doc_files, prev)
+            head = re.sub(r"\x02(x+)\x02", lambda mm: kept[len(mm.group(1)) - 1], head)
+            out.append(head + tail)
             prev = line
         text = "\n".join(out)
         # 3. put the excerpts back; paths, commands and the pin.

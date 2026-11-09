@@ -2,7 +2,7 @@
 title: "21 · Data: corpora, documents, windows and splits"
 part: "V · Training"
 accent: teal
-pinned: "@b42998d"
+pinned: "@2e80b3e"
 ---
 
 # 21  Data: corpora, documents, windows and splits
@@ -31,14 +31,14 @@ S is Part IV's S: in training, every call is a whole window. A
 **micro-batch** is the B windows one forward pass sees; an optimiser step can
 add up the gradients of M of them (Chapter 22). An **epoch** is one pass over
 the training split. *verified*: `experiments/v2_train.sh` lines
-24–28 at @b42998d (M = 1 is the default); W is printed by
+24–28 at @2e80b3e (M = 1 is the default); W is printed by
 `ch21_measure_corpus.py`.
 
 ## 21.2  Documents become one file of ids
 
 The build reads four sources in a fixed order, each with a token budget:
 
-> **In the repo** · `experiments/build_v2.py` · `SOURCES` · lines 76–83 · @b42998d
+> **In the repo** · `experiments/build_v2.py` · `SOURCES` · lines 76–83 · @2e80b3e
 
 ```python
 SOURCES = {
@@ -60,7 +60,7 @@ each batch of 1,000 documents (line 121), so a source overshoots it a little.
 Both readers skip documents under 200 characters (`min_chars`, lines 48 and 58).
 Each document then goes to one file:
 
-> **In the repo** · `experiments/build_v2.py` · `main` · lines 103–114 · @b42998d
+> **In the repo** · `experiments/build_v2.py` · `main` · lines 103–114 · @2e80b3e
 
 ```python
         def flush(batch):
@@ -102,7 +102,7 @@ training split. `NOT IN THE REPO`
 
 The build ends by recording what it wrote:
 
-> **In the repo** · `experiments/build_v2.py` · `main` · lines 136–140 · @b42998d
+> **In the repo** · `experiments/build_v2.py` · `main` · lines 136–140 · @2e80b3e
 
 ```python
     meta = {"format": "uint16", "vocab_size": 32768, "eos_id": EOS,
@@ -135,7 +135,7 @@ English came out 573,711 tokens over its 6.0B budget and Hindi web 23,402 over
 
 `anulm/training/train.py` recognises the build by the file name given to `--data`:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 659–672 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `main` · lines 670–683 · @2e80b3e
 
 ```python
     memmapped = bool(args.data and args.data.endswith("meta.json"))
@@ -155,7 +155,7 @@ The vocabulary size and the bytes per token come from the data, not from the
 model's preset; Chapter 22 shows them reaching the configuration and the
 bits-per-byte line. The files are opened by:
 
-> **In the repo** · `anulm/training/train.py` · `load_memmap` · lines 163–173 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `load_memmap` · lines 166–176 · @2e80b3e
 
 ```python
 def load_memmap(meta_path: str):
@@ -173,7 +173,7 @@ only the pages a slice touches, at least one 4 KB page for a window of 1,025
 ids (2,050 bytes), where loading the ids as one tensor would take 22.6 GB at
 once.
 
-> **In the repo** · `anulm/training/train.py` · `make_batch` · lines 237–250 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `make_batch` · lines 240–253 · @2e80b3e
 
 ```python
 def make_batch(data: torch.Tensor, ix: torch.Tensor, block_size: int, device: str):
@@ -260,7 +260,7 @@ make_batch: x (3, 16), y (3, 16); y[:, :-1] == x[:, 1:]; memmap and in-memory ba
 
 *Figure 21.1 · From documents to a batch.* The build runs once; every step maps
 its files, draws B starts and cuts (B, S) inputs and targets. Every box is code
-at @b42998d.
+at @2e80b3e.
 
 `IN THE REPO`
 
@@ -270,7 +270,7 @@ Random starts drawn with replacement miss a token with probability
 (1 − S/N)<sup>N/S</sup> ≈ e<sup>−1</sup> per epoch of draws: 37% of the corpus
 unread, other text read twice. `WindowSampler` replaces them:
 
-> **In the repo** · `anulm/training/train.py` · `WindowSampler` · lines 118–160 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `WindowSampler` · lines 121–163 · @2e80b3e
 
 ```python
     def __init__(self, n_tokens: int, block_size: int, batch_size: int, seed: int):
@@ -310,7 +310,7 @@ unread, other text read twice. `WindowSampler` replaces them:
 - **Epochs.** When fewer than B starts are left, `next` begins a new epoch with
   a new offset, so window boundaries move. Up to B − 1 windows are skipped.
 - **Resumable.** `state` saves the order, position and generator (Chapter 25).
-  The elided property `epochs_done` (lines 147–150) is `epoch + pos / W`, the
+  The elided property `epochs_done` (lines 150–153) is `epoch + pos / W`, the
   fractional epoch Chapter 22's log line prints.
 
 At real scale W = 11,047,015, and the released run's 1,900,000 steps of 4
@@ -350,8 +350,8 @@ with replacement, the same 1561 draws: 37.1% of tokens never seen (e^-1 = 36.8%)
 `WindowSampler` over 640 tokens, then as many windows drawn with replacement.
 *verified*: drawn by running `WindowSampler` with seed 3.
 
-> **Details.** `--sample-with-replacement` (line 590) keeps the old sampler
-> for A/B runs (lines 692–693). `docs/RESULTS.md` §9 changed it together with
+> **Details.** `--sample-with-replacement` (line 599) keeps the old sampler
+> for A/B runs (lines 703–704). `docs/RESULTS.md` §9 changed it together with
 > two other things; the sampler's own gain is *not measured here*.
 
 `IN THE REPO`
@@ -381,7 +381,7 @@ held-out documents: 143,364; tokens per document mean 790, median 480; longer th
 
 So 42.6% of predictions see an unrelated document; only the EOS id says it no
 longer matters. Some training stacks mask attention at every EOS. This one does
-not: `_attn_mask` (line 365) knows only causality and the sliding window.
+not: `_attn_mask` (line 375) knows only causality and the sliding window.
 
 `NOT IN THE REPO` · `MEASURED`
 
@@ -391,7 +391,7 @@ Without a build that brings its own held-out file (`meta.json`, or a
 `splits.json` with a validation split), `anulm/training/train.py` splits the ids
 itself:
 
-> **In the repo** · `anulm/training/train.py` · `main` · lines 689–695 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `main` · lines 700–706 · @2e80b3e
 
 ```python
     if memmapped or (split_encoded and val_data is not None):
@@ -409,7 +409,7 @@ Build scripts write one source after another. On the lab's three-language file,
 (`docs/RESULTS.md` §32): every validation loss read on it was an English
 number. The fix:
 
-> **In the repo** · `anulm/training/train.py` · `interleaved_split` · lines 202–216 · @b42998d
+> **In the repo** · `anulm/training/train.py` · `interleaved_split` · lines 205–219 · @2e80b3e
 
 ```python
 def interleaved_split(data: torch.Tensor, chunk: int = 262144, every: int = 10):
@@ -468,11 +468,11 @@ per byte (`docs/RESULTS.md` §8), 3.3× the unique text at the same steps bought
 
 ## 21.10  The proof, and common mistakes
 
-- `memmap_batches_match_in_memory_batches` (line 1922): the same (x, y) from a
+- `memmap_batches_match_in_memory_batches` (line 1920): the same (x, y) from a
   memory map as from memory.
 - `window_sampler_covers_every_window_once_per_epoch` (line 931) and
   `window_sampler_resumes_exactly` (line 956).
-- `interleaved_split_samples_the_whole_corpus` (line 1944): on A-then-B data
+- `interleaved_split_samples_the_whole_corpus` (line 1942): on A-then-B data
   the tail is all B; the interleaved split holds out both.
 
 No loss curve shows a tail split of an ordered file, or `y = x`, which trains
@@ -521,17 +521,17 @@ a copier. Count the sources in the held-out split, and assert
 This chapter cites no research references. Its quality claims come from
 `docs/RESULTS.md` §8, §9, §11, §13 and §32.
 
-Repository evidence, all at @b42998d:
+Repository evidence, all at @2e80b3e:
 - `experiments/build_v2.py`: `TOKENIZER` 44, `EOS` 45, `parquet_docs` 48, `text_docs` 58,
   `SOURCES` 76–83, `main` 86–142 (`flush` 103–114, budget check 121, `meta.json` 136–140);
   `experiments/v2_train.sh` 24–28.
-- `anulm/training/train.py`: `WindowSampler` 104–160 (`epochs_done` 147–150), `load_memmap` 163–173,
-  `interleaved_split` 202–216, `make_batch` 237–250, `strided_windows`
-  351–372, `main` 590, 659–672, 689–695, 858–859.
-- `anulm/model.py`: `_attn_mask` 365–381.
+- `anulm/training/train.py`: `WindowSampler` 107–163 (`epochs_done` 150–153), `load_memmap` 166–176,
+  `interleaved_split` 205–219, `make_batch` 240–253, `strided_windows`
+  354–375, `main` 599, 670–683, 700–706, 867–868.
+- `anulm/model.py`: `_attn_mask` 375–391.
 - `tests/test_model.py`: `window_sampler_covers_every_window_once_per_epoch` 931,
   `window_sampler_resumes_exactly` 956,
-  `memmap_batches_match_in_memory_batches` 1922,
-  `interleaved_split_samples_the_whole_corpus` 1944.
+  `memmap_batches_match_in_memory_batches` 1920,
+  `interleaved_split_samples_the_whole_corpus` 1942.
 - Statistics: `data/v2/meta.json`, `data/v2/val.u16` (counts only),
   `book/measurements/part_v_a_corpus.json`.
