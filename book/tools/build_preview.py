@@ -101,10 +101,10 @@ def inline_figure(src: str, alt: str) -> str:
 # --------------------------------------------------------------------------- input
 def chapter_files(wanted: list[str]) -> list[Path]:
     """Numbered chapters in order, then the appendices (A1-*.md ...). `wanted` takes "11" or "A1"."""
-    files = sorted(CHAPTERS.glob("[0-9][0-9]-*.md")) + sorted(CHAPTERS.glob("A[0-9]-*.md"))
+    files = sorted(CHAPTERS.glob("[0-9][0-9]-*.md")) + sorted(CHAPTERS.glob("A[0-9]*-*.md"), key=lambda p: int(p.name[1:p.name.index("-")]))
     if wanted:
         keys = {w.upper().lstrip("0") for w in wanted}
-        files = [f for f in files if f.name[:2].upper().lstrip("0") in keys]
+        files = [f for f in files if f.name.split("-")[0].upper().lstrip("0") in keys]
     return files
 
 
@@ -693,7 +693,7 @@ def add_bookmarks(pdf: Path) -> int:
                      | {join(a, b, c) for a, b, c in zip(ls, ls[1:], ls[2:])})
     # Skip the cover, front matter and contents: start at the page that opens Chapter 1.
     start = next((i for i, ls in enumerate(pages) if i > 3 and "1 What this book builds" in ls), 0)
-    files = sorted(CHAPTERS.glob("[0-9][0-9]-*.md")) + sorted(CHAPTERS.glob("A[0-9]-*.md"))
+    files = sorted(CHAPTERS.glob("[0-9][0-9]-*.md")) + sorted(CHAPTERS.glob("A[0-9]*-*.md"), key=lambda p: int(p.name[1:p.name.index("-")]))
     toc, at = [], start
     for f in files:
         fenced = False

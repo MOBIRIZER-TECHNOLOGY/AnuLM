@@ -135,10 +135,10 @@ def check(path: Path) -> tuple[list[str], list[str], dict]:
 
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    files = sorted(CHAPTERS.glob("[0-9][0-9]-*.md")) + sorted(CHAPTERS.glob("A[0-9]-*.md"))
+    files = sorted(CHAPTERS.glob("[0-9][0-9]-*.md")) + sorted(CHAPTERS.glob("A[0-9]*-*.md"), key=lambda p: int(p.name[1:p.name.index("-")]))
     wanted = {a.upper().zfill(2) for a in sys.argv[1:]}
     if wanted:                                  # a writer checking its own chapters: no shared report
-        files = [f for f in files if f.name[:2].upper() in wanted]
+        files = [f for f in files if f.name.split("-")[0].upper() in wanted]
     L = ["# Chapter verification", "", f"Written by `book/tools/verify_chapters.py` against `@{PIN}`.", ""]
     total = 0
     for p in files:

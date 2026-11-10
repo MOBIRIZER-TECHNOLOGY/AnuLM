@@ -2,7 +2,7 @@
 
 Written by `book/tools/verify_chapters.py` against `@2e80b3e`.
 
-Chapters: 47. Problems: **1**.
+Chapters: 51. Problems: **1**.
 
 ## 01-what-this-book-builds.md
 
@@ -500,4 +500,44 @@ Excerpts: 0 (0 quoted lines). Line references to definitions: 0. Problems: **0**
 _badges: none; references cited: none_
 
 **Code standard:** 54 Python lines, 27% of the body.
+
+## A9-common-mistakes.md
+
+Excerpts: 0 (0 quoted lines). Line references to definitions: 5. Problems: **0**.
+
+- none
+
+_badges: none; references cited: R50_
+
+**Code standard:** 0 Python lines, 0% of the body.
+
+## A10-revision-questions.md
+
+Excerpts: 0 (0 quoted lines). Line references to definitions: 0. Problems: **0**.
+
+- none
+
+_badges: none; references cited: none_
+
+**Code standard:** 0 Python lines, 0% of the body.
+
+## A11-one-page.md
+
+Excerpts: 0 (0 quoted lines). Line references to definitions: 0. Problems: **0**.
+
+- none
+
+_badges: none; references cited: none_
+
+**Code standard:** 0 Python lines, 0% of the body.
+
+## A12-excerpt-drift.md
+
+Excerpts: 0 (0 quoted lines). Line references to definitions: 0. Problems: **0**.
+
+- none
+
+_badges: none; references cited: none_
+
+**Code standard:** 0 Python lines, 0% of the body.
 

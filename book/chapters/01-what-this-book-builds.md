@@ -50,7 +50,7 @@ rest of the book (1.5–1.7).
 | loss | the average of −log p over the true next tokens (Chapter 3) |
 | checkpoint | a file of trained weights and their configuration, such as `ckpt_base_v2.pt` |
 | preset | a named configuration of sizes in `anulm/model.py`, such as `tiny_gqa` |
-| the pin | commit `b42998d`, which every line number in this book refers to: the `anulm/` package layout after a code-quality pass, on the GitHub branch `port-bundle-fixes` (1.7) |
+| the pin | commit `2e80b3e`, which every line number in this book refers to: the `anulm/` package layout after a code-quality pass, on the GitHub branch `port-bundle-fixes` (1.7) |
 
 ---
 
@@ -435,14 +435,14 @@ and how to reproduce every number (F).
 ## 1.7  How to read a citation, and the evidence labels
 
 A citation, such as 1.2's, names a file, a symbol, the lines and the commit.
-The pin, `b42998d`, is the `anulm/` package layout after a code-quality pass
+The pin, `2e80b3e`, is the `anulm/` package layout after a code-quality pass
 (weights-only loading, exceptions for bad input, honest test skips). It is on
 the GitHub branch `port-bundle-fixes`; the default branch, `main` (`ae59238`),
 still has the old flat layout, whose line numbers differ, so always read the
 code at the pin (the front matter has the details). From a clone:
 
 ```bash
-git show b42998d:anulm/model.py | sed -n '1144,1173p'
+git show 2e80b3e:anulm/model.py | sed -n '1154,1183p'
 ```
 
 Excerpts are copied from the pin, with `# ...` for elided lines. The book's
@@ -469,7 +469,7 @@ listed at the end of each chapter and in full in Appendix E.
 ## 1.8  Common mistakes, and how to catch them
 
 - **Reading line numbers from a newer commit.** Files may change on `main`
-  after the book's commit. *Catch it:* `git show b42998d:<file>`.
+  after the book's commit. *Catch it:* `git show 2e80b3e:<file>`.
 - **Expecting `generate` to be repeatable.** It samples, from PyTorch's global
   random generator. *Catch it:* pass `temperature=0` (exact greedy, no draw)
   or `top_k=1`, or call `torch.manual_seed` first, as
@@ -513,13 +513,13 @@ listed at the end of each chapter and in full in Appendix E.
   that each add attention and a mixture of experts to a residual stream, a final
   norm and an output head (Figure 1.3). The rest of the repository trains,
   tests, serves and adapts it.
-- Every citation names a file, a symbol, lines and the pin `b42998d`, the
+- Every citation names a file, a symbol, lines and the pin `2e80b3e`, the
   `anulm/` layout after the code-quality pass.
 
 > **In one breath.** AnuLM writes text by reading the sequence, scoring all
 > 32,768 ids, drawing one and appending it, over and over; `generate` in
 > `anulm/model.py` is that loop. The rest of the repository trains, tests, serves
-> and adapts that one file, and every citation here points at commit b42998d.
+> and adapts that one file, and every citation here points at commit 2e80b3e.
 
 ## References
 

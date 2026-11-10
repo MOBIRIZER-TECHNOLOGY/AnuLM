@@ -1,6 +1,6 @@
 # Research audit
 
-Written 2026-11-09 by `book/tools/research_audit.py` from `RESEARCH_REFERENCES.md` and `book/chapters/`.
+Written 2026-11-10 by `book/tools/research_audit.py` from `RESEARCH_REFERENCES.md` and `book/chapters/`.
 
 **Research-complete: yes.** References verified: yes. Claim review (`technical-review/claims-review.md`): 41 of 41 written chapters reviewed; 41 of 41 planned chapters written.
 
@@ -28,7 +28,7 @@ Corrected at some point (from the corrections log, now promoted): 18 — `R01`, 
 
 ## Use in chapters
 
-Chapter files scanned: 47.
+Chapter files scanned: 51.
 
 **Cited in a chapter but not CHECKED** (must be fixed before publication):
 

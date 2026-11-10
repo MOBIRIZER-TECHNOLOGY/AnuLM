@@ -30,14 +30,14 @@ counts and citation check.
 
 ## F.1  The repository at the pin
 
-The line numbers refer to commit `b42998d`, the `anulm/` package layout
+The line numbers refer to commit `2e80b3e`, the `anulm/` package layout
 after a code-quality pass, on the GitHub branch `port-bundle-fixes`; the
 default branch, `main` (`ae59238`), has the old flat layout, whose line
 numbers differ (front matter).
 To work on exactly the cited code, export the pin rather than checking it out:
 
 ```bash
-mkdir pin && git archive b42998d | tar -x -C pin
+mkdir pin && git archive 2e80b3e | tar -x -C pin
 cd pin && CUDA_VISIBLE_DEVICES=-1 python -m tests.test_model   # 80 passed, 0 failed, 80 total (Chapter 41.5)
 CUDA_VISIBLE_DEVICES=-1 python -m unittest discover -s tests -p "test_quality_*.py" -t .   # Ran 63 tests ... OK
 ```

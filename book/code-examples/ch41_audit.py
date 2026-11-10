@@ -20,7 +20,13 @@ The checks:
 - Appendix E: every row, regenerated from `RESEARCH_REFERENCES.md`;
 - Appendix A: every concrete shape the page prints occurs somewhere in
   `ch41_shapes.py`'s output. This is membership only: it does not check that
-  a shape sits in the right row.
+  a shape sits in the right row;
+- Appendix I: regenerated from the chapters' "Common mistakes" sections by
+  `book/tools/make_mistakes.py` and compared;
+- Appendices J and K: every number and every code name in a row occurs in the
+  chapter or appendix the row's "See" column cites. Membership only, again;
+- Appendix L: `book/tools/excerpt_drift.py` at the pin reports every excerpt
+  "same" (the tool's self-check; `verify_chapters.py` is the full one).
 
 `--run` runs each example in a temporary directory, except those in SKIP below:
 an explicit list of the examples that need the released checkpoint (most of
@@ -152,6 +158,70 @@ def check_shapes() -> list[str]:
     return [f"Appendix A shape not printed: {s}" for s in missing]
 
 
+def check_mistakes() -> list[str]:
+    sys.path.insert(0, str(BOOK / "tools"))
+    import make_mistakes
+    rows, pin = make_mistakes.collect()
+    same = (CH / "A9-common-mistakes.md").read_text(encoding="utf-8") == make_mistakes.render(rows, pin)
+    print(f"Appendix I: {len(rows)} rows regenerated from {len({r[0].split('.')[0] for r in rows})} chapters: "
+          f"{'ok' if same else 'MISMATCH'}")
+    return [] if same else ["Appendix I differs from the chapters: run book/tools/make_mistakes.py"]
+
+
+_texts: dict[str, str] = {}
+
+
+def cited_text(see: str) -> str:
+    """The chapters and appendices a 'See' cell names ("2.3", "16–17", "13, 27", "9, B.1"), joined."""
+    parts = []
+    for tok in re.split(r"[,;]\s*", see):
+        tok = tok.strip()
+        m = re.match(r"^(\d+)(?:–(\d+))?", tok)
+        if m:
+            lo, hi = int(m.group(1)), int(m.group(2) or m.group(1))
+            parts += [f"{n:02d}" for n in range(lo, hi + 1)]
+        elif re.match(r"^[A-L]\b", tok):
+            parts.append(f"A{ord(tok[0]) - 64}")
+    out = []
+    for key in parts:
+        if key not in _texts:
+            hits = list(CH.glob(f"{key}-*.md"))
+            _texts[key] = hits[0].read_text(encoding="utf-8") if hits else ""
+        out.append(_texts[key])
+    return "\n".join(out)
+
+
+def check_cited(name: str, letter: str) -> list[str]:
+    out, n = [], 0
+    for line in (CH / name).read_text(encoding="utf-8").splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")] if line.startswith("| ") else []
+        if len(cells) < 3 or cells[0] in ("#", "Quantity") or cells[-1] == "See":
+            continue
+        n += 1
+        pool = cited_text(cells[-1]).replace(",", "")
+        if not pool.strip():
+            out.append(f"Appendix {letter} row {cells[0]!r}: 'See' {cells[-1]!r} names nothing readable")
+            continue
+        body = " ".join(cells[1:-1] if cells[0].isdigit() else cells[:-1])
+        for num in re.findall(r"\d[\d,]*(?:\.\d+)?", body):
+            if num.replace(",", "") not in pool:
+                out.append(f"Appendix {letter} row {cells[0]!r}: {num} is not in {cells[-1]}")
+        for code in re.findall(r"`([^`]+)`", body):
+            if code not in pool and code not in cited_text(cells[-1]):
+                out.append(f"Appendix {letter} row {cells[0]!r}: `{code}` is not in {cells[-1]}")
+    print(f"Appendix {letter}: {n} rows, numbers and code names looked up in the cited chapters: "
+          f"{'ok' if not out else 'MISMATCH'}")
+    return out
+
+
+def check_drift() -> list[str]:
+    r = subprocess.run([sys.executable, str(BOOK / "tools" / "excerpt_drift.py"), "--ref", PIN, "--strict"],
+                       cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    first = (r.stdout.strip().splitlines() or ["(no output)"])[0]
+    print(f"Appendix L: excerpt_drift.py --ref {PIN}: {first}")
+    return [] if r.returncode == 0 else [f"excerpt_drift.py finds drift at the pin: {first}"]
+
+
 def evidence_inventory() -> None:
     print("\nEvidence labels per chapter (verified / measured / illustrative / cited references):")
     for p in sorted(CH.glob("[0-9][0-9]-*.md")):
@@ -198,7 +268,9 @@ if __name__ == "__main__":
     if "--bibliography" in sys.argv:
         print("\n".join(bibliography()))
         sys.exit(0)
-    problems = check_test_index() + check_config_table() + check_bibliography() + check_shapes()
+    problems = (check_test_index() + check_config_table() + check_bibliography() + check_shapes()
+                + check_mistakes() + check_cited("A10-revision-questions.md", "J")
+                + check_cited("A11-one-page.md", "K") + check_drift())
     for x in problems:
         print("  PROBLEM:", x)
     evidence_inventory()

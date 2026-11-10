@@ -79,6 +79,51 @@ Boxes marked **Details** hold what a first reading can skip; boxes marked
 1.7 lists every label and badge, and Appendix F says how to reproduce every
 number.
 
+## Reading paths
+
+The book is written to be read in order, and that remains the best route. These
+paths are for readers who come with one goal. Each lists the chapters to read
+closely; the rest can be skimmed from their Key points and "In one breath" boxes.
+
+| If you are… | Read closely | Then |
+|---|---|---|
+| New to language models, comfortable with Python | 1–3, then 4–7 slowly, with the exercises; 8, 11–12, 16, 20 | Keep Appendix K beside you. Chapter 4 is the steepest page of the book: do its by-hand checks before moving on. |
+| A PyTorch engineer who wants the architecture | 3, 10–20, Appendix A | 13 (GQA), 17–18 (routing), 19 (MLA) and 29 (YaRN) are the parts most current models share. |
+| A fine-tuning engineer | 3, 5, 24, 30–34 | Read 25 (checkpoints) before any long run. Appendix I's rows for sections 24.8 to 34.7 are the traps you will meet first. |
+| A systems or serving engineer | 7, 22–23, 25, 27–28, 38–40 | Appendix B.4–B.6 for memory; 12 (sliding windows) and 13 (what the cache holds). |
+| Preparing for interviews | Appendix J first, then the chapter behind every answer you could not give | Appendix I: interviewers like "how would you catch it?" |
+
+## Before Chapter 4: five PyTorch facts
+
+Chapter 4 teaches these on the model's own lines. If any is new to you, read
+these five first and come back to the chapter.
+
+1. **A shape is a type.** (B, S, D) means batch, sequence, width. Most bugs
+   give a tensor of the right size and the wrong meaning: `x.view(B, H, S, Dh)`
+   on a (B, S, H·Dh) tensor runs, and mixes positions with heads (Chapter 4's
+   first common mistake).
+2. **`nn.Linear(in, out)` stores W as (out, in)** and computes x Wᵀ over the
+   last axis only; every leading axis passes straight through.
+3. **`transpose` changes strides, not data.** A `view` after it needs
+   `.contiguous()`, which copies only when the memory layout requires it.
+4. **Broadcasting aligns shapes from the right** and stretches size-1 axes.
+   That is how one cos table of shape (S, Dh) reaches every head through
+   `cos[None, None]`.
+5. **`keepdim=True` keeps a reduced axis as size 1**, so a norm's divisor
+   still lines up with the tensor it divides.
+
+```python
+import torch
+B, S, H, Dh = 2, 5, 4, 8
+x = torch.randn(B, S, H * Dh)                 # what a fused projection returns
+right = x.view(B, S, H, Dh).transpose(1, 2)   # (B, H, S, Dh): heads, then positions
+wrong = x.view(B, H, S, Dh)                   # same shape, positions and heads mixed
+print(right.shape == wrong.shape, torch.equal(right, wrong))
+```
+
+The last line prints `True False` (*verified*): the same shape, different
+contents. That is the whole lesson of Chapter 4 in two tensors.
+
 ## Where everything is
 
 | What | Where |
