@@ -73,7 +73,7 @@ the row cites; the sentences themselves were checked by reading.
 | 56 | LoRA or full fine-tune at 398M? | A full fine-tune beat every LoRA run on quality. | 31.7 |
 | 57 | Does temperature scaling change a classifier's predictions? | No, only its confidence; one τ fitted on held-out NLL. | 32 |
 | 58 | What does reciprocal-rank fusion add? | 1/(60 + rank) from each list; it ignores scores. | 33 |
-| 59 | What does every preference method need? | An answer's log-probability: Chapter 30's masked loss, summed. | 34 |
+| 59 | What does every preference method need? | An answer's log-probability: Chapter 30's masked loss, summed. | 34, H |
 | 60 | Does bf16 export hurt? | Held-out loss moved −0.00004 nats; rounding router biases changed half the expert choices for 0.003 nats. | 39 |
 
 `VERIFIED` · numbers and code names against the cited chapters, by `ch41_audit.py`.

@@ -89,7 +89,7 @@ closely; the rest can be skimmed from their Key points and "In one breath" boxes
 |---|---|---|
 | New to language models, comfortable with Python | 1–3, then 4–7 slowly, with the exercises; 8, 11–12, 16, 20 | Keep Appendix K beside you. Chapter 4 is the steepest page of the book: do its by-hand checks before moving on. |
 | A PyTorch engineer who wants the architecture | 3, 10–20, Appendix A | 13 (GQA), 17–18 (routing), 19 (MLA) and 29 (YaRN) are the parts most current models share. |
-| A fine-tuning engineer | 3, 5, 24, 30–34 | Read 25 (checkpoints) before any long run. Appendix I's rows for sections 24.8 to 34.7 are the traps you will meet first. |
+| A fine-tuning engineer | 3, 5, 24, 30–34, then Appendices G and H | Read 25 (checkpoints) before any long run. Appendix I's rows for sections 24.8 to 34.7 are the traps you will meet first. |
 | A systems or serving engineer | 7, 22–23, 25, 27–28, 38–40 | Appendix B.4–B.6 for memory; 12 (sliding windows) and 13 (what the cache holds). |
 | Preparing for interviews | Appendix J first, then the chapter behind every answer you could not give | Appendix I: interviewers like "how would you catch it?" |
 

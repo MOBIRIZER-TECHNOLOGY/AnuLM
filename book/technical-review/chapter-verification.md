@@ -2,7 +2,7 @@
 
 Written by `book/tools/verify_chapters.py` against `@2e80b3e`.
 
-Chapters: 51. Problems: **1**.
+Chapters: 53. Problems: **1**.
 
 ## 01-what-this-book-builds.md
 
@@ -500,6 +500,26 @@ Excerpts: 0 (0 quoted lines). Line references to definitions: 0. Problems: **0**
 _badges: none; references cited: none_
 
 **Code standard:** 54 Python lines, 27% of the body.
+
+## A7-evaluating-a-fine-tuned-model.md
+
+Excerpts: 2 (15 quoted lines). Line references to definitions: 0. Problems: **0**.
+
+- none
+
+_badges: IN THE REPO, NOT IN THE REPO; references cited: none_
+
+**Code standard:** 30 Python lines, 18% of the body.
+
+## A8-dpo-and-grpo-with-lora.md
+
+Excerpts: 2 (8 quoted lines). Line references to definitions: 0. Problems: **0**.
+
+- none
+
+_badges: IN THE REPO, NOT IN THE REPO; references cited: none_
+
+**Code standard:** 46 Python lines, 29% of the body.
 
 ## A9-common-mistakes.md
 

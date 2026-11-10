@@ -28,7 +28,7 @@ Corrected at some point (from the corrections log, now promoted): 18 — `R01`, 
 
 ## Use in chapters
 
-Chapter files scanned: 51.
+Chapter files scanned: 53.
 
 **Cited in a chapter but not CHECKED** (must be fixed before publication):
 

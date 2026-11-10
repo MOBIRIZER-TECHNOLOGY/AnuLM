@@ -14,7 +14,7 @@ has no way to tell which from the page. This appendix is the tool that tells the
 
 ## L.1  What the tool does
 
-`book/tools/excerpt_drift.py` reads every excerpt box in the chapters (347 at this pin),
+`book/tools/excerpt_drift.py` reads every excerpt box in the chapters (351 at this pin),
 fetches the cited file at any commit you name with `git show`, and classes each excerpt:
 
 | Status | Meaning |
@@ -42,11 +42,11 @@ Run on 2026-11-10 from the `restructure` branch (*verified*; the three commands 
 their first lines, unedited).
 
 At the pin itself, and at the commit before it, nothing has moved. This is the audit's
-self-check: `ch41_audit.py` runs the first command and requires 347 of 347.
+self-check: `ch41_audit.py` runs the first command and requires 351 of 351.
 
 ```
 $ python book/tools/excerpt_drift.py --ref 2e80b3e
-347 excerpts against 2e80b3e: 347 same, 0 moved, 0 changed, 0 absent
+351 excerpts against 2e80b3e: 351 same, 0 moved, 0 changed, 0 absent
 ```
 
 Against the pin before this one, `b42998d` (the 7 November code rewrite lies between
@@ -55,7 +55,7 @@ them), most excerpts have moved and a few dozen have changed. These are the numb
 
 ```
 $ python book/tools/excerpt_drift.py --ref b42998d
-347 excerpts against b42998d: 132 same, 186 moved, 29 changed, 0 absent
+351 excerpts against b42998d: 136 same, 186 moved, 29 changed, 0 absent
 ```
 
 Against the repository's default branch, `main` at `ae59238`, almost everything is
@@ -66,7 +66,7 @@ layouts keep at the same path:
 
 ```
 $ python book/tools/excerpt_drift.py --ref origin/main --write
-347 excerpts against origin/main: 0 same, 4 moved, 2 changed, 341 absent
+351 excerpts against origin/main: 0 same, 4 moved, 2 changed, 345 absent
 ```
 
 | Ch | File | Symbol | Pinned lines | Status | Note |

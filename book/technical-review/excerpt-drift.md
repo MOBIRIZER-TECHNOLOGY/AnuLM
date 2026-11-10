@@ -1,6 +1,6 @@
 # Excerpt drift against `origin/main`
 
-347 excerpts pinned to @2e80b3e (347): 0 same, 4 moved, 2 changed, 341 absent. Written by `book/tools/excerpt_drift.py`.
+351 excerpts pinned to @2e80b3e (351): 0 same, 4 moved, 2 changed, 345 absent. Written by `book/tools/excerpt_drift.py`.
 
 | Ch | File | Symbol | Pinned lines | Status | Note |
 |---|---|---|---|---|---|
@@ -351,3 +351,7 @@
 | 41 | `anulm/model.py` | `AnuLM.generate` | 1171–1179 | absent | `anulm/model.py` is not at origin/main |
 | 41 | `tests/test_model.py` | `generation_is_deterministic_at_top_k_1` | 495–503 | absent | `tests/test_model.py` is not at origin/main |
 | 41 | `tests/test_model.py` | `main` | 2432–2453 | absent | `tests/test_model.py` is not at origin/main |
+| A7 | `anulm/eval/eval_context.py` | `paired` | 66–78 | absent | `anulm/eval/eval_context.py` is not at origin/main |
+| A7 | `anulm/eval/eval_qa.py` | `f1` | 70–80 | absent | `anulm/eval/eval_qa.py` is not at origin/main |
+| A8 | `anulm/lora.py` | `LoRALinear.forward` | 71–75 | absent | `anulm/lora.py` is not at origin/main |
+| A8 | `anulm/lora.py` | `router_state_dict` | 126–137 | absent | `anulm/lora.py` is not at origin/main |
